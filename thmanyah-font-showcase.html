@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>خط ثمانية على الويب: استخداماته وتجربته</title>
+<meta name="description" content="استعرض عائلة خط ثمانية العربي بأوزانه الخمسة، وشاهده في مواضعه، وجرّبه بنصّك، وثبّته بسطر واحد." />
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dawod/thmanyah-font-web/index.css" />
+
+<style>
+  :root {
+    --ink: #14174f;
+    --ink-deep: #0b0d33;
+    --paper: #f5f6fc;
+    --wash: #e4e8fa;
+    --sun: #ffd23f;
+    --mute: #55598a;
+    --mute-on-ink: #b9bde8;
+    --line: #c7cbea;
+
+    --sans: "Thmanyah Sans", "Segoe UI", Tahoma, sans-serif;
+    --display: "Thmanyah Serif Display", "Traditional Arabic", Georgia, serif;
+    --text: "Thmanyah Serif Text", "Traditional Arabic", Georgia, serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 1.0625rem;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  img, svg { max-width: 100%; }
+  a { color: inherit; }
+  p { margin: 0; }
+  h1, h2, h3 { margin: 0; font-weight: 700; }
+
+  :focus-visible {
+    outline: 3px solid var(--ink);
+    box-shadow: 0 0 0 6px var(--sun);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .skip {
+    position: absolute; inset-inline-start: 1rem; top: -4rem;
+    background: var(--sun); color: var(--ink);
+    padding: .6rem 1rem; font-weight: 700; z-index: 50;
+  }
+  .skip:focus { top: 1rem; }
+
+  .wrap { width: min(1180px, 100% - 2.5rem); margin-inline: auto; }
+  section { padding-block: clamp(3.5rem, 8vw, 6.5rem); }
+
+  /* ---------- Top bar ---------- */
+  .bar { background: var(--ink); color: var(--paper); }
+  .bar .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; padding-block: 1rem; flex-wrap: wrap;
+  }
+  .brand {
+    font-family: var(--display); font-weight: 900; font-size: 1.6rem;
+    text-decoration: none; line-height: 1.2;
+  }
+  .bar nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .bar nav a {
+    text-decoration: none; font-weight: 500; font-size: .98rem;
+    color: var(--mute-on-ink); padding-block: .2rem;
+    border-bottom: 2px solid transparent;
+  }
+  .bar nav a:hover { color: var(--paper); border-color: var(--sun); }
+
+  /* ---------- Hero ---------- */
+  .hero { background: var(--ink); color: var(--paper); padding-top: clamp(2.5rem, 6vw, 5rem); }
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(3.2rem, 12.5vw, 10.5rem);
+    line-height: 1.3;
+    display: flex; flex-wrap: wrap; column-gap: .28em;
+    letter-spacing: 0; /* never track Arabic */
+  }
+  .hero-title span { display: inline-block; font-weight: var(--w); }
+  .hero-sub {
+    max-width: 38rem; margin-top: 1.6rem;
+    color: var(--mute-on-ink); font-size: clamp(1.1rem, 2.2vw, 1.35rem); line-height: 1.9;
+  }
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2.2rem; }
+  .btn {
+    display: inline-block; font: inherit; font-weight: 700; cursor: pointer;
+    padding: .8rem 1.6rem; border: 2px solid var(--sun); text-decoration: none;
+    background: var(--sun); color: var(--ink); line-height: 1.5;
+    transition: background .15s, color .15s;
+  }
+  .btn:hover { background: var(--paper); border-color: var(--paper); }
+  .btn.ghost { background: transparent; color: var(--paper); border-color: var(--mute-on-ink); }
+  .btn.ghost:hover { border-color: var(--paper); background: rgba(255,255,255,.08); }
+
+  /* the hero's one orchestrated moment: words settle in, light to black */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-title span { opacity: 0; transform: translateY(.25em); animation: settle .7s cubic-bezier(.2,.7,.2,1) forwards; }
+    .hero-title span:nth-child(1) { animation-delay: .05s; }
+    .hero-title span:nth-child(2) { animation-delay: .25s; }
+    .hero-title span:nth-child(3) { animation-delay: .45s; }
+    .hero-title span:nth-child(4) { animation-delay: .65s; }
+    @keyframes settle { to { opacity: 1; transform: none; } }
+  }
+  .hero-foot { height: clamp(3rem, 7vw, 5rem); }
+
+  /* ---------- Section heads ---------- */
+  .head { max-width: 44rem; margin-bottom: clamp(2rem, 4vw, 3.2rem); }
+  .head h2 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.45;
+  }
+  .head p { margin-top: .8rem; color: var(--mute); font-size: 1.15rem; }
+
+  /* ---------- Families ---------- */
+  .families { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+  .fam { border-inline-start: 4px solid var(--ink); padding-inline-start: 1.4rem; }
+  .fam h3 { font-size: 1.05rem; font-family: "Thmanyah Sans", sans-serif; }
+  .fam .en { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+  .fam .role { color: var(--mute); margin-top: .1rem; }
+  .fam .big { font-size: clamp(2.6rem, 5vw, 3.6rem); line-height: 1.5; margin-block: 1rem .4rem; }
+  .fam .para { font-size: 1.1rem; }
+  .fam code {
+    display: inline-block; direction: ltr; margin-top: 1rem; font-size: .82rem;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    background: var(--wash); padding: .25rem .6rem; border-radius: 3px;
+  }
+  .f-sans { font-family: var(--sans); }
+  .f-display { font-family: var(--display); }
+  .f-text { font-family: var(--text); line-height: 2; }
+
+  /* ---------- Weights ---------- */
+  .weights { background: var(--wash); }
+  .seg { display: inline-flex; flex-wrap: wrap; border: 2px solid var(--ink); background: var(--paper); margin-bottom: 1.6rem; }
+  .seg button {
+    font: inherit; font-weight: 500; font-size: .98rem; cursor: pointer;
+    background: transparent; color: var(--ink); border: 0; padding: .55rem 1.1rem; line-height: 1.5;
+  }
+  .seg button + button { border-inline-start: 2px solid var(--ink); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .seg button:hover:not([aria-pressed="true"]) { background: var(--sun); }
+
+  .wlist { list-style: none; margin: 0; padding: 0; font-family: var(--wfam, var(--sans)); }
+  .wlist li {
+    display: grid; grid-template-columns: 9rem 1fr; align-items: baseline; gap: 1rem;
+    padding-block: .7rem; border-bottom: 1px solid var(--line);
+  }
+  .wlist .meta { font-family: var(--sans); font-weight: 500; font-size: .95rem; color: var(--mute); }
+  .wlist .meta b { color: var(--ink); font-weight: 700; direction: ltr; unicode-bidi: isolate; display: inline-block; margin-inline-end: .4rem; }
+  .wlist .sample { font-size: clamp(1.5rem, 3.6vw, 2.5rem); line-height: 1.7; font-weight: var(--w); }
+
+  /* ---------- Uses ---------- */
+  .uses-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(1.5rem, 3vw, 2.5rem); align-items: start; }
+  .use { margin: 0; }
+  .use figcaption { margin-top: .9rem; font-size: .95rem; color: var(--mute); }
+  .u-article { grid-column: span 7; }
+  .u-app { grid-column: span 5; }
+  .u-poster { grid-column: span 5; }
+  .u-card { grid-column: span 7; }
+
+  .article {
+    background: #fff; border: 2px solid var(--ink); padding: clamp(1.4rem, 3vw, 2.4rem);
+  }
+  .article .cat { font-weight: 700; color: var(--mute); font-size: .95rem; }
+  .article h3 {
+    font-family: var(--display); font-weight: 900; font-size: clamp(1.9rem, 3.8vw, 2.9rem);
+    line-height: 1.5; margin-block: .3rem 1rem;
+  }
+  .article .by { font-size: .92rem; color: var(--mute); padding-bottom: 1rem; border-bottom: 1px solid var(--line); margin-bottom: 1.2rem; }
+  .article .body { font-family: var(--text); font-size: 1.2rem; line-height: 2.1; max-width: 34rem; }
+  .article .body + .body { margin-top: 1rem; }
+
+  .phone {
+    width: min(340px, 100%); margin-inline: auto; background: #fff; color: var(--ink);
+    border: 9px solid var(--ink); border-radius: 38px; padding: 1.6rem 1.3rem 1.4rem;
+  }
+  .phone h3 { font-size: 1.65rem; font-weight: 700; line-height: 1.5; }
+  .phone .eta { font-weight: 500; color: var(--mute); }
+  .steps { list-style: none; margin: 1.4rem 0; padding: 0; position: relative; }
+  .steps li { display: flex; align-items: center; gap: .8rem; padding-block: .45rem; font-weight: 500; color: var(--mute); }
+  .steps li::before {
+    content: ""; width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid var(--mute); flex: none;
+  }
+  .steps li.done { color: var(--ink); }
+  .steps li.done::before { background: var(--ink); border-color: var(--ink); }
+  .steps li.now { color: var(--ink); font-weight: 700; }
+  .steps li.now::before { background: var(--sun); border-color: var(--ink); box-shadow: 0 0 0 4px var(--wash); }
+  .phone .pbtn {
+    display: block; width: 100%; font: inherit; font-weight: 700; padding: .8rem 1rem;
+    border-radius: 12px; border: 2px solid var(--ink); background: var(--ink); color: var(--paper); cursor: default;
+  }
+  .phone .pbtn.alt { background: transparent; color: var(--ink); margin-top: .6rem; font-weight: 500; }
+
+  .poster {
+    background: var(--sun); color: var(--ink); padding: clamp(1.6rem, 4vw, 2.6rem);
+    aspect-ratio: 4 / 5; display: flex; flex-direction: column; justify-content: space-between;
+    border: 2px solid var(--ink);
+  }
+  .poster h3 {
+    font-family: var(--display); font-weight: 900; font-size: clamp(2.6rem, 6vw, 4.4rem); line-height: 1.35;
+  }
+  .poster p { font-family: var(--text); font-size: 1.1rem; line-height: 1.9; border-top: 2px solid var(--ink); padding-top: .8rem; }
+
+  .cards { background: var(--ink); padding: clamp(1.4rem, 3vw, 2.4rem); display: flex; gap: 1.2rem; flex-wrap: wrap; justify-content: center; }
+  .bc { width: min(300px, 100%); aspect-ratio: 1.75 / 1; padding: 1.2rem 1.4rem; display: flex; flex-direction: column; justify-content: space-between; }
+  .bc.front { background: var(--paper); color: var(--ink); }
+  .bc.front .name { font-family: var(--display); font-weight: 700; font-size: 1.55rem; line-height: 1.4; }
+  .bc.front .job { font-family: var(--sans); font-weight: 400; color: var(--mute); font-size: .95rem; line-height: 1.5; }
+  .bc.front .ct { font-family: var(--sans); font-size: .85rem; line-height: 1.7; }
+  .bc.front .ct span { direction: ltr; unicode-bidi: isolate; display: block; text-align: start; }
+  .bc.back { background: var(--sun); color: var(--ink); align-items: center; justify-content: center; }
+  .bc.back .mono { font-family: var(--display); font-weight: 900; font-size: 5.6rem; line-height: 1.2; }
+
+  /* ---------- Tester ---------- */
+  .tester { background: #fff; border-block: 2px solid var(--ink); }
+  .controls { display: flex; flex-wrap: wrap; gap: 1.2rem 2rem; align-items: end; margin-bottom: 1.4rem; }
+  .ctl { display: flex; flex-direction: column; gap: .35rem; }
+  .ctl > span { font-size: .92rem; font-weight: 500; color: var(--mute); }
+  .ctl .seg { margin-bottom: 0; }
+  .ctl input[type="range"] { width: 14rem; accent-color: var(--ink); }
+  #sizeOut { direction: ltr; unicode-bidi: isolate; display: inline-block; font-weight: 700; color: var(--ink); }
+  .preview {
+    border: 2px solid var(--ink); padding: clamp(1.2rem, 3vw, 2.2rem);
+    min-height: 14rem; overflow-wrap: anywhere; line-height: 1.6; background: var(--paper);
+    font-family: var(--sans); font-weight: 400; font-size: 64px;
+  }
+  .preview:focus-visible { outline-offset: 4px; }
+  .tester .hint { margin-top: .8rem; color: var(--mute); font-size: .95rem; }
+
+  /* ---------- Install ---------- */
+  .install { background: var(--ink); color: var(--paper); }
+  .install .head p { color: var(--mute-on-ink); }
+  .install .head h2 { color: var(--paper); }
+  .code-list { display: grid; gap: 1.6rem; max-width: 52rem; }
+  .code-item h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; }
+  .code-item p { color: var(--mute-on-ink); font-size: .98rem; margin-bottom: .6rem; }
+  .code {
+    position: relative; background: var(--ink-deep); border: 1px solid #2c3080;
+    padding: 1rem 1.2rem; padding-inline-end: 6rem;
+  }
+  .code pre {
+    direction: ltr; text-align: left; margin: 0; overflow-x: auto;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .9rem; line-height: 1.75; color: #e9ebff;
+  }
+  .copy {
+    position: absolute; inset-inline-end: .7rem; top: .7rem;
+    font: inherit; font-size: .88rem; font-weight: 700; cursor: pointer;
+    background: var(--sun); color: var(--ink); border: 0; padding: .3rem .9rem; line-height: 1.6;
+  }
+  .copy:hover { background: var(--paper); }
+
+  footer { background: var(--ink-deep); color: var(--mute-on-ink); padding-block: 2rem; font-size: .95rem; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  footer a { color: var(--paper); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .families { grid-template-columns: 1fr; gap: 2rem; }
+    .u-article, .u-app, .u-poster, .u-card { grid-column: 1 / -1; }
+    .wlist li { grid-template-columns: 1fr; gap: 0; }
+    .bar nav { gap: 1rem; }
+  }
+  @media (max-width: 520px) {
+    .ctl input[type="range"] { width: 100%; }
+    .ctl { width: 100%; }
+    .seg button { padding: .5rem .8rem; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="#top">خط ثمانية</a>
+    <nav aria-label="أقسام الصفحة">
+      <a href="#families">العائلات</a>
+      <a href="#weights">الأوزان</a>
+      <a href="#uses">الاستخدامات</a>
+      <a href="#try">جرّب الخط</a>
+      <a href="#install">التثبيت</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" id="top">
+    <div class="wrap">
+      <h1 class="hero-title">
+        <span style="--w:300">حرفٌ</span>
+        <span style="--w:500">واحد،</span>
+        <span style="--w:700">خمسة</span>
+        <span style="--w:900">أوزان</span>
+      </h1>
+      <p class="hero-sub">
+        عائلة خط ثمانية العربي: ثلاثة خطوط للواجهات والعناوين والقراءة الطويلة.
+        شاهدها في مواضعها، جرّبها بنصّك، وأضفها إلى موقعك بسطر واحد.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="#try">جرّب الخط بنصّك</a>
+        <a class="btn ghost" href="#install">أضِفه إلى موقعك</a>
+      </div>
+      <div class="hero-foot"></div>
+    </div>
+  </section>
+
+  <section id="families">
+    <div class="wrap">
+      <div class="head">
+        <h2>ثلاث عائلات، ولكل منها عمل</h2>
+        <p>اختر العائلة بحسب ما تكتبه: واجهة تطبيق، أو عنوان كبير، أو مقال يُقرأ على مهل.</p>
+      </div>
+      <div class="families">
+        <article class="fam">
+          <h3><span class="en">Thmanyah Sans</span></h3>
+          <p class="role">للواجهات والنصوص القصيرة</p>
+          <p class="big f-sans" style="font-weight:700">أبجد هوّز</p>
+          <p class="para f-sans">أزرار وقوائم وإشعارات تُقرأ بوضوح حتى على الشاشات الصغيرة.</p>
+          <code>font-family: "Thmanyah Sans", sans-serif;</code>
+        </article>
+        <article class="fam">
+          <h3><span class="en">Thmanyah Serif Display</span></h3>
+          <p class="role">للعناوين والأحجام الكبيرة</p>
+          <p class="big f-display" style="font-weight:900">حروفٌ تُرى</p>
+          <p class="para f-display" style="font-weight:500">عنوان يشدّ العين قبل أن يبدأ القارئ بالقراءة.</p>
+          <code>font-family: "Thmanyah Serif Display", serif;</code>
+        </article>
+        <article class="fam">
+          <h3><span class="en">Thmanyah Serif Text</span></h3>
+          <p class="role">للقراءة الطويلة</p>
+          <p class="big f-text" style="font-weight:700">سطرٌ يُقرأ</p>
+          <p class="para f-text">نصٌّ متّصل بإيقاع مريح، يبقى القارئ معه صفحةً بعد صفحة دون أن يتعب.</p>
+          <code>font-family: "Thmanyah Serif Text", serif;</code>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="weights" id="weights">
+    <div class="wrap">
+      <div class="head">
+        <h2>خمسة أوزان في كل عائلة</h2>
+        <p>من الخفيف للنصوص الهادئة إلى الأسود للعناوين الصارخة. بدّل العائلة لترى الفرق.</p>
+      </div>
+
+      <div class="seg" role="group" aria-label="اختر العائلة">
+        <button type="button" data-fam="sans" aria-pressed="true">Sans</button>
+        <button type="button" data-fam="display" aria-pressed="false">Serif Display</button>
+        <button type="button" data-fam="text" aria-pressed="false">Serif Text</button>
+      </div>
+
+      <ol class="wlist" id="wlist">
+        <li><span class="meta"><b>300</b>خفيف</span><span class="sample" style="--w:300">الحرف العربي يستحق مساحة يتنفّس فيها</span></li>
+        <li><span class="meta"><b>400</b>عادي</span><span class="sample" style="--w:400">الحرف العربي يستحق مساحة يتنفّس فيها</span></li>
+        <li><span class="meta"><b>500</b>متوسط</span><span class="sample" style="--w:500">الحرف العربي يستحق مساحة يتنفّس فيها</span></li>
+        <li><span class="meta"><b>700</b>عريض</span><span class="sample" style="--w:700">الحرف العربي يستحق مساحة يتنفّس فيها</span></li>
+        <li><span class="meta"><b>900</b>أسود</span><span class="sample" style="--w:900">الحرف العربي يستحق مساحة يتنفّس فيها</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="uses">
+    <div class="wrap">
+      <div class="head">
+        <h2>شاهده في مكانه</h2>
+        <p>أربعة مواضع شائعة، وتحت كل واحد منها الخط والوزن المستخدمان.</p>
+      </div>
+
+      <div class="uses-grid">
+
+        <figure class="use u-article">
+          <div class="article">
+            <p class="cat">ثقافة</p>
+            <h3>لماذا نعود إلى الكتب الورقية في زمن الشاشات؟</h3>
+            <p class="by">بقلم هند الحربي، ٥ دقائق للقراءة</p>
+            <p class="body">في مساءٍ هادئ تجلس ساعةً كاملة مع صفحةٍ لا تُرسل إليك إشعارًا ولا تقاطعك نافذة. ليس هذا حنينًا إلى الماضي بقدر ما هو بحثٌ عن انتباهٍ لم يتقطّع.</p>
+            <p class="body">يقول كثير من القرّاء إنهم يتذكّرون ما قرؤوه على الورق أكثر مما قرؤوه على الشاشة، وإنّ لملمس الصفحة دورًا في ذلك.</p>
+          </div>
+          <figcaption>مقال صحفي: العنوان بخط Serif Display وزن 900، والنص بخط Serif Text وزن 400.</figcaption>
+        </figure>
+
+        <figure class="use u-app">
+          <div class="phone" aria-label="مثال على شاشة تطبيق">
+            <h3>طلبك في الطريق</h3>
+            <p class="eta">يصل خلال ١٢ دقيقة</p>
+            <ol class="steps">
+              <li class="done">تم تأكيد الطلب</li>
+              <li class="done">قيد التحضير</li>
+              <li class="now">المندوب في الطريق إليك</li>
+              <li>وصل الطلب</li>
+            </ol>
+            <span class="pbtn">تتبّع الطلب</span>
+            <span class="pbtn alt">اتصل بالمندوب</span>
+          </div>
+          <figcaption>واجهة تطبيق: كل النصوص بخط Sans، والعنوان وزن 700، والأزرار 700 و500.</figcaption>
+        </figure>
+
+        <figure class="use u-poster">
+          <div class="poster">
+            <h3>اقرأ شيئًا جديدًا اليوم</h3>
+            <p>أسبوع القراءة في مكتبة الحي، والدخول مجاني للجميع.</p>
+          </div>
+          <figcaption>ملصق: العنوان بخط Serif Display وزن 900، والتفاصيل بخط Serif Text.</figcaption>
+        </figure>
+
+        <figure class="use u-card">
+          <div class="cards">
+            <div class="bc front">
+              <div>
+                <div class="name">سارة العتيبي</div>
+                <div class="job">مصمّمة هوية بصرية</div>
+              </div>
+              <div class="ct">
+                <span>sara@example.com</span>
+                <span>+966 50 000 0000</span>
+              </div>
+            </div>
+            <div class="bc back"><span class="mono">س</span></div>
+          </div>
+          <figcaption>بطاقة عمل: الاسم بخط Serif Display وزن 700، والتفاصيل بخط Sans وزن 400.</figcaption>
+        </figure>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="tester" id="try">
+    <div class="wrap">
+      <div class="head">
+        <h2>جرّب الخط بنصّك</h2>
+        <p>اضغط على النص واكتب ما تشاء، ثم غيّر العائلة والوزن والحجم.</p>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <span id="lblFam">العائلة</span>
+          <div class="seg" role="group" aria-labelledby="lblFam" id="famSeg">
+            <button type="button" data-v="sans" aria-pressed="true">Sans</button>
+            <button type="button" data-v="display" aria-pressed="false">Serif Display</button>
+            <button type="button" data-v="text" aria-pressed="false">Serif Text</button>
+          </div>
+        </div>
+        <div class="ctl">
+          <span id="lblW">الوزن</span>
+          <div class="seg" role="group" aria-labelledby="lblW" id="wSeg">
+            <button type="button" data-v="300" aria-pressed="false">خفيف</button>
+            <button type="button" data-v="400" aria-pressed="true">عادي</button>
+            <button type="button" data-v="500" aria-pressed="false">متوسط</button>
+            <button type="button" data-v="700" aria-pressed="false">عريض</button>
+            <button type="button" data-v="900" aria-pressed="false">أسود</button>
+          </div>
+        </div>
+        <label class="ctl">
+          <span>الحجم: <b id="sizeOut">64px</b></span>
+          <input type="range" id="size" min="20" max="140" value="64" step="2" />
+        </label>
+      </div>
+
+      <div class="preview" id="preview" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="النص التجريبي">اكتب نصّك هنا وشاهد الخط يتغيّر</div>
+      <p class="hint">النص لا يُحفظ ولا يُرسل إلى أي جهة، فهو يبقى في متصفحك.</p>
+    </div>
+  </section>
+
+  <section class="install" id="install">
+    <div class="wrap">
+      <div class="head">
+        <h2>أضِفه إلى موقعك</h2>
+        <p>الطريقة الأسرع سطر واحد في وسم <span dir="ltr" style="unicode-bidi:isolate">&lt;head&gt;</span>. وإن كنت تستخدم npm فالخيار الثاني يناسبك.</p>
+      </div>
+
+      <div class="code-list">
+        <div class="code-item">
+          <h3>الرابط المباشر (CDN)</h3>
+          <div class="code">
+            <pre id="c1">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dawod/thmanyah-font-web/index.css" /&gt;</pre>
+            <button class="copy" type="button" data-copy="c1">نسخ</button>
+          </div>
+        </div>
+
+        <div class="code-item">
+          <h3>عبر npm</h3>
+          <div class="code">
+            <pre id="c2">npm install @dawod/thmanyah-font-web
+
+// ثم في ملف الدخول
+import "@dawod/thmanyah-font-web";</pre>
+            <button class="copy" type="button" data-copy="c2">نسخ</button>
+          </div>
+        </div>
+
+        <div class="code-item">
+          <h3>استخدامه في CSS</h3>
+          <p>اذكر أوزانه رقمًا: 300 و400 و500 و700 و900.</p>
+          <div class="code">
+            <pre id="c3">body {
+  font-family: "Thmanyah Sans", sans-serif;
+}
+h1, h2 {
+  font-family: "Thmanyah Serif Display", serif;
+  font-weight: 700;
+}
+article p {
+  font-family: "Thmanyah Serif Text", serif;
+}</pre>
+            <button class="copy" type="button" data-copy="c3">نسخ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>حزمة مجتمعية لخط ثمانية على الويب، وليست إصدارًا رسميًا.</p>
+    <p>
+      <a href="https://github.com/EngDawood/thmanyah-font-web" target="_blank" rel="noopener">المستودع على GitHub</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+  // ---- Weights section: switch family ----
+  (function () {
+    var fams = { sans: 'var(--sans)', display: 'var(--display)', text: 'var(--text)' };
+    var list = document.getElementById('wlist');
+    var btns = document.querySelectorAll('.weights .seg button');
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+        list.style.setProperty('--wfam', fams[b.dataset.fam]);
+      });
+    });
+  })();
+
+  // ---- Tester ----
+  (function () {
+    var preview = document.getElementById('preview');
+    var fams = {
+      sans: '"Thmanyah Sans", "Segoe UI", Tahoma, sans-serif',
+      display: '"Thmanyah Serif Display", "Traditional Arabic", Georgia, serif',
+      text: '"Thmanyah Serif Text", "Traditional Arabic", Georgia, serif'
+    };
+    function group(id, onPick) {
+      var box = document.getElementById(id);
+      var btns = box.querySelectorAll('button');
+      btns.forEach(function (b) {
+        b.addEventListener('click', function () {
+          btns.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+          onPick(b.dataset.v);
+        });
+      });
+    }
+    group('famSeg', function (v) { preview.style.fontFamily = fams[v]; });
+    group('wSeg', function (v) { preview.style.fontWeight = v; });
+
+    var size = document.getElementById('size');
+    var out = document.getElementById('sizeOut');
+    size.addEventListener('input', function () {
+      preview.style.fontSize = size.value + 'px';
+      out.textContent = size.value + 'px';
+    });
+  })();
+
+  // ---- Copy buttons ----
+  document.querySelectorAll('.copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = document.getElementById(btn.dataset.copy).textContent;
+      function done() {
+        var old = btn.textContent;
+        btn.textContent = 'تم النسخ';
+        setTimeout(function () { btn.textContent = old; }, 1600);
+      }
+      try {
+        navigator.clipboard.writeText(text).then(done, fallback);
+      } catch (e) { fallback(); }
+      function fallback() {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+</script>
+</body>
+</html>

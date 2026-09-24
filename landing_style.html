@@ -1,0 +1,1183 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>نظام التصميم — أكاديمية الإتقان</title>
+<meta name="description" content="دليل الرموز والمكونات وقواعد الاتساق لأكاديمية الإتقان.">
+<meta name="color-scheme" content="dark light">
+<script>
+/* نفس سكربت الثيم المبكر المستخدم في كل صفحات الموقع — مفتاح واحد: ma-theme */
+try{var t=localStorage.getItem("ma-theme");if(t!=="light"&&t!=="dark"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}document.documentElement.setAttribute("data-theme",t)}catch(e){document.documentElement.setAttribute("data-theme","dark")}
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dawod/thmanyah-font-web/index.css">
+
+<!-- ============================================================
+     هذا الوسم هو "ملف البداية" نفسه — انسخه إلى كل صفحة جديدة.
+     زر النسخ في نهاية الدليل ينسخ محتواه حرفيًا.
+     ============================================================ -->
+<style id="ma-kit">
+/* =====================================================================
+   أكاديمية الإتقان — نظام التصميم · الإصدار 1.0
+   ---------------------------------------------------------------------
+   قبل هذا الملف، حمّل خط ثمانية في <head>:
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dawod/thmanyah-font-web/index.css">
+   ولا تنسَ سكربت الثيم المبكر (منع وميض التحميل) قبل أول رسم.
+
+   هيكل أي صفحة:
+   <header class="site-header">        ← أضف .solid إن لم تبدأ الصفحة بجزيرة سينمائية
+   <main> أقسام متناوبة: cinema / paper </main>
+   <footer class="site-footer">
+   + سكربت ma-core في نهاية body
+   ===================================================================== */
+
+/* ========== 1) الرموز الثابتة (لا تتغير بالثيم) ========== */
+:root{
+  /* الخطوط */
+  --sans:"Thmanyah Sans","Segoe UI",Tahoma,sans-serif;                 /* الواجهة فقط */
+  --display:"Thmanyah Serif Display","Traditional Arabic",Georgia,serif;/* كل العناوين */
+  --text:"Thmanyah Serif Text","Traditional Arabic",Georgia,serif;      /* القراءة والمقدمات */
+
+  /* الهوية */
+  --crimson:#e32652;   /* التوقيع التحريري: الشعار، شرطة eyebrow، الفواصل، علامات الاقتباس. ليست لون أزرار */
+  --on-accent:#211d0d; /* نص فوق الأصفر */
+  --ease:cubic-bezier(.2,.7,.2,1); /* كل الحركات تقريبًا */
+
+  /* الحركة */
+  --dur-fast:.15s;   /* ضغط الزر */
+  --dur-quick:.25s;  /* ألوان وحدود */
+  --dur-med:.35s;    /* ثيم، أسطح، توست */
+  --dur-slow:.7s;    /* ظهور، صور (الصور .8s) */
+  --stagger:.08s;    /* خطوة تعاقب العناصر */
+
+  /* التخطيط */
+  --container:1200px; --gutter:24px;
+  --section-pad:clamp(72px,10vw,128px);
+  --sec-head-gap:clamp(36px,5vw,56px);
+  --header-h:76px;
+
+  /* الانحناءات */
+  --r-sm:8px; --r-md:12px; --r-lg:14px; --r-xl:16px; --r-pill:999px;
+
+  /* سلم المقاسات */
+  --fs-hero:clamp(2.6rem,8.2vw,6.3rem);
+  --fs-display:clamp(2.1rem,6vw,4.3rem);
+  --fs-h2:clamp(1.75rem,4vw,2.85rem);
+  --fs-h3:clamp(1.3rem,2.4vw,1.7rem);
+  --fs-h4:1.25rem;
+  --fs-lead:clamp(1.05rem,2vw,1.3rem);
+  --fs-body:1.0625rem;
+  --fs-small:.95rem;
+  --fs-caption:.85rem;
+  --fs-micro:.78rem;
+
+  /* طبقات z */
+  --z-grain:2; --z-content:3; --z-dropdown:45; --z-header:50;
+  --z-menu:70; --z-toast:80; --z-skip:100;
+}
+
+/* ========== 2) الثيمان: سينما (افتراضي) / ورقي ========== */
+:root,:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#000000; --bg-soft:#0b0b0d; --surface:#141518;
+  --fg:#ffffff; --muted:#9ea0a9;
+  --line:rgba(255,255,255,.12); --line-strong:rgba(255,255,255,.24);
+  --accent:#dcff00; --focus:#dcff00; --danger:#ff6d8d;
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f5f6fc; --bg-soft:#eceefa; --surface:#ffffff;
+  --fg:#14174f; --muted:#55598a;
+  --line:rgba(20,23,79,.15); --line-strong:rgba(20,23,79,.32);
+  --accent:#ffd23f; --focus:#14174f; --danger:#c81e46;
+}
+
+/* ========== 3) الأساس ========== */
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--bg);scroll-padding-top:calc(var(--header-h) + 20px)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:var(--fs-body);line-height:1.9;-webkit-font-smoothing:antialiased;
+  transition:background-color var(--dur-med),color var(--dur-med)}
+h1,h2,h3,h4,p,blockquote,figure,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+a{color:inherit}
+img,svg{max-width:100%}
+img{display:block}
+button{font:inherit;color:inherit}
+::selection{background:var(--crimson);color:#fff}
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:4px}
+.skip{position:absolute;inset-inline-start:16px;inset-block-start:-96px;background:var(--accent);
+  color:var(--on-accent);padding:12px 24px;border-radius:var(--r-sm);font-size:var(--fs-small);
+  font-weight:500;z-index:var(--z-skip);text-decoration:none;transition:inset-block-start .2s}
+.skip:focus{inset-block-start:16px}
+/* الظهور عند التمرير: دخول من الأسفل 26px، تعاقب --stagger عبر --d */
+@media (prefers-reduced-motion:no-preference){
+  [data-reveal]{opacity:0;transform:translateY(26px);
+    transition:opacity var(--dur-slow) ease var(--d,0s),transform var(--dur-slow) var(--ease) var(--d,0s)}
+  [data-reveal].in{opacity:1;transform:none}
+}
+
+/* ========== 4) التخطيط ========== */
+.container{width:min(var(--container),100% - 48px);margin-inline:auto}
+.section{padding-block:var(--section-pad)}
+.sec-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+  gap:24px;margin-bottom:var(--sec-head-gap)}
+.sec-head h2{font-family:var(--display);font-weight:700;font-size:var(--fs-h2);line-height:1.5;margin-top:14px}
+.sec-sub{color:var(--muted);max-width:56ch;margin-top:10px}
+.sec-link{display:inline-flex;align-items:center;gap:8px;font-size:var(--fs-small);color:var(--muted);
+  text-decoration:none;padding-bottom:10px;transition:color var(--dur-quick)}
+.sec-link:hover{color:var(--fg)}
+.sec-link svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s}
+.sec-link:hover svg{transform:translateX(-4px)}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:.92rem;font-weight:500;color:var(--muted)}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--crimson);flex:none}
+
+/* السكة الأفقية: بدايتها محاذاة الحاوية، حافتها تخرج عن الشبكة */
+.rail{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x proximity;
+  padding-inline-start:max(24px,calc((100% - var(--container))/2));padding-inline-end:24px;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail>*{flex:none;width:min(76vw,330px);scroll-snap-align:start}
+
+/* ========== 5) الجزر السينمائية (سوداء في الثيمين) ========== */
+.cinema{position:relative;background:#000;color:#fff;overflow:hidden}
+.cinema .eyebrow{color:rgba(255,255,255,.72)}
+.cinema .btn-ghost{color:#fff;border-color:rgba(255,255,255,.4)}
+.cinema .btn-ghost:hover{border-color:#fff;background:rgba(255,255,255,.08)}
+/* الطبقات الثلاث لأي قسم سينمائي */
+.layer-bg{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover}
+.layer-scrim{position:absolute;inset:0;z-index:1}
+.layer-body{position:relative;z-index:var(--z-content)}
+/* حبيبات الفيلم */
+.grain::after{content:"";position:absolute;inset:0;z-index:var(--z-grain);pointer-events:none;opacity:.08;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* وصفات التعتيم */
+.scrim-hero{background:linear-gradient(180deg,rgba(0,0,0,.62) 0%,rgba(0,0,0,.12) 34%,rgba(0,0,0,.3) 62%,rgba(0,0,0,.84) 100%)}
+.scrim-card{background:linear-gradient(180deg,rgba(0,0,0,.02) 42%,rgba(0,0,0,.8) 100%)}
+.scrim-band{background:linear-gradient(to left,rgba(0,0,0,.84),rgba(0,0,0,.25))}
+.scrim-top{background:linear-gradient(180deg,rgba(0,0,0,.28),transparent 42%)}
+
+/* ========== 6) معالجة الصور ========== */
+.img-cinema{filter:grayscale(.5) contrast(1.06) brightness(.72)}   /* خلفية بطل */
+.img-band{filter:grayscale(.55) brightness(.5) contrast(1.05)}     /* خلفية شريط */
+/* بطاقة تحيا بالألوان عند اللمس — ضع الصنف على الحاوية */
+.ph-card{position:relative;overflow:hidden}
+.ph-card img{width:100%;height:100%;object-fit:cover;filter:grayscale(.6) contrast(1.05) brightness(.86);
+  transform:scale(1.02);transition:transform .8s var(--ease),filter .5s}
+.ph-card:hover img,.ph-card:focus-visible img{transform:scale(1.07);filter:grayscale(0) brightness(.95)}
+/* تكبير بطل البطيء (اختياري) */
+@media (prefers-reduced-motion:no-preference){
+  .kb img{animation:kb 30s var(--ease) infinite alternate;will-change:transform}
+}
+@keyframes kb{from{transform:scale(1.06)}to{transform:scale(1.17) translate(-1.5%,-1.5%)}}
+
+/* ========== 7) الأزرار ========== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--sans);font-size:1rem;font-weight:500;line-height:1.6;padding:13px 26px;
+  border-radius:var(--r-sm);border:1px solid transparent;text-decoration:none;cursor:pointer;
+  transition:filter .2s,background-color var(--dur-quick),color var(--dur-quick),border-color var(--dur-quick),transform var(--dur-fast)}
+.btn:active{transform:scale(.97)}
+.btn-accent{background:var(--accent);color:var(--on-accent)}   /* الأساسي — واحد كحد أقصى في الشاشة */
+.btn-accent:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:inherit;border-color:var(--line-strong)}
+.btn-ghost:hover{border-color:currentColor}
+.btn-sm{padding:9px 18px;font-size:var(--fs-small)}
+.btn svg{width:17px;height:17px}
+.icon-btn{width:46px;height:46px;border-radius:50%;border:1px solid var(--line-strong);background:transparent;
+  display:inline-grid;place-items:center;cursor:pointer;flex:none;
+  transition:background-color var(--dur-quick),color var(--dur-quick),border-color var(--dur-quick),opacity var(--dur-quick)}
+.icon-btn:hover:not(:disabled){background:var(--fg);color:var(--bg)}
+.icon-btn:disabled{opacity:.3;cursor:default}
+.icon-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ========== 8) الشارات ========== */
+.chip{display:inline-block;font-size:var(--fs-micro);padding:4px 12px;border-radius:var(--r-pill);
+  background:rgba(0,0,0,.55);color:#fff;backdrop-filter:blur(6px)}   /* فوق الصور فقط */
+.chip.level{background:var(--accent);color:var(--on-accent)}
+.badge{display:inline-block;background:var(--fg);color:var(--bg);border-radius:var(--r-pill);
+  padding:4px 12px;font-size:var(--fs-micro);font-weight:600;line-height:1.45}
+
+/* ========== 9) الترويسة ========== */
+.site-header{position:fixed;inset-inline:0;top:0;z-index:var(--z-header);color:#fff;
+  border-bottom:1px solid transparent;transition:background-color .3s,color .3s,border-color .3s}
+.site-header:not(.scrolled):not(.solid){--line:rgba(255,255,255,.22);--line-strong:rgba(255,255,255,.42)}
+.site-header.scrolled,.site-header.solid{color:var(--fg);border-bottom-color:var(--line);background:var(--bg)}
+@supports (backdrop-filter:blur(1px)){
+  .site-header.scrolled,.site-header.solid{background:color-mix(in srgb,var(--bg) 78%,transparent);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+}
+.header-in{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:var(--header-h)}
+.brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:var(--crimson);color:#fff;display:grid;
+  place-items:center;font-family:var(--display);font-weight:700;font-size:1.15rem;line-height:1;flex:none}
+.brand-name{font-family:var(--display);font-weight:700;font-size:1.3rem;line-height:1.4}
+.nav-links{display:flex;gap:4px}
+.nav-links a{padding:10px 14px;text-decoration:none;opacity:.78;font-size:.97rem;border-radius:6px;transition:opacity var(--dur-quick)}
+.nav-links a:hover{opacity:1;text-decoration:underline;text-underline-offset:8px;text-decoration-thickness:1.5px}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.login-link{background:none;border:0;cursor:pointer;text-decoration:none;padding:10px 14px;font-size:.95rem;opacity:.8}
+.login-link:hover{opacity:1}
+.theme-toggle{width:40px;height:40px;border-radius:var(--r-sm);border:1px solid transparent;background:transparent;
+  display:grid;place-items:center;cursor:pointer;transition:border-color var(--dur-quick)}
+.theme-toggle:hover{border-color:var(--line-strong)}
+.theme-toggle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.theme-toggle .i-moon{display:none}
+.theme-toggle[data-mode="light"] .i-sun{display:none}
+.theme-toggle[data-mode="light"] .i-moon{display:block}
+.burger{display:none;width:42px;height:42px;border-radius:var(--r-sm)}
+@media (max-width:960px){.nav-links{display:none}.burger{display:inline-grid}}
+@media (max-width:520px){.login-link{display:none}}
+
+/* قائمة الجوال بملء الشاشة */
+.menu{position:fixed;inset:0;z-index:var(--z-menu);background:var(--bg);display:flex;flex-direction:column;
+  opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+.menu.open{opacity:1;visibility:visible}
+.menu-top{display:flex;align-items:center;justify-content:space-between;min-height:var(--header-h)}
+.menu-nav{flex:1;display:flex;flex-direction:column;justify-content:center;padding-block:24px}
+.menu-nav a{display:flex;align-items:center;gap:18px;padding-block:18px;border-top:1px solid var(--line);
+  text-decoration:none;color:var(--fg);font-family:var(--display);font-weight:700;
+  font-size:clamp(1.5rem,6.5vw,2.3rem);line-height:1.5;opacity:0;transform:translateY(14px);
+  transition:opacity .45s var(--ease),transform .45s var(--ease)}
+.menu-nav a:last-of-type{border-bottom:1px solid var(--line)}
+.menu.open .menu-nav a{opacity:1;transform:none}
+.menu.open .menu-nav a:nth-child(1){transition-delay:.06s}
+.menu.open .menu-nav a:nth-child(2){transition-delay:.12s}
+.menu.open .menu-nav a:nth-child(3){transition-delay:.18s}
+.menu.open .menu-nav a:nth-child(4){transition-delay:.24s}
+.m-idx{font-family:var(--sans);font-size:var(--fs-caption);font-weight:500;color:var(--accent)}
+.menu-nav svg{margin-inline-start:auto;width:22px;height:22px;color:var(--muted);flex:none;
+  fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.menu-foot{display:flex;gap:12px;padding-block:28px;flex-wrap:wrap}
+.menu-foot .btn{flex:1;min-width:150px}
+
+/* ========== 10) ترويسة الصفحات الداخلية (سينمائية مدمجة) ========== */
+.page-hero{padding-block:calc(var(--header-h) + clamp(48px,8vw,88px)) clamp(48px,7vw,80px)}
+.page-hero h1{font-family:var(--display);font-weight:900;font-size:var(--fs-display);line-height:1.45;
+  max-width:20ch;margin-top:16px}
+.page-hero .lead{font-family:var(--text);font-size:var(--fs-lead);line-height:2;
+  color:rgba(255,255,255,.78);max-width:52ch;margin-top:14px}
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:var(--fs-caption);color:var(--muted)}
+.crumbs li+li::before{content:"/";margin-inline-end:8px;opacity:.5}
+.crumbs a{color:inherit;text-decoration:none;border-bottom:1px solid transparent;transition:color var(--dur-quick),border-color var(--dur-quick)}
+.crumbs a:hover{color:var(--fg);border-color:currentColor}
+
+/* ========== 11) البطاقات ========== */
+/* بطاقة خبير — بورتريه 3/4 */
+.exp-card{position:relative;display:block;height:100%;border-radius:var(--r-lg);overflow:hidden;
+  background:var(--surface);text-decoration:none;color:#fff}
+.exp-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  filter:grayscale(.65) contrast(1.05) brightness(.85);transform:scale(1.02);
+  transition:transform .8s var(--ease),filter .5s}
+.exp-card:hover img{transform:scale(1.07);filter:grayscale(0) contrast(1.02) brightness(.95)}
+.exp-info{position:absolute;inset-inline:0;inset-block-end:0;padding:18px 20px}
+.exp-info h3{font-family:var(--display);font-weight:700;font-size:clamp(1.15rem,2vw,1.55rem);line-height:1.5}
+.exp-field{display:flex;align-items:center;gap:8px;font-size:var(--fs-caption);color:rgba(255,255,255,.78);margin-top:2px}
+.exp-field::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+
+/* بطاقة دورة — غلاف 16/10 */
+.course-card{display:block;width:100%;text-align:start;background:none;border:0;padding:0;cursor:pointer}
+.course-cover{position:relative;display:block;aspect-ratio:16/10;border-radius:var(--r-md);overflow:hidden;background:var(--surface)}
+.course-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  filter:grayscale(.55) contrast(1.05) brightness(.88);transform:scale(1.02);
+  transition:transform .7s var(--ease),filter .5s;-webkit-user-drag:none}
+.course-card:hover .course-cover img{transform:scale(1.07);filter:grayscale(0) brightness(.95)}
+.chips{position:absolute;inset-block-start:12px;inset-inline-start:12px;display:flex;gap:8px;z-index:1}
+.play{position:absolute;inset:0;margin:auto;width:58px;height:58px;border-radius:50%;background:var(--accent);
+  color:var(--on-accent);display:grid;place-items:center;opacity:0;transform:scale(.8);
+  transition:opacity .3s,transform .35s var(--ease);z-index:1}
+.play svg{width:20px;height:20px;fill:currentColor}
+.course-card:hover .play{opacity:1;transform:scale(1)}
+.course-title{display:block;font-family:var(--display);font-weight:700;font-size:var(--fs-h4);line-height:1.6;margin-top:14px}
+.course-card:hover .course-title,.course-card:focus-visible .course-title{
+  text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:1.5px}
+.course-meta{display:block;font-size:.9rem;color:var(--muted);margin-top:2px}
+
+/* صف فهرس تحريري — للمجالات، وصفات، قوائم كبيرة */
+.index-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;
+  gap:clamp(16px,3vw,40px);padding-block:clamp(20px,3.5vw,34px);border-top:1px solid var(--line);
+  text-decoration:none;transition:background-color var(--dur-quick)}
+.index-row:hover{background:var(--bg-soft)}
+.index-name{font-family:var(--display);font-weight:700;font-size:clamp(1.5rem,3.4vw,2.5rem);line-height:1.5;
+  transition:transform .3s var(--ease)}
+.index-row:hover .index-name{transform:translateX(-10px)}
+.index-desc{color:var(--muted);font-size:var(--fs-small)}
+.index-count{font-size:var(--fs-caption);color:var(--muted);border:1px solid var(--line-strong);
+  border-radius:var(--r-pill);padding:4px 14px;white-space:nowrap}
+.index-arrow{width:46px;height:46px;border:1px solid var(--line-strong);border-radius:50%;display:grid;
+  place-items:center;transition:background-color .3s,border-color .3s,color .3s}
+.index-arrow svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s}
+.index-row:hover .index-arrow{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.index-row:hover .index-arrow svg{transform:translateX(-4px)}
+@media (max-width:760px){.index-desc{display:none}}
+@media (max-width:480px){.index-count{display:none}}
+
+/* صفوف مرقّمة تحريرية — المزايا، المسارات، أي قائمة ذات معنى */
+.feats{border-top:1px solid var(--line)}
+.feat{display:grid;grid-template-columns:120px 1fr;gap:clamp(20px,4vw,48px);align-items:start;
+  padding-block:clamp(28px,4vw,44px);border-bottom:1px solid var(--line)}
+.feat-num{font-family:var(--display);font-weight:900;font-size:clamp(2.6rem,6vw,4.2rem);line-height:1.2;
+  color:transparent;-webkit-text-stroke:1.5px var(--line-strong);transition:-webkit-text-stroke-color .3s}
+.feat:hover .feat-num{-webkit-text-stroke-color:var(--crimson)}
+.feat h3{font-family:var(--display);font-weight:700;font-size:var(--fs-h3);line-height:1.6}
+.feat p{color:var(--muted);max-width:54ch;margin-top:6px}
+@media (max-width:640px){.feat{grid-template-columns:1fr;gap:4px;padding-block:26px}.feat-num{font-size:2.1rem}}
+
+/* ========== 12) المرشّحات ========== */
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters button{font:inherit;font-size:var(--fs-small);font-weight:500;padding:8px 18px;
+  border-radius:var(--r-pill);border:1px solid var(--line-strong);background:transparent;color:var(--muted);
+  cursor:pointer;transition:background-color var(--dur-quick),color var(--dur-quick),border-color var(--dur-quick)}
+.filters button:hover{color:var(--fg)}
+.filters button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+/* ========== 13) الأكورديون ========== */
+.faq{max-width:760px}
+.faq details{border-top:1px solid var(--line)}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-block:22px;
+  cursor:pointer;list-style:none;font-size:1.1rem;font-weight:500;line-height:1.7}
+.faq summary::-webkit-details-marker{display:none}
+.fx{position:relative;width:16px;height:16px;flex:none}
+.fx::before,.fx::after{content:"";position:absolute;inset-inline:0;top:calc(50% - 1px);height:2px;
+  background:var(--fg);transition:transform .35s var(--ease)}
+.fx::after{transform:rotate(90deg)}
+details[open] .fx::before{transform:rotate(45deg)}
+details[open] .fx::after{transform:rotate(135deg)}
+.faq-body{padding:0 0 26px;max-width:64ch;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){
+  .faq details[open] .faq-body{animation:fadeIn .45s ease}
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* ========== 14) النماذج ========== */
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:var(--fs-small);font-weight:500;color:var(--muted)}
+.field input,.field select,.field textarea{font:inherit;color:var(--fg);background:var(--surface);
+  border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:13px 16px;
+  transition:border-color var(--dur-quick)}
+.field input:focus{outline:none;border-color:var(--accent)}
+.field input[aria-invalid="true"]{border-color:var(--danger)}
+.f-error{color:var(--danger);font-size:var(--fs-small)}
+/* نموذج السطر الواحد (بريد) — فوق الجزر السينمائية */
+.inline-form{display:flex;gap:10px;max-width:520px}
+.inline-form input{flex:1;min-width:0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.26);
+  border-radius:var(--r-sm);color:#fff;padding:13px 18px;font-family:inherit;font-size:1rem}
+.inline-form input::placeholder{color:rgba(255,255,255,.45)}
+.inline-form input:focus{outline:none;border-color:var(--accent)}
+.inline-form input[aria-invalid="true"]{border-color:var(--danger)}
+.inline-form.on-paper input{background:var(--surface);border-color:var(--line-strong);color:var(--fg)}
+.inline-form.on-paper input::placeholder{color:var(--muted)}
+@media (max-width:560px){.inline-form{flex-direction:column}.inline-form .btn{width:100%}}
+
+/* ========== 15) التوست ========== */
+.toast{position:fixed;inset-block-end:26px;inset-inline:0;margin-inline:auto;z-index:var(--z-toast);
+  width:max-content;max-width:min(92vw,480px);display:flex;align-items:center;gap:12px;
+  padding:12px 22px 12px 14px;background:var(--fg);color:var(--bg);border-radius:10px;
+  box-shadow:0 14px 44px rgba(0,0,0,.4);opacity:0;transform:translateY(16px);pointer-events:none;
+  transition:opacity .35s,transform .35s var(--ease)}
+.toast.show{opacity:1;transform:none}
+.t-ico{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--on-accent);
+  display:grid;place-items:center;flex:none}
+.t-ico svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+
+/* ========== 16) المودال ========== */
+.modal{width:min(660px,94vw);max-height:min(86vh,780px);border:1px solid var(--line-strong);
+  border-radius:var(--r-xl);background:var(--surface);color:var(--fg);padding:0;overflow:hidden;
+  display:flex;flex-direction:column}
+.modal::backdrop{background:rgba(0,0,0,.72)}
+@media (prefers-reduced-motion:no-preference){
+  .modal[open]{animation:modalIn .4s var(--ease)}
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:none}}
+.modal-media{position:relative;aspect-ratio:16/7;flex:none}
+.modal-media img{width:100%;height:100%;object-fit:cover;filter:grayscale(.4) contrast(1.05) brightness(.85)}
+.modal-media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.45))}
+.modal-close{position:absolute;inset-block-start:12px;inset-inline-end:12px;z-index:1;width:40px;height:40px;
+  border-radius:50%;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.45);color:#fff;
+  backdrop-filter:blur(6px);display:grid;place-items:center;cursor:pointer}
+.modal-close svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+.modal-body{padding:clamp(22px,4vw,36px);overflow:auto}
+.modal-body h3{font-family:var(--display);font-weight:700;font-size:clamp(1.35rem,3vw,1.8rem);line-height:1.6;margin-top:14px}
+.m-meta{color:var(--muted);font-size:var(--fs-small);margin-top:4px}
+.m-h{display:flex;align-items:center;gap:12px;font-size:.9rem;font-weight:500;color:var(--muted);margin:28px 0 12px}
+.m-h::after{content:"";flex:1;height:1px;background:var(--line)}
+.m-learn li{display:flex;gap:10px;align-items:flex-start;padding-block:6px;font-size:.98rem}
+.m-learn svg{width:18px;height:18px;flex:none;margin-top:9px;fill:none;stroke:var(--crimson);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.m-syllabus li{display:flex;justify-content:space-between;gap:16px;padding-block:11px;border-top:1px solid var(--line);font-size:var(--fs-small)}
+.ls-t{display:flex;gap:12px;align-items:baseline}
+.ls-n{font-size:.8rem;color:var(--crimson)}
+.ls-d{color:var(--muted);white-space:nowrap;font-size:var(--fs-caption)}
+.m-actions{display:flex;align-items:center;gap:16px;margin-top:30px;flex-wrap:wrap}
+.m-note{font-size:var(--fs-caption);color:var(--muted)}
+
+/* ========== 17) نص القراءة الطويلة ========== */
+.prose{font-family:var(--text);font-size:1.15rem;line-height:2.1;max-width:70ch}
+.prose p+p{margin-top:1em}
+.prose h2,.prose h3{font-family:var(--display);font-weight:700;line-height:1.6}
+.prose h2{font-size:var(--fs-h3);margin-top:2em}
+.prose h3{font-size:var(--fs-h4);margin-top:1.6em}
+.prose a{color:var(--crimson);text-decoration:underline;text-underline-offset:6px} /* الروابط النصية قرمزية، لا صفراء */
+
+/* ========== 18) التذييل ========== */
+.site-footer{border-top:1px solid var(--line);padding-block:56px 40px}
+.foot-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:32px}
+.foot-tag{color:var(--muted);margin-top:12px;font-family:var(--text);font-size:1.05rem}
+.foot-links{display:flex;flex-wrap:wrap;gap:4px}
+.foot-links a{color:var(--muted);text-decoration:none;padding:10px 14px;font-size:var(--fs-small);
+  border-radius:6px;transition:color var(--dur-quick)}
+.foot-links a:hover{color:var(--fg)}
+.foot-bar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:48px;
+  padding-top:24px;border-top:1px solid var(--line);font-size:var(--fs-caption);color:var(--muted)}
+</style>
+
+<!-- تنسيقات خاصة بهذا الدليل فقط — ليست جزءًا من ملف البداية -->
+<style>
+main{padding-top:var(--header-h)}
+.doc-nav{position:sticky;top:var(--header-h);z-index:40;background:var(--bg);
+  border-bottom:1px solid var(--line);transition:background-color var(--dur-med),border-color var(--dur-med)}
+.doc-nav .container{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;padding-block:10px}
+.doc-nav::-webkit-scrollbar{display:none}
+.doc-nav a{white-space:nowrap;font-size:var(--fs-small);color:var(--muted);text-decoration:none;
+  padding:6px 14px;border-radius:var(--r-pill);transition:color var(--dur-quick),background-color var(--dur-quick)}
+.doc-nav a:hover{color:var(--fg);background:var(--bg-soft)}
+
+.doc-sec{padding-block:clamp(56px,8vw,96px);border-top:1px solid var(--line)}
+.doc-sec h2{font-family:var(--display);font-weight:700;font-size:var(--fs-h2);line-height:1.5;margin-top:14px}
+.doc-lead{color:var(--muted);max-width:64ch;margin-top:10px}
+
+/* عيّنات الألوان */
+.sw-group{margin-top:36px}
+.sw-group h3{font-size:1.05rem;font-weight:500;color:var(--muted)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:14px}
+.sw{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--surface)}
+.sw-chip{height:64px;border-bottom:1px solid var(--line)}
+.sw-meta{padding:10px 12px;display:grid;gap:3px}
+.sw-meta b{font-size:var(--fs-micro);font-weight:500}
+.sw-meta code{direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:.72rem;color:var(--muted);line-height:1.6}
+
+/* عيّنات الخطوط */
+.spec{border-top:1px solid var(--line);margin-top:36px}
+.spec-row{display:grid;grid-template-columns:230px 1fr;gap:24px;padding-block:24px;border-bottom:1px solid var(--line)}
+.spec-meta{font-size:var(--fs-caption);color:var(--muted);line-height:1.8}
+.spec-meta b{display:block;color:var(--fg);font-size:var(--fs-small);font-weight:500}
+.spec-meta code{direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem}
+@media (max-width:720px){.spec-row{grid-template-columns:1fr;gap:10px}}
+
+/* جداول الرموز */
+.tk{border-top:1px solid var(--line);margin-top:24px}
+.tk>div{display:grid;grid-template-columns:minmax(150px,260px) 1fr;gap:16px;padding-block:12px;
+  border-bottom:1px solid var(--line);font-size:var(--fs-small)}
+.tk b{direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-weight:500;font-size:.82rem;color:var(--crimson)}
+@media (max-width:640px){.tk>div{grid-template-columns:1fr;gap:2px}}
+
+/* إطارات العرض */
+.frame{border:1px solid var(--line-strong);border-radius:var(--r-lg);overflow:hidden;margin:0}
+.frame figcaption{padding:12px 16px;font-size:var(--fs-caption);color:var(--muted)}
+.frame-shot{position:relative;min-height:180px;overflow:hidden}
+.hd-frames{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
+@media (max-width:720px){.hd-frames{grid-template-columns:1fr}}
+.frame .site-header{position:relative} /* إبطال fixed داخل العرض */
+
+/* صناديق العرض الحي */
+.demo{border:1px dashed var(--line-strong);border-radius:var(--r-lg);padding:28px;
+  display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:16px}
+.demo-col{flex-direction:column;align-items:stretch}
+.cap{font-size:var(--fs-caption);color:var(--muted);margin-top:10px}
+.comp{padding-block:34px;border-top:1px solid var(--line)}
+.comp:first-of-type{border-top:0}
+.comp-name{font-family:var(--display);font-weight:700;font-size:var(--fs-h3);line-height:1.6}
+.comp-rule{color:var(--muted);font-size:var(--fs-small);margin-top:4px;max-width:70ch}
+
+/* افعل / لا تفعل */
+.dd{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px}
+@media (max-width:720px){.dd{grid-template-columns:1fr}}
+.dd ul{border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 24px}
+.dd li{display:flex;gap:12px;align-items:flex-start;padding-block:8px;font-size:var(--fs-small);line-height:1.8}
+.dd svg{width:18px;height:18px;flex:none;margin-top:9px;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.dd .yes svg{stroke:var(--accent)}
+.dd .no svg{stroke:var(--danger)}
+.dd h3{font-size:1rem;font-weight:500;margin-bottom:8px}
+
+/* إيقاع التناوب */
+.rhythm{display:flex;gap:6px;margin-top:28px}
+.rhythm span{height:40px;flex:1;border-radius:6px;display:grid;place-items:center;font-size:var(--fs-micro)}
+.r-c{background:#000;color:#fff}
+.r-p{border:1px dashed var(--line-strong);color:var(--muted)}
+@media (max-width:640px){.rhythm{flex-wrap:wrap}.rhythm span{flex-basis:30%}}
+
+/* صناديق الشيفرة — داكنة دائمًا */
+.codebox{position:relative;background:#0b0b0d;border:1px solid var(--line-strong);
+  border-radius:var(--r-lg);overflow:hidden;margin-top:16px}
+.codebox pre{direction:ltr;text-align:left;margin:0;overflow:auto;max-height:460px;padding:20px 24px;
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;line-height:1.8;color:#d9dbe4}
+.codebox .copy{position:absolute;inset-inline-end:12px;top:12px;z-index:2}
+.steps{counter-reset:s;list-style:none;margin-top:28px;display:grid;gap:0}
+.steps li{display:flex;gap:18px;align-items:flex-start;padding-block:18px;border-top:1px solid var(--line)}
+.steps li::before{counter-increment:s;content:"٠" counter(s);font-family:var(--display);font-weight:900;
+  font-size:1.6rem;line-height:1.4;color:var(--muted);flex:none}
+.steps li>span{font-size:var(--fs-small);line-height:1.9}
+.checklist{margin-top:28px;columns:2;column-gap:40px}
+@media (max-width:720px){.checklist{columns:1}}
+.checklist li{display:flex;gap:12px;align-items:flex-start;padding-block:9px;font-size:var(--fs-small);
+  line-height:1.8;break-inside:avoid}
+.checklist svg{width:18px;height:18px;flex:none;margin-top:8px;fill:none;stroke:var(--accent);
+  stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+
+<header class="site-header solid" id="siteHeader">
+  <div class="container header-in">
+    <a class="brand" href="#top" aria-label="أكاديمية الإتقان">
+      <span class="brand-mark" aria-hidden="true">إ</span>
+      <span class="brand-name">أكاديمية الإتقان</span>
+    </a>
+    <nav class="nav-links" aria-label="التنقل الرئيسي">
+      <a href="#color">الألوان</a>
+      <a href="#type">الخطوط</a>
+      <a href="#components">المكونات</a>
+      <a href="#starter">ملف البداية</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="التبديل إلى المظهر الفاتح">
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="btn btn-accent btn-sm" href="#starter">انسخ ملف البداية</a>
+      <button class="icon-btn burger" id="burger" type="button" aria-label="فتح القائمة" aria-expanded="false" aria-controls="menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h12"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="قائمة التنقل" aria-hidden="true">
+  <div class="container menu-top">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">إ</span><span class="brand-name">أكاديمية الإتقان</span></a>
+    <button class="icon-btn" id="menuClose" type="button" aria-label="إغلاق القائمة">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <nav class="container menu-nav" aria-label="قائمة الأقسام">
+    <a href="#philosophy"><span class="m-idx">٠١</span>الفلسفة<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></a>
+    <a href="#color"><span class="m-idx">٠٢</span>الألوان<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></a>
+    <a href="#type"><span class="m-idx">٠٣</span>الخطوط<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></a>
+    <a href="#starter"><span class="m-idx">١٠</span>ملف البداية<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></a>
+  </nav>
+  <div class="container menu-foot">
+    <a class="btn btn-ghost" href="#top">أعلى الدليل</a>
+    <a class="btn btn-accent" href="#starter">ملف البداية</a>
+  </div>
+</div>
+
+<nav class="doc-nav" aria-label="أقسام الدليل">
+  <div class="container">
+    <a href="#philosophy">٠١ · الفلسفة</a>
+    <a href="#color">٠٢ · الألوان</a>
+    <a href="#type">٠٣ · الخطوط</a>
+    <a href="#layout">٠٤ · التخطيط</a>
+    <a href="#motion">٠٥ · الحركة</a>
+    <a href="#photo">٠٦ · الصور</a>
+    <a href="#components">٠٧ · المكونات</a>
+    <a href="#recipes">٠٨ · وصفات الصفحات</a>
+    <a href="#rules">٠٩ · القواعد</a>
+    <a href="#starter">١٠ · ملف البداية</a>
+  </div>
+</nav>
+
+<main id="main">
+
+  <!-- ترويسة الدليل: نموذج حي لمكوّن page-hero -->
+  <section class="page-hero cinema grain" aria-labelledby="ds-title">
+    <img class="layer-bg img-cinema" src="https://picsum.photos/seed/ma-ds/1800/900.jpg" alt="" decoding="async">
+    <span class="layer-scrim scrim-hero" aria-hidden="true"></span>
+    <div class="container layer-body">
+      <ol class="crumbs"><li><a href="#top">أكاديمية الإتقان</a></li><li>نظام التصميم</li></ol>
+      <h1 id="ds-title">سينما تُقرأ.</h1>
+      <p class="lead">كل رمز ومكوّن وقاعدة في الموقع، موثّقة وحية في مكان واحد — لتظل كل صفحة قادمة على نفس الروح.</p>
+    </div>
+  </section>
+
+  <!-- ٠١ الفلسفة -->
+  <section class="section doc-sec" id="philosophy" aria-labelledby="ph-title">
+    <div class="container">
+      <p class="eyebrow">٠١ · الفلسفة</p>
+      <h2 id="ph-title">الروح في ثلاث ركائز</h2>
+      <p class="doc-lead">أي صفحة جديدة تُبنى على هذه الركائز قبل أي رمز لوني أو مقاس خط. إن تعارض قرار معها، فالقرار خطأ.</p>
+      <ul class="feats" style="margin-top:40px">
+        <li class="feat"><span class="feat-num" aria-hidden="true">٠١</span>
+          <div><h3>قماشة سوداء كمسرة</h3><p>الأسود ليس خلفية، بل مسرح. الجزر السينمائية (البطل، الأشرطة، الختام) سوداء دائمًا في الثيمين، وبينها يتنفس المحتوى «الورقي» (داكن أو فاتح حسب الثيم).</p></div></li>
+        <li class="feat"><span class="feat-num" aria-hidden="true">٠٢</span>
+          <div><h3>عناوين بروح مجلة</h3><p>Serif Display بوزن 700 لكل العناوين و900 للحظات الكبيرة فقط. Sans للواجهة، وSerif Text للمقدمات والقراءة الطويلة. هذا التوزيع هو ما يمنح الصفحة وقارها التحريري.</p></div></li>
+        <li class="feat"><span class="feat-num" aria-hidden="true">٠٣</span>
+          <div><h3>صور كأنها لقطات فيلم</h3><p>كل صورة بمعالجة موحدة (رمادي، تباين، إضاءة) فتبدو الصور متنوعة المصادر كأنها من فيلم واحد — وتحيا بالألوان عند اللمس.</p></div></li>
+      </ul>
+      <div class="rhythm" aria-hidden="true">
+        <span class="r-c">سينما · بطل</span><span class="r-p">ورقي · محتوى</span><span class="r-c">سينما · شريط</span><span class="r-p">ورقي · محتوى</span><span class="r-c">سينما · ختام</span>
+      </div>
+      <p class="cap">إيقاع التناوب: لا تضع جزيرتين سينمائيتين متتاليتين — الأسود يفقد قوته بلا ورق بينه.</p>
+      <h3 style="margin-top:44px;font-family:var(--display);font-size:var(--fs-h3)">صوت الكتابة</h3>
+      <ul class="tk" style="margin-top:16px">
+        <div><b>واثق ومباشر</b><span>«أتقن مهارتك القادمة» — لا «هل ترغب في التعلم؟». جملة فعلية قصيرة للعنوان، وشرح هادئ واحد تحته.</span></div>
+        <div><b>الأرقام بالهندية</b><span>في النصوص التسويقية: ٤٠+ و٣٢٠ درسًا و٩٦٪. الأرقام التقنية في الشيفرة تبقى لاتينية.</span></div>
+        <div><b>المصطلحات اللاتينية</b><span>تُعزل بـ <span dir="ltr" style="unicode-bidi:isolate">dir="ltr"</span> كي لا تنكسر بين الحروف العربية.</span></div>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ٠٢ الألوان -->
+  <section class="section doc-sec" id="color" aria-labelledby="co-title">
+    <div class="container">
+      <p class="eyebrow">٠٢ · الألوان</p>
+      <h2 id="co-title">لوحتان وثابتان</h2>
+      <p class="doc-lead">الرموز الثابتة لا تتغير بالثيم. أما لوحة «سينما/ورقي» فتتبدل كاملة بتبديل الثيم — والعينات أدناه حية: جرّب زر الثيم في الأعلى.</p>
+
+      <div class="sw-group"><h3>ثوابت الهوية</h3>
+        <div class="swatches">
+          <div class="sw"><div class="sw-chip" style="background:var(--crimson)"></div><div class="sw-meta"><b>--crimson</b><code>#e32652</code></div></div>
+          <div class="sw"><div class="sw-chip" style="background:var(--on-accent)"></div><div class="sw-meta"><b>--on-accent</b><code>#211d0d</code></div></div>
+        </div>
+      </div>
+      <div class="sw-group"><h3>القماشة والنص (داكن ← → فاتح)</h3>
+        <div class="swatches">
+          <div class="sw"><div class="sw-chip" style="background:var(--bg)"></div><div class="sw-meta"><b>--bg · قماشة الصفحة</b><code>#000000 · #f5f6fc</code></div></div>
+          <div class="sw"><div class="sw-chip" style="background:var(--bg-soft)"></div><div class="sw-meta"><b>--bg-soft · أشرطة التناوب</b><code>#0b0b0d · #eceefa</code></div></div>
+          <div class="sw"><div class="sw-chip" style="background:var(--surface)"></div><div class="sw-meta"><b>--surface · البطاقات والحقول</b><code>#141518 · #ffffff</code></div></div>
+          <div class="sw"><div class="sw-chip" style="background:var(--fg)"></div><div class="sw-meta"><b>--fg · النص الأساسي</b><code>#ffffff · #14174f</code></div></div>
+          <div class="sw"><div class="sw-chip" style="background:var(--muted)"></div><div class="sw-meta"><b>--muted · النص الثانوي</b><code>#9ea0a9 · #55598a</code></div></div>
+        </div>
+      </div>
+      <div class="sw-group"><h3>الفعل والتغذية</h3>
+        <div class="swatches">
+          <div class="sw"><div class="sw-chip" style="background:var(--accent)"></div><div class="sw-meta"><b>--accent · الفعل الوحيد</b><code>#dcff00 · #ffd23f</code></div></div>
+          <div class="sw"><div class="sw-chip" style="background:var(--danger)"></div><div class="sw-meta"><b>--danger · الأخطاء</b><code>#ff6d8d · #c81e46</code></div></div>
+          <div class="sw"><div class="sw-chip" style="background:var(--line-strong)"></div><div class="sw-meta"><b>--line-strong · حد واضح</b><code>rgba(255,255,255,.24) · rgba(20,23,79,.32)</code></div></div>
+          <div class="sw"><div class="sw-chip" style="background:var(--line)"></div><div class="sw-meta"><b>--line · حد خافت</b><code>rgba(255,255,255,.12) · rgba(20,23,79,.15)</code></div></div>
+        </div>
+      </div>
+
+      <ul class="tk" style="margin-top:44px">
+        <div><b>الأصفر = فعل</b><span>الأزرار الأساسية، مؤشر التقدّم، النقطة المفعّلة. زر أصفر واحد كحد أقصى في كل شاشة.</span></div>
+        <div><b>القرمزي = توقيع تحريري</b><span>الشعار، شرطة الـ eyebrow، الفواصل المعينية، علامات الاقتباس، الروابط داخل النصوص. لا يُعبّأ به زر أو مساحة كبيرة أبدًا.</span></div>
+        <div><b>الحدود بدل الظلال</b><span>النظام مسطّح: التمايز بين الأسطح بـ --line و --line-strong. ظلان فقط في الموقع كله: التوست والمعاينة العائمة.</span></div>
+        <div><b>ثوابت السينما</b><span>داخل .cinema اللوحة ثابتة دائمًا: أسود + أبيض + أبيض شفاف — مهما كان الثيم. هذا ما يحمي الروح.</span></div>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ٠٣ الخطوط -->
+  <section class="section doc-sec" id="type" aria-labelledby="ty-title">
+    <div class="container">
+      <p class="eyebrow">٠٣ · الخطوط</p>
+      <h2 id="ty-title">ثلاث عائلات، لكلٍّ عمل واحد</h2>
+      <p class="doc-lead">عائلة ثمانية بأدوارها الثلاثة. القاعدة الحاكمة: العناوين Display دائمًا، الواجهة Sans دائمًا، القراءة Text دائمًا — لا استثناءات.</p>
+
+      <div class="spec">
+        <div class="spec-row">
+          <div class="spec-meta"><b>عنوان البطل</b><code>Display 900 · --fs-hero · lh 1.32</code>لحظة الافتتاح في الصفحة الرئيسية فقط</div>
+          <div style="font-family:var(--display);font-weight:900;font-size:clamp(2rem,5vw,3.4rem);line-height:1.32">أتقن مهارتك القادمة</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-meta"><b>عنوان الختام</b><code>Display 900 · --fs-display · lh 1.45</code>قسم CTA الختامي وترويسات الصفحات الداخلية</div>
+          <div style="font-family:var(--display);font-weight:900;font-size:var(--fs-display);line-height:1.45">ابدأ رحلة الإتقان</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-meta"><b>عنوان قسم</b><code>Display 700 · --fs-h2 · lh 1.5</code>مع eyebrow و sec-sub</div>
+          <div style="font-family:var(--display);font-weight:700;font-size:var(--fs-h2);line-height:1.5">تعلّم ممن عاش المجال، لا من قرأ عنه فقط</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-meta"><b>عنوان مكوّن</b><code>Display 700 · --fs-h3 · lh 1.6</code>داخل البطاقات والصفوف المرقّمة</div>
+          <div style="font-family:var(--display);font-weight:700;font-size:var(--fs-h3);line-height:1.6">مرشد تعليمي ذكي</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-meta"><b>عنوان بطاقة</b><code>Display 700 · --fs-h4 · lh 1.6</code>بطاقات الدورات والخبراء</div>
+          <div style="font-family:var(--display);font-weight:700;font-size:var(--fs-h4);line-height:1.6">أساسيات التسويق الرقمي</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-meta"><b>المقدمة</b><code>Text 400 · --fs-lead · lh 2.0</code>الفقرة تحت العنوان مباشرة</div>
+          <div style="font-family:var(--text);font-size:var(--fs-lead);line-height:2;color:var(--muted)">دروس عربية مصوّرة بجودة سينمائية يقدّمها نخبة الخبراء، مع مرشد ذكي يقودك خطوة بخطوة.</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-meta"><b>نص الواجهة</b><code>Sans 400/500 · --fs-body · lh 1.9</code>كل شيء آخر في الواجهة</div>
+          <div>النص الافتراضي للصفحة — أزرار، قوائم، أوصاف، حقول.</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-meta"><b>قراءة طويلة</b><code>Text 400 · 1.15rem · lh 2.1</code>وصف الدروس والمقالات — عبر .prose</div>
+          <div class="prose" style="font-size:1.05rem">في مساءٍ هادئ تجلس ساعةً كاملة مع صفحةٍ لا تُرسل إليك إشعارًا. ليس هذا حنينًا، بل بحثٌ عن انتباهٍ لم يتقطّع.</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-meta"><b>ثانوي / توضيحي</b><code>Sans · --fs-small / --fs-caption / --fs-micro</code>بيانات وصفية وشارات</div>
+          <div><span style="font-size:var(--fs-small);color:var(--muted)">ثانوي: مع ريم الحربي · ٢٤ درسًا</span><br><span style="font-size:var(--fs-caption);color:var(--muted)">توضيحي: ٧ أيام مجانًا</span></div>
+        </div>
+      </div>
+
+      <ul class="tk" style="margin-top:36px">
+        <div><b>letter-spacing: 0</b><span>لا تتباعد أحرف العربية إطلاقًا، في أي حجم ولأي سبب. التباعد يكسر اتصال الحروف.</span></div>
+        <div><b>line-height عربي</b><span>العناوين ≥1.5 والنص ≥1.9 — العربية تحتاج تنفسًا رأسيًا أكثر من اللاتينية.</span></div>
+        <div><b>الأوزان رقمًا</b><span>اكتب font-weight: 700 لا bold — فالعائلة تحمل 300/400/500/700/900.</span></div>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ٠٤ التخطيط -->
+  <section class="section doc-sec" id="layout" aria-labelledby="la-title">
+    <div class="container">
+      <p class="eyebrow">٠٤ · التخطيط</p>
+      <h2 id="la-title">شبكة تحريرية، لا أعمدة متساوية</h2>
+      <ul class="tk" style="margin-top:24px">
+        <div><b>--container: 1200px</b><span>هامش 24px لكل جانب على الشاشات الصغيرة. كل المحتوى المقروء داخلها؛ السكك فقط تخرج عنها.</span></div>
+        <div><b>شبكة 12 عمودًا · فجوة 16</b><span>الامتدادات التحريرية: 5/4/3 و4/5/3. تجنّب 4 أعمدة متساوية أو 3 بطاقات متطابقة كتخطيط أساسي.</span></div>
+        <div><b>--section-pad</b><span>clamp(72px,10vw,128px) بين الأقسام، و --sec-head-gap تحت رؤوس الأقسام.</span></div>
+        <div><b>سلم المسافات</b><span>4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 — لا قيم خارج السلم إلا عبر clamp.</span></div>
+        <div><b>السكة .rail</b><span>بدايتها محاذاة الحاوية عبر padding-inline-start:max(24px,(100%−1200px)/2) وحافتها تكمل حتى حافة الشاشة.</span></div>
+        <div><b>نِسب الصور</b><span>بطاقة دورة 16/10 · بورتريه خبير 3/4 · معاينة 4/3 · البطل ملء الشاشة.</span></div>
+        <div><b>الطبقات z</b><span>grain 2 · محتوى 3 · قوائم منسدلة 45 · ترويسة 50 · قائمة الجوال 70 · توست 80 · تخطٍّ 100.</span></div>
+        <div><b>RTL أولًا</b><span>الأسهم تشير لليسار وتتحرك translateX(-4px) عند التحويم — اتجاه «التالي» في السكة scrollLeft بالسالب.</span></div>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ٠٥ الحركة -->
+  <section class="section doc-sec" id="motion" aria-labelledby="mo-title">
+    <div class="container">
+      <p class="eyebrow">٠٥ · الحركة</p>
+      <h2 id="mo-title">حركة تخدم الإيقاع، لا تلفت النظر</h2>
+      <ul class="tk" style="margin-top:24px">
+        <div><b>--ease</b><span>cubic-bezier(.2,.7,.2,1) — منحنى واحد لكل الموقع، لا منحنيات جديدة.</span></div>
+        <div><b>--dur-fast · .15s</b><span>ضغط الأزرار (scale .97).</span></div>
+        <div><b>--dur-quick · .25s</b><span>ألوان، حدود، شفافية.</span></div>
+        <div><b>--dur-med · .35s</b><span>تبديل الثيم، الأسطح، دخول التوست.</span></div>
+        <div><b>--dur-slow · .7s</b><span>ظهور العناصر (0.9s في البطل)، وتكبير الصور (0.8s).</span></div>
+        <div><b>--stagger · .08s</b><span>خطوة تعاقب العناصر المتجاورة عبر --d، بمدى 0.06–0.18s.</span></div>
+        <div><b>حلقات طويلة</b><span>الماركي 48s · تكبير البطل 30s · تدوير الشهادات 6s — كلها تتجمد مع prefers-reduced-motion والماركي يصبح قابلًا للتمرير.</span></div>
+        <div><b>قواعد الدخول</b><span>من الأسفل translateY(26px) · الصور scale إلى 1.07 · الأسهم تنزلق -4px. لا دوران، لا ارتداد، لا مسارات قطرية.</span></div>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ٠٦ الصور -->
+  <section class="section doc-sec" id="photo" aria-labelledby="im-title">
+    <div class="container">
+      <p class="eyebrow">٠٦ · الصور</p>
+      <h2 id="im-title">وصفة واحدة لكل الصور</h2>
+      <p class="doc-lead">المعالجة الموحدة هي ما يجعل صورًا من مصادر مختلفة تبدو كأنها من فيلم واحد. مرّر المؤشر على العيّنات.</p>
+
+      <div class="hd-frames">
+        <figure class="frame">
+          <div class="ph-card" style="aspect-ratio:16/10">
+            <img src="https://picsum.photos/seed/ma-ds1/800/500.jpg" alt="عيّنة بطاقة" loading="lazy" decoding="async">
+          </div>
+          <figcaption>.ph-card — رمادية هادئة تحيا بالألوان عند اللمس (بطاقات الدورات والخبراء)</figcaption>
+        </figure>
+        <figure class="frame">
+          <div class="cinema grain" style="aspect-ratio:16/10">
+            <img class="layer-bg img-band" src="https://picsum.photos/seed/ma-ds2/800/500.jpg" alt="عيّنة شريط" loading="lazy" decoding="async">
+            <span class="layer-scrim scrim-band" aria-hidden="true"></span>
+            <div class="layer-body" style="padding:20px;display:flex;align-items:flex-end;gap:8px">
+              <span class="chip">٦ ساعات</span><span class="chip level">مبتدئ</span>
+            </div>
+          </div>
+          <figcaption>.img-band + scrim-band + grain + chip — تراكيب الأشرطة السينمائية</figcaption>
+        </figure>
+      </div>
+
+      <ul class="tk" style="margin-top:36px">
+        <div><b>.img-cinema</b><span>grayscale(.5) contrast(1.06) brightness(.72) — خلفية البطل، مع تكبير kb اختياري.</span></div>
+        <div><b>.img-band</b><span>grayscale(.55) brightness(.5) — خلفيات أشرطة المسارات، أغمق لأن النص فوقها كثيف.</span></div>
+        <div><b>.ph-card</b><span>grayscale(.6) brightness(.86) ← عند اللمس grayscale(0) brightness(.95) مع scale إلى 1.07.</span></div>
+        <div><b>layer-bg / layer-scrim / layer-body</b><span>بنية أي قسم سينمائي: صورة خلفية z0، تعتيم z1، محتوى z3، وحبيبات عبر .grain.</span></div>
+        <div><b>نص فوق صورة = scrim إلزامي</b><span>لا نص عربي فوق صورة بلا تعتيم، مهما بدت الصورة داكنة.</span></div>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ٠٧ المكونات -->
+  <section class="section doc-sec" id="components" aria-labelledby="cp-title">
+    <div class="container">
+      <p class="eyebrow">٠٧ · المكونات</p>
+      <h2 id="cp-title">المكوّنات حيّة أمامك</h2>
+      <p class="doc-lead">كل ما تراه هنا مستمد من ملف البداية نفسه — إنه يعمل الآن لأنه نفس الشيفرة التي ستنسخها.</p>
+
+      <div class="comp" style="margin-top:20px">
+        <h3 class="comp-name">الأزرار</h3>
+        <p class="comp-rule">Accent للأساسي (واحد كحد أقصى بالشاشة) · Ghost للثانوي · icon-btn دائرية للسكة والتنقل. لا ألوان أخرى ولا تعبئات أخرى.</p>
+        <div class="demo">
+          <button class="btn btn-accent" type="button">ابدأ التعلّم الآن</button>
+          <button class="btn btn-ghost" type="button">تصفّح الدورات</button>
+          <button class="btn btn-accent btn-sm" type="button">زر مدمج</button>
+          <button class="icon-btn" type="button" aria-label="السابق"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button>
+          <button class="icon-btn" type="button" aria-label="معطّل" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+
+      <div class="comp">
+        <h3 class="comp-name">الشارات</h3>
+        <p class="comp-rule">chip فوق الصور فقط (بخلفية سوداء شفافة) · chip.level بالأصفر للمستوى · badge أبيض/أسود للمواعيد الزمنية.</p>
+        <div class="demo">
+          <span class="chip">٦ ساعات</span>
+          <span class="chip level">مبتدئ</span>
+          <span class="badge">٥ دقائق</span>
+        </div>
+      </div>
+
+      <div class="comp">
+        <h3 class="comp-name">رأس القسم + صف فهرس + مرشّحات</h3>
+        <p class="comp-rule">كل قسم يبدأ بـ eyebrow ثم عنوان Display ثم sec-sub. القوائم الكبيرة تُعرض كصفوف فهرس تحريرية، والتصفية بمرشّحات pill.</p>
+        <div class="sec-head" style="margin-bottom:20px">
+          <div><p class="eyebrow">المجالات</p><h2 style="font-size:var(--fs-h3)">أربعة مسارات. مسيرة واحدة.</h2></div>
+          <a class="sec-link" href="#recipes">تصفّح الوصفات<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></a>
+        </div>
+        <div class="filters" id="demoFilters" role="group" aria-label="مرشّحات تجريبية">
+          <button type="button" aria-pressed="true">الكل</button>
+          <button type="button" aria-pressed="false">مبتدئ</button>
+          <button type="button" aria-pressed="false">متوسط</button>
+          <button type="button" aria-pressed="false">متقدم</button>
+        </div>
+        <ul style="margin-top:24px">
+          <li><a class="index-row" href="#recipes"><span class="index-name">الأعمال</span><span class="index-desc">من الفكرة إلى النمو</span><span class="index-count">٢٤ دورة</span><span class="index-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></span></a></li>
+        </ul>
+      </div>
+
+      <div class="comp">
+        <h3 class="comp-name">الترويسة — حالتان</h3>
+        <p class="comp-rule">شفافة بنص أبيض فوق الجزيرة السينمائية ← صلبة بخلفية القماشة بعد 28px من التمرير. الصفحات التي لا تبدأ بجزيرة سينمائية تأخذ .solid منذ البداية.</p>
+        <div class="hd-frames">
+          <figure class="frame">
+            <div class="frame-shot cinema">
+              <img class="layer-bg img-cinema" src="https://picsum.photos/seed/ma-hd1/900/300.jpg" alt="" loading="lazy">
+              <span class="layer-scrim scrim-hero" aria-hidden="true"></span>
+              <header class="site-header"><div class="container header-in">
+                <a class="brand" href="#components"><span class="brand-mark" aria-hidden="true">إ</span><span class="brand-name">أكاديمية الإتقان</span></a>
+                <div class="nav-actions"><span class="btn btn-accent btn-sm">ابدأ الآن</span></div>
+              </div></header>
+            </div>
+            <figcaption>الحالة ١: شفافة فوق السينما — الحالة الافتراضية عند القمة</figcaption>
+          </figure>
+          <figure class="frame">
+            <div class="frame-shot" style="background:var(--bg-soft)">
+              <header class="site-header solid"><div class="container header-in">
+                <a class="brand" href="#components"><span class="brand-mark" aria-hidden="true">إ</span><span class="brand-name">أكاديمية الإتقان</span></a>
+                <div class="nav-actions"><span class="btn btn-accent btn-sm">ابدأ الآن</span></div>
+              </div></header>
+            </div>
+            <figcaption>الحالة ٢: صلبة (.scrolled أو .solid) بخلفية القماشة وحد سفلي</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="comp">
+        <h3 class="comp-name">البطاقات</h3>
+        <p class="comp-rule">بطاقة الخبير بورتريه 3/4 بمعلومات أسفل scrim-card. بطاقة الدورة غلاف 16/10 بشارات وزر تشغيل يظهر عند التحويم — انقرها لتفتح المودال.</p>
+        <div class="demo">
+          <a class="exp-card" href="#components" style="width:220px;aspect-ratio:3/4">
+            <img src="https://picsum.photos/seed/ma-exp/440/580.jpg" alt="" loading="lazy">
+            <span class="layer-scrim scrim-card" aria-hidden="true"></span>
+            <div class="exp-info"><h3>ليلى منصور</h3><p class="exp-field">الذكاء الاصطناعي</p></div>
+          </a>
+          <button class="course-card" type="button" data-open="demoModal" style="width:300px" aria-haspopup="dialog">
+            <span class="course-cover">
+              <img src="https://picsum.photos/seed/ma-course/800/500.jpg" alt="" loading="lazy">
+              <span class="chips"><span class="chip">٦ ساعات</span><span class="chip level">مبتدئ</span></span>
+              <span class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+            </span>
+            <span class="course-title">أساسيات التسويق الرقمي</span>
+            <span class="course-meta">مع ريم الحربي · ٢٤ درسًا</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="comp">
+        <h3 class="comp-name">الأكورديون + النماذج + التوست</h3>
+        <p class="comp-rule">FAQ بعلامة +/− دوّارة. الحقول بخلفية surface وحد line-strong، والخطأ بحد قرمزي ورسالة f-error. التوست يُستدعى عبر <span dir="ltr" style="unicode-bidi:isolate">maToast("...")</span>.</p>
+        <div class="demo demo-col" style="max-width:640px">
+          <details class="faq-d">
+            <summary style="display:flex;justify-content:space-between;gap:16px;cursor:pointer;padding-block:14px;font-weight:500"><span>هل الشهادات معتمدة؟</span><span class="fx" aria-hidden="true"></span></summary>
+            <p style="color:var(--muted);padding-bottom:14px;font-size:var(--fs-small)">نعم، ضمن برامج التطوير المهني المستمر CPD.</p>
+          </details>
+          <div class="field" style="max-width:340px">
+            <label for="demoMail">البريد الإلكتروني</label>
+            <input id="demoMail" type="email" placeholder="name@example.com" aria-invalid="true" style="max-width:340px">
+            <span class="f-error" role="alert">أدخل بريدًا صحيحًا مثل name@example.com</span>
+          </div>
+          <div><button class="btn btn-accent btn-sm" id="toastDemo" type="button">أطلق توست</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ٠٨ وصفات الصفحات -->
+  <section class="section doc-sec" id="recipes" aria-labelledby="rc-title">
+    <div class="container">
+      <p class="eyebrow">٠٨ · وصفات الصفحات</p>
+      <h2 id="rc-title">قوالب جاهزة لكل صفحة قادمة</h2>
+      <ul style="margin-top:8px">
+        <li><div class="index-row"><div><span class="index-name" style="font-size:clamp(1.2rem,2.4vw,1.6rem)">الصفحة الرئيسية</span><span class="index-desc" style="display:block">بطل سينمائي كامل + إحصاءات ← ماركي الخبراء ← خبراء (شبكة 5/4/3) ← فهرس مجالات ← سكة دورات ← صفوف عضوية مرقّمة ← شهادات دوّارة ← شريط مسار سينمائي ← FAQ ← ختام سينمائي</span></div><span class="index-count">منجزة</span></div></li>
+        <li><div class="index-row"><div><span class="index-name" style="font-size:clamp(1.2rem,2.4vw,1.6rem)">صفحة مجال / تصفّح</span><span class="index-desc" style="display:block">ترويسة solid ← page-hero سينمائي مدمج بصورة المجال + crumbs ← مرشّحات ← سكة أو شبكة بطاقات ← خبراء المجال ← FAQ مصغّر ← ختام</span></div><span class="index-count">قالب</span></div></li>
+        <li><div class="index-row"><div><span class="index-name" style="font-size:clamp(1.2rem,2.4vw,1.6rem)">صفحة دورة</span><span class="index-desc" style="display:block">page-hero بصورة الدورة وشارات chip ← عمودان: منهج 7/12 + بطاقة تسجيل sticky على 5/12 ← قسم الخبير (exp-card + اقتباس) ← ذات صلة (rail)</span></div><span class="index-count">قالب</span></div></li>
+        <li><div class="index-row"><div><span class="index-name" style="font-size:clamp(1.2rem,2.4vw,1.6rem)">صفحة خبير</span><span class="index-desc" style="display:block">سينما بورتريه كبير + اسم Display 900 ← اقتباس بخط Serif Text ← مسيرة الخبير بصفوف مرقّمة ← دوره في سكة</span></div><span class="index-count">قالب</span></div></li>
+        <li><div class="index-row"><div><span class="index-name" style="font-size:clamp(1.2rem,2.4vw,1.6rem)">التسعير</span><span class="index-desc" style="display:block">مقارنة بصفوف تحريرية (لا ٣ بطاقات متطابقة) ← الخطة المميزة وحدها على خلفية surface بحد line-strong ← FAQ للدفع</span></div><span class="index-count">قالب</span></div></li>
+        <li><div class="index-row"><div><span class="index-name" style="font-size:clamp(1.2rem,2.4vw,1.6rem)">الدخول / إنشاء حساب</span><span class="index-desc" style="display:block">نصف سينمائي (صورة + جملة واحدة) ونصف نموذج على --bg بحقل كبير واحد — نفس نمط inline-form</span></div><span class="index-count">قالب</span></div></li>
+        <li><div class="index-row" style="border-bottom:1px solid var(--line)"><div><span class="index-name" style="font-size:clamp(1.2rem,2.4vw,1.6rem)">داخل الدورة (وضع التركيز)</span><span class="index-desc" style="display:block">بلا grain ولا ماركي ولا حركات خلفية — فيديو داخل surface، محتوى .prose، شريط تقدّم بـ accent، ترويسة solid دائمًا</span></div><span class="index-count">قالب</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ٠٩ القواعد -->
+  <section class="section doc-sec" id="rules" aria-labelledby="ru-title">
+    <div class="container">
+      <p class="eyebrow">٠٩ · القواعد الذهبية</p>
+      <h2 id="ru-title">ما يحافظ على الروح</h2>
+      <div class="dd">
+        <ul class="yes">
+          <h3>افعل</h3>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>Display لكل العناوين، Sans للواجهة، Text للقراءة — بلا استثناء.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>زر أصفر أساسي واحد في كل شاشة.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>تناوب cinema/paper كإيقاع تنفّس بين الأقسام.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>كل صورة بمعالجة النظام، والنص فوقها خلف scrim.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>الروابط النصية داخل .prose قرمزية مسطّرة.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>أرقام هندية في التسويق، ومصطلحات لاتينية معزولة.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>أيقونات SVG خطية بسمك 2px — لا إيموجي أبدًا.</span></li>
+        </ul>
+        <ul class="no">
+          <h3>لا تفعل</h3>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>لا letter-spacing على العربية، مهما كان الحجم.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>لا زر أو تعبئة كبيرة بالقرمزي — هو توقيع تحريري فقط.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>لا عناوين بخط Sans ولا نص واجهة بخط Serif.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>لا صور خام بلا معالجة، ولا تدرّجات زخرفية.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>لا ظلال صناديق — عدا التوست والمعاينة العائمة.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>لا ٣ بطاقات متطابقة في صف واحد كتخطيط أساسي.</span></li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg><span>لا جزيرتين سينمائيتين متتاليتين، ولا قيم مسافة خارج السلم.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ١٠ ملف البداية -->
+  <section class="section doc-sec" id="starter" aria-labelledby="st-title">
+    <div class="container">
+      <p class="eyebrow">١٠ · ملف البداية</p>
+      <h2 id="st-title">كل صفحة جديدة تبدأ من هنا</h2>
+      <ol class="steps">
+        <li><span>في <span dir="ltr" style="unicode-bidi:isolate">&lt;head&gt;</span>: حمّل خط ثمانية، ثم ضع سكربت الثيم المبكر (أدناه) قبل أول رسم لمنع وميض التحميل.</span></li>
+        <li><span>انسخ CSS الكيت كاملًا (الصندوق الأول) داخل وسم style — هو نفسه الذي يُشغّل هذا الدليل الآن.</span></li>
+        <li><span>ابنِ الهيكل: header.site-header (أضف .solid إن لم تبدأ بجزيرة سينمائية) ← main بأقسام متناوبة ← footer.site-footer.</span></li>
+        <li><span>في نهاية body: سكربت ma-core (الصندوق الثاني) — ثيم، ترويسة، قائمة جوال، ظهور، وتوست عبر <span dir="ltr" style="unicode-bidi:isolate">maToast()</span>.</span></li>
+        <li><span>المفتاح <span dir="ltr" style="unicode-bidi:isolate">ma-theme</span> واحد في كل الصفحات — ثيم المستخدم يتبعه بين صفحات الموقع كله.</span></li>
+      </ol>
+
+      <p style="margin-top:36px;font-size:var(--fs-small);color:var(--muted)">سكربت الثيم المبكر (يوضع في head قبل أي style):</p>
+      <div class="codebox"><pre>&lt;script&gt;try{var t=localStorage.getItem("ma-theme");if(t!=="light"&amp;&amp;t!=="dark"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}document.documentElement.setAttribute("data-theme",t)}catch(e){document.documentElement.setAttribute("data-theme","dark")}&lt;/script&gt;</pre></div>
+
+      <p style="margin-top:36px;font-weight:500">CSS الكيت — نظام التصميم كاملًا:</p>
+      <div class="codebox">
+        <button class="btn btn-accent btn-sm copy" type="button" data-copy="cssOut">نسخ</button>
+        <pre id="cssOut">…</pre>
+      </div>
+
+      <p style="margin-top:36px;font-weight:500">JS الأساسي — ma-core:</p>
+      <div class="codebox">
+        <button class="btn btn-accent btn-sm copy" type="button" data-copy="jsOut">نسخ</button>
+        <pre id="jsOut">…</pre>
+      </div>
+
+      <h3 style="margin-top:48px;font-family:var(--display);font-size:var(--fs-h3)">قائمة فحص الاتساق قبل نشر أي صفحة</h3>
+      <ul class="checklist">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>كل العناوين Display، وكل الواجهة Sans؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>letter-spacing صفر في كل قاعدة خط؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>زر accent واحد كحد أقصى في الشاشة؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>القرمزي للعلامات التحريرية فقط؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>لا ظلال صناديق عدا التوست والمعاينة؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>الصور بمعالجة img-*/ph-card وscrim خلف النص؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>تناوب cinema/paper بلا جزيرتين متتاليتين؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>نفس الترويسة والتذييل ومفتاح ma-theme؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>data-reveal بتعاقب --stagger عبر --d؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>prefers-reduced-motion و focus-visible مضبوطان؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>أرقام هندية في نصوص التسويق؟</span></li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>المسافات من السلم 4–64 أو clamp؟</span></li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="foot-top">
+      <div>
+        <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">إ</span><span class="brand-name">أكاديمية الإتقان</span></a>
+        <p class="foot-tag">نظام التصميم · إصدار 1.0 — سينما تُقرأ.</p>
+      </div>
+      <nav class="foot-links" aria-label="روابط الدليل">
+        <a href="#color">الألوان</a>
+        <a href="#type">الخطوط</a>
+        <a href="#components">المكونات</a>
+        <a href="#recipes">وصفات الصفحات</a>
+        <a href="#starter">ملف البداية</a>
+      </nav>
+    </div>
+    <div class="foot-bar">
+      <p>© ٢٠٢٦ Sahel Reach FZE، L-1032. جميع الحقوق محفوظة.</p>
+      <p>وثيقة حية — حدّثها مع كل مكوّن جديد</p>
+    </div>
+  </div>
+</footer>
+
+<!-- توست النظام -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="t-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></span>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- مودال تجريبي -->
+<dialog class="modal" id="demoModal" aria-labelledby="dmTitle">
+  <div class="modal-media">
+    <img src="https://picsum.photos/seed/ma-course/800/500.jpg" alt="" decoding="async">
+    <button class="modal-close" id="demoModalClose" type="button" aria-label="إغلاق" autofocus>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p class="eyebrow">دورة تدريبية</p>
+    <h3 id="dmTitle">أساسيات التسويق الرقمي</h3>
+    <p class="m-meta">مع ريم الحربي · ٦ ساعات · مبتدئ · ٢٤ درسًا</p>
+    <h4 class="m-h">ماذا ستتعلّم</h4>
+    <ul class="m-learn">
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>رسم خريطة تسويق رقمي تناسب سوقك العربي</span></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg><span>كتابة محتوى يجذب ويحوّل</span></li>
+    </ul>
+    <div class="m-actions">
+      <button class="btn btn-accent" type="button" id="dmEnroll">سجّل في الدورة</button>
+      <span class="m-note">ضمن العضوية · أول ٧ أيام مجانًا</span>
+    </div>
+  </div>
+</dialog>
+
+<!-- ============================================================
+     ma-core: سكربت النظام الأساسي — يُنسخ كما هو إلى كل صفحة.
+     (زر النسخ أعلاه يقرأ محتوى هذا الوسم مباشرة)
+     ============================================================ -->
+<script id="ma-core">
+(function(){
+'use strict';
+var $=function(s,c){return (c||document).querySelector(s)};
+var REDUCED=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* 1) الثيم — مفتاح واحد ma-theme في كل صفحات الموقع */
+var root=document.documentElement, themeBtn=$('#themeToggle');
+function applyTheme(t){
+  root.setAttribute('data-theme',t);
+  if(themeBtn){
+    themeBtn.setAttribute('data-mode',t);
+    themeBtn.setAttribute('aria-label',t==='light'?'التبديل إلى المظهر الداكن':'التبديل إلى المظهر الفاتح');
+  }
+}
+applyTheme(root.getAttribute('data-theme')||'dark');
+if(themeBtn) themeBtn.addEventListener('click',function(){
+  var next=root.getAttribute('data-theme')==='light'?'dark':'light';
+  applyTheme(next);
+  try{localStorage.setItem('ma-theme',next)}catch(e){}
+});
+
+/* 2) الترويسة: شفافة فوق الجزيرة السينمائية، صلبة بعد 28px */
+var header=$('#siteHeader');
+if(header){
+  var onScroll=function(){header.classList.toggle('scrolled',window.scrollY>28)};
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+}
+
+/* 3) قائمة الجوال بملء الشاشة */
+var menu=$('#menu'), burger=$('#burger'), menuClose=$('#menuClose');
+if(menu&&burger){
+  var open=function(){menu.classList.add('open');menu.setAttribute('aria-hidden','false');
+    burger.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';
+    if(menuClose)menuClose.focus();};
+  var close=function(){menu.classList.remove('open');menu.setAttribute('aria-hidden','true');
+    burger.setAttribute('aria-expanded','false');document.body.style.overflow='';burger.focus();};
+  burger.addEventListener('click',open);
+  if(menuClose)menuClose.addEventListener('click',close);
+  Array.prototype.forEach.call(menu.querySelectorAll('a'),function(a){a.addEventListener('click',close)});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&menu.classList.contains('open'))close()});
+}
+
+/* 4) الظهور عند التمرير (يتجمد تلقائيًا مع prefers-reduced-motion) */
+var rev=document.querySelectorAll('[data-reveal]');
+if('IntersectionObserver' in window && !REDUCED){
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(en){if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target)}});
+  },{threshold:.12,rootMargin:'0px 0px -36px 0px'});
+  Array.prototype.forEach.call(rev,function(el){io.observe(el)});
+}else{
+  Array.prototype.forEach.call(rev,function(el){el.classList.add('in')});
+}
+
+/* 5) التوست — استدعه من أي مكان: maToast("الرسالة") */
+var toastEl=$('#toast'), toastMsg=$('#toastMsg'), tTimer;
+window.maToast=function(msg){
+  if(!toastEl)return;
+  toastMsg.textContent=msg;
+  toastEl.classList.add('show');
+  clearTimeout(tTimer);
+  tTimer=setTimeout(function(){toastEl.classList.remove('show')},4200);
+};
+})();
+</script>
+
+<!-- سكربتات خاصة بهذا الدليل فقط -->
+<script>
+(function(){
+'use strict';
+var $=function(s,c){return (c||document).querySelector(s)};
+var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
+
+/* تعبئة صناديق الشيفرة من المصدر الحقيقي — مصدر واحد للحقيقة */
+ $('#cssOut').textContent=$('#ma-kit').textContent.trim();
+ $('#jsOut').textContent=$('#ma-core').textContent.trim();
+
+/* أزرار النسخ */
+ $$('.copy').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var text=document.getElementById(btn.dataset.copy).textContent;
+    function done(){
+      var old=btn.textContent;
+      btn.textContent='تم النسخ';
+      setTimeout(function(){btn.textContent=old},1600);
+    }
+    function fallback(){
+      var ta=document.createElement('textarea');
+      ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');done()}catch(e){}
+      document.body.removeChild(ta);
+    }
+    try{navigator.clipboard.writeText(text).then(done,fallback)}catch(e){fallback()}
+  });
+});
+
+/* مرشّحات تجريبية */
+ $$('#demoFilters button').forEach(function(b){
+  b.addEventListener('click',function(){
+    $$('#demoFilters button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+  });
+});
+
+/* التوست التجريبي */
+ $('#toastDemo').addEventListener('click',function(){maToast('هذا شكل التوست في النظام — يختفي بعد ٤ ثوانٍ')});
+
+/* المودال التجريبي */
+var modal=$('#demoModal');
+ $$('[data-open="demoModal"]').forEach(function(b){
+  b.addEventListener('click',function(){if(modal.showModal)modal.showModal()});
+});
+ $('#demoModalClose').addEventListener('click',function(){modal.close()});
+modal.addEventListener('click',function(e){if(e.target===modal)modal.close()});
+ $('#dmEnroll').addEventListener('click',function(){
+  modal.close();
+  maToast('سجّلت في «أساسيات التسويق الرقمي» — أكمل بريدك في صفحة الانضمام');
+});
+})();
+</script>
+</body>
+</html>
