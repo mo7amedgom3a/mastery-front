@@ -8,12 +8,23 @@
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "api:types": "openapi-typescript openapi.json -o src/types/openapi.ts",
+    "api:test": "tsx scripts/test-api-layer.ts",
+    "api:test:mutations": "tsx scripts/test-api-layer.ts --include-mutations"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.103.2",
+    "axios": "^1.20.0",
     "next": "latest",
+    "next-optimized-images": "^2.6.2",
+    "next-seo": "^7.3.0",
+    "next-sitemap": "^4.2.3",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "tanstack": "^2.0.3",
+    "zod": "^4.6.5",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",
@@ -22,8 +33,10 @@
     "@types/react-dom": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest",
+    "openapi-typescript": "^7.13.0",
     "postcss": "latest",
     "tailwindcss": "latest",
-    "typescript": "latest"
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
   }
 }
