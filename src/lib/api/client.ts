@@ -8,6 +8,7 @@ type PathParams = Record<string, string | number>;
 
 export type ApiRequestContext = {
   customerId?: string;
+  clientFingerprint?: string;
   rebuildToken?: string;
   requestId?: string;
 };
@@ -92,15 +93,27 @@ function buildHeaders(headers: HeadersInit | undefined, context: ApiRequestConte
     builtHeaders.set("X-Customer-Id", context.customerId);
   }
 
+  if (context?.clientFingerprint) {
+    builtHeaders.set("X-Client-Fingerprint", context.clientFingerprint);
+  }
+
   if (context?.rebuildToken) {
     builtHeaders.set("X-Recommendation-Rebuild-Token", context.rebuildToken);
   }
 
-  if (context?.requestId) {
-    builtHeaders.set("X-Request-ID", context.requestId);
+  const requestId = context?.requestId ?? createRequestId();
+  if (requestId) {
+    builtHeaders.set("X-Request-ID", requestId);
   }
 
   return builtHeaders;
+}
+
+function createRequestId(): string | undefined {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return undefined;
 }
 
 function buildApiUrl(path: string, pathParams: PathParams | undefined, query: QueryParams | undefined): string {
