@@ -1,0 +1,280 @@
+import { routes } from "@/config/routes";
+import type { LandingPageResponse, LegacyDiplomasResponse, LegacyPackagesResponse } from "@/lib/api/legacy";
+import type { SearchResponse } from "@/lib/api/search";
+import { cleanText, formatDurationFromSeconds, formatMinutes, toPlainText } from "@/lib/format";
+import { toPricing } from "@/lib/pricing";
+
+import type {
+  BannerVM,
+  CategoryVM,
+  ConsultationCardVM,
+  CourseCardVM,
+  FaqVM,
+  FilterVM,
+  LandingData,
+  PackageCardVM,
+  StatVM,
+} from "./types";
+
+// Landing, course and diploma lists all return the same course schema (and packages share one too).
+type CourseDto = LandingPageResponse["courses"]["items"][number];
+type PackageDto = LandingPageResponse["packages"]["items"][number];
+type SearchItemDto = SearchResponse["items"][number];
+type ConsultationDto = LandingPageResponse["consultations"]["items"][number];
+type CategoryDto = LandingPageResponse["categories"][number];
+type FaqDto = LandingPageResponse["faqs"][number];
+type BannerDto = LandingPageResponse["banners"][number];
+type InsightsDto = LandingPageResponse["insights"];
+
+/** Cards per rail. */
+export const MAX_CARDS = 12;
+
+function positiveOrNull(value: number | null | undefined): number | null {
+  return value && value > 0 ? value : null;
+}
+
+/** Some legacy rows are admin tests ("test") or have no usable image; keep them off the storefront. */
+function isPublishable(item: { active: boolean; name?: string | null; image?: string | null }): boolean {
+  const name = cleanText(item.name);
+  return item.active && !!name && name.toLowerCase() !== "test" && !!item.image;
+}
+
+/**
+ * Search-index facts about one product, keyed by legacy id. The index classifies every diploma and
+ * package (the legacy rows mostly have no category) and knows package prices the legacy list lacks.
+ */
+type IndexEntry = { labels: string[]; price: number | null };
+export type SearchIndex = Map<number, IndexEntry>;
+
+/** Index slugs are `${kind}-${legacyId}`, e.g. `diploma-270`. */
+export function toSearchIndex(kind: string, response: SearchResponse | null): SearchIndex {
+  const index: SearchIndex = new Map();
+  for (const item of response?.items ?? []) {
+    const id = legacyIdFromSlug(kind, item);
+    if (id === null) continue;
+    const labels = item.categories.map((label) => cleanText(label)).filter((label): label is string => !!label);
+    const price = item.price_amount === null || item.price_amount === undefined ? null : Number(item.price_amount);
+    index.set(id, { labels, price: price !== null && Number.isFinite(price) ? price : null });
+  }
+  return index;
+}
+
+function legacyIdFromSlug(kind: string, item: SearchItemDto): number | null {
+  const match = item.slug?.match(new RegExp(`^${kind}-(\\d+)$`));
+  return match ? Number(match[1]) : null;
+}
+
+/**
+ * Legacy rows carry a placeholder `price` of 0 when the real price lives in the price list, so
+ * only a price-list row (`current_price`) can say "free"; the bare column counts only when positive.
+ */
+function coursePricing(dto: CourseDto) {
+  const current = dto.current_price?.price ?? positiveOrNull(dto.price);
+  return { price: toPricing(current, dto.original_price), priceAmount: positiveOrNull(current) };
+}
+
+function mapCourse(dto: CourseDto, filterKeys: string[] = []): CourseCardVM {
+  const slug = cleanText(dto.link_name) ?? String(dto.id);
+  return {
+    id: dto.id,
+    title: cleanText(dto.name) ?? "",
+    summary: toPlainText(dto.description ?? dto.intro, 140),
+    image: dto.image || dto.square_image || null,
+    href: dto.is_diploma ? routes.diploma(slug) : routes.course(slug),
+    category: cleanText(dto.category_name),
+    duration: formatDurationFromSeconds(dto.duration),
+    ...coursePricing(dto),
+    filterKeys,
+  };
+}
+
+function mapPackage(dto: PackageDto, entry: IndexEntry | undefined): PackageCardVM {
+  // `current_price` needs the pricing-aware backend; until then the search index has the price.
+  const current = dto.current_price?.price ?? positiveOrNull(dto.price) ?? positiveOrNull(entry?.price);
+  return {
+    id: dto.id,
+    title: cleanText(dto.name) ?? "",
+    summary: toPlainText(dto.description, 140),
+    image: dto.image ?? null,
+    href: routes.package(dto.id),
+    courseCount: dto.course_count,
+    price: toPricing(current, dto.original_price),
+    priceAmount: positiveOrNull(current),
+    filterKeys: entry?.labels ?? [],
+  };
+}
+
+function mapConsultation(dto: ConsultationDto): ConsultationCardVM {
+  return {
+    id: dto.id,
+    title: cleanText(dto.name) ?? "",
+    summary: toPlainText(dto.body, 140),
+    image: dto.image ?? null,
+    href: routes.consultation(dto.id),
+    consultant: cleanText(dto.consultant_name),
+    sessions: dto.number_of_sessions,
+    sessionLength: formatMinutes(dto.session_duration),
+    price: toPricing(dto.price),
+    priceAmount: positiveOrNull(dto.price),
+  };
+}
+
+function mapCategory(dto: CategoryDto): CategoryVM | null {
+  const name = cleanText(dto.name);
+  if (!name || dto.parent_id !== null) {
+    return null;
+  }
+  return { id: dto.id, name, href: routes.category(dto.id) };
+}
+
+function mapFaq(dto: FaqDto): FaqVM | null {
+  const question = cleanText(dto.question);
+  const answer = toPlainText(dto.answer, 800);
+  return question && answer ? { question, answer } : null;
+}
+
+function mapBanner(banners: BannerDto[]): BannerVM | null {
+  const banner = [...banners]
+    .sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER))
+    .find((item) => cleanText(item.header) || cleanText(item.subtitle));
+  if (!banner) {
+    return null;
+  }
+  const text = [cleanText(banner.header), cleanText(banner.subtitle)].filter(Boolean).join(" — ");
+  const href = banner.link_url && /^https?:\/\//.test(banner.link_url) ? banner.link_url : null;
+  return { id: banner.id, text, href };
+}
+
+/** Only real, non-zero counters are shown; a "0 شهادة" stat hurts more than it helps. */
+function mapStats(insights: InsightsDto | null | undefined): StatVM[] {
+  if (!insights) {
+    return [];
+  }
+  const candidates: StatVM[] = [
+    { key: "courses", value: insights.active_courses, label: "دورة تدريبية" },
+    { key: "instructors", value: insights.active_instructors, label: "خبير ومدرّب" },
+    { key: "diplomas", value: insights.active_diplomas, label: "دبلوم احترافي" },
+    { key: "packages", value: insights.active_packages, label: "باقة تعليمية" },
+    { key: "certificates", value: insights.certificates_issued, label: "شهادة صادرة" },
+    { key: "graduates", value: insights.students_with_completed_courses, label: "متعلّم أتمّ دوراته" },
+  ];
+  return candidates.filter((stat) => stat.value > 0).slice(0, 4);
+}
+
+/** Filter chips from item labels, most-used first; labels are both the key and the text. */
+function labelFilters(items: { filterKeys: string[] }[]): FilterVM[] {
+  const counts = new Map<string, number>();
+  for (const item of items) {
+    for (const key of item.filterKeys) counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return [...counts]
+    .toSorted(([a, countA], [b, countB]) => countB - countA || a.localeCompare(b, "ar"))
+    .map(([key]) => ({ key, label: key }));
+}
+
+export type CategoryCourses = { categoryId: number; items: CourseDto[] };
+
+/**
+ * The featured rail followed by each category's rail, one card per course: a course listed in
+ * several categories carries all of their keys. Categories without courses get no chip.
+ */
+function mapCourseRails(
+  featured: CourseDto[],
+  categoryCourses: CategoryCourses[],
+  categories: CategoryVM[],
+): { courses: CourseCardVM[]; filters: FilterVM[] } {
+  const byId = new Map<number, CourseCardVM>();
+  const add = (dto: CourseDto, key?: string) => {
+    if (!isPublishable(dto)) return false;
+    const course = byId.get(dto.id) ?? mapCourse(dto);
+    if (key && !course.filterKeys.includes(key)) course.filterKeys.push(key);
+    byId.set(dto.id, course);
+    return true;
+  };
+
+  featured.slice(0, MAX_CARDS).forEach((dto) => add(dto));
+  const filled = new Set<number>();
+  for (const { categoryId, items } of categoryCourses) {
+    const key = String(categoryId);
+    if (items.map((dto) => add(dto, key)).some(Boolean)) filled.add(categoryId);
+  }
+
+  return {
+    courses: [...byId.values()],
+    filters: categories
+      .filter((category) => filled.has(category.id))
+      .map((category) => ({ key: String(category.id), label: category.name, href: category.href })),
+  };
+}
+
+export const emptyLandingData: LandingData = {
+  banner: null,
+  categories: [],
+  courses: [],
+  courseFilters: [],
+  coursesTotal: 0,
+  diplomas: [],
+  diplomaFilters: [],
+  packages: [],
+  packageFilters: [],
+  consultations: [],
+  faqs: [],
+  stats: [],
+};
+
+export type LandingSources = {
+  landing: LandingPageResponse | null;
+  categoryCourses: CategoryCourses[];
+  activeDiplomas: LegacyDiplomasResponse | null;
+  packages: LegacyPackagesResponse | null;
+  diplomaIndex: SearchIndex;
+  packageIndex: SearchIndex;
+};
+
+export function mapLandingData({
+  landing,
+  categoryCourses,
+  activeDiplomas,
+  packages: allPackages,
+  diplomaIndex,
+  packageIndex,
+}: LandingSources): LandingData {
+  if (!landing && !activeDiplomas && !allPackages) {
+    return emptyLandingData;
+  }
+
+  const categories = (landing?.categories ?? [])
+    .toSorted((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map(mapCategory)
+    .filter((category): category is CategoryVM => category !== null);
+
+  const courseRails = mapCourseRails(landing?.courses.items ?? [], categoryCourses, categories);
+
+  // The aggregate endpoint returns featured diplomas regardless of status; prefer the active list.
+  const diplomaSource = activeDiplomas?.items ?? landing?.diplomas.items ?? [];
+  const diplomas = diplomaSource.filter(isPublishable).map((dto) => {
+    const category = cleanText(dto.category_name);
+    return mapCourse(dto, diplomaIndex.get(dto.id)?.labels ?? (category ? [category] : []));
+  });
+
+  const packageSource = allPackages?.items ?? landing?.packages.items ?? [];
+  const packages = packageSource.filter(isPublishable).map((dto) => mapPackage(dto, packageIndex.get(dto.id)));
+
+  return {
+    banner: landing ? mapBanner(landing.banners) : null,
+    categories,
+    courses: courseRails.courses,
+    courseFilters: courseRails.filters,
+    coursesTotal: landing?.courses.total ?? 0,
+    diplomas,
+    diplomaFilters: labelFilters(diplomas),
+    packages,
+    packageFilters: labelFilters(packages),
+    consultations: (landing?.consultations.items ?? [])
+      .filter(isPublishable)
+      .slice(0, MAX_CARDS)
+      .map(mapConsultation),
+    faqs: (landing?.faqs ?? []).map(mapFaq).filter((faq): faq is FaqVM => faq !== null),
+    stats: mapStats(landing?.insights),
+  };
+}

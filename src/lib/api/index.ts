@@ -1,4 +1,5 @@
 export * from "@/lib/api/analytics";
+export * from "@/lib/api/auth";
 export * from "@/lib/api/catalog";
 export * from "@/lib/api/client";
 export * from "@/lib/api/customers";

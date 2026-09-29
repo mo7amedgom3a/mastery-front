@@ -33,9 +33,7 @@ export type WishlistAddRequest = RequestBody<AddWishlistItemOperation>;
 export type WishlistItemResponse = SuccessResponse<AddWishlistItemOperation>;
 export type RemoveWishlistItemResponse = SuccessResponse<RemoveWishlistItemOperation>;
 
-type CustomerRequestOptions = Omit<ApiRequestOptions, "context"> & {
-  context: ApiRequestContext & { customerId: string };
-};
+type AuthenticatedRequestOptions = Omit<ApiRequestOptions, "credentials">;
 
 const customerPaths = {
   me: "/api/v1/me",
@@ -50,145 +48,146 @@ const customerPaths = {
 
 export const customerKeys = {
   all: ["customer"] as const,
-  me: (customerId: string) => [...customerKeys.all, customerId, "profile"] as const,
-  learningProfile: (customerId: string) => [...customerKeys.all, customerId, "learning-profile"] as const,
+  me: () => [...customerKeys.all, "me"] as const,
+  learningProfile: () => [...customerKeys.all, "learning-profile"] as const,
   skills: () => [...customerKeys.all, "skills"] as const,
   onboardingQuestions: () => [...customerKeys.all, "onboarding", "questions"] as const,
-  recommendationContext: (customerId: string) =>
-    [...customerKeys.all, customerId, "recommendation-context"] as const,
-  wishlist: (customerId: string, params?: WishlistItemsParams) =>
-    [...customerKeys.all, customerId, "wishlist", params ?? {}] as const,
+  recommendationContext: () => [...customerKeys.all, "recommendation-context"] as const,
+  wishlist: (params?: WishlistItemsParams) => [...customerKeys.all, "wishlist", params ?? {}] as const,
 };
 
-export function getMe(options: CustomerRequestOptions): Promise<CustomerProfileResponse> {
-  return apiRequest<CustomerProfileResponse>("GET", customerPaths.me, options);
+function withAuthCookies(options?: AuthenticatedRequestOptions): AuthenticatedRequestOptions & { credentials: "include" } {
+  return {
+    ...options,
+    credentials: "include",
+  };
+}
+
+export function getMe(options?: AuthenticatedRequestOptions): Promise<CustomerProfileResponse> {
+  return apiRequest<CustomerProfileResponse>("GET", customerPaths.me, withAuthCookies(options));
 }
 
 export function updateMe(
   body: CustomerProfileUpdateRequest,
-  options: CustomerRequestOptions,
+  options?: AuthenticatedRequestOptions,
 ): Promise<CustomerProfileResponse> {
   return apiRequest<CustomerProfileResponse>("PATCH", customerPaths.me, {
-    ...options,
+    ...withAuthCookies(options),
     body,
   });
 }
 
-export function getLearningProfile(options: CustomerRequestOptions): Promise<LearningProfileResponse> {
-  return apiRequest<LearningProfileResponse>("GET", customerPaths.learningProfile, options);
+export function getLearningProfile(options?: AuthenticatedRequestOptions): Promise<LearningProfileResponse> {
+  return apiRequest<LearningProfileResponse>("GET", customerPaths.learningProfile, withAuthCookies(options));
 }
 
 export function upsertLearningProfile(
   body: LearningProfileUpsertRequest,
-  options: CustomerRequestOptions,
+  options?: AuthenticatedRequestOptions,
 ): Promise<LearningProfileResponse> {
   return apiRequest<LearningProfileResponse>("PUT", customerPaths.learningProfile, {
-    ...options,
+    ...withAuthCookies(options),
     body,
   });
 }
 
-export function getSkills(options?: ApiRequestOptions): Promise<SkillGraphResponse> {
-  return apiRequest<SkillGraphResponse>("GET", customerPaths.skills, options);
+export function getSkills(options?: AuthenticatedRequestOptions): Promise<SkillGraphResponse> {
+  return apiRequest<SkillGraphResponse>("GET", customerPaths.skills, withAuthCookies(options));
 }
 
 export function setTargetSkills(
   body: TargetSkillsUpdateRequest,
-  options: CustomerRequestOptions,
+  options?: AuthenticatedRequestOptions,
 ): Promise<CustomerTargetSkillsResponse> {
   return apiRequest<CustomerTargetSkillsResponse>("PUT", customerPaths.skills, {
-    ...options,
+    ...withAuthCookies(options),
     body,
   });
 }
 
-export function getOnboardingQuestions(options?: ApiRequestOptions): Promise<OnboardingQuestionsResponse> {
-  return apiRequest<OnboardingQuestionsResponse>("GET", customerPaths.onboardingQuestions, options);
+export function getOnboardingQuestions(options?: AuthenticatedRequestOptions): Promise<OnboardingQuestionsResponse> {
+  return apiRequest<OnboardingQuestionsResponse>("GET", customerPaths.onboardingQuestions, withAuthCookies(options));
 }
 
 export function completeOnboarding(
   body: OnboardingAnswersRequest,
-  options: CustomerRequestOptions,
+  options?: AuthenticatedRequestOptions,
 ): Promise<OnboardingAnswersResponse> {
   return apiRequest<OnboardingAnswersResponse>("POST", customerPaths.onboardingAnswers, {
-    ...options,
+    ...withAuthCookies(options),
     body,
   });
 }
 
-export function getRecommendationContext(options: CustomerRequestOptions): Promise<RecommendationContextResponse> {
-  return apiRequest<RecommendationContextResponse>("GET", customerPaths.recommendationContext, options);
+export function getRecommendationContext(options?: AuthenticatedRequestOptions): Promise<RecommendationContextResponse> {
+  return apiRequest<RecommendationContextResponse>("GET", customerPaths.recommendationContext, withAuthCookies(options));
 }
 
 export function getWishlistItems(
   params: WishlistItemsParams | undefined,
-  options: CustomerRequestOptions,
+  options?: AuthenticatedRequestOptions,
 ): Promise<WishlistPageResponse> {
   return apiRequest<WishlistPageResponse>("GET", customerPaths.wishlist, {
-    ...options,
+    ...withAuthCookies(options),
     query: params,
   });
 }
 
 export function addWishlistItem(
   body: WishlistAddRequest,
-  options: CustomerRequestOptions,
+  options?: AuthenticatedRequestOptions,
 ): Promise<WishlistItemResponse> {
   return apiRequest<WishlistItemResponse>("POST", customerPaths.wishlist, {
-    ...options,
+    ...withAuthCookies(options),
     body,
   });
 }
 
 export function removeWishlistItem(
   productId: PathParams<RemoveWishlistItemOperation>["product_id"],
-  options: CustomerRequestOptions,
+  options?: AuthenticatedRequestOptions,
 ): Promise<RemoveWishlistItemResponse> {
   return apiRequest<RemoveWishlistItemResponse>("DELETE", customerPaths.wishlistItem, {
-    ...options,
+    ...withAuthCookies(options),
     path: { product_id: productId },
   });
 }
 
 export const customerQueries = {
-  me: (customerId: string, context?: Omit<ApiRequestContext, "customerId">) =>
+  me: (context?: ApiRequestContext) =>
     queryOptions({
-      queryKey: customerKeys.me(customerId),
-      queryFn: ({ signal }) => getMe({ signal, context: { ...context, customerId } }),
+      queryKey: customerKeys.me(),
+      queryFn: ({ signal }) => getMe({ signal, context }),
       staleTime: 60_000,
     }),
-  learningProfile: (customerId: string, context?: Omit<ApiRequestContext, "customerId">) =>
+  learningProfile: (context?: ApiRequestContext) =>
     queryOptions({
-      queryKey: customerKeys.learningProfile(customerId),
-      queryFn: ({ signal }) => getLearningProfile({ signal, context: { ...context, customerId } }),
+      queryKey: customerKeys.learningProfile(),
+      queryFn: ({ signal }) => getLearningProfile({ signal, context }),
       staleTime: 60_000,
     }),
-  skills: () =>
+  skills: (context?: ApiRequestContext) =>
     queryOptions({
       queryKey: customerKeys.skills(),
-      queryFn: ({ signal }) => getSkills({ signal }),
+      queryFn: ({ signal }) => getSkills({ signal, context }),
       staleTime: 10 * 60_000,
     }),
-  onboardingQuestions: () =>
+  onboardingQuestions: (context?: ApiRequestContext) =>
     queryOptions({
       queryKey: customerKeys.onboardingQuestions(),
-      queryFn: ({ signal }) => getOnboardingQuestions({ signal }),
+      queryFn: ({ signal }) => getOnboardingQuestions({ signal, context }),
       staleTime: 10 * 60_000,
     }),
-  recommendationContext: (customerId: string, context?: Omit<ApiRequestContext, "customerId">) =>
+  recommendationContext: (context?: ApiRequestContext) =>
     queryOptions({
-      queryKey: customerKeys.recommendationContext(customerId),
-      queryFn: ({ signal }) => getRecommendationContext({ signal, context: { ...context, customerId } }),
+      queryKey: customerKeys.recommendationContext(),
+      queryFn: ({ signal }) => getRecommendationContext({ signal, context }),
       staleTime: 60_000,
     }),
-  wishlist: (
-    customerId: string,
-    params?: WishlistItemsParams,
-    context?: Omit<ApiRequestContext, "customerId">,
-  ) =>
+  wishlist: (params?: WishlistItemsParams, context?: ApiRequestContext) =>
     queryOptions({
-      queryKey: customerKeys.wishlist(customerId, params),
-      queryFn: ({ signal }) => getWishlistItems(params, { signal, context: { ...context, customerId } }),
+      queryKey: customerKeys.wishlist(params),
+      queryFn: ({ signal }) => getWishlistItems(params, { signal, context }),
       staleTime: 30_000,
     }),
 };

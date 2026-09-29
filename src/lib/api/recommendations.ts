@@ -17,9 +17,7 @@ export type LandingRecommendationsParams = QueryParams<LandingRecommendationsOpe
 export type LandingRecommendationsResponse = SuccessResponse<LandingRecommendationsOperation>;
 export type RecommendationJobResponse = SuccessResponse<RebuildRecommendationsOperation>;
 
-type CustomerRecommendationOptions = Omit<ApiRequestOptions, "context"> & {
-  context: ApiRequestContext & { customerId: string };
-};
+type AuthenticatedRequestOptions = Omit<ApiRequestOptions, "credentials">;
 type RebuildOptions = Omit<ApiRequestOptions, "context"> & {
   context: ApiRequestContext & { rebuildToken: string };
 };
@@ -36,8 +34,7 @@ export const recommendationKeys = {
   all: ["recommendations"] as const,
   product: (slug: string, params?: ProductRecommendationsParams) =>
     [...recommendationKeys.all, "products", slug, params ?? {}] as const,
-  me: (customerId: string, params?: MyRecommendationsParams) =>
-    [...recommendationKeys.all, "me", customerId, params ?? {}] as const,
+  me: (params?: MyRecommendationsParams) => [...recommendationKeys.all, "me", params ?? {}] as const,
   landing: (params?: LandingRecommendationsParams) => [...recommendationKeys.all, "landing", params ?? {}] as const,
   rebuildJob: (jobId: string) => [...recommendationKeys.all, "rebuild", jobId] as const,
 };
@@ -56,10 +53,11 @@ export function getProductRecommendations(
 
 export function getMyRecommendations(
   params: MyRecommendationsParams | undefined,
-  options: CustomerRecommendationOptions,
+  options?: AuthenticatedRequestOptions,
 ): Promise<MyRecommendationsResponse> {
   return apiRequest<MyRecommendationsResponse>("GET", recommendationPaths.me, {
     ...options,
+    credentials: "include",
     query: params,
   });
 }
@@ -95,10 +93,10 @@ export const recommendationQueries = {
       queryFn: ({ signal }) => getProductRecommendations(slug, params, { signal }),
       staleTime: 5 * 60_000,
     }),
-  me: (customerId: string, params?: MyRecommendationsParams, context?: Omit<ApiRequestContext, "customerId">) =>
+  me: (params?: MyRecommendationsParams, context?: ApiRequestContext) =>
     queryOptions({
-      queryKey: recommendationKeys.me(customerId, params),
-      queryFn: ({ signal }) => getMyRecommendations(params, { signal, context: { ...context, customerId } }),
+      queryKey: recommendationKeys.me(params),
+      queryFn: ({ signal }) => getMyRecommendations(params, { signal, context }),
       staleTime: 60_000,
     }),
   landing: (params?: LandingRecommendationsParams) =>

@@ -1,0 +1,35 @@
+<!doctype html>
+<!--
+  Source of src/app/opengraph-image.jpg and twitter-image.jpg (1200x630).
+  Rendered with headless Chrome because next/og (Satori) cannot shape Arabic text. To regenerate:
+    google-chrome --headless=new --hide-scrollbars --force-device-scale-factor=1 --virtual-time-budget=8000       --window-size=1200,630 --screenshot=og.png scripts/brand-assets/og-image.html
+  then convert to JPEG (e.g. sharp, quality 82) and copy over both files.
+--><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>
+@font-face{font-family:Plex;src:url(../../src/app/fonts/IBMPlexSansArabic-Bold.woff2) format("woff2");font-weight:700}
+@font-face{font-family:Plex;src:url(../../src/app/fonts/IBMPlexSansArabic-Medium.woff2) format("woff2");font-weight:500}
+html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#17161b;color:#fffeeb;font-family:Plex}
+.wrap{position:relative;display:flex;height:100%}
+.copy{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 80px 0 40px;gap:28px}
+.logo{height:40px;align-self:flex-start}
+h1{margin:0;font-size:84px;line-height:1.15;font-weight:700}
+p{margin:0;font-size:32px;line-height:1.6;font-weight:500;color:#d9d6cf;max-width:640px}
+.tag{align-self:flex-start;border:2px solid #ff6555;color:#ff6555;padding:6px 16px;font-size:24px;font-weight:500}
+.grid{width:420px;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 0 0 0;transform:translateY(-40px)}
+.grid div{aspect-ratio:600/811;border-radius:12px;overflow:hidden}
+.grid img{width:100%;height:100%;object-fit:cover;display:block}
+.grid div:nth-child(2n){transform:translateY(90px)}
+.bar{position:absolute;inset-inline:0;bottom:0;height:10px;background:#ff6555}
+</style></head><body><div class="wrap">
+<div class="copy">
+<img class="logo" src="../../public/brand/ma-logo-coral-white.svg" alt="">
+<span class="tag">منذ 2017</span>
+<h1>نبني قادة العصر الرقمي</h1>
+<p>دورات ودبلومات بالعربية في التسويق والإدارة والقيادة وريادة الأعمال، مع خبراء يمارسون ما يدرّسونه.</p>
+</div>
+<div class="grid">
+<div style="background:#ff6555"><img src="https://live.emasteryacademy.com/uploads/9dd4f2e5-a520-4adc-ac4b-66b6c008db07.png"></div>
+<div style="background:#ffcd4c"><img src="https://live.emasteryacademy.com/uploads/8ea140f3-589b-40c4-a7b3-2360adbbe14c.png"></div>
+<div style="background:#b9a5ff"><img src="https://live.emasteryacademy.com/uploads/f0b31ae2-fc5e-4421-9635-48c9b12fec8c.png"></div>
+<div style="background:#8fd3ff"><img src="https://live.emasteryacademy.com/uploads/13ee2ffa-f0e8-4f5b-9d9e-44aaf4279f04.png"></div>
+</div>
+<div class="bar"></div></div></body></html>

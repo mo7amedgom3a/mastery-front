@@ -22,9 +22,8 @@ export function getClientFingerprint(): string | undefined {
   return fingerprint;
 }
 
-export function getCustomerTrackingContext(customerId?: string): ApiRequestContext {
+export function getCustomerTrackingContext(): ApiRequestContext {
   return {
-    customerId,
     clientFingerprint: getClientFingerprint(),
     requestId: createRequestId(),
   };

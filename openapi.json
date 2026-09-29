@@ -47,6 +47,367 @@
         }
       }
     },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginChallengeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/2fa/check": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Check 2Fa",
+        "operationId": "check_2fa_api_v1_auth_2fa_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorCheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Refresh",
+        "operationId": "refresh_api_v1_auth_refresh_post",
+        "parameters": [
+          {
+            "name": "b2c_refresh_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Refresh Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logout",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "b2c_refresh_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Refresh Token"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Me",
+        "operationId": "me_api_v1_auth_me_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/events": {
+      "post": {
+        "tags": [
+          "Analytics"
+        ],
+        "summary": "Record Behavior Event",
+        "operationId": "record_behavior_event_api_v1_analytics_events_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BehaviorEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BehaviorEventResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/catalog/product-types": {
       "get": {
         "tags": [
@@ -394,10 +755,15 @@
         ],
         "summary": "Me",
         "operationId": "me_api_v1_me_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -408,7 +774,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -441,10 +807,15 @@
         ],
         "summary": "Update Me",
         "operationId": "update_me_api_v1_me_patch",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -455,7 +826,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -500,10 +871,15 @@
         ],
         "summary": "Learning Profile",
         "operationId": "learning_profile_api_v1_me_learning_goal_profile_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -514,7 +890,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -547,10 +923,15 @@
         ],
         "summary": "Upsert Learning Profile",
         "operationId": "upsert_learning_profile_api_v1_me_learning_goal_profile_put",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -561,7 +942,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -606,6 +987,29 @@
         ],
         "summary": "Skills",
         "operationId": "skills_api_v1_me_skills_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -620,6 +1024,16 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
         }
       },
@@ -629,10 +1043,15 @@
         ],
         "summary": "Set Target Skills",
         "operationId": "set_target_skills_api_v1_me_skills_put",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -643,7 +1062,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -692,17 +1111,50 @@
         ],
         "summary": "Onboarding Questions",
         "operationId": "onboarding_questions_api_v1_me_onboarding_questions_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/OnboardingQuestionResponse"
                   },
-                  "type": "array",
                   "title": "Response Onboarding Questions Api V1 Me Onboarding Questions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -717,10 +1169,15 @@
         ],
         "summary": "Complete Onboarding",
         "operationId": "complete_onboarding_api_v1_me_onboarding_answers_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -731,7 +1188,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -780,10 +1237,15 @@
         ],
         "summary": "Recommendation Context",
         "operationId": "recommendation_context_api_v1_me_recommendation_context_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -794,7 +1256,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -829,6 +1291,11 @@
         ],
         "summary": "Wishlist Items",
         "operationId": "wishlist_items_api_v1_me_wishlist_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
             "name": "limit",
@@ -854,8 +1321,8 @@
             }
           },
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -866,7 +1333,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -899,10 +1366,15 @@
         ],
         "summary": "Add Wishlist Item",
         "operationId": "add_wishlist_item_api_v1_me_wishlist_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -913,7 +1385,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -958,6 +1430,11 @@
         ],
         "summary": "Remove Wishlist Item",
         "operationId": "remove_wishlist_item_api_v1_me_wishlist__product_id__delete",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
             "name": "product_id",
@@ -970,8 +1447,8 @@
             }
           },
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -982,7 +1459,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -2298,6 +2775,11 @@
         ],
         "summary": "My Recommendations",
         "operationId": "my_recommendations_api_v1_recommendations_me_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
         "parameters": [
           {
             "name": "limit",
@@ -2312,8 +2794,8 @@
             }
           },
           {
-            "name": "X-Customer-Id",
-            "in": "header",
+            "name": "b2c_access_token",
+            "in": "cookie",
             "required": false,
             "schema": {
               "anyOf": [
@@ -2324,7 +2806,7 @@
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -2839,20 +3321,35 @@
             }
           },
           {
-            "name": "X-Customer-Id",
+            "name": "Authorization",
             "in": "header",
             "required": false,
             "schema": {
               "anyOf": [
                 {
-                  "type": "string",
-                  "format": "uuid"
+                  "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -2887,20 +3384,35 @@
         "operationId": "advanced_search_api_v1_search_post",
         "parameters": [
           {
-            "name": "X-Customer-Id",
+            "name": "Authorization",
             "in": "header",
             "required": false,
             "schema": {
               "anyOf": [
                 {
-                  "type": "string",
-                  "format": "uuid"
+                  "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -3081,20 +3593,35 @@
             }
           },
           {
-            "name": "X-Customer-Id",
+            "name": "Authorization",
             "in": "header",
             "required": false,
             "schema": {
               "anyOf": [
                 {
-                  "type": "string",
-                  "format": "uuid"
+                  "type": "string"
                 },
                 {
                   "type": "null"
                 }
               ],
-              "title": "X-Customer-Id"
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
             }
           }
         ],
@@ -3165,6 +3692,39 @@
   },
   "components": {
     "schemas": {
+      "AuthResponse": {
+        "properties": {
+          "customer": {
+            "$ref": "#/components/schemas/CustomerAuthResponse"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "tokens": {
+            "$ref": "#/components/schemas/TokenResponse"
+          },
+          "legacy": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer",
+          "provider",
+          "tokens"
+        ],
+        "title": "AuthResponse"
+      },
       "BannerResponse": {
         "properties": {
           "id": {
@@ -3302,6 +3862,84 @@
           "type"
         ],
         "title": "BannerResponse"
+      },
+      "BehaviorEventRequest": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 3,
+            "pattern": "^[a-z0-9_.:-]+$",
+            "title": "Event Type"
+          },
+          "entity_type": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "pattern": "^[a-z0-9_.:-]+$",
+            "title": "Entity Type"
+          },
+          "legacy_entity_id": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Entity Id"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_type",
+          "entity_type"
+        ],
+        "title": "BehaviorEventRequest"
+      },
+      "BehaviorEventResponse": {
+        "properties": {
+          "recorded": {
+            "type": "boolean",
+            "title": "Recorded"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recorded",
+          "request_id"
+        ],
+        "title": "BehaviorEventResponse"
       },
       "CertificateResponse": {
         "properties": {
@@ -3507,6 +4145,38 @@
           "source": {
             "type": "string",
             "title": "Source"
+          },
+          "category_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "current_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "original_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Price"
           }
         },
         "type": "object",
@@ -4009,6 +4679,17 @@
                 "type": "null"
               }
             ]
+          },
+          "original_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Price"
           }
         },
         "type": "object",
@@ -4031,6 +4712,63 @@
           "current_price"
         ],
         "title": "CourseResponse"
+      },
+      "CustomerAuthResponse": {
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Customer Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "lms_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lms User Id"
+          },
+          "lms_numeric_user_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lms Numeric User Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer_id",
+          "email",
+          "status"
+        ],
+        "title": "CustomerAuthResponse"
       },
       "CustomerProfileResponse": {
         "properties": {
@@ -4989,6 +5727,61 @@
           "offset"
         ],
         "title": "LegacyPageResponse[InstructorResponse]"
+      },
+      "LoginChallengeResponse": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "userId": {
+            "type": "string",
+            "title": "Userid"
+          },
+          "requires2fa": {
+            "type": "boolean",
+            "title": "Requires2Fa",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "userId"
+        ],
+        "title": "LoginChallengeResponse"
+      },
+      "LoginRequest": {
+        "properties": {
+          "loginName": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 3,
+            "title": "Loginname"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loginName"
+        ],
+        "title": "LoginRequest"
+      },
+      "LogoutRequest": {
+        "properties": {
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token"
+          }
+        },
+        "type": "object",
+        "title": "LogoutRequest"
       },
       "MaterialResponse": {
         "properties": {
@@ -6002,6 +6795,99 @@
           "context"
         ],
         "title": "RecommendationPageResponse"
+      },
+      "RefreshRequest": {
+        "properties": {
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token"
+          }
+        },
+        "type": "object",
+        "title": "RefreshRequest"
+      },
+      "RegisterRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 3,
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 8,
+            "title": "Password"
+          },
+          "repassword": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 8,
+            "title": "Repassword"
+          },
+          "fullname": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Fullname"
+          },
+          "acceptterms": {
+            "type": "boolean",
+            "title": "Acceptterms"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password",
+          "repassword",
+          "fullname",
+          "acceptterms"
+        ],
+        "title": "RegisterRequest"
+      },
+      "RegisterResponse": {
+        "properties": {
+          "registered": {
+            "type": "boolean",
+            "title": "Registered"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "provider_response": {
+            "type": "string",
+            "title": "Provider Response"
+          }
+        },
+        "type": "object",
+        "required": [
+          "registered",
+          "provider",
+          "provider_response"
+        ],
+        "title": "RegisterResponse"
       },
       "RelatedInstructorCardResponse": {
         "properties": {
@@ -7317,6 +8203,39 @@
         ],
         "title": "TargetSkillsUpdateRequest"
       },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          },
+          "refresh_expires_in": {
+            "type": "integer",
+            "title": "Refresh Expires In"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "refresh_token",
+          "token_type",
+          "expires_in",
+          "refresh_expires_in"
+        ],
+        "title": "TokenResponse"
+      },
       "TrainerResponse": {
         "properties": {
           "id": {
@@ -7365,6 +8284,33 @@
           "info"
         ],
         "title": "TrainerResponse"
+      },
+      "TwoFactorCheckRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 3,
+            "title": "Email"
+          },
+          "userId": {
+            "type": "string",
+            "title": "Userid"
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 4,
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "userId",
+          "code"
+        ],
+        "title": "TwoFactorCheckRequest"
       },
       "UnitResponse": {
         "properties": {
@@ -8005,6 +8951,13 @@
         },
         "type": "object",
         "title": "RelatedResourcesResponse"
+      }
+    },
+    "securitySchemes": {
+      "B2C JWT": {
+        "type": "http",
+        "description": "Paste a B2C access token. The API also accepts the b2c_access_token cookie.",
+        "scheme": "bearer"
       }
     }
   }
