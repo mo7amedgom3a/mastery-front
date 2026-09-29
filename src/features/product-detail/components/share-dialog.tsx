@@ -5,19 +5,28 @@ import { Check, Copy, Download, Link2, Send, Share2, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 
+import { brandBg, brandColorAt } from "@/components/ui/brand-colors";
+import { formatCount } from "@/lib/format";
+
 import type { QrMatrix } from "../api/share-qr";
 import { QrCode, qrSvgMarkup } from "./qr-code";
 
 export type ShareTrainer = { name: string; avatar: string | null; initial: string };
 
+/** Avatars stacked on the share card; the rest are counted. */
+const MAX_SHARE_AVATARS = 5;
+const OTHER_TRAINER_FORMS = { one: "مدرب آخر", two: "مدربان آخران", few: "مدربين آخرين", many: "مدرباً آخر" };
+
 type ShareDialogProps = {
-  /** Canonical absolute URL of the course or diploma. */
+  /** Canonical absolute URL of the course, diploma or package. */
   url: string;
   title: string;
-  /** "دورة" | "دبلوم". */
+  /** "دورة" | "دبلوم" | "باقة". */
   kindLabel: string;
+  /** Kit tag modifier for the kind, e.g. `ma-tag--coral`. */
+  tagClassName?: string;
   facts: readonly string[];
-  trainer: ShareTrainer | null;
+  trainers: readonly ShareTrainer[];
   qr: QrMatrix;
   /** File name for the downloaded QR code, without extension. */
   fileName: string;
@@ -65,8 +74,53 @@ function tagged(url: string, source: string): string {
   return next.toString();
 }
 
+/** "أ. كريم" · "أ. كريم وأ. سهل" · "أ. كريم ومدربان آخران" · "أ. كريم و3 مدربين آخرين". */
+function trainerNames(trainers: readonly ShareTrainer[]): string {
+  const [lead, second] = trainers;
+  if (trainers.length === 1) return lead.name;
+  if (trainers.length === 2) return `${lead.name} و${second.name}`;
+  return `${lead.name} و${formatCount(trainers.length - 1, OTHER_TRAINER_FORMS)}`;
+}
+
+/** Every trainer's avatar, overlapping like the hero strip, with their names beside it. */
+function ShareTrainers({ trainers }: { trainers: readonly ShareTrainer[] }) {
+  const shown = trainers.slice(0, MAX_SHARE_AVATARS);
+  const hidden = trainers.length - shown.length;
+  return (
+    <div className="mt-auto flex items-center gap-3">
+      <ul aria-hidden="true" className="m-0 flex shrink-0 list-none p-0">
+        {shown.map((trainer, index) => (
+          <li
+            key={`${trainer.name}-${index}`}
+            className={cn(
+              "relative grid size-12 place-content-center overflow-hidden rounded-full font-bold text-ink ring-2 ring-surface-alt",
+              brandBg[brandColorAt(index)],
+              index > 0 && "-ms-3",
+            )}
+          >
+            {trainer.avatar ? (
+              <Image src={trainer.avatar} alt="" fill sizes="48px" className="object-cover" />
+            ) : (
+              <span>{trainer.initial}</span>
+            )}
+          </li>
+        ))}
+        {hidden > 0 ? (
+          <li className="-ms-3 grid size-12 place-content-center rounded-full bg-surface text-sm font-bold tabular-nums ring-2 ring-surface-alt">
+            <span dir="ltr">+{hidden}</span>
+          </li>
+        ) : null}
+      </ul>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-xs text-fg-muted">{trainers.length > 1 ? "المدربون" : "المدرب"}</span>
+        <span className="font-bold text-pretty">{trainerNames(trainers)}</span>
+      </span>
+    </div>
+  );
+}
+
 /**
- * "مشاركة" button + dialog: a share card (course, facts, trainer and a QR code that opens the page),
+ * "مشاركة" button + dialog: a share card (course, facts, every trainer and a QR code that opens the page),
  * the device's native share sheet where available, social networks, copy link and a QR download.
  */
 export function ShareButton(props: ShareDialogProps) {
@@ -75,7 +129,7 @@ export function ShareButton(props: ShareDialogProps) {
   const canNativeShare = useCanNativeShare();
   // The button appears in the hero and the purchase card: each dialog needs its own ids.
   const titleId = useId();
-  const { url, title, kindLabel, facts, trainer, qr, fileName, variant = "compact" } = props;
+  const { url, title, kindLabel, tagClassName = "ma-tag--coral", facts, trainers, qr, fileName, variant = "compact" } = props;
   const text = `${kindLabel} «${title}» على ماستري أكاديمي`;
 
   useEffect(() => {
@@ -147,7 +201,7 @@ export function ShareButton(props: ShareDialogProps) {
           {/* Share card: what a friend sees in a screenshot or when scanning the code. */}
           <figure className="m-0 grid gap-5 border border-line bg-surface-alt p-5 sm:grid-cols-[minmax(0,1fr)_auto]">
             <div className="flex min-w-0 flex-col gap-4">
-              <span className="ma-tag ma-tag--coral self-start">{kindLabel}</span>
+              <span className={cn("ma-tag self-start", tagClassName)}>{kindLabel}</span>
               <figcaption className="text-lg leading-8 font-bold text-balance">{title}</figcaption>
               {facts.length > 0 ? (
                 <ul className="m-0 flex list-none flex-wrap gap-2 p-0 text-sm">
@@ -158,21 +212,7 @@ export function ShareButton(props: ShareDialogProps) {
                   ))}
                 </ul>
               ) : null}
-              {trainer ? (
-                <div className="mt-auto flex items-center gap-3">
-                  <span className="relative grid size-12 shrink-0 place-content-center overflow-hidden rounded-full bg-yellow font-bold text-ink">
-                    {trainer.avatar ? (
-                      <Image src={trainer.avatar} alt="" fill sizes="48px" className="object-cover" />
-                    ) : (
-                      <span aria-hidden="true">{trainer.initial}</span>
-                    )}
-                  </span>
-                  <span className="flex flex-col">
-                    <span className="text-xs text-fg-muted">المدرب</span>
-                    <span className="font-bold">{trainer.name}</span>
-                  </span>
-                </div>
-              ) : null}
+              {trainers.length > 0 ? <ShareTrainers trainers={trainers} /> : null}
             </div>
             <div className="flex flex-col items-center gap-2 self-center">
               <QrCode matrix={qr} label={`رمز QR لفتح صفحة ال${kindLabel}`} className="size-36 bg-white p-1" />

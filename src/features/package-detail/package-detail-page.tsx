@@ -27,13 +27,13 @@ import { PackageJsonLd } from "./seo/json-ld";
 export function PackageDetailPage({ data }: { data: PackageDetailData }) {
   const { product, related, recommended } = data;
   const shareUrl = `${getSiteUrl()}${product.href}`;
-  const leadTrainer = product.trainers[0] ?? null;
   const shareProps = {
     url: shareUrl,
     title: product.title,
     kindLabel: "باقة",
+    tagClassName: "ma-tag--green",
     facts: packageFacts(product).map((fact) => fact.label),
-    trainer: leadTrainer ? { name: leadTrainer.name, avatar: leadTrainer.avatar, initial: leadTrainer.initial } : null,
+    trainers: product.trainers.map(({ name, avatar, initial }) => ({ name, avatar, initial })),
     // Scans are tagged so they can be told apart from other visits in analytics.
     qr: toQrMatrix(`${shareUrl}?utm_source=qr&utm_medium=share`),
     fileName: `package-${product.id}`,

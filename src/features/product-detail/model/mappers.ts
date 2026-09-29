@@ -9,7 +9,7 @@ import {
 } from "@/features/landing/model/mappers";
 import type { InstructorNames } from "@/lib/api/instructor-names";
 import type { LegacyCourseResponse, LegacyRecommendationsResponse, LegacyRelatedResponse } from "@/lib/api/legacy";
-import { cleanText, formatClock, formatDurationFromSeconds, toPlainText, toTextBlocks } from "@/lib/format";
+import { cleanText, formatClock, formatDurationFromSeconds, toPlainText, toTextBlocks, type TextBlock } from "@/lib/format";
 
 import type {
   CatalogIndex,
@@ -43,16 +43,24 @@ export function productHref(kind: ProductKind, id: number, linkName?: string | n
   return kind === "diploma" ? routes.diploma(id, linkName) : routes.course(id, linkName);
 }
 
+/** Shorter than this, a block is a CMS placeholder ("ماهي الباقة ؟"), not content. */
+const MIN_INFO_TEXT = 40;
+
 function infoVariant(heading: string): InfoSectionVM["variant"] {
   if (heading.includes("أهداف")) return "goals";
-  if (heading.includes("لمن")) return "audience";
+  if (heading.includes("لمن") || heading.includes("المستهدف")) return "audience";
   return "prose";
 }
 
+function textLength(blocks: readonly TextBlock[]): number {
+  return blocks.reduce((sum, block) => sum + (block.type === "p" ? block.text : block.items.join("")).length, 0);
+}
+
 export function mapInfo(dto: InfoDto): InfoSectionVM | null {
-  const heading = cleanText(dto.header);
+  // Headings are often typed with a trailing colon ("الأهداف:").
+  const heading = cleanText(dto.header)?.replace(/\s*[:：]\s*$/, "") || null;
   const blocks = toTextBlocks(dto.body);
-  if (!heading || blocks.length === 0) {
+  if (!heading || textLength(blocks) < MIN_INFO_TEXT) {
     return null;
   }
   return { heading, blocks, variant: infoVariant(heading) };

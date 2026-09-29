@@ -61,7 +61,8 @@ function ItemRow({ item }: { item: PackageItemVM }) {
           href={item.href}
           tabIndex={-1}
           aria-hidden="true"
-          className="relative block aspect-[16/10] w-full shrink-0 overflow-hidden bg-surface-alt sm:w-48 md:w-56"
+          // `self-start`: the row grows when the outline opens; the artwork keeps its 16:10 box.
+          className="relative block aspect-[16/10] w-full shrink-0 self-start overflow-hidden bg-surface-alt sm:w-48 md:w-56"
         >
           {item.image ? (
             <Image

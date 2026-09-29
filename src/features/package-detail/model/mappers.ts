@@ -30,7 +30,12 @@ const COURSE_FORMS = { one: "دورة واحدة", two: "دورتان", few: "د
 /** Titles named in the generated summary when the package has no description of its own. */
 const SUMMARY_TITLES = 3;
 
-type MappedItem = { item: PackageItemVM; seconds: number; trainers: TrainerVM[] };
+type MappedItem = { item: PackageItemVM; seconds: number; trainers: TrainerVM[]; sections: InfoSectionVM[] };
+
+/** Goals taken from each included course when the package has no content of its own. */
+const GOALS_PER_ITEM = 2;
+const MAX_FALLBACK_GOALS = 10;
+const MAX_FALLBACK_AUDIENCE = 8;
 
 function fromDetail(detail: LegacyCourseResponse, position: number): MappedItem {
   const vm = mapProductDetail(detail);
@@ -59,6 +64,7 @@ function fromDetail(detail: LegacyCourseResponse, position: number): MappedItem 
     },
     seconds: detail.course.duration ?? 0,
     trainers: vm.trainers,
+    sections: vm.sections,
   };
 }
 
@@ -85,6 +91,7 @@ function fromCard(dto: CourseDto, position: number): MappedItem {
     },
     seconds: dto.duration ?? 0,
     trainers: [],
+    sections: [],
   };
 }
 
@@ -98,6 +105,63 @@ function savingsOf(items: readonly PackageItemVM[], priceAmount: number | null):
   const amount = formatPrice(total - priceAmount);
   // Below 5% the claim isn't worth the space.
   return percent >= 5 && separateTotal && amount ? { separateTotal, amount, percent } : null;
+}
+
+function listItems(section: InfoSectionVM | undefined): string[] {
+  return (section?.blocks ?? []).flatMap((block) => (block.type === "list" ? block.items : []));
+}
+
+/** Unique by normalised text (spacing and trailing punctuation differ between courses). */
+function uniqueTexts(texts: readonly string[], max: number): string[] {
+  const seen = new Set<string>();
+  const kept: string[] = [];
+  for (const text of texts) {
+    const key = text.replace(/[\s.،,:؛-]+/g, " ").trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    kept.push(text);
+    if (kept.length === max) break;
+  }
+  return kept;
+}
+
+/**
+ * About sections for a package the CMS left empty (or filled with placeholders): what you learn and
+ * who it's for, gathered from its own courses' goals and audience lists. Real course copy, not made up.
+ */
+function fallbackSections(mapped: readonly MappedItem[]): InfoSectionVM[] {
+  const goals = uniqueTexts(
+    mapped.flatMap((entry) =>
+      listItems(entry.sections.find((section) => section.variant === "goals")).slice(0, GOALS_PER_ITEM),
+    ),
+    MAX_FALLBACK_GOALS,
+  );
+  const audience = uniqueTexts(
+    mapped.flatMap((entry) => listItems(entry.sections.find((section) => section.variant === "audience"))),
+    MAX_FALLBACK_AUDIENCE,
+  );
+  const sections: InfoSectionVM[] = [];
+  if (goals.length > 0) {
+    sections.push({
+      heading: "ماذا ستتعلم في هذه الباقة؟",
+      blocks: [{ type: "list", ordered: false, items: goals }],
+      variant: "goals",
+    });
+  }
+  if (audience.length > 0) {
+    sections.push({
+      heading: "لمن هذه الباقة؟",
+      blocks: [{ type: "list", ordered: false, items: audience }],
+      variant: "audience",
+    });
+  }
+  return sections;
+}
+
+/** The intro paragraph of the package's own copy, trimmed for metadata. */
+function firstParagraph(sections: readonly InfoSectionVM[]): string | null {
+  const block = sections.flatMap((section) => section.blocks).find((entry) => entry.type === "p");
+  return block?.type === "p" ? toPlainText(block.text, 160) : null;
 }
 
 /** "تجمع هذه الباقة 8 دورات: أ، ب، ج وغيرها." for packages the CMS left without a description. */
@@ -126,10 +190,11 @@ export function mapPackageDetail(dto: PackageDto, included: readonly (IncludedSo
     if (!trainers.has(trainer.id)) trainers.set(trainer.id, trainer);
   }
 
-  const sections = dto.info
+  const own = dto.info
     .toSorted(byOrder)
     .map(mapInfo)
     .filter((section): section is InfoSectionVM => section !== null);
+  const sections = own.length > 0 ? own : fallbackSections(mapped);
   const pricing = packagePricing(collection, dto.prices);
   const summary = toPlainText(collection.description, 240) ?? generatedSummary(items);
 
@@ -137,7 +202,7 @@ export function mapPackageDetail(dto: PackageDto, included: readonly (IncludedSo
     id: collection.id,
     title,
     summary,
-    description: toPlainText(collection.description ?? dto.info.toSorted(byOrder)[0]?.body, 160) ?? summary,
+    description: toPlainText(collection.description, 160) ?? firstParagraph(own) ?? summary,
     image: collection.image || null,
     ...pricing,
     savings: savingsOf(items, pricing.priceAmount),
