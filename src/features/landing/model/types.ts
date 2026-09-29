@@ -20,6 +20,8 @@ export type CourseCardVM = {
   href: Route;
   category: string | null;
   duration: string | null;
+  /** Lead instructor ("… وآخرون" when several); null when unknown. */
+  instructor: string | null;
   price: Pricing;
   /** Raw numeric price the learner pays now, for the cart and structured data. Null when unknown or free. */
   priceAmount: number | null;

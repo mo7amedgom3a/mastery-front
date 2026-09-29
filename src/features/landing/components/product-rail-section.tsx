@@ -1,27 +1,28 @@
 import type { Route } from "next";
 import type { ReactNode } from "react";
 
+import { CardCarousel } from "@/components/motion/card-carousel";
 import { ProductCard, type ProductCardProps } from "@/components/ui/product-card";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
 import { ViewAllLink } from "@/components/ui/view-all-link";
-import type { LandingSectionId } from "@/config/routes";
 
 type ProductRailSectionProps = {
-  id: LandingSectionId;
+  /** Section anchor, e.g. a `LandingSectionId` on the landing page. */
+  id: string;
   label: string;
   title: string;
   lead?: ReactNode;
   viewAll?: { label: string; href: Route };
   tone?: "base" | "alt";
   cards: (ProductCardProps & { key: string | number })[];
-  /** Extra content between header and rail (e.g. filter chips). */
+  /** Extra content between header and carousel (e.g. filter chips). */
   children?: ReactNode;
-  /** Changing it remounts the rail, so a new filter starts scrolled to its first card. */
+  /** Changing it remounts the carousel, so a new filter starts at its first card. */
   railKey?: string;
 };
 
-/** Section header + horizontally scrolling card rail. Renders nothing without cards. */
+/** Section header + card carousel. Renders nothing without cards. */
 export function ProductRailSection({
   id,
   label,
@@ -49,13 +50,11 @@ export function ProductRailSection({
         }
       />
       {children}
-      <ul key={railKey} className="rail rail--4 reveal m-0 mt-12 list-none p-0" aria-label={title}>
+      <CardCarousel key={railKey} label={title} className="reveal mt-12">
         {cards.map(({ key, ...card }) => (
-          <li key={key}>
-            <ProductCard {...card} />
-          </li>
+          <ProductCard key={key} {...card} />
         ))}
-      </ul>
+      </CardCarousel>
     </Section>
   );
 }

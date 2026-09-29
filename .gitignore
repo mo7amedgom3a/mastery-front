@@ -12,3 +12,5 @@ pnpm-debug.log*
 *.tsbuildinfo
 *.seo*
 docs/
+mediadelivery.txt
+bunny_iframe.txt

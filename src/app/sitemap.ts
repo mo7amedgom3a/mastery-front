@@ -1,11 +1,57 @@
 import type { MetadataRoute } from "next";
 
 import { getSiteUrl } from "@/config/env";
+import { routes } from "@/config/routes";
+import { isPublishable, type CourseDto } from "@/features/landing/model/mappers";
+import { getLegacyCourses, getLegacyDiplomas, getLegacyPackages } from "@/lib/api/legacy";
+import { cachedRead, valueOf } from "@/lib/api/server-cache";
 
-// Landing page only for now; add listing and detail routes as they ship (with their real
-// updated-at dates as `lastModified`).
-export default function sitemap(): MetadataRoute.Sitemap {
-  const home = `${getSiteUrl()}/`;
+// Regenerated with the catalog: new courses appear within the hour, or at once via /api/revalidate.
+export const revalidate = 3600;
+
+/** API maximum page size for legacy lists. */
+const PAGE_SIZE = 200;
+/** Stops a misbehaving `total` from paging forever. */
+const MAX_PAGES = 20;
+const read = cachedRead(revalidate, ["sitemap"]);
+
+async function allPages(fetchPage: (offset: number) => Promise<{ items: CourseDto[]; total: number }>) {
+  const items: CourseDto[] = [];
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const result = await fetchPage(page * PAGE_SIZE);
+    items.push(...result.items);
+    if (result.items.length < PAGE_SIZE || items.length >= result.total) break;
+  }
+  return items;
+}
+
+// Listing routes are added as they ship. Detail pages have no updated-at date in the API, so they
+// carry no `lastModified` rather than a made-up one.
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const siteUrl = getSiteUrl();
+  const home = `${siteUrl}/`;
+
+  const [courses, diplomas, packages] = await Promise.allSettled([
+    allPages((offset) => getLegacyCourses({ limit: PAGE_SIZE, offset }, read)),
+    allPages((offset) => getLegacyDiplomas({ active: true, limit: PAGE_SIZE, offset }, read)),
+    // Packages number in the tens: one page covers them.
+    getLegacyPackages({ limit: PAGE_SIZE }, read).then((page) => page.items),
+  ]);
+
+  // `/legacy/courses` lists diplomas too; each item goes under the route its kind lives at.
+  const products = new Map<string, MetadataRoute.Sitemap[number]>();
+  for (const dto of [...(valueOf(courses, "sitemap courses") ?? []), ...(valueOf(diplomas, "sitemap diplomas") ?? [])]) {
+    if (!isPublishable(dto)) continue;
+    const path = dto.is_diploma ? routes.diploma(dto.id, dto.link_name) : routes.course(dto.id, dto.link_name);
+    const url = `${siteUrl}${path}`;
+    products.set(url, { url, changeFrequency: "weekly", priority: dto.is_diploma ? 0.8 : 0.7 });
+  }
+  for (const dto of valueOf(packages, "sitemap packages") ?? []) {
+    if (!isPublishable(dto)) continue;
+    const url = `${siteUrl}${routes.package(dto.id)}`;
+    products.set(url, { url, changeFrequency: "weekly", priority: 0.8 });
+  }
+
   return [
     {
       url: home,
@@ -15,5 +61,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
       alternates: { languages: { ar: home, "x-default": home } },
     },
+    ...products.values(),
   ];
 }

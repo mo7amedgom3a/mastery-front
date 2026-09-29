@@ -25,9 +25,24 @@ export function isIndexable(): boolean {
   return !vercelEnv || vercelEnv === "production";
 }
 
-/** Public origin of this site, used for canonical URLs, sitemap and structured data. */
+/** Host Vercel serves this deployment on (system env vars, no scheme), if any. */
+function vercelSiteUrl(): string | undefined {
+  const host =
+    process.env.VERCEL_ENV === "production"
+      ? process.env.VERCEL_PROJECT_PRODUCTION_URL
+      : (process.env.VERCEL_BRANCH_URL ?? process.env.VERCEL_URL);
+  return host ? `https://${host}` : undefined;
+}
+
+/**
+ * Public origin of this site, used for canonical URLs, sitemap, structured data and — through
+ * `metadataBase` — the absolute og:image / twitter:image URLs. It must be the host that actually
+ * serves this app: pointing it at another site makes every share preview image 404.
+ * Order: NEXT_PUBLIC_SITE_URL (set it to the real domain once it points here) → the Vercel
+ * deployment host → the brand domain.
+ */
 export function getSiteUrl(): string {
-  const value = process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL;
+  const value = process.env.NEXT_PUBLIC_SITE_URL || vercelSiteUrl() || DEFAULT_SITE_URL;
 
   try {
     new URL(value);
@@ -36,4 +51,19 @@ export function getSiteUrl(): string {
   }
 
   return value.replace(/\/$/, "");
+}
+
+export type BunnyConfig = { libraryId: string; cdnHostname: string };
+
+/**
+ * Bunny Stream library for promo videos. Null when unset or malformed: pages then show no video,
+ * which is the same fallback as a missing video.
+ */
+export function getBunnyConfig(): BunnyConfig | null {
+  const libraryId = process.env.BUNNY_LIBRARY_ID?.trim();
+  const cdnHostname = process.env.BUNNY_CDN_HOSTNAME?.trim();
+  if (!libraryId || !/^\d+$/.test(libraryId) || !cdnHostname || !/^[a-z0-9.-]+$/i.test(cdnHostname)) {
+    return null;
+  }
+  return { libraryId, cdnHostname };
 }

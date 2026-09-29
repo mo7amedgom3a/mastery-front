@@ -122,39 +122,6 @@ body {
     letter-spacing: -0.02em;
   }
 
-  /* ---------- Horizontal card rail (scroll-snap, no JS) ---------- */
-  .rail {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(260px, 82%);
-    gap: var(--space-6);
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: thin;
-    scrollbar-color: var(--line-strong) transparent;
-    padding-block-end: var(--space-4);
-  }
-  .rail > * {
-    scroll-snap-align: start;
-    min-width: 0;
-  }
-  @media (min-width: 600px) {
-    .rail {
-      grid-auto-columns: calc((100% - var(--space-6)) / 2);
-    }
-  }
-  @media (min-width: 900px) {
-    .rail {
-      grid-auto-columns: calc((100% - 2 * var(--space-6)) / 3);
-    }
-  }
-  @media (min-width: 1200px) {
-    .rail--4 {
-      grid-auto-columns: calc((100% - 3 * var(--space-6)) / 4);
-    }
-  }
-
   /* ---------- Marquee (horizontal) ----------
      N identical tracks side by side (see `repeat` in marquee.tsx); each slides by its own width +
      gap, so every copy lands exactly where the previous one began. Tracks hug their content (no

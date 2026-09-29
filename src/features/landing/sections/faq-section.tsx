@@ -6,14 +6,25 @@ import { SectionHeader } from "@/components/ui/section-header";
 import type { FaqVM } from "../model/types";
 
 /** Native disclosure list: no JS, answers are always in the HTML. */
-export function FaqSection({ faqs }: { faqs: readonly FaqVM[] }) {
+export function FaqSection({
+  faqs,
+  id = "faq",
+  title = "أسئلة يطرحها المتعلّمون كثيراً",
+  tone,
+}: {
+  faqs: readonly FaqVM[];
+  id?: string;
+  title?: string;
+  tone?: "base" | "alt";
+}) {
   if (faqs.length === 0) {
     return null;
   }
+  const titleId = `${id}-title`;
   return (
-    <Section id="faq" aria-labelledby="faq-title" deferRender>
+    <Section id={id} aria-labelledby={titleId} tone={tone} deferRender>
       <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-16">
-        <SectionHeader id="faq-title" label="الأسئلة الشائعة" title="أسئلة يطرحها المتعلّمون كثيراً" />
+        <SectionHeader id={titleId} label="الأسئلة الشائعة" title={title} />
         <div className="border-t border-line-strong">
           {faqs.map((faq) => (
             <details key={faq.question} className="group border-b border-line">

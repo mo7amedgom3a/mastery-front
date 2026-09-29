@@ -56,8 +56,27 @@ async function checkHome() {
     robots,
   );
 
-  check("og:image present", Boolean(metaContent(html, "property", "og:image")));
+  // Budgets used by Google and the social preview debuggers (character counts).
+  check("title ≤ 60 chars", [...title].length <= 60, `${[...title].length}`);
+  check("meta description ≤ 160 chars", [...description].length <= 160, `${[...description].length}`);
+  const ogDescription = metaContent(html, "property", "og:description") ?? "";
+  check("og:description ≤ 125 chars", ogDescription.length > 0 && [...ogDescription].length <= 125, `${[...ogDescription].length}`);
+  check("og:url present", Boolean(metaContent(html, "property", "og:url")));
+  check("og:site_name present", Boolean(metaContent(html, "property", "og:site_name")));
   check("twitter:card present", Boolean(metaContent(html, "name", "twitter:card")));
+
+  // Share previews break when metadataBase points at a host that doesn't serve this app: the image
+  // URL then answers with some other site's HTML. Fetch what the tags actually advertise.
+  for (const [attr, key] of [["property", "og:image"], ["name", "twitter:image"]] as const) {
+    const url = metaContent(html, attr, key)?.replace(/&amp;/g, "&");
+    if (!url) {
+      check(`${key} present`, false);
+      continue;
+    }
+    const image = await fetch(url).catch(() => null);
+    const type = image?.headers.get("content-type") ?? "";
+    check(`${key} URL returns an image`, Boolean(image?.ok) && type.startsWith("image/"), `${url} → ${image?.status ?? "unreachable"} ${type}`);
+  }
   check("manifest linked", /<link[^>]*rel="manifest"/.test(html));
 
   const h1Count = html.match(/<h1[\s>]/g)?.length ?? 0;
