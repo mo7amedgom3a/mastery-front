@@ -3,8 +3,13 @@ import { QueryClient } from "@tanstack/react-query";
 import {
   ApiError,
   apiRequest,
+  getCurrentAuthUser,
   catalogKeys,
   customerKeys,
+  login,
+  logout as authLogout,
+  refreshSession,
+  register,
   getCatalogCategories,
   getCatalogCategory,
   getCatalogProduct,
@@ -64,6 +69,7 @@ import {
   addWishlistItem,
   removeWishlistItem,
   rebuildRecommendations,
+  verifyTwoFactor,
 } from "../src/lib/api";
 
 const DEFAULT_CUSTOMER_ID = "F6A8D4F2-FC4F-4126-B4DD-C520F4289107";
@@ -72,6 +78,7 @@ const includeMutations = args.has("--include-mutations");
 const includeAdmin = args.has("--include-admin");
 const failOnSkip = args.has("--fail-on-skip");
 const customerId = process.env.API_TEST_CUSTOMER_ID ?? DEFAULT_CUSTOMER_ID;
+const authToken = process.env.API_TEST_AUTH_TOKEN;
 const rebuildToken = process.env.RECOMMENDATION_REBUILD_TOKEN;
 
 type TestStatus = "pass" | "fail" | "skip";
@@ -123,6 +130,7 @@ type LiveTest = {
   name: string;
   mutates?: boolean;
   admin?: boolean;
+  auth?: boolean;
   run: (ctx: TestContext) => Promise<void>;
 };
 
@@ -135,9 +143,10 @@ class SkipTest extends Error {
 
 async function main() {
   console.log(`API base URL: ${process.env.API_BASE_URL ?? "http://localhost:8000/api/v1"}`);
-  console.log(`X-Customer-Id: ${customerId}`);
+  console.log("Customer auth: cookie/JWT credentials");
   console.log(`Mutating endpoint tests: ${includeMutations ? "enabled" : "skipped"}`);
   console.log(`Admin endpoint tests: ${includeAdmin ? "enabled" : "skipped"}`);
+  console.log(`Authenticated endpoint tests: ${authToken ? "enabled" : "skipped"}`);
 
   const results: TestResult[] = [];
   const ctx: TestContext = {};
@@ -149,6 +158,11 @@ async function main() {
   for (const test of liveEndpointTests()) {
     if (test.mutates && !includeMutations) {
       results.push({ name: test.name, status: "skip", ms: 0, detail: "Run with --include-mutations" });
+      continue;
+    }
+
+    if (test.auth && !authToken) {
+      results.push({ name: test.name, status: "skip", ms: 0, detail: "Set API_TEST_AUTH_TOKEN" });
       continue;
     }
 
@@ -197,7 +211,6 @@ function clientBehaviorTests(): LiveTest[] {
             body: { ping: true },
             query: { a: [1, 2], b: true, empty: null },
             context: {
-              customerId,
               rebuildToken: "test-rebuild-token",
               requestId: "api-layer-test",
             },
@@ -212,7 +225,7 @@ function clientBehaviorTests(): LiveTest[] {
         assert(capturedUrl.includes("b=true"), "boolean query param missing");
         assert(!capturedUrl.includes("empty="), "null query params should be omitted");
         assert(capturedHeaders?.get("Content-Type") === "application/json", "Content-Type should be JSON");
-        assert(capturedHeaders?.get("X-Customer-Id") === customerId, "customer header missing");
+        assert(!capturedHeaders?.has("X-Customer-Id"), "customer identity must not be sent as a header");
         assert(capturedHeaders?.get("X-Recommendation-Rebuild-Token") === "test-rebuild-token", "rebuild header missing");
         assert(capturedHeaders?.get("X-Request-ID") === "api-layer-test", "request id header missing");
         assert(capturedBody === JSON.stringify({ ping: true }), "JSON body was not serialized");
@@ -250,6 +263,82 @@ function clientBehaviorTests(): LiveTest[] {
       },
     },
     {
+      name: "auth client sends cookies and maps auth endpoint contracts",
+      run: async () => {
+        const originalFetch = globalThis.fetch;
+        const calls: Array<{ url: string; init?: RequestInit }> = [];
+
+        globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+          calls.push({ url: String(input), init });
+
+          if (String(input).endsWith("/auth/register")) {
+            return jsonResponse({ registered: true, provider: "legacy_email", provider_response: "Did" });
+          }
+
+          if (String(input).endsWith("/auth/login")) {
+            return jsonResponse({ email: "customer@example.test", userId: "100497", requires2fa: true });
+          }
+
+          if (String(input).endsWith("/auth/2fa/check") || String(input).endsWith("/auth/refresh")) {
+            return jsonResponse({
+              customer: {
+                customer_id: customerId,
+                email: "customer@example.test",
+                status: "active",
+                full_name: "Customer",
+              },
+              provider: "legacy_email",
+              tokens: {
+                access_token: "redacted-access",
+                refresh_token: "redacted-refresh",
+                token_type: "bearer",
+                expires_in: 900,
+                refresh_expires_in: 864000,
+              },
+              legacy: null,
+            });
+          }
+
+          if (String(input).endsWith("/auth/me")) {
+            return jsonResponse({
+              customer_id: customerId,
+              email: "customer@example.test",
+              status: "active",
+              full_name: "Customer",
+            });
+          }
+
+          if (String(input).endsWith("/auth/logout")) {
+            return new Response(null, { status: 204 });
+          }
+
+          return jsonResponse({ detail: "unexpected auth test URL" }, { status: 500 });
+        }) as typeof fetch;
+
+        try {
+          await register({
+            email: "customer@example.test",
+            password: "secret123!",
+            repassword: "secret123!",
+            fullname: "Customer",
+            acceptterms: true,
+          });
+          await login({ loginName: "customer@example.test" });
+          await verifyTwoFactor({ email: "customer@example.test", userId: "100497", code: "123456" });
+          await refreshSession();
+          await getCurrentAuthUser();
+          await authLogout();
+        } finally {
+          globalThis.fetch = originalFetch;
+        }
+
+        assert(calls.length === 6, `expected 6 auth calls, got ${calls.length}`);
+        assert(calls.every((call) => call.init?.credentials === "include"), "auth calls must include cookies");
+        assert(calls.some((call) => call.url.endsWith("/api/v1/auth/2fa/check")), "2FA path was not called");
+        assert(calls.some((call) => call.init?.method === "POST" && call.url.endsWith("/api/v1/auth/logout")), "logout POST was not called");
+      },
+    },
+    {
       name: "React Query caching reuses fresh query data",
       run: async () => {
         const originalFetch = globalThis.fetch;
@@ -276,9 +365,9 @@ function clientBehaviorTests(): LiveTest[] {
         assert(calls === 1, `expected one fetch call for fresh cached query, got ${calls}`);
         assertStableKey(healthKeys.status(), healthKeys.status(), "health status key");
         assertStableKey(catalogKeys.products({ limit: 1 }), catalogKeys.products({ limit: 1 }), "catalog products key");
-        assertStableKey(customerKeys.me(customerId), customerKeys.me(customerId), "customer key");
+        assertStableKey(customerKeys.me(), customerKeys.me(), "customer key");
         assertStableKey(recommendationKeys.landing({ limit: 1 }), recommendationKeys.landing({ limit: 1 }), "recommendation key");
-        assertStableKey(searchKeys.results({ q: "test", limit: 1 }, customerId), searchKeys.results({ q: "test", limit: 1 }, customerId), "search key");
+        assertStableKey(searchKeys.results({ q: "test", limit: 1 }), searchKeys.results({ q: "test", limit: 1 }), "search key");
       },
     },
   ];
@@ -324,8 +413,8 @@ function liveEndpointTests(): LiveTest[] {
       const resourceId = requireValue(ctx.catalogResourceId, "No resource_id from catalog product/detail data");
       assertObject(await getCatalogRelatedResources(resourceId, { limit: 5 }));
     } },
-    { name: "GET /api/v1/me", run: async () => assertObject(await getMe(customerOptions())) },
-    { name: "PATCH /api/v1/me", mutates: true, run: async () => {
+    { name: "GET /api/v1/me", auth: true, run: async () => assertObject(await getMe(customerOptions())) },
+    { name: "PATCH /api/v1/me", auth: true, mutates: true, run: async () => {
       const me = await getMe(customerOptions());
       assertObject(await updateMe({
         full_name: me.full_name ?? undefined,
@@ -334,8 +423,8 @@ function liveEndpointTests(): LiveTest[] {
         preferred_locale: me.preferred_locale ?? undefined,
       }, customerOptions()));
     } },
-    { name: "GET /api/v1/me/learning-goal-profile", run: async () => assertObject(await getLearningProfile(customerOptions())) },
-    { name: "PUT /api/v1/me/learning-goal-profile", mutates: true, run: async () => {
+    { name: "GET /api/v1/me/learning-goal-profile", auth: true, run: async () => assertObject(await getLearningProfile(customerOptions())) },
+    { name: "PUT /api/v1/me/learning-goal-profile", auth: true, mutates: true, run: async () => {
       assertObject(await upsertLearningProfile({
         goal: "API layer smoke test",
         domain: "frontend api integration",
@@ -344,20 +433,20 @@ function liveEndpointTests(): LiveTest[] {
         target_skill_ids: [],
       }, customerOptions()));
     } },
-    { name: "GET /api/v1/me/skills", run: async (ctx) => {
+    { name: "GET /api/v1/me/skills", auth: true, run: async (ctx) => {
       const skills = await getSkills();
       assertArray(skills);
       ctx.skillIds = skills.slice(0, 2).map((skill) => String((skill as { skill_id?: string }).skill_id)).filter(Boolean);
     } },
-    { name: "PUT /api/v1/me/skills", mutates: true, run: async (ctx) => {
+    { name: "PUT /api/v1/me/skills", auth: true, mutates: true, run: async (ctx) => {
       assertArray(await setTargetSkills({ skill_ids: ctx.skillIds ?? [], source: "api-layer-test" }, customerOptions()));
     } },
-    { name: "GET /api/v1/me/onboarding/questions", run: async (ctx) => {
+    { name: "GET /api/v1/me/onboarding/questions", auth: true, run: async (ctx) => {
       const questions = await getOnboardingQuestions();
       assertArray(questions);
       ctx.onboardingQuestion = questions[0] as Record<string, unknown> | undefined;
     } },
-    { name: "POST /api/v1/me/onboarding/answers", mutates: true, run: async (ctx) => {
+    { name: "POST /api/v1/me/onboarding/answers", auth: true, mutates: true, run: async (ctx) => {
       const question = requireValue(ctx.onboardingQuestion, "No onboarding question from /me/onboarding/questions");
       const questionId = String(question.question_id);
       const options = (question.options as Record<string, unknown>[] | undefined) ?? [];
@@ -372,13 +461,13 @@ function liveEndpointTests(): LiveTest[] {
         }],
       }, customerOptions()));
     } },
-    { name: "GET /api/v1/me/recommendation-context", run: async () => assertObject(await getRecommendationContext(customerOptions())) },
-    { name: "GET /api/v1/me/wishlist", run: async () => assertPage(await getWishlistItems({ limit: 5, offset: 0 }, customerOptions())) },
-    { name: "POST /api/v1/me/wishlist", mutates: true, run: async (ctx) => {
+    { name: "GET /api/v1/me/recommendation-context", auth: true, run: async () => assertObject(await getRecommendationContext(customerOptions())) },
+    { name: "GET /api/v1/me/wishlist", auth: true, run: async () => assertPage(await getWishlistItems({ limit: 5, offset: 0 }, customerOptions())) },
+    { name: "POST /api/v1/me/wishlist", auth: true, mutates: true, run: async (ctx) => {
       const productId = requireValue(ctx.wishlistProductId, "No product_id from /catalog/products");
       assertObject(await addWishlistItem({ product_id: productId }, customerOptions()));
     } },
-    { name: "DELETE /api/v1/me/wishlist/{product_id}", mutates: true, run: async (ctx) => {
+    { name: "DELETE /api/v1/me/wishlist/{product_id}", auth: true, mutates: true, run: async (ctx) => {
       const productId = requireValue(ctx.wishlistProductId, "No product_id from /catalog/products");
       await removeWishlistItem(productId, customerOptions());
     } },
@@ -430,7 +519,7 @@ function liveEndpointTests(): LiveTest[] {
     { name: "GET /api/v1/legacy/resources/{resource_type}/{legacy_id}/related", run: async (ctx) => assertObject(await getLegacyRelatedResources({ resource_type: "course", legacy_id: requireValue(ctx.legacyCourseId, "No legacy course id") }, { limit: 5 })) },
     { name: "GET /api/v1/legacy/resources/{resource_type}/{legacy_id}/recommendations", run: async (ctx) => assertObject(await getLegacyResourceRecommendations({ resource_type: "course", legacy_id: requireValue(ctx.legacyCourseId, "No legacy course id") }, { limit: 5 })) },
     { name: "GET /api/v1/recommendations/products/{slug}", run: async (ctx) => assertObject(await getProductRecommendations(requireValue(ctx.searchProductSlug, "No product slug"), { limit: 5 })) },
-    { name: "GET /api/v1/recommendations/me", run: async () => assertObject(await getMyRecommendations({ limit: 5 }, customerOptions())) },
+    { name: "GET /api/v1/recommendations/me", auth: true, run: async () => assertObject(await getMyRecommendations({ limit: 5 }, customerOptions())) },
     { name: "GET /api/v1/recommendations/landing", run: async () => assertObject(await getLandingRecommendations({ limit: 5 })) },
     { name: "POST /api/v1/recommendations/rebuild", admin: true, mutates: true, run: async (ctx) => {
       const job = await rebuildRecommendations(rebuildOptions());
@@ -442,7 +531,7 @@ function liveEndpointTests(): LiveTest[] {
       assertObject(await getRecommendationRebuildJob(jobId, rebuildOptions()));
     } },
     { name: "GET /api/v1/search", run: async (ctx) => {
-      const page = await searchProducts({ q: "a", limit: 5, offset: 0 }, { context: { customerId } });
+      const page = await searchProducts({ q: "a", limit: 5, offset: 0 });
       assertPage(page);
       const product = page.items.find((item) => Boolean((item as { slug?: string | null }).slug)) as { slug?: string | null } | undefined;
       ctx.searchProductSlug = product?.slug ?? ctx.searchProductSlug;
@@ -455,14 +544,14 @@ function liveEndpointTests(): LiveTest[] {
       include_debug: false,
       limit: 5,
       offset: 0,
-    }, { context: { customerId } })) },
+    })) },
     { name: "GET /api/v1/search/options", run: async () => assertObject(await getSearchOptions({ limit: 10 })) },
     { name: "GET /api/v1/search/instructors", run: async (ctx) => {
       const instructors = await getSearchInstructors({ limit: 5, offset: 0 });
       assertArray(instructors);
       ctx.searchTrainerId = firstValue(instructors, "legacy_trainer_id");
     } },
-    { name: "GET /api/v1/search/products/{slug}/details", run: async (ctx) => assertObject(await getSearchProductDetails(requireValue(ctx.searchProductSlug, "No product slug"), { context: { customerId } })) },
+    { name: "GET /api/v1/search/products/{slug}/details", run: async (ctx) => assertObject(await getSearchProductDetails(requireValue(ctx.searchProductSlug, "No product slug"))) },
     { name: "GET /api/v1/search/instructors/{trainer_id}/details", run: async (ctx) => assertObject(await getSearchInstructorDetails(requireValue(ctx.searchTrainerId, "No search trainer id"))) },
   ];
 }
@@ -488,7 +577,7 @@ async function runTest(name: string, run: () => Promise<void>): Promise<TestResu
 }
 
 function customerOptions() {
-  return { context: { customerId } };
+  return authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : {};
 }
 
 function rebuildOptions() {

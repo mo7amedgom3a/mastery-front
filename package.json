@@ -11,17 +11,24 @@
     "type-check": "tsc --noEmit",
     "api:types": "openapi-typescript openapi.json -o src/types/openapi.ts",
     "api:test": "tsx scripts/test-api-layer.ts",
-    "api:test:mutations": "tsx scripts/test-api-layer.ts --include-mutations"
+    "api:test:mutations": "tsx scripts/test-api-layer.ts --include-mutations",
+    "seo:check": "tsx scripts/seo-check.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.103.2",
     "axios": "^1.20.0",
+    "clsx": "^2.1.1",
+    "gsap": "^3.15.0",
+    "lucide-animated": "^1.0.5",
+    "lucide-react": "^1.48.0",
+    "marquee": "^0.2.1",
+    "motion": "^13.4.4",
     "next": "latest",
-    "next-optimized-images": "^2.6.2",
-    "next-seo": "^7.3.0",
     "next-sitemap": "^4.2.3",
     "react": "latest",
     "react-dom": "latest",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.7.0",
     "tanstack": "^2.0.3",
     "zod": "^4.6.5",
     "zustand": "^5.0.15"

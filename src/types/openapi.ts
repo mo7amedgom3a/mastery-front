@@ -38,6 +38,125 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register */
+        post: operations["register_api_v1_auth_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login_api_v1_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/2fa/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Check 2Fa */
+        post: operations["check_2fa_api_v1_auth_2fa_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh */
+        post: operations["refresh_api_v1_auth_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout */
+        post: operations["logout_api_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Me */
+        get: operations["me_api_v1_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record Behavior Event */
+        post: operations["record_behavior_event_api_v1_analytics_events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/catalog/product-types": {
         parameters: {
             query?: never;
@@ -863,6 +982,17 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AuthResponse */
+        AuthResponse: {
+            customer: components["schemas"]["CustomerAuthResponse"];
+            /** Provider */
+            provider: string;
+            tokens: components["schemas"]["TokenResponse"];
+            /** Legacy */
+            legacy?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** BannerResponse */
         BannerResponse: {
             /** Id */
@@ -889,6 +1019,28 @@ export interface components {
             consultancy_id: number | null;
             /** Type */
             type: number;
+        };
+        /** BehaviorEventRequest */
+        BehaviorEventRequest: {
+            /** Event Type */
+            event_type: string;
+            /** Entity Type */
+            entity_type: string;
+            /** Legacy Entity Id */
+            legacy_entity_id?: number | null;
+            /** Product Id */
+            product_id?: string | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            };
+        };
+        /** BehaviorEventResponse */
+        BehaviorEventResponse: {
+            /** Recorded */
+            recorded: boolean;
+            /** Request Id */
+            request_id: string | null;
         };
         /** CertificateResponse */
         CertificateResponse: {
@@ -939,6 +1091,11 @@ export interface components {
             course_count: number;
             /** Source */
             source: string;
+            /** Category Id */
+            category_id?: number | null;
+            current_price?: components["schemas"]["PriceResponse"] | null;
+            /** Original Price */
+            original_price?: number | null;
         };
         /** CompletionRuleResponse */
         CompletionRuleResponse: {
@@ -1063,6 +1220,26 @@ export interface components {
             /** Rating */
             rating: number | null;
             current_price: components["schemas"]["PriceResponse"] | null;
+            /** Original Price */
+            original_price?: number | null;
+        };
+        /** CustomerAuthResponse */
+        CustomerAuthResponse: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Email */
+            email: string;
+            /** Status */
+            status: string;
+            /** Full Name */
+            full_name?: string | null;
+            /** Lms User Id */
+            lms_user_id?: string | null;
+            /** Lms Numeric User Id */
+            lms_numeric_user_id?: number | null;
         };
         /** CustomerProfileResponse */
         CustomerProfileResponse: {
@@ -1335,6 +1512,28 @@ export interface components {
             limit: number;
             /** Offset */
             offset: number;
+        };
+        /** LoginChallengeResponse */
+        LoginChallengeResponse: {
+            /** Email */
+            email: string;
+            /** Userid */
+            userId: string;
+            /**
+             * Requires2Fa
+             * @default true
+             */
+            requires2fa: boolean;
+        };
+        /** LoginRequest */
+        LoginRequest: {
+            /** Loginname */
+            loginName: string;
+        };
+        /** LogoutRequest */
+        LogoutRequest: {
+            /** Refresh Token */
+            refresh_token?: string | null;
         };
         /** MaterialResponse */
         MaterialResponse: {
@@ -1636,6 +1835,35 @@ export interface components {
             limit: number;
             /** Context */
             context: string;
+        };
+        /** RefreshRequest */
+        RefreshRequest: {
+            /** Refresh Token */
+            refresh_token?: string | null;
+        };
+        /** RegisterRequest */
+        RegisterRequest: {
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+            /** Repassword */
+            repassword: string;
+            /** Fullname */
+            fullname: string;
+            /** Acceptterms */
+            acceptterms: boolean;
+            /** Phone */
+            phone?: string | null;
+        };
+        /** RegisterResponse */
+        RegisterResponse: {
+            /** Registered */
+            registered: boolean;
+            /** Provider */
+            provider: string;
+            /** Provider Response */
+            provider_response: string;
         };
         /** RelatedInstructorCardResponse */
         RelatedInstructorCardResponse: {
@@ -1990,6 +2218,19 @@ export interface components {
              */
             source: string;
         };
+        /** TokenResponse */
+        TokenResponse: {
+            /** Access Token */
+            access_token: string;
+            /** Refresh Token */
+            refresh_token: string;
+            /** Token Type */
+            token_type: string;
+            /** Expires In */
+            expires_in: number;
+            /** Refresh Expires In */
+            refresh_expires_in: number;
+        };
         /** TrainerResponse */
         TrainerResponse: {
             /** Id */
@@ -2000,6 +2241,15 @@ export interface components {
             profile_image: string | null;
             /** Info */
             info: string | null;
+        };
+        /** TwoFactorCheckRequest */
+        TwoFactorCheckRequest: {
+            /** Email */
+            email: string;
+            /** Userid */
+            userId: string;
+            /** Code */
+            code: string;
         };
         /** UnitResponse */
         UnitResponse: {
@@ -2235,6 +2485,240 @@ export interface operations {
             };
         };
     };
+    register_api_v1_auth_register_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    login_api_v1_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginChallengeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_2fa_api_v1_auth_2fa_check_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TwoFactorCheckRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_api_v1_auth_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_refresh_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_api_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                Authorization?: string | null;
+            };
+            path?: never;
+            cookie?: {
+                b2c_refresh_token?: string | null;
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogoutRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    me_api_v1_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAuthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_behavior_event_api_v1_analytics_events_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BehaviorEventRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BehaviorEventResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     product_types_api_v1_catalog_product_types_get: {
         parameters: {
             query?: never;
@@ -2439,11 +2923,11 @@ export interface operations {
     me_api_v1_me_get: {
         parameters: {
             query?: never;
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2470,11 +2954,11 @@ export interface operations {
     update_me_api_v1_me_patch: {
         parameters: {
             query?: never;
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -2505,11 +2989,11 @@ export interface operations {
     learning_profile_api_v1_me_learning_goal_profile_get: {
         parameters: {
             query?: never;
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2536,11 +3020,11 @@ export interface operations {
     upsert_learning_profile_api_v1_me_learning_goal_profile_put: {
         parameters: {
             query?: never;
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -2573,7 +3057,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2586,16 +3072,25 @@ export interface operations {
                     "application/json": components["schemas"]["SkillResponse"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     set_target_skills_api_v1_me_skills_put: {
         parameters: {
             query?: never;
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -2628,7 +3123,9 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2641,16 +3138,25 @@ export interface operations {
                     "application/json": components["schemas"]["OnboardingQuestionResponse"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     complete_onboarding_api_v1_me_onboarding_answers_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -2681,11 +3187,11 @@ export interface operations {
     recommendation_context_api_v1_me_recommendation_context_get: {
         parameters: {
             query?: never;
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2715,11 +3221,11 @@ export interface operations {
                 limit?: number;
                 offset?: number;
             };
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -2746,11 +3252,11 @@ export interface operations {
     add_wishlist_item_api_v1_me_wishlist_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -2781,13 +3287,13 @@ export interface operations {
     remove_wishlist_item_api_v1_me_wishlist__product_id__delete: {
         parameters: {
             query?: never;
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path: {
                 product_id: string;
             };
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -3571,11 +4077,11 @@ export interface operations {
             query?: {
                 limit?: number;
             };
-            header?: {
-                "X-Customer-Id"?: string | null;
-            };
+            header?: never;
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -3722,10 +4228,12 @@ export interface operations {
                 offset?: number;
             };
             header?: {
-                "X-Customer-Id"?: string | null;
+                Authorization?: string | null;
             };
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {
@@ -3753,10 +4261,12 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                "X-Customer-Id"?: string | null;
+                Authorization?: string | null;
             };
             path?: never;
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody: {
             content: {
@@ -3853,12 +4363,14 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                "X-Customer-Id"?: string | null;
+                Authorization?: string | null;
             };
             path: {
                 slug: string;
             };
-            cookie?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
         };
         requestBody?: never;
         responses: {

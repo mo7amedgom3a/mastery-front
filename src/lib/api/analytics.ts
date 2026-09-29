@@ -15,7 +15,6 @@ export type BehaviorEventResponse = {
 };
 
 type TrackBehaviorEventOptions = Omit<ApiRequestOptions, "body" | "context"> & {
-  customerId?: string;
   context?: ApiRequestContext;
 };
 
@@ -23,11 +22,12 @@ export function trackBehaviorEvent(
   event: BehaviorEventRequest,
   options: TrackBehaviorEventOptions = {},
 ): Promise<BehaviorEventResponse> {
-  const { customerId, context, ...requestOptions } = options;
+  const { context, ...requestOptions } = options;
 
   return apiRequest<BehaviorEventResponse>("POST", "/api/v1/analytics/events", {
     ...requestOptions,
     body: event,
-    context: context ?? getCustomerTrackingContext(customerId),
+    credentials: "include",
+    context: context ?? getCustomerTrackingContext(),
   });
 }

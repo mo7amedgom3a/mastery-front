@@ -7,10 +7,13 @@ type QueryParams = Record<string, QueryValue | QueryValue[]>;
 type PathParams = Record<string, string | number>;
 
 export type ApiRequestContext = {
-  customerId?: string;
   clientFingerprint?: string;
   rebuildToken?: string;
-  requestId?: string;
+  /**
+   * Omit to auto-generate one per request. Pass `null` to send no `X-Request-ID` at all —
+   * required for cached server reads, since Next includes headers in the fetch cache key.
+   */
+  requestId?: string | null;
 };
 
 export type ApiRequestOptions = Omit<RequestInit, "body" | "headers" | "method"> & {
@@ -89,10 +92,6 @@ export function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Prom
 function buildHeaders(headers: HeadersInit | undefined, context: ApiRequestContext | undefined): Headers {
   const builtHeaders = new Headers(headers);
 
-  if (context?.customerId) {
-    builtHeaders.set("X-Customer-Id", context.customerId);
-  }
-
   if (context?.clientFingerprint) {
     builtHeaders.set("X-Client-Fingerprint", context.clientFingerprint);
   }
@@ -101,7 +100,7 @@ function buildHeaders(headers: HeadersInit | undefined, context: ApiRequestConte
     builtHeaders.set("X-Recommendation-Rebuild-Token", context.rebuildToken);
   }
 
-  const requestId = context?.requestId ?? createRequestId();
+  const requestId = context?.requestId === null ? undefined : (context?.requestId ?? createRequestId());
   if (requestId) {
     builtHeaders.set("X-Request-ID", requestId);
   }

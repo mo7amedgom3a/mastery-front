@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { apiRequest, type ApiRequestContext, type ApiRequestOptions } from "@/lib/api/client";
+import { apiRequest, type ApiRequestOptions } from "@/lib/api/client";
 import type { PathParams, QueryParams, RequestBody, SuccessResponse } from "@/lib/api/operation-types";
 
 type SearchOperation = "search_api_v1_search_get";
@@ -30,14 +30,11 @@ const searchPaths = {
 
 export const searchKeys = {
   all: ["search"] as const,
-  results: (params?: SearchParams, customerId?: string) =>
-    [...searchKeys.all, "results", customerId ?? "anonymous", params ?? {}] as const,
-  advanced: (body: AdvancedSearchRequest, customerId?: string) =>
-    [...searchKeys.all, "advanced", customerId ?? "anonymous", body] as const,
+  results: (params?: SearchParams) => [...searchKeys.all, "results", params ?? {}] as const,
+  advanced: (body: AdvancedSearchRequest) => [...searchKeys.all, "advanced", body] as const,
   options: (params?: SearchOptionsParams) => [...searchKeys.all, "options", params ?? {}] as const,
   instructors: (params?: SearchInstructorsParams) => [...searchKeys.all, "instructors", params ?? {}] as const,
-  productDetails: (slug: string, customerId?: string) =>
-    [...searchKeys.all, "products", slug, customerId ?? "anonymous"] as const,
+  productDetails: (slug: string) => [...searchKeys.all, "products", slug] as const,
   instructorDetails: (trainerId: number) => [...searchKeys.all, "instructors", trainerId, "details"] as const,
 };
 
@@ -45,14 +42,22 @@ export function searchProducts(
   params?: SearchParams,
   options?: ApiRequestOptions,
 ): Promise<SearchResponse> {
-  return apiRequest<SearchResponse>("GET", searchPaths.search, { ...options, query: params });
+  return apiRequest<SearchResponse>("GET", searchPaths.search, {
+    ...options,
+    credentials: "include",
+    query: params,
+  });
 }
 
 export function advancedSearch(
   body: AdvancedSearchRequest,
   options?: ApiRequestOptions,
 ): Promise<SearchResponse> {
-  return apiRequest<SearchResponse>("POST", searchPaths.search, { ...options, body });
+  return apiRequest<SearchResponse>("POST", searchPaths.search, {
+    ...options,
+    credentials: "include",
+    body,
+  });
 }
 
 export function getSearchOptions(
@@ -75,6 +80,7 @@ export function getSearchProductDetails(
 ): Promise<SearchProductDetailsResponse> {
   return apiRequest<SearchProductDetailsResponse>("GET", searchPaths.productDetails, {
     ...options,
+    credentials: "include",
     path: { slug },
   });
 }
@@ -90,16 +96,16 @@ export function getSearchInstructorDetails(
 }
 
 export const searchQueries = {
-  results: (params?: SearchParams, context?: ApiRequestContext) =>
+  results: (params?: SearchParams) =>
     queryOptions({
-      queryKey: searchKeys.results(params, context?.customerId),
-      queryFn: ({ signal }) => searchProducts(params, { signal, context }),
+      queryKey: searchKeys.results(params),
+      queryFn: ({ signal }) => searchProducts(params, { signal }),
       staleTime: 60_000,
     }),
-  advanced: (body: AdvancedSearchRequest, context?: ApiRequestContext) =>
+  advanced: (body: AdvancedSearchRequest) =>
     queryOptions({
-      queryKey: searchKeys.advanced(body, context?.customerId),
-      queryFn: ({ signal }) => advancedSearch(body, { signal, context }),
+      queryKey: searchKeys.advanced(body),
+      queryFn: ({ signal }) => advancedSearch(body, { signal }),
       staleTime: 60_000,
     }),
   options: (params?: SearchOptionsParams) =>
@@ -114,10 +120,10 @@ export const searchQueries = {
       queryFn: ({ signal }) => getSearchInstructors(params, { signal }),
       staleTime: 5 * 60_000,
     }),
-  productDetails: (slug: string, context?: ApiRequestContext) =>
+  productDetails: (slug: string) =>
     queryOptions({
-      queryKey: searchKeys.productDetails(slug, context?.customerId),
-      queryFn: ({ signal }) => getSearchProductDetails(slug, { signal, context }),
+      queryKey: searchKeys.productDetails(slug),
+      queryFn: ({ signal }) => getSearchProductDetails(slug, { signal }),
       staleTime: 5 * 60_000,
     }),
   instructorDetails: (trainerId: number) =>

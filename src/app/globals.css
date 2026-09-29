@@ -1,14 +1,359 @@
 @import "tailwindcss";
+/* Mastery Academy design kit — tokens and .ma-* components, verbatim. Utilities layer on top. */
+@import "../styles/tokens.css" layer(base);
+@import "../styles/components.css" layer(components);
 
+/* Kit breakpoints (docs/04-layout.md): mobile-first 600 · 900 · 1200. */
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-sm: 600px;
+  --breakpoint-md: 900px;
+  --breakpoint-lg: 1200px;
+  --breakpoint-xl: 1440px;
+}
+
+/* Role tokens → Tailwind utilities (bg-surface, text-fg-muted, border-line …). */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-fg: var(--text);
+  --color-fg-muted: var(--text-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-focus: var(--focus);
+  --color-coral: var(--coral);
+  --color-ink: var(--ink);
+  --color-yellow: var(--yellow);
+  --color-purple: var(--purple);
+  --color-sky: var(--sky);
+  --color-pink: var(--pink);
+  --color-teal: var(--teal);
+  --color-lilac: var(--lilac);
+  --color-green: var(--green);
+  --color-cream: var(--cream);
+  --font-ar: var(--font-arabic);
+  /* Kit radius-soft (12px) — photos and app tiles only. Distinct name avoids a self-referencing var. */
+  --radius-photo: var(--radius-soft);
+}
+
+/* Bundled faces come from next/font (see app/layout.tsx); licensed faces stay first in each stack. */
 :root {
-  color-scheme: light;
+  --font-arabic: "Swissra", var(--nf-plex), "IBM Plex Sans Arabic", Tahoma, sans-serif;
+  --font-plex: var(--nf-plex), "IBM Plex Sans Arabic", Tahoma, sans-serif;
+  --font-sans: "Neue Montreal", var(--nf-raleway), "Helvetica Neue", Arial, sans-serif;
+  --font-raleway: var(--nf-raleway), "Helvetica Neue", Arial, sans-serif;
+  scroll-padding-top: calc(var(--header-h) + var(--space-4));
 }
 
-* {
-  box-sizing: border-box;
-}
-
+/* Numbers use the page face (IBM Plex Sans Arabic) with lining figures, so digits share one height
+   and baseline everywhere. Raleway, the Latin face, has old-style figures and is kept off numbers. */
 body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-variant-numeric: lining-nums;
+}
+
+@layer components {
+  /* ---------- Theme-scoped assets (logo files, icons) that can't follow colour tokens ---------- */
+  [data-theme="dark"] .theme-light-only,
+  [data-theme="light"] .theme-dark-only {
+    display: none;
+  }
+
+  /* ---------- Page chrome ---------- */
+  .skip-link {
+    position: fixed;
+    inset-inline-start: var(--space-4);
+    top: var(--space-4);
+    z-index: 100;
+    padding: var(--space-3) var(--space-4);
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+    transform: translateY(-200%);
+  }
+  .skip-link:focus-visible {
+    transform: none;
+  }
+
+  /* Kit buttons fill their (solid sprite) icons; Lucide / lucide-animated icons are stroke-only
+     (they declare fill="none") and must stay unfilled. */
+  .ma-btn svg[fill="none"] {
+    fill: none;
+  }
+
+  /* ---------- Section header rhythm (more air between rule, title, accent and lead) ---------- */
+  .ma-sechead__title::after {
+    margin-block-start: var(--space-4);
+  }
+  /* The kit pins RTL section titles to a 48px line box, which overlaps once titles scale past 40px
+     and wrap. Use a relative Arabic line-height instead. */
+  [dir="rtl"] .ma-sechead__title.t-section {
+    line-height: 1.4;
+  }
+
+  /* ---------- Display type (MasterClass-scale, kit Arabic metrics) ---------- */
+  .t-hero {
+    font-family: var(--font-arabic);
+    font-weight: 700;
+    font-size: clamp(2.75rem, 1.4rem + 5.6vw, 5.75rem);
+    line-height: 1.18;
+    text-wrap: balance;
+  }
+  .t-section {
+    font-family: var(--font-arabic);
+    font-weight: 700;
+    font-size: clamp(2rem, 1.3rem + 2.6vw, 3.5rem);
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+  .t-lead {
+    font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.3125rem);
+    line-height: 1.75;
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+  .t-stat {
+    font-family: var(--font-arabic);
+    font-weight: 700;
+    font-size: clamp(3rem, 2rem + 4vw, 5.5rem);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* ---------- Horizontal card rail (scroll-snap, no JS) ---------- */
+  .rail {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(260px, 82%);
+    gap: var(--space-6);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+    padding-block-end: var(--space-4);
+  }
+  .rail > * {
+    scroll-snap-align: start;
+    min-width: 0;
+  }
+  @media (min-width: 600px) {
+    .rail {
+      grid-auto-columns: calc((100% - var(--space-6)) / 2);
+    }
+  }
+  @media (min-width: 900px) {
+    .rail {
+      grid-auto-columns: calc((100% - 2 * var(--space-6)) / 3);
+    }
+  }
+  @media (min-width: 1200px) {
+    .rail--4 {
+      grid-auto-columns: calc((100% - 3 * var(--space-6)) / 4);
+    }
+  }
+
+  /* ---------- Marquee (horizontal) ----------
+     N identical tracks side by side (see `repeat` in marquee.tsx); each slides by its own width +
+     gap, so every copy lands exactly where the previous one began. Tracks hug their content (no
+     min-width stretch), so items keep an even gap however short the list is.
+     Transform-only → compositor thread, zero JS. */
+  .marquee {
+    --marquee-duration: 40s;
+    --marquee-gap: var(--space-6);
+    --marquee-shift: calc(-100% - var(--marquee-gap));
+    display: flex;
+    gap: var(--marquee-gap);
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  }
+  [dir="rtl"] .marquee {
+    --marquee-shift: calc(100% + var(--marquee-gap));
+  }
+  .marquee__track {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--marquee-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    animation: marquee-x var(--marquee-duration) linear infinite;
+    will-change: transform;
+  }
+  .marquee--reverse .marquee__track {
+    animation-direction: reverse;
+  }
+  /* Equal-height cards within a row (testimonials). */
+  .marquee--stretch .marquee__track {
+    align-items: stretch;
+  }
+  .marquee--tight {
+    --marquee-gap: var(--space-4);
+  }
+  /* Opt-in (Marquee `pauseOnHover`, on by default): e.g. reviews pause for reading, tickers don't. */
+  .marquee--pause-hover:hover .marquee__track,
+  .marquee--pause-hover:focus-within .marquee__track {
+    animation-play-state: paused;
+  }
+
+  /* ---------- Vertical marquee grid (hero background) ---------- */
+  .vmarquee {
+    display: grid;
+    grid-template-columns: repeat(var(--vmarquee-cols, 3), minmax(0, 1fr));
+    gap: var(--space-4);
+    height: 100%;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
+  }
+  .vmarquee__col {
+    --vmarquee-gap: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--vmarquee-gap);
+    min-height: 0;
+  }
+  .vmarquee__track {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: var(--vmarquee-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    animation: marquee-y var(--vmarquee-duration, 50s) linear infinite;
+    will-change: transform;
+  }
+  .vmarquee__col--down .vmarquee__track {
+    animation-direction: reverse;
+  }
+  /* Phones: the grid is a faint backdrop behind the hero copy, so keep it static and small —
+     two columns, no duplicate tracks, no animation. This keeps the main thread free for the LCP paint. */
+  @media (max-width: 899.98px) {
+    .vmarquee {
+      --vmarquee-cols: 2 !important;
+    }
+    .vmarquee__col:nth-child(n + 3),
+    .vmarquee__track[aria-hidden="true"] {
+      display: none;
+    }
+    .vmarquee__track {
+      animation: none;
+      will-change: auto;
+    }
+  }
+
+  /* ---------- Timed tabs progress ---------- */
+  .tab-progress {
+    height: 3px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .tab-progress__bar {
+    height: 100%;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+  [dir="rtl"] .tab-progress__bar {
+    transform-origin: right center;
+  }
+  .tab-progress__bar[data-running] {
+    animation: tab-progress var(--tab-duration, 7s) linear forwards;
+  }
+  .tab-progress__bar[data-paused] {
+    animation-play-state: paused;
+  }
+
+  /* ---------- Mobile navigation (native popover, no JS) ---------- */
+  .mobile-nav {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: calc(env(safe-area-inset-top, 0px) + var(--space-4)) var(--space-4)
+      calc(env(safe-area-inset-bottom, 0px) + var(--space-6));
+    border: 0;
+    background: var(--surface);
+    color: var(--text);
+    opacity: 0;
+    transition:
+      opacity var(--dur) var(--ease),
+      display var(--dur) allow-discrete,
+      overlay var(--dur) allow-discrete;
+  }
+  .mobile-nav:popover-open {
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
+  }
+  @starting-style {
+    .mobile-nav:popover-open {
+      opacity: 0;
+    }
+  }
+
+  /* ---------- Offscreen rendering skip for long below-the-fold sections ---------- */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 900px;
+  }
+}
+
+@keyframes marquee-x {
+  to {
+    transform: translateX(var(--marquee-shift));
+  }
+}
+@keyframes marquee-y {
+  to {
+    transform: translateY(calc(-100% - var(--vmarquee-gap)));
+  }
+}
+@keyframes tab-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Scroll-driven reveal: CSS only, and only where supported. Content is fully visible otherwise,
+   so it never gates rendering, crawling or LCP. Never apply to above-the-fold content. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+
+/* Reduced motion: the kit already stops every animation; also drop the duplicate marquee copies
+   and let people scroll the rows themselves. */
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    overflow-x: auto;
+  }
+  .marquee__track[aria-hidden="true"],
+  .vmarquee__track[aria-hidden="true"] {
+    display: none;
+  }
+  .tab-progress__bar[data-running] {
+    transform: none;
+  }
 }
