@@ -1,8 +1,9 @@
 import { routes } from "@/config/routes";
+import type { InstructorNames } from "@/lib/api/instructor-names";
 import type { LandingPageResponse, LegacyDiplomasResponse, LegacyPackagesResponse } from "@/lib/api/legacy";
 import type { SearchResponse } from "@/lib/api/search";
-import { cleanText, formatDurationFromSeconds, formatMinutes, toPlainText } from "@/lib/format";
-import { toPricing } from "@/lib/pricing";
+import { cleanText, formatDurationFromSeconds, formatMinutes, instructorLabel, toPlainText } from "@/lib/format";
+import { resolvePriceRows, toPricing, type PriceRow } from "@/lib/pricing";
 
 import type {
   BannerVM,
@@ -17,10 +18,10 @@ import type {
 } from "./types";
 
 // Landing, course and diploma lists all return the same course schema (and packages share one too).
-type CourseDto = LandingPageResponse["courses"]["items"][number];
-type PackageDto = LandingPageResponse["packages"]["items"][number];
+export type CourseDto = LandingPageResponse["courses"]["items"][number];
+export type PackageDto = LandingPageResponse["packages"]["items"][number];
 type SearchItemDto = SearchResponse["items"][number];
-type ConsultationDto = LandingPageResponse["consultations"]["items"][number];
+export type ConsultationDto = LandingPageResponse["consultations"]["items"][number];
 type CategoryDto = LandingPageResponse["categories"][number];
 type FaqDto = LandingPageResponse["faqs"][number];
 type BannerDto = LandingPageResponse["banners"][number];
@@ -29,12 +30,12 @@ type InsightsDto = LandingPageResponse["insights"];
 /** Cards per rail. */
 export const MAX_CARDS = 12;
 
-function positiveOrNull(value: number | null | undefined): number | null {
+export function positiveOrNull(value: number | null | undefined): number | null {
   return value && value > 0 ? value : null;
 }
 
 /** Some legacy rows are admin tests ("test") or have no usable image; keep them off the storefront. */
-function isPublishable(item: { active: boolean; name?: string | null; image?: string | null }): boolean {
+export function isPublishable(item: { active: boolean; name?: string | null; image?: string | null }): boolean {
   const name = cleanText(item.name);
   return item.active && !!name && name.toLowerCase() !== "test" && !!item.image;
 }
@@ -66,29 +67,41 @@ function legacyIdFromSlug(kind: string, item: SearchItemDto): number | null {
 
 /**
  * Legacy rows carry a placeholder `price` of 0 when the real price lives in the price list, so
- * only a price-list row (`current_price`) can say "free"; the bare column counts only when positive.
+ * only a price-list row can say "free"; the bare column counts only when positive.
+ * When the full price list is known (`rows`: the detail's `prices[]`), it decides, because the API's
+ * own `current_price` drops main prices stored with a past window (see `resolvePriceRows`).
  */
-function coursePricing(dto: CourseDto) {
-  const current = dto.current_price?.price ?? positiveOrNull(dto.price);
-  return { price: toPricing(current, dto.original_price), priceAmount: positiveOrNull(current) };
+export function coursePricing(dto: CourseDto, rows?: readonly PriceRow[]) {
+  const resolved = rows && rows.length > 0 ? resolvePriceRows(rows) : null;
+  const current = resolved?.current?.price ?? dto.current_price?.price ?? positiveOrNull(dto.price);
+  const original = resolved?.current ? resolved.original : dto.original_price;
+  return { price: toPricing(current, original), priceAmount: positiveOrNull(current) };
 }
 
-function mapCourse(dto: CourseDto, filterKeys: string[] = []): CourseCardVM {
-  const slug = cleanText(dto.link_name) ?? String(dto.id);
+/** Same rule as `coursePricing`: a package's `prices[]` (from its detail) decides when present. */
+export function packagePricing(dto: PackageDto, rows?: readonly PriceRow[]) {
+  const resolved = rows && rows.length > 0 ? resolvePriceRows(rows) : null;
+  const current = resolved?.current?.price ?? dto.current_price?.price ?? positiveOrNull(dto.price);
+  const original = resolved?.current ? resolved.original : dto.original_price;
+  return { price: toPricing(current, original), priceAmount: positiveOrNull(current) };
+}
+
+export function mapCourse(dto: CourseDto, filterKeys: string[] = [], instructors?: InstructorNames): CourseCardVM {
   return {
     id: dto.id,
     title: cleanText(dto.name) ?? "",
     summary: toPlainText(dto.description ?? dto.intro, 140),
     image: dto.image || dto.square_image || null,
-    href: dto.is_diploma ? routes.diploma(slug) : routes.course(slug),
+    href: dto.is_diploma ? routes.diploma(dto.id, dto.link_name) : routes.course(dto.id, dto.link_name),
     category: cleanText(dto.category_name),
     duration: formatDurationFromSeconds(dto.duration),
+    instructor: instructorLabel(instructors?.get(`${dto.is_diploma ? "diploma" : "course"}:${dto.id}`)),
     ...coursePricing(dto),
     filterKeys,
   };
 }
 
-function mapPackage(dto: PackageDto, entry: IndexEntry | undefined): PackageCardVM {
+export function mapPackage(dto: PackageDto, entry?: IndexEntry): PackageCardVM {
   // `current_price` needs the pricing-aware backend; until then the search index has the price.
   const current = dto.current_price?.price ?? positiveOrNull(dto.price) ?? positiveOrNull(entry?.price);
   return {
@@ -104,7 +117,7 @@ function mapPackage(dto: PackageDto, entry: IndexEntry | undefined): PackageCard
   };
 }
 
-function mapConsultation(dto: ConsultationDto): ConsultationCardVM {
+export function mapConsultation(dto: ConsultationDto): ConsultationCardVM {
   return {
     id: dto.id,
     title: cleanText(dto.name) ?? "",
@@ -182,11 +195,12 @@ function mapCourseRails(
   featured: CourseDto[],
   categoryCourses: CategoryCourses[],
   categories: CategoryVM[],
+  instructors: InstructorNames,
 ): { courses: CourseCardVM[]; filters: FilterVM[] } {
   const byId = new Map<number, CourseCardVM>();
   const add = (dto: CourseDto, key?: string) => {
     if (!isPublishable(dto)) return false;
-    const course = byId.get(dto.id) ?? mapCourse(dto);
+    const course = byId.get(dto.id) ?? mapCourse(dto, [], instructors);
     if (key && !course.filterKeys.includes(key)) course.filterKeys.push(key);
     byId.set(dto.id, course);
     return true;
@@ -229,6 +243,7 @@ export type LandingSources = {
   packages: LegacyPackagesResponse | null;
   diplomaIndex: SearchIndex;
   packageIndex: SearchIndex;
+  instructors: InstructorNames;
 };
 
 export function mapLandingData({
@@ -238,6 +253,7 @@ export function mapLandingData({
   packages: allPackages,
   diplomaIndex,
   packageIndex,
+  instructors,
 }: LandingSources): LandingData {
   if (!landing && !activeDiplomas && !allPackages) {
     return emptyLandingData;
@@ -248,13 +264,13 @@ export function mapLandingData({
     .map(mapCategory)
     .filter((category): category is CategoryVM => category !== null);
 
-  const courseRails = mapCourseRails(landing?.courses.items ?? [], categoryCourses, categories);
+  const courseRails = mapCourseRails(landing?.courses.items ?? [], categoryCourses, categories, instructors);
 
   // The aggregate endpoint returns featured diplomas regardless of status; prefer the active list.
   const diplomaSource = activeDiplomas?.items ?? landing?.diplomas.items ?? [];
   const diplomas = diplomaSource.filter(isPublishable).map((dto) => {
     const category = cleanText(dto.category_name);
-    return mapCourse(dto, diplomaIndex.get(dto.id)?.labels ?? (category ? [category] : []));
+    return mapCourse(dto, diplomaIndex.get(dto.id)?.labels ?? (category ? [category] : []), instructors);
   });
 
   const packageSource = allPackages?.items ?? landing?.packages.items ?? [];

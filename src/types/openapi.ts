@@ -1153,6 +1153,11 @@ export interface components {
         CourseDetailResponse: {
             course: components["schemas"]["CourseResponse"];
             intro_video?: components["schemas"]["MaterialResponse"] | null;
+            /**
+             * Promo Video Id
+             * @description Bunny Stream video GUID of the course/diploma promo video (promo library).
+             */
+            promo_video_id?: string | null;
             /** Info */
             info: components["schemas"]["CourseInfoResponse"][];
             /** Units */

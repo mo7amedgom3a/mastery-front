@@ -3,13 +3,11 @@
 import { CalendarClock, Clock, Layers, UserRound } from "lucide-react";
 import { useState } from "react";
 
-import { CardActions } from "@/components/shop/card-actions";
+import { actionsFor } from "@/components/shop/card-actions-for";
 import { buttonClass } from "@/components/ui/button";
 import type { ProductCardMeta } from "@/components/ui/product-card";
 import { routes } from "@/config/routes";
 import { formatCount, formatNumber } from "@/lib/format";
-import type { Pricing } from "@/lib/pricing";
-import type { ShopItem, ShopItemKind } from "@/lib/shop/store";
 
 import { ProductRailSection } from "../components/product-rail-section";
 import { MAX_CARDS } from "../model/mappers";
@@ -17,37 +15,6 @@ import type { ConsultationCardVM, CourseCardVM, FilterVM, PackageCardVM } from "
 
 const COURSE_FORMS = { one: "دورة واحدة", two: "دورتان", few: "دورات", many: "دورة" };
 const SESSION_FORMS = { one: "جلسة واحدة", two: "جلستان", few: "جلسات", many: "جلسة" };
-
-type ShopSource = {
-  id: number;
-  title: string;
-  href: string;
-  image: string | null;
-  price: Pricing;
-  priceAmount: number | null;
-};
-
-function toShopItem(kind: ShopItemKind, source: ShopSource): ShopItem {
-  return {
-    key: `${kind}:${source.id}`,
-    kind,
-    id: source.id,
-    title: source.title,
-    href: source.href,
-    image: source.image,
-    priceAmount: source.priceAmount,
-  };
-}
-
-/**
- * Consultations need a booked slot, so they can be saved but not added to the cart from a card.
- * Free items get an enrol link instead of the cart.
- */
-function actionsFor(kind: ShopItemKind, source: ShopSource) {
-  const free = source.price.free;
-  const purchasable = !free && kind !== "consultation" && source.priceAmount !== null;
-  return <CardActions item={toShopItem(kind, source)} purchasable={purchasable} free={free} />;
-}
 
 /** Selected chip (null = all) and the cards it shows. */
 function useFilter<T extends { filterKeys: string[] }>(items: T[], filters: FilterVM[]) {
@@ -98,8 +65,11 @@ function FilterChips({
   );
 }
 
-function durationMeta(duration: string | null): ProductCardMeta[] {
-  return duration ? [{ icon: Clock, label: duration }] : [];
+function courseMeta(course: CourseCardVM): ProductCardMeta[] {
+  const meta: ProductCardMeta[] = [];
+  if (course.instructor) meta.push({ icon: UserRound, label: course.instructor });
+  if (course.duration) meta.push({ icon: Clock, label: course.duration });
+  return meta;
 }
 
 export function CoursesSection({
@@ -134,7 +104,7 @@ export function CoursesSection({
         color: "coral",
         tag: course.category,
         summary: course.summary ?? "دورة مسجّلة يقدّمها خبراء ماستري، تتعلّمها بإيقاعك ومن أي جهاز.",
-        meta: durationMeta(course.duration),
+        meta: courseMeta(course),
         price: course.price,
         actions: actionsFor("course", course),
       }))}
@@ -163,7 +133,7 @@ export function DiplomasSection({ diplomas, filters }: { diplomas: CourseCardVM[
         color: "yellow",
         tag: "دبلوم",
         summary: diploma.summary ?? "برنامج متكامل متعدد الوحدات يُقدَّم على دفعات مع خبراء ماستري.",
-        meta: durationMeta(diploma.duration),
+        meta: courseMeta(diploma),
         price: diploma.price,
         actions: actionsFor("diploma", diploma),
       }))}

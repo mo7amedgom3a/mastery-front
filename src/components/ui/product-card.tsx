@@ -37,7 +37,7 @@ export type ProductCardProps = {
   className?: string;
 };
 
-const DEFAULT_SIZES = "(min-width: 1200px) 290px, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 82vw";
+const DEFAULT_SIZES = "(min-width: 1200px) 290px, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw";
 
 /**
  * Kit `.ma-card`. The title link stretches over the whole card (one tab stop, one accessible name)
@@ -102,7 +102,8 @@ export function ProductCard({
           <ul className="ma-card__meta m-0 list-none p-0">
             {meta.map(({ icon: Icon, label }) => (
               <li key={label} className="inline-flex items-center gap-1">
-                <Icon aria-hidden="true" className="size-3.5" strokeWidth={2} />
+                {/* `fill-none`: the kit fills meta svgs, which turns Lucide outline icons into solid shapes. */}
+                <Icon aria-hidden="true" className="size-3.5 shrink-0 fill-none" strokeWidth={2} />
                 {label}
               </li>
             ))}

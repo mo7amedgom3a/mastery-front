@@ -2,7 +2,6 @@ import "server-only";
 
 import { cache } from "react";
 
-import type { ApiRequestOptions } from "@/lib/api/client";
 import {
   getLegacyCategoryCourses,
   getLegacyDiplomas,
@@ -10,9 +9,12 @@ import {
   getLegacyPackages,
   type LandingPageResponse,
 } from "@/lib/api/legacy";
+import { getInstructorNames } from "@/lib/api/instructor-names";
+import { withResolvedPrices } from "@/lib/api/legacy-pricing";
 import { searchProducts } from "@/lib/api/search";
+import { cachedRead as cachedReadOptions, valueOf } from "@/lib/api/server-cache";
 
-import { type CategoryCourses, MAX_CARDS, mapLandingData, toSearchIndex } from "../model/mappers";
+import { type CategoryCourses, type CourseDto, MAX_CARDS, mapLandingData, toSearchIndex } from "../model/mappers";
 import type { LandingData } from "../model/types";
 
 /** Cache tag for on-demand refresh (see app/api/revalidate). Keep in sync with page `revalidate`. */
@@ -23,11 +25,7 @@ const PAGE_SIZE = 200;
 /** API maximum page size for search. Diplomas and packages number in the tens. */
 const SEARCH_PAGE_SIZE = 100;
 
-const cachedRead: ApiRequestOptions = {
-  next: { revalidate: LANDING_REVALIDATE_SECONDS, tags: [LANDING_CACHE_TAG] },
-  // A random X-Request-ID would change the fetch cache key on every call and defeat ISR.
-  context: { requestId: null },
-};
+const cachedRead = cachedReadOptions(LANDING_REVALIDATE_SECONDS, [LANDING_CACHE_TAG]);
 
 /**
  * One rail's worth of courses per top-level category, so each category chip can fill its rail.
@@ -44,14 +42,6 @@ async function getCategoryCourses(landing: LandingPageResponse | null): Promise<
   });
 }
 
-function valueOf<T>(result: PromiseSettledResult<T>, label: string): T | null {
-  if (result.status === "fulfilled") {
-    return result.value;
-  }
-  console.error(`[landing] ${label} request failed`, result.reason);
-  return null;
-}
-
 /**
  * Everything the landing page needs, in parallel requests (category rails follow the landing page,
  * which lists the categories). Each request fails independently: the page always renders, and
@@ -59,21 +49,47 @@ function valueOf<T>(result: PromiseSettledResult<T>, label: string): T | null {
  */
 export const getLandingData = cache(async (): Promise<LandingData> => {
   const landingRequest = getLegacyLandingPage(cachedRead);
-  const [landing, categoryCourses, diplomas, packages, diplomaSearch, packageSearch] = await Promise.allSettled([
+  const [landing, categoryCourses, diplomas, packages, diplomaSearch, packageSearch, instructors] = await Promise.allSettled([
     landingRequest,
     landingRequest.catch(() => null).then(getCategoryCourses),
     getLegacyDiplomas({ active: true, limit: PAGE_SIZE }, cachedRead),
     getLegacyPackages({ limit: PAGE_SIZE }, cachedRead),
     searchProducts({ product_type: ["diploma"], limit: SEARCH_PAGE_SIZE }, cachedRead),
     searchProducts({ product_type: ["package"], limit: SEARCH_PAGE_SIZE }, cachedRead),
+    getInstructorNames(cachedRead),
   ]);
 
+  const landingPage = valueOf(landing, "landing-page");
+  const categoryPages = valueOf(categoryCourses, "category courses") ?? [];
+  const activeDiplomas = valueOf(diplomas, "active diplomas");
+
+  // Fill in prices the API's `current_price` misses, once per course across every list.
+  const priced = new Map(
+    (
+      await withResolvedPrices(
+        [
+          ...(landingPage?.courses.items ?? []),
+          ...(landingPage?.diplomas.items ?? []),
+          ...categoryPages.flatMap((page) => page.items),
+          ...(activeDiplomas?.items ?? []),
+        ],
+        cachedRead,
+      )
+    ).map((dto) => [dto.id, dto]),
+  );
+  const reprice = (items: CourseDto[]): CourseDto[] => items.map((dto) => priced.get(dto.id) ?? dto);
+
   return mapLandingData({
-    landing: valueOf(landing, "landing-page"),
-    categoryCourses: valueOf(categoryCourses, "category courses") ?? [],
-    activeDiplomas: valueOf(diplomas, "active diplomas"),
+    landing: landingPage && {
+      ...landingPage,
+      courses: { ...landingPage.courses, items: reprice(landingPage.courses.items) },
+      diplomas: { ...landingPage.diplomas, items: reprice(landingPage.diplomas.items) },
+    },
+    categoryCourses: categoryPages.map((page) => ({ ...page, items: reprice(page.items) })),
+    activeDiplomas: activeDiplomas && { ...activeDiplomas, items: reprice(activeDiplomas.items) },
     packages: valueOf(packages, "packages"),
     diplomaIndex: toSearchIndex("diploma", valueOf(diplomaSearch, "diploma search")),
     packageIndex: toSearchIndex("package", valueOf(packageSearch, "package search")),
+    instructors: valueOf(instructors, "instructor names") ?? new Map(),
   });
 });

@@ -6,7 +6,7 @@ import { MotionProvider } from "@/components/motion/motion-provider";
 import { ShopAuthBridge } from "@/components/shop/shop-auth-bridge";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { getSiteUrl, isIndexable } from "@/config/env";
-import { siteConfig } from "@/config/site";
+import { baseOpenGraph, siteConfig } from "@/config/site";
 
 import "./globals.css";
 
@@ -57,14 +57,12 @@ export const metadata: Metadata = {
         },
       }
     : { index: false, follow: false },
+  // og:url is set per page (a layout value would be inherited by every route). Images come from the
+  // app/opengraph-image.jpg and app/twitter-image.jpg file conventions.
   openGraph: {
-    type: "website",
-    locale: "ar_AR",
-    siteName: siteConfig.name,
+    ...baseOpenGraph,
     title: `${siteConfig.name} | ${siteConfig.nameEn}`,
     description: siteConfig.shareDescription,
-    // og:url is left out on purpose: it would be inherited by every route; crawlers fall back to the
-    // canonical. Images come from the app/opengraph-image.jpg and app/twitter-image.jpg file conventions.
   },
   twitter: {
     card: "summary_large_image",

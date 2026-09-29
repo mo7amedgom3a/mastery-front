@@ -2,11 +2,14 @@ import type { NextConfig } from "next";
 import { isIndexable } from "./src/config/env";
 
 // Buckets the legacy backend serves product imagery from, plus the site's own upload host.
-const s3Buckets = ["course", "curriculum", "consultant", "category", "instructor"].map((bucket) => ({
+const s3Buckets = ["course", "curriculum", "consultant", "category", "instructor", "trainer"].map((bucket) => ({
   protocol: "https" as const,
   hostname: "s3.eu-west-1.amazonaws.com",
   pathname: `/${bucket}.emasteryacademy.com/**`,
 }));
+
+// Bunny Stream thumbnails for promo-video posters (the library's CDN host, see .env.example).
+const bunnyCdnHostname = process.env.BUNNY_CDN_HOSTNAME?.trim();
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -37,6 +40,7 @@ const nextConfig: NextConfig = {
       ...s3Buckets,
       { protocol: "https", hostname: "live.emasteryacademy.com", pathname: "/uploads/**" },
       { protocol: "https", hostname: "public.emasteryacademy.com", pathname: "/**" },
+      ...(bunnyCdnHostname ? [{ protocol: "https" as const, hostname: bunnyCdnHostname, pathname: "/**" }] : []),
     ],
   },
 };

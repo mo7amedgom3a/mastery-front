@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { siteConfig } from "@/config/site";
+import { baseOpenGraph, siteConfig } from "@/config/site";
 import { getLandingData } from "@/features/landing/api/get-landing-data";
 import { LandingPage } from "@/features/landing/landing-page";
 
@@ -12,6 +12,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
     languages: { ar: "/", "x-default": "/" },
+  },
+  // Replaces the layout's openGraph object, so it restates the shared fields; the image still comes
+  // from app/opengraph-image.jpg.
+  openGraph: {
+    ...baseOpenGraph,
+    url: "/",
+    title: `${siteConfig.name} | ${siteConfig.nameEn}`,
+    description: siteConfig.shareDescription,
   },
 };
 

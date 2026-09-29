@@ -4407,6 +4407,18 @@
               }
             ]
           },
+          "promo_video_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Promo Video Id",
+            "description": "Bunny Stream video GUID of the course/diploma promo video (promo library)."
+          },
           "info": {
             "items": {
               "$ref": "#/components/schemas/CourseInfoResponse"
