@@ -27,8 +27,9 @@ const PACKAGE_REVALIDATE_SECONDS = 300;
  * The package with this legacy id, the courses and diplomas inside it, and its related and
  * recommended rails; null when it doesn't exist.
  *
- * Each included item is read from `/legacy/courses/{id}` (the same cached request its own page
- * makes), which carries its trainers, units and full price list. An item whose detail fails falls
+ * Each included item is read from `/legacy/courses/{id}`, which carries its trainers, units and
+ * full price list. Inactive courses are asked for too: a package keeps bundling courses that were
+ * retired from the catalog, and buyers still get them. An item whose detail fails falls
  * back to its catalog card; the rails fail independently and are simply left off. A failed package
  * request throws, so ISR keeps serving the last good page.
  */
@@ -54,6 +55,7 @@ export const getPackageDetail = cache(async (id: number): Promise<PackageDetailD
           courseId,
           // Courses and diplomas share one id space: tag both, like the course page does.
           cachedRead(PACKAGE_REVALIDATE_SECONDS, [productCacheTag("course", courseId), productCacheTag("diploma", courseId)]),
+          { include_inactive: true },
         ),
       ),
     ),

@@ -39,7 +39,7 @@ export function PackageJsonLd({ product, faqs }: { product: PackageDetailVM; faq
       hasPart: product.items.map((item) => ({
         "@type": "Course",
         name: item.title,
-        url: `${siteUrl}${item.href}`,
+        ...(item.href ? { url: `${siteUrl}${item.href}` } : {}),
         ...(item.summary ? { description: item.summary } : {}),
         provider,
       })),

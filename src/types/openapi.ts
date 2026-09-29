@@ -3794,7 +3794,9 @@ export interface operations {
     };
     course_api_v1_legacy_courses__course_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                include_inactive?: boolean;
+            };
             header?: never;
             path: {
                 course_id: number;

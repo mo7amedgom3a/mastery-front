@@ -33,6 +33,7 @@ type LegacyConsultationsOperation = "consultations_api_v1_legacy_consultations_g
 type LegacyConsultationOperation = "consultation_api_v1_legacy_consultations__consultation_id__get";
 
 export type LegacyRelatedParams = QueryParams<LegacyRelatedOperation>;
+export type LegacyCourseParams = QueryParams<LegacyCourseOperation>;
 export type LegacyRelatedResponse = SuccessResponse<LegacyRelatedOperation>;
 export type LegacyRecommendationsParams = QueryParams<LegacyRecommendationsOperation>;
 export type LegacyRecommendationsResponse = SuccessResponse<LegacyRecommendationsOperation>;
@@ -251,8 +252,13 @@ export function getLegacyCourses(params?: LegacyCoursesParams, options?: ApiRequ
 export function getLegacyCourse(
   courseId: PathParams<LegacyCourseOperation>["course_id"],
   options?: ApiRequestOptions,
+  params?: LegacyCourseParams,
 ): Promise<LegacyCourseResponse> {
-  return apiRequest<LegacyCourseResponse>("GET", legacyPaths.course, { ...options, path: { course_id: courseId } });
+  return apiRequest<LegacyCourseResponse>("GET", legacyPaths.course, {
+    ...options,
+    path: { course_id: courseId },
+    query: params,
+  });
 }
 
 export function getLegacyCoursePrices(

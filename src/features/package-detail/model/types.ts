@@ -12,7 +12,7 @@ export type PackageUnitVM = {
   duration: string | null;
 };
 
-/** One course or diploma inside the package; links to its own detail page. */
+/** One course or diploma inside the package; links to its own detail page when it has one. */
 export type PackageItemVM = {
   key: string;
   kind: ProductKind;
@@ -22,7 +22,8 @@ export type PackageItemVM = {
   title: string;
   summary: string | null;
   image: string | null;
-  href: Route;
+  /** Null for a course retired from the catalog: it has no page of its own. */
+  href: Route | null;
   category: string | null;
   duration: string | null;
   lessonCount: number;

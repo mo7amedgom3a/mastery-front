@@ -48,7 +48,8 @@ function fromDetail(detail: LegacyCourseResponse, position: number): MappedItem 
       title: vm.title,
       summary: vm.summary,
       image: vm.image,
-      href: vm.href,
+      // Inactive diplomas keep their page; inactive courses don't.
+      href: detail.course.active || detail.course.is_diploma ? vm.href : null,
       category: vm.category,
       duration: vm.duration,
       lessonCount: vm.lessonCount,
