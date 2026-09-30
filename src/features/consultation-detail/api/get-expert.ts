@@ -4,8 +4,9 @@ import { cache } from "react";
 
 import { getLegacyInstructors } from "@/lib/api/legacy";
 import { cachedRead } from "@/lib/api/server-cache";
+import { personNameKey } from "@/lib/format";
 
-import { expertNameKey, type InstructorDto } from "../model/mappers";
+import type { InstructorDto } from "../model/mappers";
 
 /** API maximum page size for legacy lists. */
 const PAGE_SIZE = 200;
@@ -13,7 +14,7 @@ const PAGE_SIZE = 200;
 const MAX_PAGES = 5;
 const INDEX_REVALIDATE_SECONDS = 300;
 
-/** Every instructor by name key (see `expertNameKey`). Shared by every consultation page. */
+/** Every instructor by name key (see `personNameKey`). Shared by every consultation page. */
 const getInstructorsByName = cache(async (): Promise<Map<string, InstructorDto>> => {
   const options = cachedRead(INDEX_REVALIDATE_SECONDS, ["catalog-index"]);
   const byName = new Map<string, InstructorDto>();
@@ -22,7 +23,7 @@ const getInstructorsByName = cache(async (): Promise<Map<string, InstructorDto>>
     const result = await getLegacyInstructors({ limit: PAGE_SIZE, offset: page * PAGE_SIZE }, options);
     loaded += result.items.length;
     for (const dto of result.items) {
-      const key = expertNameKey(dto.name);
+      const key = personNameKey(dto.name);
       // First profile wins when two share a name.
       if (key && !byName.has(key)) byName.set(key, dto);
     }
@@ -36,7 +37,7 @@ const getInstructorsByName = cache(async (): Promise<Map<string, InstructorDto>>
  * links the two by nothing else: `consultant_id` belongs to a separate id space.
  */
 export async function getExpert(consultantName: string | null | undefined): Promise<InstructorDto | null> {
-  const key = expertNameKey(consultantName);
+  const key = personNameKey(consultantName);
   if (!key) {
     return null;
   }

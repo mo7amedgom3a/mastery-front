@@ -22,7 +22,7 @@ import type {
   LegacyRecommendationsResponse,
   LegacyRelatedResponse,
 } from "@/lib/api/legacy";
-import { cleanText, formatMinutes, stripHonorific, toPlainText, toTextBlocks } from "@/lib/format";
+import { cleanText, formatMinutes, personNameKey, stripHonorific, toPlainText, toTextBlocks } from "@/lib/format";
 
 import { sessionsLabel } from "./facts";
 import type { AvailabilityVM, ConsultationDetailData, ConsultationDetailVM, ExpertVM } from "./types";
@@ -34,15 +34,6 @@ export type ConsultationIndex = Map<number, ConsultationDto>;
 /** Below this, the consultations rail is topped up from the rest of the catalog. */
 const MIN_CONSULTATION_CARDS = 4;
 const CONSULTATION_SLUG = /^consultation-(\d+)$/;
-
-/**
- * Key for matching a consultant to an instructor profile. Consultants have their own id space
- * (`consultant_id` is not an instructor id), so the two are joined on the name without its honorific.
- */
-export function expertNameKey(name: string | null | undefined): string | null {
-  const clean = cleanText(name);
-  return clean ? stripHonorific(clean).trim() || clean : null;
-}
 
 /** The consultant, with the photo, bio and profile link of the matching instructor when there is one. */
 export function mapExpert(dto: DetailDto["consultation"], instructor: InstructorDto | null): ExpertVM | null {
@@ -145,8 +136,8 @@ export function mapConsultationDetailData({
   const all = [...(consultations?.values() ?? [])].filter(isPublishable);
 
   // Consultations: this expert's other ones, then what the catalog and the engine link to it.
-  const expertKey = expertNameKey(detail.consultation.consultant_name);
-  const sameExpert = expertKey ? all.filter((dto) => expertNameKey(dto.consultant_name) === expertKey) : [];
+  const expertKey = personNameKey(detail.consultation.consultant_name);
+  const sameExpert = expertKey ? all.filter((dto) => personNameKey(dto.consultant_name) === expertKey) : [];
   const recommendedConsultations = recommended.flatMap((item) => {
     const id = item.slug.match(CONSULTATION_SLUG)?.[1];
     const dto = id ? consultations?.get(Number(id)) : undefined;

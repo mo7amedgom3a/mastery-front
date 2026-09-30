@@ -38,7 +38,7 @@ export function LandingPage({ data }: { data: LandingData }) {
         <CoursesSection courses={data.courses} total={data.coursesTotal} filters={data.courseFilters} />
         <DiplomasSection diplomas={data.diplomas} filters={data.diplomaFilters} />
         <PackagesSection packages={data.packages} filters={data.packageFilters} />
-        <ConsultationsSection consultations={data.consultations} />
+        <ConsultationsSection consultations={data.consultations} filters={data.consultationFilters} />
         <AboutSection />
         <ExpertsSection instructorCount={instructorCount} />
         <BusinessSection />

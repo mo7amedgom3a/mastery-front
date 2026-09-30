@@ -52,6 +52,8 @@ export type ConsultationCardVM = {
   sessionLength: string | null;
   price: Pricing;
   priceAmount: number | null;
+  /** Filter chips this card appears under. */
+  filterKeys: string[];
 };
 
 export type CategoryVM = {
@@ -89,6 +91,7 @@ export type LandingData = {
   packages: PackageCardVM[];
   packageFilters: FilterVM[];
   consultations: ConsultationCardVM[];
+  consultationFilters: FilterVM[];
   faqs: FaqVM[];
   stats: StatVM[];
 };

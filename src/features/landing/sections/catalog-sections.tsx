@@ -174,7 +174,14 @@ export function PackagesSection({ packages, filters }: { packages: PackageCardVM
   );
 }
 
-export function ConsultationsSection({ consultations }: { consultations: ConsultationCardVM[] }) {
+export function ConsultationsSection({
+  consultations,
+  filters,
+}: {
+  consultations: ConsultationCardVM[];
+  filters: FilterVM[];
+}) {
+  const { filter, visible, select } = useFilter(consultations, filters);
   return (
     <ProductRailSection
       id="consultations"
@@ -183,7 +190,8 @@ export function ConsultationsSection({ consultations }: { consultations: Consult
       lead="احجز جلسة مع خبير في مجالك واحصل على إجابات مخصّصة لمشروعك أو مسيرتك المهنية."
       tone="alt"
       viewAll={{ label: "كل الاستشارات", href: routes.consultations }}
-      cards={consultations.map((consultation) => {
+      railKey={filter?.key}
+      cards={visible.map((consultation) => {
         const meta: ProductCardMeta[] = [];
         if (consultation.consultant) meta.push({ icon: UserRound, label: consultation.consultant });
         if (consultation.sessions > 0) {
@@ -210,6 +218,8 @@ export function ConsultationsSection({ consultations }: { consultations: Consult
           actions: actionsFor("consultation", consultation),
         };
       })}
-    />
+    >
+      <FilterChips label="تصفية الاستشارات حسب المجال" filters={filters} active={filter} onSelect={select} />
+    </ProductRailSection>
   );
 }

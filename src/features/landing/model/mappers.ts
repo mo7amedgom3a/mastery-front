@@ -1,8 +1,20 @@
 import { routes } from "@/config/routes";
 import type { InstructorNames } from "@/lib/api/instructor-names";
-import type { LandingPageResponse, LegacyDiplomasResponse, LegacyPackagesResponse } from "@/lib/api/legacy";
+import type {
+  LandingPageResponse,
+  LegacyConsultationsResponse,
+  LegacyDiplomasResponse,
+  LegacyPackagesResponse,
+} from "@/lib/api/legacy";
 import type { SearchResponse } from "@/lib/api/search";
-import { cleanText, formatDurationFromSeconds, formatMinutes, instructorLabel, toPlainText } from "@/lib/format";
+import {
+  cleanText,
+  formatDurationFromSeconds,
+  formatMinutes,
+  instructorLabel,
+  personNameKey,
+  toPlainText,
+} from "@/lib/format";
 import { resolvePriceRows, toPricing, type PriceRow } from "@/lib/pricing";
 
 import type {
@@ -117,7 +129,7 @@ export function mapPackage(dto: PackageDto, entry?: IndexEntry): PackageCardVM {
   };
 }
 
-export function mapConsultation(dto: ConsultationDto): ConsultationCardVM {
+export function mapConsultation(dto: ConsultationDto, filterKeys: string[] = []): ConsultationCardVM {
   return {
     id: dto.id,
     title: cleanText(dto.name) ?? "",
@@ -129,6 +141,7 @@ export function mapConsultation(dto: ConsultationDto): ConsultationCardVM {
     sessionLength: formatMinutes(dto.session_duration),
     price: toPricing(dto.price),
     priceAmount: positiveOrNull(dto.price),
+    filterKeys,
   };
 }
 
@@ -221,6 +234,41 @@ function mapCourseRails(
   };
 }
 
+/** The instructors filed under one top-level category, by name key (see `personNameKey`). */
+export type CategoryExperts = { categoryId: number; names: string[] };
+
+/**
+ * Consultations carry no category of their own, so each takes the categories its consultant is
+ * filed under as an instructor (the two are joined by name: they share no id). Chips follow the
+ * category order and use the same keys as the course chips; categories without consultations get
+ * none, and consultations whose consultant isn't an instructor show under "الكل" only.
+ */
+function mapConsultationRail(
+  items: ConsultationDto[],
+  categoryExperts: CategoryExperts[],
+  categories: CategoryVM[],
+): { consultations: ConsultationCardVM[]; filters: FilterVM[] } {
+  const keysByName = new Map<string, string[]>();
+  for (const { categoryId, names } of categoryExperts) {
+    for (const name of names) {
+      const keys = keysByName.get(name) ?? [];
+      keys.push(String(categoryId));
+      keysByName.set(name, keys);
+    }
+  }
+  const consultations = items.filter(isPublishable).map((dto) => {
+    const name = personNameKey(dto.consultant_name);
+    return mapConsultation(dto, (name && keysByName.get(name)) || []);
+  });
+  const filled = new Set(consultations.flatMap((consultation) => consultation.filterKeys));
+  return {
+    consultations,
+    filters: categories
+      .filter((category) => filled.has(String(category.id)))
+      .map((category) => ({ key: String(category.id), label: category.name })),
+  };
+}
+
 export const emptyLandingData: LandingData = {
   banner: null,
   categories: [],
@@ -232,6 +280,7 @@ export const emptyLandingData: LandingData = {
   packages: [],
   packageFilters: [],
   consultations: [],
+  consultationFilters: [],
   faqs: [],
   stats: [],
 };
@@ -241,6 +290,9 @@ export type LandingSources = {
   categoryCourses: CategoryCourses[];
   activeDiplomas: LegacyDiplomasResponse | null;
   packages: LegacyPackagesResponse | null;
+  /** Every consultation; the landing aggregate only carries the first few. */
+  consultations: LegacyConsultationsResponse | null;
+  categoryExperts: CategoryExperts[];
   diplomaIndex: SearchIndex;
   packageIndex: SearchIndex;
   instructors: InstructorNames;
@@ -251,11 +303,13 @@ export function mapLandingData({
   categoryCourses,
   activeDiplomas,
   packages: allPackages,
+  consultations: allConsultations,
+  categoryExperts,
   diplomaIndex,
   packageIndex,
   instructors,
 }: LandingSources): LandingData {
-  if (!landing && !activeDiplomas && !allPackages) {
+  if (!landing && !activeDiplomas && !allPackages && !allConsultations) {
     return emptyLandingData;
   }
 
@@ -276,6 +330,13 @@ export function mapLandingData({
   const packageSource = allPackages?.items ?? landing?.packages.items ?? [];
   const packages = packageSource.filter(isPublishable).map((dto) => mapPackage(dto, packageIndex.get(dto.id)));
 
+  // The full list lets every chip fill its rail; the aggregate's few are the fallback.
+  const consultationRail = mapConsultationRail(
+    allConsultations?.items ?? landing?.consultations.items ?? [],
+    categoryExperts,
+    categories,
+  );
+
   return {
     banner: landing ? mapBanner(landing.banners) : null,
     categories,
@@ -286,10 +347,8 @@ export function mapLandingData({
     diplomaFilters: labelFilters(diplomas),
     packages,
     packageFilters: labelFilters(packages),
-    consultations: (landing?.consultations.items ?? [])
-      .filter(isPublishable)
-      .slice(0, MAX_CARDS)
-      .map(mapConsultation),
+    consultations: consultationRail.consultations,
+    consultationFilters: consultationRail.filters,
     faqs: (landing?.faqs ?? []).map(mapFaq).filter((faq): faq is FaqVM => faq !== null),
     stats: mapStats(landing?.insights),
   };
