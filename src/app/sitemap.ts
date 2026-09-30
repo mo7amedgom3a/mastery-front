@@ -3,7 +3,13 @@ import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { isPublishable, type CourseDto } from "@/features/landing/model/mappers";
-import { getLegacyConsultations, getLegacyCourses, getLegacyDiplomas, getLegacyPackages } from "@/lib/api/legacy";
+import {
+  getLegacyConsultations,
+  getLegacyCourses,
+  getLegacyDiplomas,
+  getLegacyExperts,
+  getLegacyPackages,
+} from "@/lib/api/legacy";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
 
 // Regenerated with the catalog: new courses appear within the hour, or at once via /api/revalidate.
@@ -31,13 +37,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const home = `${siteUrl}/`;
 
-  const [courses, diplomas, packages, consultations] = await Promise.allSettled([
+  const [courses, diplomas, packages, consultations, experts] = await Promise.allSettled([
     allPages((offset) => getLegacyCourses({ limit: PAGE_SIZE, offset }, read)),
     allPages((offset) => getLegacyDiplomas({ active: true, limit: PAGE_SIZE, offset }, read)),
     // Packages number in the tens: one page covers them.
     getLegacyPackages({ limit: PAGE_SIZE }, read).then((page) => page.items),
     // So do consultations.
     getLegacyConsultations({ limit: PAGE_SIZE }, read).then((page) => page.items),
+    // The API lists only experts with something to offer.
+    getLegacyExperts({ limit: PAGE_SIZE }, read).then((page) => page.items),
   ]);
 
   // `/legacy/courses` lists diplomas too; each item goes under the route its kind lives at.
@@ -57,6 +65,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!isPublishable(dto)) continue;
     const url = `${siteUrl}${routes.consultation(dto.id)}`;
     products.set(url, { url, changeFrequency: "weekly", priority: 0.6 });
+  }
+  for (const dto of valueOf(experts, "sitemap experts") ?? []) {
+    const name = dto.name?.trim();
+    if (!name) continue;
+    const url = `${siteUrl}${routes.expert(dto.key, name)}`;
+    products.set(url, { url, changeFrequency: "weekly", priority: 0.5 });
   }
 
   return [

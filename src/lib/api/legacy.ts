@@ -31,6 +31,10 @@ type LegacyPackagesOperation = "packages_api_v1_legacy_packages_get";
 type LegacyPackageOperation = "package_api_v1_legacy_packages__package_id__get";
 type LegacyConsultationsOperation = "consultations_api_v1_legacy_consultations_get";
 type LegacyConsultationOperation = "consultation_api_v1_legacy_consultations__consultation_id__get";
+type LegacyExpertsOperation = "experts_api_v1_legacy_experts_get";
+type LegacyExpertOperation = "expert_api_v1_legacy_experts__expert_key__get";
+type LegacyExpertRecommendationsOperation =
+  "expert_recommendations_api_v1_legacy_experts__expert_key__recommendations_get";
 
 export type LegacyRelatedParams = QueryParams<LegacyRelatedOperation>;
 export type LegacyCourseParams = QueryParams<LegacyCourseOperation>;
@@ -70,6 +74,10 @@ export type LegacyPackageResponse = SuccessResponse<LegacyPackageOperation>;
 export type LegacyConsultationsParams = QueryParams<LegacyConsultationsOperation>;
 export type LegacyConsultationsResponse = SuccessResponse<LegacyConsultationsOperation>;
 export type LegacyConsultationResponse = SuccessResponse<LegacyConsultationOperation>;
+export type LegacyExpertsParams = QueryParams<LegacyExpertsOperation>;
+export type LegacyExpertsResponse = SuccessResponse<LegacyExpertsOperation>;
+export type LegacyExpertResponse = SuccessResponse<LegacyExpertOperation>;
+export type LegacyExpertRecommendationsParams = QueryParams<LegacyExpertRecommendationsOperation>;
 
 const legacyPaths = {
   related: "/api/v1/legacy/resources/{resource_type}/{legacy_id}/related",
@@ -95,6 +103,9 @@ const legacyPaths = {
   package: "/api/v1/legacy/packages/{package_id}",
   consultations: "/api/v1/legacy/consultations",
   consultation: "/api/v1/legacy/consultations/{consultation_id}",
+  experts: "/api/v1/legacy/experts",
+  expert: "/api/v1/legacy/experts/{expert_key}",
+  expertRecommendations: "/api/v1/legacy/experts/{expert_key}/recommendations",
 } as const;
 
 export const legacyKeys = {
@@ -319,6 +330,36 @@ export function getLegacyConsultation(
   return apiRequest<LegacyConsultationResponse>("GET", legacyPaths.consultation, {
     ...options,
     path: { consultation_id: consultationId },
+  });
+}
+
+export function getLegacyExperts(
+  params?: LegacyExpertsParams,
+  options?: ApiRequestOptions,
+): Promise<LegacyExpertsResponse> {
+  return apiRequest<LegacyExpertsResponse>("GET", legacyPaths.experts, { ...options, query: params });
+}
+
+/** One person's public profile: a trainer, a consultant, or both (key: trainer id, or `c{consultant id}`). */
+export function getLegacyExpert(
+  expertKey: PathParams<LegacyExpertOperation>["expert_key"],
+  options?: ApiRequestOptions,
+): Promise<LegacyExpertResponse> {
+  return apiRequest<LegacyExpertResponse>("GET", legacyPaths.expert, {
+    ...options,
+    path: { expert_key: expertKey },
+  });
+}
+
+export function getLegacyExpertRecommendations(
+  expertKey: PathParams<LegacyExpertRecommendationsOperation>["expert_key"],
+  params?: LegacyExpertRecommendationsParams,
+  options?: ApiRequestOptions,
+): Promise<LegacyRecommendationsResponse> {
+  return apiRequest<LegacyRecommendationsResponse>("GET", legacyPaths.expertRecommendations, {
+    ...options,
+    path: { expert_key: expertKey },
+    query: params,
   });
 }
 

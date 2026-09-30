@@ -113,7 +113,7 @@ export function mapTrainer(dto: TrainerDto): TrainerVM | null {
     avatar: dto.profile_image || null,
     bio: toTextBlocks(dto.info),
     summary: toPlainText(dto.info, 160),
-    href: routes.instructor(dto.id),
+    href: routes.instructor(dto.id, name),
   };
 }
 

@@ -4,7 +4,6 @@ import {
   mapConsultation,
   type ConsultationDto,
   type CourseDto,
-  type PackageDto,
 } from "@/features/landing/model/mappers";
 import {
   byOrder,
@@ -18,44 +17,49 @@ import type { CatalogIndex, InfoSectionVM, RailCardVM } from "@/features/product
 import type { InstructorNames } from "@/lib/api/instructor-names";
 import type {
   LegacyConsultationResponse,
-  LegacyInstructorsResponse,
+  LegacyExpertResponse,
   LegacyRecommendationsResponse,
   LegacyRelatedResponse,
 } from "@/lib/api/legacy";
-import { cleanText, formatMinutes, personNameKey, stripHonorific, toPlainText, toTextBlocks } from "@/lib/format";
+import { cleanText, formatMinutes, stripHonorific, toPlainText, toTextBlocks } from "@/lib/format";
 
 import { sessionsLabel } from "./facts";
 import type { AvailabilityVM, ConsultationDetailData, ConsultationDetailVM, ExpertVM } from "./types";
 
 type DetailDto = LegacyConsultationResponse;
-export type InstructorDto = LegacyInstructorsResponse["items"][number];
+/** The consultant's public profile (`/legacy/experts/{expert_key}`): who they are and what else they offer. */
+export type ExpertDto = LegacyExpertResponse;
 export type ConsultationIndex = Map<number, ConsultationDto>;
 
 /** Below this, the consultations rail is topped up from the rest of the catalog. */
 const MIN_CONSULTATION_CARDS = 4;
 const CONSULTATION_SLUG = /^consultation-(\d+)$/;
 
-/** The consultant, with the photo, bio and profile link of the matching instructor when there is one. */
-export function mapExpert(dto: DetailDto["consultation"], instructor: InstructorDto | null): ExpertVM | null {
+/**
+ * The consultant, with the photo, bio and profile link from their expert profile. The API decides
+ * who that is (`expert_key`); without the profile (its request failed) only the name is shown.
+ */
+export function mapExpert(dto: DetailDto["consultation"], expert: ExpertDto | null): ExpertVM | null {
   const name = cleanText(dto.consultant_name);
   if (!name) {
     return null;
   }
+  const profile = expert?.expert;
   return {
-    // Without a profile, the consultant id only keys the list; it is never used to build a link.
-    id: instructor?.id ?? dto.consultant_id ?? 0,
+    // Only keys the list; links are built from the expert key.
+    id: dto.instructor_id ?? dto.consultant_id ?? 0,
     name,
     initial: stripHonorific(name).charAt(0) || name.charAt(0),
-    avatar: instructor?.profile_image || null,
-    bio: toTextBlocks(instructor?.info),
-    summary: toPlainText(instructor?.info, 160),
-    href: instructor ? routes.instructor(instructor.id) : null,
+    avatar: profile?.profile_image || null,
+    bio: toTextBlocks(profile?.info),
+    summary: toPlainText(profile?.info, 160),
+    href: profile ? routes.expert(profile.key, cleanText(profile.name)) : null,
   };
 }
 
 export function mapConsultationDetail(
   dto: DetailDto,
-  instructor: InstructorDto | null,
+  expert: ExpertDto | null,
   availability: AvailabilityVM,
 ): ConsultationDetailVM {
   const { consultation } = dto;
@@ -76,7 +80,7 @@ export function mapConsultationDetail(
     sessionMinutes: consultation.session_duration,
     sessionLength: formatMinutes(consultation.session_duration),
     sections: info.map(mapInfo).filter((section): section is InfoSectionVM => section !== null),
-    expert: mapExpert(consultation, instructor),
+    expert: mapExpert(consultation, expert),
     availability,
     href: card.href,
     indexable: consultation.active,
@@ -103,16 +107,13 @@ export function consultationCard(dto: ConsultationDto): RailCardVM {
   };
 }
 
-export type ExpertPrograms = { courses: CourseDto[]; diplomas: CourseDto[]; packages: PackageDto[] };
-
 export type ConsultationDetailSources = {
   detail: DetailDto;
-  instructor: InstructorDto | null;
+  /** The consultant's profile, with their other consultations and what they teach. */
+  expert: ExpertDto | null;
   availability: AvailabilityVM;
-  /** Every consultation, for the same-expert cards and for rebuilding recommendation cards. */
+  /** Every consultation, for rebuilding recommendation cards and topping up the rail. */
   consultations: ConsultationIndex | null;
-  /** What the matched instructor teaches. */
-  programs: ExpertPrograms | null;
   related: LegacyRelatedResponse | null;
   recommendations: LegacyRecommendationsResponse | null;
   catalog: CatalogIndex | null;
@@ -121,23 +122,25 @@ export type ConsultationDetailSources = {
 
 export function mapConsultationDetailData({
   detail,
-  instructor,
+  expert,
   availability,
   consultations,
-  programs,
   related,
   recommendations,
   catalog,
   instructors,
 }: ConsultationDetailSources): ConsultationDetailData {
-  const consultation = mapConsultationDetail(detail, instructor, availability);
+  const consultation = mapConsultationDetail(detail, expert, availability);
   const seen = new Set([`consultation:${consultation.id}`]);
   const recommended = recommendations?.items ?? [];
   const all = [...(consultations?.values() ?? [])].filter(isPublishable);
 
   // Consultations: this expert's other ones, then what the catalog and the engine link to it.
-  const expertKey = personNameKey(detail.consultation.consultant_name);
-  const sameExpert = expertKey ? all.filter((dto) => personNameKey(dto.consultant_name) === expertKey) : [];
+  const expertKey = detail.consultation.expert_key;
+  // The profile lists them; if its request failed, the index still knows who shares the key.
+  const sameExpert =
+    expert?.consultations.filter(isPublishable) ??
+    (expertKey ? all.filter((dto) => dto.expert_key === expertKey) : []);
   const recommendedConsultations = recommended.flatMap((item) => {
     const id = item.slug.match(CONSULTATION_SLUG)?.[1];
     const dto = id ? consultations?.get(Number(id)) : undefined;
@@ -157,9 +160,9 @@ export function mapConsultationDetailData({
 
   // Programs: what the expert teaches first, then related and recommended ones.
   const toCourseCard = (dto: CourseDto) => courseCard(dto, instructors ?? undefined);
-  const courses = [...(programs?.courses ?? []), ...(related?.courses ?? [])].filter(isPublishable).map(toCourseCard);
-  const diplomas = [...(programs?.diplomas ?? []), ...(related?.diplomas ?? [])].filter(isPublishable).map(toCourseCard);
-  const packages = [...(programs?.packages ?? []), ...(related?.packages ?? [])].filter(isPublishable).map(packageCard);
+  const courses = [...(expert?.courses ?? []), ...(related?.courses ?? [])].filter(isPublishable).map(toCourseCard);
+  const diplomas = [...(expert?.diplomas ?? []), ...(related?.diplomas ?? [])].filter(isPublishable).map(toCourseCard);
+  const packages = [...(expert?.packages ?? []), ...(related?.packages ?? [])].filter(isPublishable).map(packageCard);
   const recommendedPrograms = recommended
     .map((item) => recommendationCard(item, catalog, instructors ?? undefined))
     .filter((card): card is RailCardVM => card !== null);

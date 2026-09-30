@@ -26,6 +26,23 @@ export function parseProductSlug(segment: string): number | null {
   return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
+/**
+ * Expert-profile segment: `{key}-{name}`, e.g. `9-د._مظهر_قنطقجي`. The key is what the API looks up:
+ * the trainer id, or `c{id}` for an expert who only gives consultations.
+ */
+export function expertSlug(key: string | number, name?: string | null): string {
+  const label = name?.trim().replace(/\s+/g, "_");
+  return label ? `${key}-${label}` : String(key);
+}
+
+/** The expert key at the start of a profile segment; null when the segment doesn't start with one. */
+export function parseExpertSlug(segment: string): string | null {
+  return segment.match(/^(c?[1-9]\d{0,9})(?:-|$)/)?.[1] ?? null;
+}
+
+const expertRoute = (key: string | number, name?: string | null) =>
+  route(`/experts/${encodeURIComponent(expertSlug(key, name))}`);
+
 export type LandingSectionId = "offerings" | "courses" | "diplomas" | "packages" | "consultations" | "business" | "about" | "experts" | "faq";
 
 export const routes = {
@@ -44,8 +61,10 @@ export const routes = {
   diplomas: route("/diplomas"),
   diploma: (id: number, linkName?: string | null) =>
     route(`/diplomas/${encodeURIComponent(productSlug(id, linkName))}`),
-  /** Not built yet: link with `AppLink` (no prefetch). */
-  instructor: (id: number) => route(`/instructors/${id}`),
+  /** One profile page for a trainer, a consultant, or someone who is both. */
+  expert: expertRoute,
+  /** A trainer's profile is their expert page: the trainer id is the expert key. */
+  instructor: (id: number, name?: string | null) => expertRoute(id, name),
   live: route("/live"),
   packages: route("/packages"),
   package: (id: number | string) => route(`/packages/${encodeURIComponent(String(id))}`),

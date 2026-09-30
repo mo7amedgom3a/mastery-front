@@ -2724,6 +2724,159 @@
         }
       }
     },
+    "/api/v1/legacy/experts": {
+      "get": {
+        "tags": [
+          "Legacy catalog"
+        ],
+        "summary": "Experts",
+        "operationId": "experts_api_v1_legacy_experts_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyPageResponse_ExpertSummaryResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/legacy/experts/{expert_key}": {
+      "get": {
+        "tags": [
+          "Legacy catalog"
+        ],
+        "summary": "Expert",
+        "operationId": "expert_api_v1_legacy_experts__expert_key__get",
+        "parameters": [
+          {
+            "name": "expert_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Expert Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpertDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/legacy/experts/{expert_key}/recommendations": {
+      "get": {
+        "tags": [
+          "Legacy catalog"
+        ],
+        "summary": "Expert Recommendations",
+        "description": "Products similar to what the expert offers, excluding the expert's own.",
+        "operationId": "expert_recommendations_api_v1_legacy_experts__expert_key__recommendations_get",
+        "parameters": [
+          {
+            "name": "expert_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Expert Key"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 12,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationPageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/recommendations/products/{slug}": {
       "get": {
         "tags": [
@@ -4384,6 +4537,38 @@
           "available_slot_count": {
             "type": "integer",
             "title": "Available Slot Count"
+          },
+          "instructor_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructor Id",
+            "description": "Trainer profile of the same person, when the consultant is also a trainer."
+          },
+          "expert_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expert Key",
+            "description": "Key of the consultant's public profile: GET /legacy/experts/{expert_key}."
+          },
+          "category_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Category Ids",
+            "description": "The consultation's own categories plus those its consultant teaches in."
           }
         },
         "type": "object",
@@ -5091,6 +5276,394 @@
         ],
         "title": "DatabasePoolResponse"
       },
+      "ExpertDetailResponse": {
+        "properties": {
+          "expert": {
+            "$ref": "#/components/schemas/ExpertProfileResponse"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/app__modules__legacy__presentation__schemas__CategoryResponse"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "courses": {
+            "items": {
+              "$ref": "#/components/schemas/CourseResponse"
+            },
+            "type": "array",
+            "title": "Courses"
+          },
+          "diplomas": {
+            "items": {
+              "$ref": "#/components/schemas/CourseResponse"
+            },
+            "type": "array",
+            "title": "Diplomas"
+          },
+          "packages": {
+            "items": {
+              "$ref": "#/components/schemas/CollectionResponse"
+            },
+            "type": "array",
+            "title": "Packages"
+          },
+          "consultations": {
+            "items": {
+              "$ref": "#/components/schemas/ConsultationResponse"
+            },
+            "type": "array",
+            "title": "Consultations"
+          },
+          "highlights": {
+            "$ref": "#/components/schemas/ExpertHighlightsResponse"
+          },
+          "related": {
+            "$ref": "#/components/schemas/app__modules__legacy__presentation__schemas__RelatedResourcesResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expert",
+          "categories",
+          "courses",
+          "diplomas",
+          "packages",
+          "consultations",
+          "highlights",
+          "related"
+        ],
+        "title": "ExpertDetailResponse"
+      },
+      "ExpertHighlightsResponse": {
+        "properties": {
+          "what_i_do": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "What I Do"
+          },
+          "who_i_help": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Who I Help"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "\"extracted\" from the expert's service sections, or \"generated\"."
+          }
+        },
+        "type": "object",
+        "required": [
+          "source"
+        ],
+        "title": "ExpertHighlightsResponse"
+      },
+      "ExpertProfileResponse": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Trainer id, or c{consultant id} for consultant-only experts."
+          },
+          "trainer_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trainer Id"
+          },
+          "consultant_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Consultant Ids"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "profile_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Image"
+          },
+          "course_count": {
+            "type": "integer",
+            "title": "Course Count"
+          },
+          "diploma_count": {
+            "type": "integer",
+            "title": "Diploma Count"
+          },
+          "package_count": {
+            "type": "integer",
+            "title": "Package Count"
+          },
+          "consultation_count": {
+            "type": "integer",
+            "title": "Consultation Count"
+          },
+          "cover_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover Image",
+            "description": "Reserved: no legacy column holds a cover yet."
+          },
+          "info": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Info"
+          },
+          "more_info": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "More Info"
+          },
+          "specialized": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialized"
+          },
+          "scoped_experience": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scoped Experience"
+          },
+          "languages": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Languages"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "educational_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Educational Level"
+          },
+          "total_years_of_experience": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Years Of Experience"
+          },
+          "facebook_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facebook Url"
+          },
+          "instagram_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instagram Url"
+          },
+          "youtube_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Youtube Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "trainer_id",
+          "consultant_ids",
+          "name",
+          "profile_image",
+          "course_count",
+          "diploma_count",
+          "package_count",
+          "consultation_count",
+          "info",
+          "more_info",
+          "specialized",
+          "scoped_experience",
+          "languages",
+          "city",
+          "educational_level",
+          "total_years_of_experience",
+          "facebook_url",
+          "instagram_url",
+          "youtube_url"
+        ],
+        "title": "ExpertProfileResponse"
+      },
+      "ExpertSummaryResponse": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Trainer id, or c{consultant id} for consultant-only experts."
+          },
+          "trainer_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trainer Id"
+          },
+          "consultant_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Consultant Ids"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "profile_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Image"
+          },
+          "course_count": {
+            "type": "integer",
+            "title": "Course Count"
+          },
+          "diploma_count": {
+            "type": "integer",
+            "title": "Diploma Count"
+          },
+          "package_count": {
+            "type": "integer",
+            "title": "Package Count"
+          },
+          "consultation_count": {
+            "type": "integer",
+            "title": "Consultation Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "trainer_id",
+          "consultant_ids",
+          "name",
+          "profile_image",
+          "course_count",
+          "diploma_count",
+          "package_count",
+          "consultation_count"
+        ],
+        "title": "ExpertSummaryResponse"
+      },
       "FaqResponse": {
         "properties": {
           "id": {
@@ -5718,6 +6291,37 @@
           "offset"
         ],
         "title": "LegacyPageResponse[CourseResponse]"
+      },
+      "LegacyPageResponse_ExpertSummaryResponse_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ExpertSummaryResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "LegacyPageResponse[ExpertSummaryResponse]"
       },
       "LegacyPageResponse_InstructorResponse_": {
         "properties": {

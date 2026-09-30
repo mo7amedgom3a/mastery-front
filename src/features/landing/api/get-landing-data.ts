@@ -4,7 +4,6 @@ import { cache } from "react";
 
 import {
   getLegacyCategoryCourses,
-  getLegacyCategoryInstructors,
   getLegacyConsultations,
   getLegacyDiplomas,
   getLegacyLandingPage,
@@ -15,16 +14,8 @@ import { getInstructorNames } from "@/lib/api/instructor-names";
 import { withResolvedPrices } from "@/lib/api/legacy-pricing";
 import { searchProducts } from "@/lib/api/search";
 import { cachedRead as cachedReadOptions, valueOf } from "@/lib/api/server-cache";
-import { personNameKey } from "@/lib/format";
 
-import {
-  type CategoryCourses,
-  type CategoryExperts,
-  type CourseDto,
-  MAX_CARDS,
-  mapLandingData,
-  toSearchIndex,
-} from "../model/mappers";
+import { type CategoryCourses, type CourseDto, MAX_CARDS, mapLandingData, toSearchIndex } from "../model/mappers";
 import type { LandingData } from "../model/types";
 
 /** Cache tag for on-demand refresh (see app/api/revalidate). Keep in sync with page `revalidate`. */
@@ -53,22 +44,6 @@ async function getCategoryCourses(landing: LandingPageResponse | null): Promise<
 }
 
 /**
- * Who teaches under each top-level category, by name key. Consultations have no category; their
- * chips come from the categories their consultant is filed under (see `mapConsultationRail`).
- */
-async function getCategoryExperts(landing: LandingPageResponse | null): Promise<CategoryExperts[]> {
-  const categories = (landing?.categories ?? []).filter((category) => category.parent_id === null);
-  const results = await Promise.allSettled(
-    categories.map((category) => getLegacyCategoryInstructors(category.id, { limit: PAGE_SIZE }, cachedRead)),
-  );
-  return results.flatMap((result, index) => {
-    const page = valueOf(result, `category ${categories[index].id} instructors`);
-    const names = (page?.items ?? []).map((instructor) => personNameKey(instructor.name)).filter((name) => name !== null);
-    return page ? [{ categoryId: categories[index].id, names }] : [];
-  });
-}
-
-/**
  * Everything the landing page needs, in parallel requests (category rails follow the landing page,
  * which lists the categories). Each request fails independently: the page always renders, and
  * sections or filters without data simply don't appear.
@@ -78,7 +53,6 @@ export const getLandingData = cache(async (): Promise<LandingData> => {
   const [
     landing,
     categoryCourses,
-    categoryExperts,
     diplomas,
     packages,
     consultations,
@@ -88,7 +62,6 @@ export const getLandingData = cache(async (): Promise<LandingData> => {
   ] = await Promise.allSettled([
     landingRequest,
     landingRequest.catch(() => null).then(getCategoryCourses),
-    landingRequest.catch(() => null).then(getCategoryExperts),
     getLegacyDiplomas({ active: true, limit: PAGE_SIZE }, cachedRead),
     getLegacyPackages({ limit: PAGE_SIZE }, cachedRead),
     getLegacyConsultations({ limit: PAGE_SIZE }, cachedRead),
@@ -127,7 +100,6 @@ export const getLandingData = cache(async (): Promise<LandingData> => {
     activeDiplomas: activeDiplomas && { ...activeDiplomas, items: reprice(activeDiplomas.items) },
     packages: valueOf(packages, "packages"),
     consultations: valueOf(consultations, "consultations"),
-    categoryExperts: valueOf(categoryExperts, "category instructors") ?? [],
     diplomaIndex: toSearchIndex("diploma", valueOf(diplomaSearch, "diploma search")),
     packageIndex: toSearchIndex("package", valueOf(packageSearch, "package search")),
     instructors: valueOf(instructors, "instructor names") ?? new Map(),

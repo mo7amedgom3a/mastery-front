@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
   poweredByHeader: false,
+  async redirects() {
+    // Trainer profiles moved to the expert page; the trainer id is the expert key.
+    return [{ source: "/instructors/:id", destination: "/experts/:id", permanent: true }];
+  },
   async headers() {
     const headers = isIndexable()
       ? securityHeaders

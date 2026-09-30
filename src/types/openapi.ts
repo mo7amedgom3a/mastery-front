@@ -807,6 +807,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/legacy/experts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Experts */
+        get: operations["experts_api_v1_legacy_experts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/legacy/experts/{expert_key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Expert */
+        get: operations["expert_api_v1_legacy_experts__expert_key__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/legacy/experts/{expert_key}/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Expert Recommendations
+         * @description Products similar to what the expert offers, excluding the expert's own.
+         */
+        get: operations["expert_recommendations_api_v1_legacy_experts__expert_key__recommendations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/recommendations/products/{slug}": {
         parameters: {
             query?: never;
@@ -1148,6 +1202,21 @@ export interface components {
             consultant_name: string | null;
             /** Available Slot Count */
             available_slot_count: number;
+            /**
+             * Instructor Id
+             * @description Trainer profile of the same person, when the consultant is also a trainer.
+             */
+            instructor_id?: number | null;
+            /**
+             * Expert Key
+             * @description Key of the consultant's public profile: GET /legacy/experts/{expert_key}.
+             */
+            expert_key?: string | null;
+            /**
+             * Category Ids
+             * @description The consultation's own categories plus those its consultant teaches in.
+             */
+            category_ids?: number[];
         };
         /** CourseDetailResponse */
         CourseDetailResponse: {
@@ -1322,6 +1391,109 @@ export interface components {
             checked_out?: number | null;
             /** Overflow */
             overflow?: number | null;
+        };
+        /** ExpertDetailResponse */
+        ExpertDetailResponse: {
+            expert: components["schemas"]["ExpertProfileResponse"];
+            /** Categories */
+            categories: components["schemas"]["app__modules__legacy__presentation__schemas__CategoryResponse"][];
+            /** Courses */
+            courses: components["schemas"]["CourseResponse"][];
+            /** Diplomas */
+            diplomas: components["schemas"]["CourseResponse"][];
+            /** Packages */
+            packages: components["schemas"]["CollectionResponse"][];
+            /** Consultations */
+            consultations: components["schemas"]["ConsultationResponse"][];
+            highlights: components["schemas"]["ExpertHighlightsResponse"];
+            related: components["schemas"]["app__modules__legacy__presentation__schemas__RelatedResourcesResponse"];
+        };
+        /** ExpertHighlightsResponse */
+        ExpertHighlightsResponse: {
+            /** What I Do */
+            what_i_do?: string[];
+            /** Who I Help */
+            who_i_help?: string[];
+            /**
+             * Source
+             * @description "extracted" from the expert's service sections, or "generated".
+             */
+            source: string;
+        };
+        /** ExpertProfileResponse */
+        ExpertProfileResponse: {
+            /**
+             * Key
+             * @description Trainer id, or c{consultant id} for consultant-only experts.
+             */
+            key: string;
+            /** Trainer Id */
+            trainer_id: number | null;
+            /** Consultant Ids */
+            consultant_ids: number[];
+            /** Name */
+            name: string | null;
+            /** Profile Image */
+            profile_image: string | null;
+            /** Course Count */
+            course_count: number;
+            /** Diploma Count */
+            diploma_count: number;
+            /** Package Count */
+            package_count: number;
+            /** Consultation Count */
+            consultation_count: number;
+            /**
+             * Cover Image
+             * @description Reserved: no legacy column holds a cover yet.
+             */
+            cover_image?: string | null;
+            /** Info */
+            info: string | null;
+            /** More Info */
+            more_info: string | null;
+            /** Specialized */
+            specialized: string | null;
+            /** Scoped Experience */
+            scoped_experience: string | null;
+            /** Languages */
+            languages: string | null;
+            /** City */
+            city: string | null;
+            /** Educational Level */
+            educational_level: string | null;
+            /** Total Years Of Experience */
+            total_years_of_experience: string | null;
+            /** Facebook Url */
+            facebook_url: string | null;
+            /** Instagram Url */
+            instagram_url: string | null;
+            /** Youtube Url */
+            youtube_url: string | null;
+        };
+        /** ExpertSummaryResponse */
+        ExpertSummaryResponse: {
+            /**
+             * Key
+             * @description Trainer id, or c{consultant id} for consultant-only experts.
+             */
+            key: string;
+            /** Trainer Id */
+            trainer_id: number | null;
+            /** Consultant Ids */
+            consultant_ids: number[];
+            /** Name */
+            name: string | null;
+            /** Profile Image */
+            profile_image: string | null;
+            /** Course Count */
+            course_count: number;
+            /** Diploma Count */
+            diploma_count: number;
+            /** Package Count */
+            package_count: number;
+            /** Consultation Count */
+            consultation_count: number;
         };
         /** FaqResponse */
         FaqResponse: {
@@ -1500,6 +1672,17 @@ export interface components {
         LegacyPageResponse_CourseResponse_: {
             /** Items */
             items: components["schemas"]["CourseResponse"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
+        /** LegacyPageResponse[ExpertSummaryResponse] */
+        LegacyPageResponse_ExpertSummaryResponse_: {
+            /** Items */
+            items: components["schemas"]["ExpertSummaryResponse"][];
             /** Total */
             total: number;
             /** Limit */
@@ -4033,6 +4216,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConsultationDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    experts_api_v1_legacy_experts_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LegacyPageResponse_ExpertSummaryResponse_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    expert_api_v1_legacy_experts__expert_key__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                expert_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpertDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    expert_recommendations_api_v1_legacy_experts__expert_key__recommendations_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                expert_key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecommendationPageResponse"];
                 };
             };
             /** @description Validation Error */

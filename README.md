@@ -29,10 +29,13 @@ Open `http://localhost:3000`. The home page calls
 ## Checks
 
 ```bash
-npm run lint
-npm run type-check
-npm run build
+npm run check:changed   # typecheck + ESLint on changed files: the fast loop while coding
+npm run check           # typecheck + ESLint on the whole repo
+npm run validate        # check + production build: once, before shipping
 ```
+
+`next build` is slow, so it is the last step, not the loop. See "Validation strategy" in
+`AGENTS.md`.
 
 ## Add a page
 

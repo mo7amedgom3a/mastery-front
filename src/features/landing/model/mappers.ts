@@ -12,7 +12,6 @@ import {
   formatDurationFromSeconds,
   formatMinutes,
   instructorLabel,
-  personNameKey,
   toPlainText,
 } from "@/lib/format";
 import { resolvePriceRows, toPricing, type PriceRow } from "@/lib/pricing";
@@ -234,31 +233,31 @@ function mapCourseRails(
   };
 }
 
-/** The instructors filed under one top-level category, by name key (see `personNameKey`). */
-export type CategoryExperts = { categoryId: number; names: string[] };
-
 /**
- * Consultations carry no category of their own, so each takes the categories its consultant is
- * filed under as an instructor (the two are joined by name: they share no id). Chips follow the
- * category order and use the same keys as the course chips; categories without consultations get
- * none, and consultations whose consultant isn't an instructor show under "الكل" only.
+ * Consultations under the chips of the top-level categories the API files them in (their own
+ * categories plus the ones their consultant teaches in; sub-categories roll up to their parent).
+ * Chips follow the category order and use the same keys as the course chips; categories without
+ * consultations get none, and consultations the API can't place show under "الكل" only.
  */
 function mapConsultationRail(
   items: ConsultationDto[],
-  categoryExperts: CategoryExperts[],
+  allCategories: CategoryDto[],
   categories: CategoryVM[],
 ): { consultations: ConsultationCardVM[]; filters: FilterVM[] } {
-  const keysByName = new Map<string, string[]>();
-  for (const { categoryId, names } of categoryExperts) {
-    for (const name of names) {
-      const keys = keysByName.get(name) ?? [];
-      keys.push(String(categoryId));
-      keysByName.set(name, keys);
+  const parentOf = new Map(allCategories.map((category) => [category.id, category.parent_id]));
+  const topLevel = (id: number): number => {
+    let current = id;
+    // Bounded: a cycle in legacy data must not hang the page.
+    for (let depth = 0; depth < 5; depth++) {
+      const parent = parentOf.get(current);
+      if (parent === null || parent === undefined) break;
+      current = parent;
     }
-  }
+    return current;
+  };
   const consultations = items.filter(isPublishable).map((dto) => {
-    const name = personNameKey(dto.consultant_name);
-    return mapConsultation(dto, (name && keysByName.get(name)) || []);
+    const keys = [...new Set((dto.category_ids ?? []).map((id) => String(topLevel(id))))];
+    return mapConsultation(dto, keys);
   });
   const filled = new Set(consultations.flatMap((consultation) => consultation.filterKeys));
   return {
@@ -292,7 +291,6 @@ export type LandingSources = {
   packages: LegacyPackagesResponse | null;
   /** Every consultation; the landing aggregate only carries the first few. */
   consultations: LegacyConsultationsResponse | null;
-  categoryExperts: CategoryExperts[];
   diplomaIndex: SearchIndex;
   packageIndex: SearchIndex;
   instructors: InstructorNames;
@@ -304,7 +302,6 @@ export function mapLandingData({
   activeDiplomas,
   packages: allPackages,
   consultations: allConsultations,
-  categoryExperts,
   diplomaIndex,
   packageIndex,
   instructors,
@@ -333,7 +330,7 @@ export function mapLandingData({
   // The full list lets every chip fill its rail; the aggregate's few are the fallback.
   const consultationRail = mapConsultationRail(
     allConsultations?.items ?? landing?.consultations.items ?? [],
-    categoryExperts,
+    landing?.categories ?? [],
     categories,
   );
 
