@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 import type { TrainerVM } from "../model/types";
 
 type TrainerAvatarProps = {
-  trainer: TrainerVM;
+  trainer: Pick<TrainerVM, "avatar" | "initial">;
   /** Rendered size in px; also picks the image variant. */
   size: number;
   index?: number;

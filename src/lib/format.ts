@@ -55,6 +55,19 @@ export function formatMinutes(minutes: number | null | undefined): string | null
   return minutes >= 60 && minutes % 60 === 0 ? formatHours(minutes / 60) : `${Math.round(minutes)} دقيقة`;
 }
 
+const longDateFormatter = new Intl.DateTimeFormat(LOCALE, { weekday: "long", day: "numeric", month: "long" });
+const timeFormatter = new Intl.DateTimeFormat(LOCALE, { hour: "numeric", minute: "2-digit" });
+
+/** A day in the reader's own timezone, e.g. "السبت، 3 أكتوبر". */
+export function formatLongDate(date: Date): string {
+  return longDateFormatter.format(date);
+}
+
+/** Time of day in the reader's own timezone, e.g. "5:00 م". */
+export function formatTimeOfDay(date: Date): string {
+  return timeFormatter.format(date);
+}
+
 const pluralRules = new Intl.PluralRules("ar");
 
 export type ArabicCountForms = {
@@ -138,6 +151,11 @@ export function toPlainText(value: string | null | undefined, maxLength = 180): 
 export function cleanText(value: string | null | undefined): string | null {
   const text = value?.replace(/\s+/g, " ").trim();
   return text ? text : null;
+}
+
+/** A person's name without the leading honorific legacy names carry ("أ. كريم عصام" → "كريم عصام"). */
+export function stripHonorific(name: string): string {
+  return name.replace(/^(?:أ\.?\s*د\.?|أ\.|د\.|م\.)\s*/u, "");
 }
 
 /** Legacy rich text as plain-text blocks: paragraphs and lists, nothing else survives. */

@@ -18,7 +18,8 @@ function isAuthorized(provided: string | null): boolean {
 
 /**
  * On-demand refresh of catalog data (e.g. called by the admin/CMS after publishing). Refreshes the
- * landing page and every course/diploma/package page; `?tag=course-4` (or `package-1`) refreshes one product page only.
+ * landing page and every course/diploma/package/consultation page; `?tag=course-4` (or `package-1`, `consultation-2`)
+ * refreshes one product page only.
  * `curl -X POST -H "x-revalidate-secret: $REVALIDATE_SECRET" https://…/api/revalidate`
  */
 export async function POST(request: NextRequest) {
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
   const tag = request.nextUrl.searchParams.get("tag");
-  const tags = tag && /^(course|diploma|package)-\d+$/.test(tag) ? [tag] : [LANDING_CACHE_TAG, CATALOG_CACHE_TAG];
+  const tags = tag && /^(course|diploma|package|consultation)-\d+$/.test(tag) ? [tag] : [LANDING_CACHE_TAG, CATALOG_CACHE_TAG];
   for (const item of tags) revalidateTag(item, "max");
   return NextResponse.json({ ok: true, revalidated: tags });
 }

@@ -93,7 +93,7 @@ export type ProductDetailVM = {
 /** One card in the related/recommended rails; every rail item can be added to the cart or saved. */
 export type RailCardVM = {
   key: string;
-  kind: Extract<ShopItemKind, "course" | "diploma" | "package">;
+  kind: ShopItemKind;
   id: number;
   title: string;
   summary: string | null;
@@ -102,7 +102,7 @@ export type RailCardVM = {
   tag: string | null;
   duration: string | null;
   courseCount: number | null;
-  /** Lead instructor ("… وآخرون" when several); null for packages and when unknown. */
+  /** Lead instructor ("… وآخرون" when several) or the consultant; null for packages and when unknown. */
   instructor: string | null;
   price: Pricing;
   priceAmount: number | null;

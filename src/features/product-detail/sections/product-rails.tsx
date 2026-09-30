@@ -9,9 +9,14 @@ import { formatCount } from "@/lib/format";
 import type { RailCardVM } from "../model/types";
 
 const COURSE_FORMS = { one: "دورة واحدة", two: "دورتان", few: "دورات", many: "دورة" };
-const kindColor: Record<RailCardVM["kind"], BrandColor> = { course: "coral", diploma: "yellow", package: "green" };
+const kindColor: Record<RailCardVM["kind"], BrandColor> = {
+  course: "coral",
+  diploma: "yellow",
+  package: "green",
+  consultation: "lilac",
+};
 
-function toCard(card: RailCardVM) {
+export function toCard(card: RailCardVM) {
   const meta: ProductCardMeta[] = [];
   if (card.instructor) meta.push({ icon: UserRound, label: card.instructor });
   if (card.duration) meta.push({ icon: Clock, label: card.duration });
@@ -21,6 +26,8 @@ function toCard(card: RailCardVM) {
     href: card.href,
     title: card.title,
     image: card.image,
+    // Consultant artwork puts the expert's name at the bottom edge: full width, uncropped.
+    media: card.kind === "consultation" ? ("natural" as const) : ("wide" as const),
     color: kindColor[card.kind],
     tag: card.tag,
     summary: card.summary,

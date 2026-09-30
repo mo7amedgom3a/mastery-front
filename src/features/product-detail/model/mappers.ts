@@ -9,7 +9,15 @@ import {
 } from "@/features/landing/model/mappers";
 import type { InstructorNames } from "@/lib/api/instructor-names";
 import type { LegacyCourseResponse, LegacyRecommendationsResponse, LegacyRelatedResponse } from "@/lib/api/legacy";
-import { cleanText, formatClock, formatDurationFromSeconds, toPlainText, toTextBlocks, type TextBlock } from "@/lib/format";
+import {
+  cleanText,
+  formatClock,
+  formatDurationFromSeconds,
+  stripHonorific,
+  toPlainText,
+  toTextBlocks,
+  type TextBlock,
+} from "@/lib/format";
 
 import type {
   CatalogIndex,
@@ -97,7 +105,7 @@ export function mapTrainer(dto: TrainerDto): TrainerVM | null {
     return null;
   }
   // Legacy names carry an honorific ("أ. كريم عصام"); the initial comes from the name itself.
-  const initial = name.replace(/^(?:أ\.?\s*د\.?|أ\.|د\.|م\.)\s*/u, "").charAt(0) || name.charAt(0);
+  const initial = stripHonorific(name).charAt(0) || name.charAt(0);
   return {
     id: dto.id,
     name,

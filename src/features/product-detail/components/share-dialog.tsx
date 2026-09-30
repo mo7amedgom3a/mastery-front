@@ -27,6 +27,8 @@ type ShareDialogProps = {
   tagClassName?: string;
   facts: readonly string[];
   trainers: readonly ShareTrainer[];
+  /** What the people on the card are called, singular and plural. Default: "المدرب" / "المدربون". */
+  personLabels?: readonly [string, string];
   qr: QrMatrix;
   /** File name for the downloaded QR code, without extension. */
   fileName: string;
@@ -83,7 +85,13 @@ function trainerNames(trainers: readonly ShareTrainer[]): string {
 }
 
 /** Every trainer's avatar, overlapping like the hero strip, with their names beside it. */
-function ShareTrainers({ trainers }: { trainers: readonly ShareTrainer[] }) {
+function ShareTrainers({
+  trainers,
+  labels = ["المدرب", "المدربون"],
+}: {
+  trainers: readonly ShareTrainer[];
+  labels?: readonly [string, string];
+}) {
   const shown = trainers.slice(0, MAX_SHARE_AVATARS);
   const hidden = trainers.length - shown.length;
   return (
@@ -112,7 +120,7 @@ function ShareTrainers({ trainers }: { trainers: readonly ShareTrainer[] }) {
         ) : null}
       </ul>
       <span className="flex min-w-0 flex-col">
-        <span className="text-xs text-fg-muted">{trainers.length > 1 ? "المدربون" : "المدرب"}</span>
+        <span className="text-xs text-fg-muted">{trainers.length > 1 ? labels[1] : labels[0]}</span>
         <span className="font-bold text-pretty">{trainerNames(trainers)}</span>
       </span>
     </div>
@@ -129,7 +137,8 @@ export function ShareButton(props: ShareDialogProps) {
   const canNativeShare = useCanNativeShare();
   // The button appears in the hero and the purchase card: each dialog needs its own ids.
   const titleId = useId();
-  const { url, title, kindLabel, tagClassName = "ma-tag--coral", facts, trainers, qr, fileName, variant = "compact" } = props;
+  const { url, title, kindLabel, tagClassName = "ma-tag--coral", facts, trainers, personLabels, qr, fileName, variant = "compact" } =
+    props;
   const text = `${kindLabel} «${title}» على ماستري أكاديمي`;
 
   useEffect(() => {
@@ -212,7 +221,7 @@ export function ShareButton(props: ShareDialogProps) {
                   ))}
                 </ul>
               ) : null}
-              {trainers.length > 0 ? <ShareTrainers trainers={trainers} /> : null}
+              {trainers.length > 0 ? <ShareTrainers trainers={trainers} labels={personLabels} /> : null}
             </div>
             <div className="flex flex-col items-center gap-2 self-center">
               <QrCode matrix={qr} label={`رمز QR لفتح صفحة ال${kindLabel}`} className="size-36 bg-white p-1" />
