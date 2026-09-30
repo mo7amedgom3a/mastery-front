@@ -16,7 +16,7 @@ import { ExpertServices, type ExpertServiceGroup } from "./sections/expert-servi
 import { ExpertJsonLd } from "./seo/json-ld";
 
 /**
- * Expert profile: cover hero → bio → how they help → everything they offer (consultations, courses,
+ * Expert profile: hero → bio → how they help → everything they offer (consultations, courses,
  * diplomas, packages) → other experts' programs in the same fields → recommendations. One page for
  * a trainer, a consultant, or someone who is both. Pure composition over view models; only the
  * section nav, share and the cards' cart/wishlist buttons hydrate.
@@ -55,7 +55,9 @@ export function ExpertDetailPage({ data }: { data: ExpertDetailData }) {
               kindLabel="خبير"
               tagClassName="ma-tag--coral"
               facts={facts.map((fact) => fact.label)}
-              trainers={[]}
+              // The share card shows the expert's photo beside their name.
+              trainers={[{ name: expert.name, avatar: expert.avatar, initial: expert.initial }]}
+              personLabels={["الخبير", "الخبراء"]}
               // Scans are tagged so they can be told apart from other visits in analytics.
               qr={toQrMatrix(`${shareUrl}?utm_source=qr&utm_medium=share`)}
               fileName={`expert-${expert.key}`}
@@ -71,7 +73,8 @@ export function ExpertDetailPage({ data }: { data: ExpertDetailData }) {
               <h2 id="about-title" className="m-0 text-2xl font-bold">
                 نبذة عن {expert.name}
               </h2>
-              <TextBlocks blocks={expert.bio} className="mt-6" />
+              {/* Full container width: the bio is the body of this page, not a column beside a card. */}
+              <TextBlocks blocks={expert.bio} className="mt-6 max-w-none" />
             </section>
           ) : null}
           <ExpertHighlights name={expert.name} whatTheyDo={expert.whatTheyDo} whoTheyHelp={expert.whoTheyHelp} />

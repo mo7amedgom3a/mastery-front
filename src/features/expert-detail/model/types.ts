@@ -1,6 +1,5 @@
 import type { Route } from "next";
 
-import type { BrandColor } from "@/components/ui/brand-colors";
 import type { RailCardVM } from "@/features/product-detail/model/types";
 import type { TextBlock } from "@/lib/format";
 
@@ -23,10 +22,8 @@ export type ExpertVM = {
   /** First letter, for the avatar fallback when there is no photo. */
   initial: string;
   avatar: string | null;
-  /** Cover image when the catalog has one; the page falls back to a field of `color`. */
-  cover: string | null;
-  /** Brand colour of the cover field, stable per expert. */
-  color: BrandColor;
+  /** Picks the brand colour behind the initial when there is no photo; stable per expert. */
+  colorIndex: number;
   bio: TextBlock[];
   /** Short plain-text bio for metadata and structured data. */
   summary: string | null;

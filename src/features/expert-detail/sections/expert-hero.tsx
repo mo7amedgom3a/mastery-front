@@ -1,12 +1,9 @@
 import { BookOpen, ChevronLeft, GraduationCap, Layers, MessagesSquare, type LucideIcon } from "lucide-react";
-import Image from "next/image";
 import type { ReactNode } from "react";
 
 import { AppLink } from "@/components/ui/app-link";
-import { brandBg } from "@/components/ui/brand-colors";
 import { routes } from "@/config/routes";
 import { TrainerAvatar } from "@/features/product-detail/components/trainer-avatar";
-import { cn } from "@/lib/cn";
 
 import { SocialLinks } from "../components/social-links";
 import { expertFacts, expertRoles, type ExpertFactKey } from "../model/facts";
@@ -21,9 +18,9 @@ const factIcon: Record<ExpertFactKey, LucideIcon> = {
 };
 
 /**
- * Profile hero: a cover (the expert's image when the catalog has one, otherwise a solid brand-colour
- * field), the avatar overlapping its bottom edge, then name, role and specialty, what they offer as
- * tiles, social links and share. Server-rendered; the H1 is the LCP element.
+ * Profile hero: the avatar, then name, role and specialty, what they offer as tiles, social links
+ * and share. No cover for now: the catalog has no cover images yet. Server-rendered; the H1 is the
+ * LCP element.
  */
 export function ExpertHero({ expert, share }: { expert: ExpertVM; share?: ReactNode }) {
   const facts = expertFacts(expert.counts);
@@ -56,24 +53,11 @@ export function ExpertHero({ expert, share }: { expert: ExpertVM; share?: ReactN
           </ol>
         </nav>
 
-        <div className={cn("relative mt-8 h-36 overflow-hidden sm:h-48 md:mt-10 md:h-60", brandBg[expert.color])}>
-          {expert.cover ? (
-            <Image
-              src={expert.cover}
-              alt=""
-              fill
-              priority
-              sizes="(min-width: 1440px) 1200px, 100vw"
-              className="object-cover"
-            />
-          ) : null}
+        <div className="mt-8 md:mt-12">
+          <TrainerAvatar trainer={expert} size={AVATAR_SIZE} index={expert.colorIndex} />
         </div>
 
-        <div className="relative z-10 px-4 sm:px-8" style={{ marginTop: -AVATAR_SIZE / 2 }}>
-          <TrainerAvatar trainer={expert} size={AVATAR_SIZE} index={1} className="ring-4 ring-surface-alt" />
-        </div>
-
-        <div className="mt-6 flex flex-col items-start sm:px-8">
+        <div className="mt-6 flex flex-col items-start">
           {roles.length > 0 || expert.specialties.length > 0 ? (
             <ul aria-label="الصفة ومجالات الخبرة" className="ma-cluster m-0 list-none gap-2 p-0">
               {roles.map((role) => (

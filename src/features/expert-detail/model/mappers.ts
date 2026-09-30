@@ -1,4 +1,3 @@
-import { brandCycle } from "@/components/ui/brand-colors";
 import { routes } from "@/config/routes";
 import { consultationCard, type ConsultationIndex } from "@/features/consultation-detail/model/mappers";
 import { isPublishable, type CourseDto } from "@/features/landing/model/mappers";
@@ -22,10 +21,9 @@ const CONSULTATION_SLUG = /^consultation-(\d+)$/;
 /** Specialty chips in the hero; more than this reads as a list, not a specialty. */
 const MAX_SPECIALTIES = 4;
 
-/** Cover colour from the key, so an expert keeps the same one on every visit. */
-function coverColor(key: string) {
-  const seed = [...key].reduce((sum, character) => sum + character.charCodeAt(0), 0);
-  return brandCycle[seed % brandCycle.length];
+/** Avatar colour from the key, so an expert keeps the same one on every visit. */
+function colorIndex(key: string): number {
+  return [...key].reduce((sum, character) => sum + character.charCodeAt(0), 0);
 }
 
 function socialLinks(dto: ProfileDto): SocialLinkVM[] {
@@ -124,8 +122,7 @@ export function mapExpertDetailData({
     name,
     initial: stripHonorific(name).charAt(0) || name.charAt(0),
     avatar: dto.profile_image || null,
-    cover: dto.cover_image || null,
-    color: coverColor(dto.key),
+    colorIndex: colorIndex(dto.key),
     bio: [...toTextBlocks(dto.info), ...toTextBlocks(dto.more_info)],
     summary: toPlainText(dto.info ?? dto.more_info, 160),
     specialties: specialties(detail),
