@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { Pagination } from "@/components/ui/pagination";
 import { ProductCard } from "@/components/ui/product-card";
+import { CardSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { toCard } from "@/features/product-detail/sections/product-rails";
 import { formatCount, formatNumber } from "@/lib/format";
 
@@ -255,19 +256,14 @@ export function SearchResultsSkeleton() {
       <span className="sr-only">جارٍ تحميل النتائج…</span>
       <div aria-hidden="true" className="flex gap-2 overflow-hidden">
         {SKELETON_BUTTON_WIDTHS.map((width, index) => (
-          <div key={index} className={`h-11 shrink-0 animate-pulse bg-line ${width}`} />
+          <Skeleton key={index} className={`h-11 shrink-0 ${width}`} />
         ))}
       </div>
       <div aria-hidden="true" className="mt-6 mb-6 h-14 border-y border-line" />
       <ul aria-hidden="true" className={GRID}>
         {Array.from({ length: 8 }, (_, index) => (
           <li key={index} className="border border-line">
-            <div className="aspect-[16/10] animate-pulse bg-line" />
-            <div className="flex flex-col gap-3 p-4">
-              <div className="h-5 w-3/4 animate-pulse bg-line" />
-              <div className="h-4 w-full animate-pulse bg-line" />
-              <div className="h-4 w-1/2 animate-pulse bg-line" />
-            </div>
+            <CardSkeleton lines={3} />
           </li>
         ))}
       </ul>

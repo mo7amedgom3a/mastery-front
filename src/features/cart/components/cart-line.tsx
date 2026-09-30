@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Money } from "@/components/shop/money";
 import { AppLink } from "@/components/ui/app-link";
 import { brandBg, type BrandColor } from "@/components/ui/brand-colors";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/cn";
 import type { AddonCode, Quote, QuoteLine, ShopItemKind } from "@/lib/shop/contract";
 import { kindLabel } from "@/lib/shop/labels";
@@ -97,7 +98,7 @@ export function CartLineRow({ line, quoted, unavailable, saved, onToggleAddon, o
               // Saved price while the catalog answers; the quote replaces it.
               <Money amount={line.priceAmount} className="animate-pulse text-xl font-bold text-fg-muted motion-reduce:animate-none" />
             ) : (
-              <span aria-hidden="true" className="h-7 w-16 animate-pulse bg-line motion-reduce:animate-none" />
+              <Skeleton className="h-7 w-16" />
             )}
           </div>
         </div>

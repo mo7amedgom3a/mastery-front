@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 
 import { UndoNotice } from "@/components/shop/undo-notice";
 import { ButtonLink } from "@/components/ui/button";
+import { CardSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
 import { shopQueries } from "@/features/cart/api/shop-client";
 import { RecommendationRail } from "@/features/search/components/recommendation-rail";
@@ -336,17 +337,13 @@ export function WishlistSkeleton() {
       <span className="sr-only">جارٍ تحميل المفضلة…</span>
       <div aria-hidden="true" className="flex gap-2">
         {[0, 1, 2].map((index) => (
-          <div key={index} className="h-11 w-24 animate-pulse bg-line motion-reduce:animate-none" />
+          <Skeleton key={index} className="h-11 w-24" />
         ))}
       </div>
       <ul aria-hidden="true" className={cn(GRID, "mt-8")}>
         {[0, 1, 2, 3].map((index) => (
           <li key={index} className={cn("border border-line", index > 0 && "max-sm:hidden", index > 1 && "max-md:hidden", index > 2 && "max-lg:hidden")}>
-            <div className="aspect-[16/10] animate-pulse bg-line motion-reduce:animate-none" />
-            <div className="flex flex-col gap-3 p-4">
-              <div className="h-5 w-3/4 animate-pulse bg-line motion-reduce:animate-none" />
-              <div className="h-4 w-1/2 animate-pulse bg-line motion-reduce:animate-none" />
-            </div>
+            <CardSkeleton />
           </li>
         ))}
       </ul>

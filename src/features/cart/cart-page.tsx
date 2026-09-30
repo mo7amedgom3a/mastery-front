@@ -6,6 +6,7 @@ import { useMemo } from "react";
 
 import { UndoNotice } from "@/components/shop/undo-notice";
 import { ButtonLink } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
 import { useCheckout } from "@/features/checkout/api/use-checkout";
 import { AuthGateDialog } from "@/features/checkout/components/auth-gate-dialog";
@@ -186,15 +187,22 @@ export function CartSkeleton() {
       <div aria-hidden="true" className="flex flex-col gap-4">
         {[0, 1].map((index) => (
           <div key={index} className="flex gap-4 border border-line p-4 sm:p-5">
-            <div className="aspect-[16/10] w-24 shrink-0 animate-pulse bg-line motion-reduce:animate-none sm:w-36" />
+            <Skeleton className="aspect-[16/10] w-24 shrink-0 sm:w-36" />
             <div className="flex flex-1 flex-col gap-3">
-              <div className="h-5 w-3/4 animate-pulse bg-line motion-reduce:animate-none" />
-              <div className="h-4 w-1/3 animate-pulse bg-line motion-reduce:animate-none" />
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-4 w-1/3" />
             </div>
           </div>
         ))}
       </div>
-      <div aria-hidden="true" className="h-72 animate-pulse border border-line bg-line/40 motion-reduce:animate-none" />
+      {/* The order summary: totals, coupon, then the pay button. */}
+      <div aria-hidden="true" className="flex flex-col gap-4 border border-line p-6">
+        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="h-5" />
+        <Skeleton className="h-5" />
+        <Skeleton className="h-11" />
+        <Skeleton className="h-12" />
+      </div>
     </div>
   );
 }

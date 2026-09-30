@@ -12,6 +12,7 @@ import { findPaymentMethod } from "@/features/cart/model/payment-methods";
 import { useShopHydrated, useShopStore } from "@/lib/shop/store";
 
 import { OrderDetails } from "./components/order-details";
+import { OrderSkeleton } from "./components/order-skeleton";
 
 const providerName = { stripe: "Stripe", tabby: "Tabby", tamara: "Tamara" } as const;
 
@@ -30,11 +31,7 @@ export function MockGatewayPage() {
   const [error, setError] = useState<string | null>(null);
 
   if (!hydrated) {
-    return (
-      <div role="status" className="h-72 animate-pulse border border-line bg-line/40 motion-reduce:animate-none">
-        <span className="sr-only">جارٍ تحميل الطلب…</span>
-      </div>
-    );
+    return <OrderSkeleton />;
   }
 
   if (!order || order.orderId !== orderId || order.status === "paid") {

@@ -32,23 +32,23 @@ export function SiteHeader() {
           </ul>
         </nav>
 
+        {/* Three groups: the icon tools (one joined strip), the sign-up action, the drawer toggle. */}
         <div className="ma-nav__actions items-center">
-          {/* From 1200px only: below that the bar has no room, and the nav links lead to search anyway. */}
-          <AppLink
-            href={routes.search}
-            aria-label="البحث في البرامج"
-            className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-11 max-lg:hidden"
-          >
-            <Search aria-hidden="true" className="size-5 fill-none" />
-          </AppLink>
-          <ButtonLink href={routes.login} variant="ghost" size="sm">
-            تسجيل الدخول
+          <div role="group" aria-label="أدوات الموقع" className="flex [&>*+*]:-ms-px">
+            {/* From 1200px only: below that the bar has no room, and the nav links lead to search anyway. */}
+            <AppLink
+              href={routes.search}
+              aria-label="البحث في البرامج"
+              className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-11 max-lg:hidden"
+            >
+              <Search aria-hidden="true" className="size-5 fill-none" />
+            </AppLink>
+            <HeaderShopLinks />
+            <ThemeToggle className="max-md:hidden" />
+          </div>
+          <ButtonLink href={routes.register} variant="secondary" size="sm" className="min-h-11 max-sm:hidden">
+            سجل الآن
           </ButtonLink>
-          <ButtonLink href={routes.register} variant="secondary" size="sm" className="max-sm:hidden">
-            إنشاء حساب
-          </ButtonLink>
-          <ThemeToggle className="max-md:hidden" />
-          <HeaderShopLinks />
           <MobileNavButton
             popoverId={MOBILE_NAV_ID}
             action="open"
@@ -69,14 +69,9 @@ export function SiteHeader() {
           <span className="text-fg-muted">المظهر</span>
           <ThemeToggle />
         </div>
-        <div className="grid gap-3">
-          <ButtonLink href={routes.register} variant="primary" block>
-            إنشاء حساب
-          </ButtonLink>
-          <ButtonLink href={routes.login} variant="outline" block>
-            تسجيل الدخول
-          </ButtonLink>
-        </div>
+        <ButtonLink href={routes.register} variant="primary" block>
+          سجل الآن
+        </ButtonLink>
       </div>
     </header>
   );

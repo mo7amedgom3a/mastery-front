@@ -6,6 +6,7 @@ import { FaqSection } from "@/features/landing/sections/faq-section";
 import { toQrMatrix } from "@/features/product-detail/api/share-qr";
 import { SectionNav, type SectionNavItem } from "@/features/product-detail/components/section-nav";
 import { ShareButton } from "@/features/product-detail/components/share-dialog";
+import { StickySidebar } from "@/features/product-detail/components/sticky-sidebar";
 import { AboutSection } from "@/features/product-detail/sections/about-section";
 
 import { consultationFaqs } from "./content/faqs";
@@ -65,11 +66,9 @@ export function ConsultationDetailPage({ data }: { data: ConsultationDetailData 
             <AboutSection sections={consultation.sections} title="عن الاستشارة" />
             <ExpertSection expert={expert} />
           </div>
-          <div className="hidden lg:block">
-            <div className="sticky top-[calc(var(--header-h)+5rem)]">
-              <BookingCard consultation={consultation} share={<ShareButton {...shareProps} variant="block" />} />
-            </div>
-          </div>
+          <StickySidebar>
+            <BookingCard consultation={consultation} share={<ShareButton {...shareProps} variant="block" />} />
+          </StickySidebar>
         </div>
 
         <ConsultationsRail cards={relatedConsultations} />

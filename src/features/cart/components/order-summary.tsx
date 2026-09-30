@@ -4,6 +4,7 @@ import { Info, Lock, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Money } from "@/components/shop/money";
+import { Skeleton } from "@/components/ui/skeleton";
 import { isMockCheckoutEnabled } from "@/config/env";
 import { cn } from "@/lib/cn";
 import { formatCount } from "@/lib/format";
@@ -119,8 +120,8 @@ export function OrderSummary({
       ) : (
         <div role="status" className="flex flex-col gap-3">
           <span className="sr-only">جارٍ حساب الإجمالي…</span>
-          <div aria-hidden="true" className="h-5 animate-pulse bg-line motion-reduce:animate-none" />
-          <div aria-hidden="true" className="h-10 animate-pulse bg-line motion-reduce:animate-none" />
+          <Skeleton className="h-5" />
+          <Skeleton className="h-10" />
         </div>
       )}
 

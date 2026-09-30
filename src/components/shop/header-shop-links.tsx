@@ -41,7 +41,7 @@ function CountLink({ href, label, count, onPlay, onStop, children }: CountLinkPr
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.3, opacity: 0 }}
             transition={{ type: "spring", stiffness: 600, damping: 22 }}
-            className="absolute -top-2 -end-2 grid min-w-5 place-items-center bg-accent px-1 text-[11px] leading-5 font-bold text-on-accent tabular-nums"
+            className="absolute -top-2 -end-2 z-10 grid min-w-5 place-items-center bg-accent px-1 text-[11px] leading-5 font-bold text-on-accent tabular-nums"
           >
             {count}
           </motion.span>
@@ -97,13 +97,13 @@ function CartLink() {
   );
 }
 
-/** Header wishlist (heart fills once anything is saved) and cart links with live count badges. */
+/** Header cart and wishlist (heart fills once anything is saved) links with live count badges. */
 export function HeaderShopLinks() {
   useShopHydration();
   return (
     <>
-      <WishlistLink />
       <CartLink />
+      <WishlistLink />
     </>
   );
 }

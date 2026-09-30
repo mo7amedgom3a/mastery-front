@@ -10,6 +10,7 @@ import { toQrMatrix } from "./api/share-qr";
 import { IntroVideo } from "./components/intro-video";
 import { SectionNav, type SectionNavItem } from "./components/section-nav";
 import { ShareButton } from "./components/share-dialog";
+import { StickySidebar } from "./components/sticky-sidebar";
 import { kindLabel } from "./content/copy";
 import { productFaqs } from "./content/faqs";
 import { productFacts } from "./model/facts";
@@ -89,11 +90,9 @@ export function ProductDetailPage({ data }: { data: ProductDetailData }) {
             <CurriculumSection units={product.curriculum} title={`محتوى ال${noun}`} />
             <InstructorSection trainers={product.trainers} />
           </div>
-          <div className="hidden lg:block">
-            <div className="sticky top-[calc(var(--header-h)+5rem)]">
-              <PurchaseCard product={product} share={<ShareButton {...shareProps} variant="block" />} />
-            </div>
-          </div>
+          <StickySidebar>
+            <PurchaseCard product={product} share={<ShareButton {...shareProps} variant="block" />} />
+          </StickySidebar>
         </div>
 
         <CertificateSection />

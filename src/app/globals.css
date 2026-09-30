@@ -2,6 +2,8 @@
 /* Mastery Academy design kit — tokens and .ma-* components, verbatim. Utilities layer on top. */
 @import "../styles/tokens.css" layer(base);
 @import "../styles/components.css" layer(components);
+/* Loading placeholders (components/ui/skeleton.tsx). In the components layer so utilities size them. */
+@import "react-loading-skeleton/dist/skeleton.css" layer(components);
 
 /* Kit breakpoints (docs/04-layout.md): mobile-first 600 · 900 · 1200. */
 @theme {
@@ -11,6 +13,9 @@
   --breakpoint-lg: 1200px;
   --breakpoint-xl: 1440px;
 }
+
+/* Short viewports (small laptops, browser zoom): sticky side cards tighten their spacing to fit. */
+@custom-variant short (@media (max-height: 800px));
 
 /* Role tokens → Tailwind utilities (bg-surface, text-fg-muted, border-line …). */
 @theme inline {
@@ -80,6 +85,13 @@ body {
      (they declare fill="none") and must stay unfilled. */
   .ma-btn svg[fill="none"] {
     fill: none;
+  }
+
+  /* ---------- Loading skeleton: kit colours (opaque, so the shimmer band has no seams), square ---------- */
+  .react-loading-skeleton {
+    --base-color: color-mix(in srgb, var(--text) 12%, var(--surface));
+    --highlight-color: color-mix(in srgb, var(--text) 4%, var(--surface));
+    border-radius: var(--radius-none);
   }
 
   /* ---------- Section header rhythm (more air between rule, title, accent and lead) ---------- */

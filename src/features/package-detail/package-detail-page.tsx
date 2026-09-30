@@ -6,6 +6,7 @@ import { FaqSection } from "@/features/landing/sections/faq-section";
 import { toQrMatrix } from "@/features/product-detail/api/share-qr";
 import { SectionNav, type SectionNavItem } from "@/features/product-detail/components/section-nav";
 import { ShareButton } from "@/features/product-detail/components/share-dialog";
+import { StickySidebar } from "@/features/product-detail/components/sticky-sidebar";
 import { AboutSection } from "@/features/product-detail/sections/about-section";
 import { CertificateSection } from "@/features/product-detail/sections/certificate-section";
 import { InstructorSection } from "@/features/product-detail/sections/instructor-section";
@@ -70,11 +71,9 @@ export function PackageDetailPage({ data }: { data: PackageDetailData }) {
             <PackageContentsSection items={product.items} title="محتوى الباقة" lead={contentsLead || null} />
             <InstructorSection trainers={product.trainers} />
           </div>
-          <div className="hidden lg:block">
-            <div className="sticky top-[calc(var(--header-h)+5rem)]">
-              <PackagePurchaseCard product={product} share={<ShareButton {...shareProps} variant="block" />} />
-            </div>
-          </div>
+          <StickySidebar>
+            <PackagePurchaseCard product={product} share={<ShareButton {...shareProps} variant="block" />} />
+          </StickySidebar>
         </div>
 
         <CertificateSection />

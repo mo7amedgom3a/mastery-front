@@ -8,6 +8,7 @@ import { routes } from "@/config/routes";
 import { useShopHydrated, useShopStore } from "@/lib/shop/store";
 
 import { OrderDetails } from "./components/order-details";
+import { OrderSkeleton } from "./components/order-skeleton";
 
 /**
  * Where the customer lands after payment: the confirmation (`success`) or the way back to the cart
@@ -20,11 +21,7 @@ export function OrderResultPage({ outcome }: { outcome: "success" | "failed" }) 
   const order = useShopStore((state) => state.order);
 
   if (!hydrated) {
-    return (
-      <div role="status" className="h-72 animate-pulse border border-line bg-line/40 motion-reduce:animate-none">
-        <span className="sr-only">جارٍ تحميل الطلب…</span>
-      </div>
-    );
+    return <OrderSkeleton />;
   }
 
   if (outcome === "failed") {

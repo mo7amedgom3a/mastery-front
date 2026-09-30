@@ -23,14 +23,15 @@ export function PackagePurchaseCard({ product, share }: { product: PackageDetail
   ].filter((fact) => fact !== null);
 
   return (
-    <aside aria-label="الاشتراك في الباقة" className="border border-line-strong bg-surface p-6">
+    // `lg:short:` — beside the content on a short viewport, tighter spacing so the whole card fits.
+    <aside aria-label="الاشتراك في الباقة" className="border border-line-strong bg-surface p-6 lg:short:p-5">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 tabular-nums">
         {price.free ? (
           <span className="ma-tag ma-tag--green text-base font-bold">مجانية</span>
         ) : price.current ? (
           <>
             {price.original ? <span className="sr-only">السعر بعد الخصم</span> : null}
-            <span dir="ltr" className="text-4xl font-bold">
+            <span dir="ltr" className="text-4xl font-bold lg:short:text-3xl">
               {price.current}
             </span>
           </>
@@ -59,7 +60,7 @@ export function PackagePurchaseCard({ product, share }: { product: PackageDetail
         </p>
       ) : null}
 
-      <div className="mt-5">
+      <div className="mt-5 lg:short:mt-4">
         {actionsFor("package", {
           id: product.id,
           title: product.title,
@@ -71,8 +72,8 @@ export function PackagePurchaseCard({ product, share }: { product: PackageDetail
       </div>
       {share ? <div className="mt-3">{share}</div> : null}
 
-      <h2 className="m-0 mt-8 text-sm font-bold">تشمل الباقة</h2>
-      <ul className="m-0 mt-3 grid list-none gap-3 p-0 text-[15px]">
+      <h2 className="m-0 mt-8 text-sm font-bold lg:short:mt-5">تشمل الباقة</h2>
+      <ul className="m-0 mt-3 grid list-none gap-3 p-0 text-[15px] lg:short:gap-2">
         {facts.map(({ icon: Icon, label }) => (
           <li key={label} className="flex items-center gap-3">
             <Icon aria-hidden="true" className="size-5 shrink-0 text-accent" />

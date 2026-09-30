@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { CardCarousel } from "@/components/motion/card-carousel";
 import { ProductCard } from "@/components/ui/product-card";
+import { CardSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { toCard } from "@/features/product-detail/sections/product-rails";
 import { cn } from "@/lib/cn";
 import { getClientFingerprint } from "@/lib/customer-tracking";
@@ -49,15 +50,11 @@ export function RecommendationRail({ className }: { className?: string }) {
     return (
       <div role="status" className={cn("min-w-0", className)}>
         <span className="sr-only">جارٍ تحميل الاقتراحات…</span>
-        <div aria-hidden="true" className="h-8 w-40 animate-pulse bg-line" />
+        <Skeleton className="h-8 w-40" />
         <ul aria-hidden="true" className="m-0 mt-6 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {[0, 1, 2, 3].map((index) => (
             <li key={index} className={cn("border border-line", index > 0 && "max-sm:hidden", index > 1 && "max-md:hidden", index > 2 && "max-lg:hidden")}>
-              <div className="aspect-[16/10] animate-pulse bg-line" />
-              <div className="flex flex-col gap-3 p-4">
-                <div className="h-5 w-3/4 animate-pulse bg-line" />
-                <div className="h-4 w-1/2 animate-pulse bg-line" />
-              </div>
+              <CardSkeleton />
             </li>
           ))}
         </ul>
