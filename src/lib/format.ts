@@ -20,6 +20,22 @@ export function formatPrice(amount: number | null | undefined): string | null {
   return priceFormatter.format(amount);
 }
 
+const centsFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: siteConfig.currency,
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/**
+ * Any amount, for totals and discounts: "$129", "$26.10", "$0". Unlike `formatPrice` it never returns
+ * null and keeps cents when there are any (a percentage coupon produces them). Render inside dir="ltr".
+ */
+export function formatMoney(amount: number): string {
+  const value = Number.isFinite(amount) ? amount : 0;
+  return Number.isInteger(value) ? priceFormatter.format(value) : centsFormatter.format(value);
+}
+
 export function formatNumber(value: number): string {
   return numberFormatter.format(value);
 }

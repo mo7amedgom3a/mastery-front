@@ -3,7 +3,7 @@ import type { Route } from "next";
 /**
  * Single source of truth for internal URLs.
  *
- * Some destinations (auth, cart) are not built yet, and listing URLs carry a query string, so
+ * Some destinations (auth) are not built yet, and listing URLs carry a query string, so
  * `typedRoutes` cannot verify them. They are cast here, once, instead of at every call site. When
  * a page ships, its entry keeps working unchanged. Render these with `prefetch={false}` until the
  * page exists (see `AppLink`).
@@ -80,6 +80,10 @@ export const routes = {
   business: route("/#business"),
   cart: route("/cart"),
   wishlist: route("/wishlist"),
+  /** MOCK: stand-in for a payment provider's hosted page (see features/checkout). */
+  checkoutGateway: (orderId: string) => route(`/checkout/mock-gateway?order=${encodeURIComponent(orderId)}`),
+  checkoutSuccess: route("/checkout/success"),
+  checkoutFailed: route("/checkout/failed"),
   privacy: route("/privacy"),
   terms: route("/terms"),
 } as const;

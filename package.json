@@ -17,6 +17,7 @@
     "api:types": "openapi-typescript openapi.json -o src/types/openapi.ts",
     "api:test": "tsx scripts/test-api-layer.ts",
     "api:test:mutations": "tsx scripts/test-api-layer.ts --include-mutations",
+    "test:cart": "tsx scripts/test-cart-pricing.ts",
     "seo:check": "tsx scripts/seo-check.ts"
   },
   "dependencies": {

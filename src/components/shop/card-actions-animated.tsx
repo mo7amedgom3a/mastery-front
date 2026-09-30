@@ -2,7 +2,7 @@
 
 import { clsx } from "clsx";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { CartIcon, CheckIcon, type AnimatedIconHandle } from "@/components/icons/animated";
 import { HeartFillIcon } from "@/components/icons/heart-fill-icon";
@@ -27,7 +27,6 @@ export default function AnimatedCardActions({ item, purchasable }: CardActionsPr
   const inCart = useShopStore((state) => state.cart.some((entry) => entry.key === item.key));
   const saved = useShopStore((state) => state.wishlist.some((entry) => entry.key === item.key));
   const { toggleWishlist, toggleCart } = useShopActions();
-  const [busy, setBusy] = useState(false);
 
   const heart = useRef<AnimatedIconHandle>(null);
   const cart = useRef<AnimatedIconHandle>(null);
@@ -44,15 +43,6 @@ export default function AnimatedCardActions({ item, purchasable }: CardActionsPr
 
   const onWishlist = () => {
     if (toggleWishlist(item)) playHeart();
-  };
-
-  const onCart = async () => {
-    setBusy(true);
-    try {
-      await toggleCart(item);
-    } finally {
-      setBusy(false);
-    }
   };
 
   return (
@@ -75,13 +65,11 @@ export default function AnimatedCardActions({ item, purchasable }: CardActionsPr
       {purchasable ? (
         <motion.button
           type="button"
-          onClick={onCart}
+          onClick={() => toggleCart(item)}
           onMouseEnter={playCart}
           onMouseLeave={stopCart}
           onFocus={playCart}
           onBlur={stopCart}
-          disabled={busy}
-          aria-busy={busy}
           aria-pressed={inCart}
           aria-label={inCart ? `إزالة «${item.title}» من السلة` : `إضافة «${item.title}» إلى السلة`}
           whileTap={{ scale: 0.94 }}

@@ -81,19 +81,26 @@ function legacyIdFromSlug(kind: string, item: SearchItemDto): number | null {
  * only a price-list row can say "free"; the bare column counts only when positive.
  * When the full price list is known (`rows`: the detail's `prices[]`), it decides, because the API's
  * own `current_price` drops main prices stored with a past window (see `resolvePriceRows`).
+ * Returns the raw amounts: what is paid now, and the base price a running offer undercuts.
  */
-export function coursePricing(dto: CourseDto, rows?: readonly PriceRow[]) {
+export function priceAmounts(
+  dto: CourseDto | PackageDto,
+  rows?: readonly PriceRow[],
+): { current: number | null; original: number | null } {
   const resolved = rows && rows.length > 0 ? resolvePriceRows(rows) : null;
   const current = resolved?.current?.price ?? dto.current_price?.price ?? positiveOrNull(dto.price);
   const original = resolved?.current ? resolved.original : dto.original_price;
+  return { current: current ?? null, original: original ?? null };
+}
+
+export function coursePricing(dto: CourseDto, rows?: readonly PriceRow[]) {
+  const { current, original } = priceAmounts(dto, rows);
   return { price: toPricing(current, original), priceAmount: positiveOrNull(current) };
 }
 
 /** Same rule as `coursePricing`: a package's `prices[]` (from its detail) decides when present. */
 export function packagePricing(dto: PackageDto, rows?: readonly PriceRow[]) {
-  const resolved = rows && rows.length > 0 ? resolvePriceRows(rows) : null;
-  const current = resolved?.current?.price ?? dto.current_price?.price ?? positiveOrNull(dto.price);
-  const original = resolved?.current ? resolved.original : dto.original_price;
+  const { current, original } = priceAmounts(dto, rows);
   return { price: toPricing(current, original), priceAmount: positiveOrNull(current) };
 }
 

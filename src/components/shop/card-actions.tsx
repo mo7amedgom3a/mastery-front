@@ -50,7 +50,7 @@ function observeForUpgrade(node: Element, upgrade: () => void): () => void {
  * Wishlist + add-to-cart for a product card. Sits above the card's stretched link (`relative z-10`)
  * so clicks don't navigate.
  * - Heart: anyone can save (synced to the account on sign-in).
- * - Cart: signed-in only; guests get the sign-in dialog and the item is added after they sign in.
+ * - Cart: anyone can add; signing in is asked for at payment.
  * - Free items: an enrol link to the item instead of the cart.
  */
 export function CardActions(props: CardActionsProps) {
@@ -93,16 +93,6 @@ function StaticCardActions({ item, purchasable }: CardActionsProps) {
   const inCart = useShopStore((state) => state.cart.some((entry) => entry.key === item.key));
   const saved = useShopStore((state) => state.wishlist.some((entry) => entry.key === item.key));
   const { toggleWishlist, toggleCart } = useShopActions();
-  const [busy, setBusy] = useState(false);
-
-  const onCart = async () => {
-    setBusy(true);
-    try {
-      await toggleCart(item);
-    } finally {
-      setBusy(false);
-    }
-  };
 
   return (
     <>
@@ -121,9 +111,7 @@ function StaticCardActions({ item, purchasable }: CardActionsProps) {
       {purchasable ? (
         <button
           type="button"
-          onClick={onCart}
-          disabled={busy}
-          aria-busy={busy}
+          onClick={() => toggleCart(item)}
           aria-pressed={inCart}
           aria-label={inCart ? `إزالة «${item.title}» من السلة` : `إضافة «${item.title}» إلى السلة`}
           className={clsx("ma-btn ma-btn--sm min-h-10 gap-1.5 px-3", inCart ? "ma-btn--secondary" : "ma-btn--outline")}
