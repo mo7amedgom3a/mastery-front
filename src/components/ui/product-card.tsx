@@ -99,7 +99,9 @@ export function ProductCard({
         </h3>
         {summary ? <p className="m-0 line-clamp-2 text-sm leading-6 text-fg-muted">{summary}</p> : null}
         {meta.length > 0 ? (
-          <ul className="ma-card__meta m-0 list-none p-0">
+          // `mt-auto`: cards in a rail share the tallest one's height; the spare room goes above the
+          // meta row, so it always sits right on the footer instead of floating over a gap.
+          <ul className="ma-card__meta m-0 mt-auto list-none p-0">
             {meta.map(({ icon: Icon, label }) => (
               <li key={label} className="inline-flex items-center gap-1">
                 {/* `fill-none`: the kit fills meta svgs, which turns Lucide outline icons into solid shapes. */}
