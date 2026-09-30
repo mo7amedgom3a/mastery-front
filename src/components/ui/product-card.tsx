@@ -14,6 +14,11 @@ export type ProductCardMeta = {
   label: string;
 };
 
+export type ProductCardTag = {
+  label: string;
+  href: Route;
+};
+
 export type ProductCardProps = {
   href: Route;
   title: string;
@@ -22,6 +27,8 @@ export type ProductCardProps = {
   color: BrandColor;
   tag?: string | null;
   summary?: string | null;
+  /** Topic chips under the summary, each a link (e.g. to the search for that tag). */
+  tags?: ProductCardTag[];
   meta?: ProductCardMeta[];
   price?: Pricing | null;
   /** Interactive controls for the footer (wishlist, add to cart). Replaces `ctaLabel` when set. */
@@ -50,6 +57,7 @@ export function ProductCard({
   color,
   tag,
   summary,
+  tags = [],
   meta = [],
   price,
   actions,
@@ -98,6 +106,22 @@ export function ProductCard({
           </AppLink>
         </h3>
         {summary ? <p className="m-0 line-clamp-2 text-sm leading-6 text-fg-muted">{summary}</p> : null}
+        {tags.length > 0 ? (
+          // Above the card's stretched title link (`relative z-10`), like the footer actions.
+          <ul className="relative z-10 m-0 flex list-none flex-wrap gap-2 p-0">
+            {tags.map((item) => (
+              <li key={item.href}>
+                <AppLink
+                  href={item.href}
+                  // The pseudo-element grows the touch target to 44px without growing the chip.
+                  className="ma-tag ma-tag--outline relative no-underline before:absolute before:inset-x-0 before:-inset-y-2.5 before:content-[''] hover:bg-fg hover:text-surface"
+                >
+                  {item.label}
+                </AppLink>
+              </li>
+            ))}
+          </ul>
+        ) : null}
         {meta.length > 0 ? (
           // `mt-auto`: cards in a rail share the tallest one's height; the spare room goes above the
           // meta row, so it always sits right on the footer instead of floating over a gap.

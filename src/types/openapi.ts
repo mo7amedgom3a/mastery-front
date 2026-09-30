@@ -2300,6 +2300,11 @@ export interface components {
              */
             include_debug: boolean;
             /**
+             * Personalize
+             * @default true
+             */
+            personalize: boolean;
+            /**
              * Limit
              * @default 50
              */
@@ -2375,6 +2380,17 @@ export interface components {
             debug?: {
                 [key: string]: unknown;
             } | null;
+            /**
+             * Legacy Id
+             * @description Id of the legacy record behind this product (the number in its slug).
+             */
+            legacy_id?: number | null;
+            /** @description Legacy course or diploma record; set for course and diploma products. */
+            course?: components["schemas"]["CourseResponse"] | null;
+            /** @description Legacy package record; set for package products. */
+            package?: components["schemas"]["CollectionResponse"] | null;
+            /** @description Legacy consultation record; set for consultation products. */
+            consultation?: components["schemas"]["ConsultationResponse"] | null;
         };
         /** SkillResponse */
         SkillResponse: {
@@ -4510,6 +4526,7 @@ export interface operations {
                 sort?: string;
                 search_mode?: "hybrid" | "lexical" | "semantic";
                 include_debug?: boolean;
+                personalize?: boolean;
                 limit?: number;
                 offset?: number;
             };
@@ -4583,6 +4600,21 @@ export interface operations {
     search_options_api_v1_search_options_get: {
         parameters: {
             query?: {
+                product_type?: string[];
+                product_types?: string[];
+                category?: string[];
+                skill?: string[];
+                tag?: string[];
+                instructor_id?: string[];
+                trainer_id?: number[];
+                min_price?: number | string | null;
+                max_price?: number | string | null;
+                currency_code?: string | null;
+                min_rating?: number | null;
+                max_rating?: number | null;
+                min_duration_minutes?: number | null;
+                max_duration_minutes?: number | null;
+                expert_instructor_only?: boolean;
                 expert_only?: boolean;
                 limit?: number;
             };

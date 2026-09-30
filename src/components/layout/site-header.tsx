@@ -1,3 +1,5 @@
+import { Search } from "lucide-react";
+
 import { Logo } from "@/components/brand/logo";
 import { HeaderShopLinks } from "@/components/shop/header-shop-links";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -7,7 +9,7 @@ import { routes } from "@/config/routes";
 
 import { MobileNavButton } from "./mobile-nav-button";
 import { MobileNavLinks } from "./mobile-nav-links";
-import { primaryNav } from "./nav-items";
+import { mobileNav, primaryNav } from "./nav-items";
 
 const MOBILE_NAV_ID = "mobile-nav";
 
@@ -31,6 +33,14 @@ export function SiteHeader() {
         </nav>
 
         <div className="ma-nav__actions items-center">
+          {/* From 1200px only: below that the bar has no room, and the nav links lead to search anyway. */}
+          <AppLink
+            href={routes.search}
+            aria-label="البحث في البرامج"
+            className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-11 max-lg:hidden"
+          >
+            <Search aria-hidden="true" className="size-5 fill-none" />
+          </AppLink>
           <ButtonLink href={routes.login} variant="ghost" size="sm">
             تسجيل الدخول
           </ButtonLink>
@@ -53,7 +63,7 @@ export function SiteHeader() {
           <MobileNavButton popoverId={MOBILE_NAV_ID} action="close" />
         </div>
         <nav aria-label="القائمة الرئيسية" className="mt-6 flex-1">
-          <MobileNavLinks items={primaryNav} popoverId={MOBILE_NAV_ID} />
+          <MobileNavLinks items={mobileNav} popoverId={MOBILE_NAV_ID} />
         </nav>
         <div className="mb-6 flex items-center justify-between border-t border-line pt-4">
           <span className="text-fg-muted">المظهر</span>

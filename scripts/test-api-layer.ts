@@ -542,6 +542,7 @@ function liveEndpointTests(): LiveTest[] {
       sort: "relevance",
       search_mode: "hybrid",
       include_debug: false,
+      personalize: true,
       limit: 5,
       offset: 0,
     })) },

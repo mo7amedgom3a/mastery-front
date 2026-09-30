@@ -4,11 +4,14 @@ import { routes } from "@/config/routes";
 
 export type NavItem = { label: string; href: Route };
 
-// In-page anchors for now; switch each to its listing route when that page ships.
+// Catalog links open the search page filtered to that product type.
 export const primaryNav: readonly NavItem[] = [
-  { label: "الدورات", href: routes.section("courses") },
-  { label: "الدبلومات", href: routes.section("diplomas") },
-  { label: "الباقات", href: routes.section("packages") },
-  { label: "الاستشارات", href: routes.section("consultations") },
+  { label: "الدورات", href: routes.courses },
+  { label: "الدبلومات", href: routes.diplomas },
+  { label: "الباقات", href: routes.packages },
+  { label: "الاستشارات", href: routes.consultations },
   { label: "للشركات", href: routes.section("business") },
 ];
+
+/** The drawer has room for a search entry; the desktop bar shows it as an icon instead. */
+export const mobileNav: readonly NavItem[] = [{ label: "البحث", href: routes.search }, ...primaryNav];

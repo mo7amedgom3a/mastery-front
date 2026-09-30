@@ -3,10 +3,14 @@ import type { Route } from "next";
 /**
  * Single source of truth for internal URLs.
  *
- * Most destinations (listings, detail pages, auth) are not built yet, so `typedRoutes`
- * cannot verify them. They are cast here, once, instead of at every call site. When a page
- * ships, its entry keeps working unchanged. Render these with `prefetch={false}` until the
+ * Some destinations (auth, cart) are not built yet, and listing URLs carry a query string, so
+ * `typedRoutes` cannot verify them. They are cast here, once, instead of at every call site. When
+ * a page ships, its entry keeps working unchanged. Render these with `prefetch={false}` until the
  * page exists (see `AppLink`).
+ *
+ * Every catalog listing is the search page with a filter preset (param order matches
+ * `searchHref` in features/search/model/params.ts). `/courses`, `/diplomas`, `/packages` and
+ * `/consultations` redirect there (next.config.ts).
  */
 const route = (path: string) => path as Route;
 
@@ -54,11 +58,14 @@ export const routes = {
   /** Auth pages with a return path, e.g. back to the card the visitor was on. */
   loginThen: (next: string) => route(`/login?next=${encodeURIComponent(next)}`),
   registerThen: (next: string) => route(`/register?next=${encodeURIComponent(next)}`),
-  courses: route("/courses"),
+  search: route("/search"),
+  courses: route("/search?type=course"),
   course: (id: number, linkName?: string | null) =>
     route(`/courses/${encodeURIComponent(productSlug(id, linkName))}`),
-  category: (id: number | string) => route(`/courses?category=${encodeURIComponent(String(id))}`),
-  diplomas: route("/diplomas"),
+  /** Courses of one legacy category; search category slugs are `legacy-category-{id}`. */
+  category: (id: number | string) =>
+    route(`/search?type=course&category=legacy-category-${encodeURIComponent(String(id))}`),
+  diplomas: route("/search?type=diploma"),
   diploma: (id: number, linkName?: string | null) =>
     route(`/diplomas/${encodeURIComponent(productSlug(id, linkName))}`),
   /** One profile page for a trainer, a consultant, or someone who is both. */
@@ -66,9 +73,9 @@ export const routes = {
   /** A trainer's profile is their expert page: the trainer id is the expert key. */
   instructor: (id: number, name?: string | null) => expertRoute(id, name),
   live: route("/live"),
-  packages: route("/packages"),
+  packages: route("/search?type=package"),
   package: (id: number | string) => route(`/packages/${encodeURIComponent(String(id))}`),
-  consultations: route("/consultations"),
+  consultations: route("/search?type=consultation"),
   consultation: (id: number | string) => route(`/consultations/${encodeURIComponent(String(id))}`),
   business: route("/#business"),
   cart: route("/cart"),

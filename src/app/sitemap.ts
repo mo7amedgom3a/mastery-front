@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { isPublishable, type CourseDto } from "@/features/landing/model/mappers";
+import { emptySearchState, PRODUCT_TYPES, searchHref } from "@/features/search/model/params";
 import {
   getLegacyConsultations,
   getLegacyCourses,
@@ -10,6 +11,7 @@ import {
   getLegacyExperts,
   getLegacyPackages,
 } from "@/lib/api/legacy";
+import { getSearchOptions } from "@/lib/api/search";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
 
 // Regenerated with the catalog: new courses appear within the hour, or at once via /api/revalidate.
@@ -31,13 +33,13 @@ async function allPages(fetchPage: (offset: number) => Promise<{ items: CourseDt
   return items;
 }
 
-// Listing routes are added as they ship. Detail pages have no updated-at date in the API, so they
-// carry no `lastModified` rather than a made-up one.
+// Detail pages have no updated-at date in the API, so they carry no `lastModified` rather than a
+// made-up one.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const home = `${siteUrl}/`;
 
-  const [courses, diplomas, packages, consultations, experts] = await Promise.allSettled([
+  const [courses, diplomas, packages, consultations, experts, searchOptions] = await Promise.allSettled([
     allPages((offset) => getLegacyCourses({ limit: PAGE_SIZE, offset }, read)),
     allPages((offset) => getLegacyDiplomas({ active: true, limit: PAGE_SIZE, offset }, read)),
     // Packages number in the tens: one page covers them.
@@ -46,7 +48,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getLegacyConsultations({ limit: PAGE_SIZE }, read).then((page) => page.items),
     // The API lists only experts with something to offer.
     getLegacyExperts({ limit: PAGE_SIZE }, read).then((page) => page.items),
+    getSearchOptions({ limit: 500 }, read),
   ]);
+
+  // The listings: the search page as a whole, per product type and per category that has products.
+  // Same URLs as the pages' canonicals (`searchHref`); finer filter combinations are noindexed.
+  const listing = (path: string, priority: number): MetadataRoute.Sitemap[number] => ({
+    url: `${siteUrl}${path}`,
+    changeFrequency: "daily",
+    priority,
+  });
+  const listings = [
+    listing(searchHref(emptySearchState), 0.9),
+    ...PRODUCT_TYPES.map((type) => listing(searchHref({ ...emptySearchState, types: [type] }), 0.9)),
+    ...(valueOf(searchOptions, "sitemap search options")?.categories ?? [])
+      .filter((category) => category.count > 0)
+      .map((category) => listing(searchHref({ ...emptySearchState, categories: [category.code.toLowerCase()] }), 0.7)),
+  ];
 
   // `/legacy/courses` lists diplomas too; each item goes under the route its kind lives at.
   const products = new Map<string, MetadataRoute.Sitemap[number]>();
@@ -82,6 +100,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
       alternates: { languages: { ar: home, "x-default": home } },
     },
+    ...listings,
     ...products.values(),
   ];
 }

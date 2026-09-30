@@ -23,8 +23,17 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   poweredByHeader: false,
   async redirects() {
-    // Trainer profiles moved to the expert page; the trainer id is the expert key.
-    return [{ source: "/instructors/:id", destination: "/experts/:id", permanent: true }];
+    return [
+      // Trainer profiles moved to the expert page; the trainer id is the expert key.
+      { source: "/instructors/:id", destination: "/experts/:id", permanent: true },
+      // One listing for every product type: the search page, filtered. Sources match the bare
+      // path only, so detail pages (`/courses/{slug}`) are untouched; a query string on the old
+      // URL is passed through (`/courses?category=20` keeps its category).
+      { source: "/courses", destination: "/search?type=course", permanent: true },
+      { source: "/diplomas", destination: "/search?type=diploma", permanent: true },
+      { source: "/packages", destination: "/search?type=package", permanent: true },
+      { source: "/consultations", destination: "/search?type=consultation", permanent: true },
+    ];
   },
   async headers() {
     const headers = isIndexable()

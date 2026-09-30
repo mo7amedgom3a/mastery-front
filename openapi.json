@@ -3461,6 +3461,16 @@
             }
           },
           {
+            "name": "personalize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Personalize"
+            }
+          },
+          {
             "name": "limit",
             "in": "query",
             "required": false,
@@ -3621,6 +3631,231 @@
         "summary": "Search Options",
         "operationId": "search_options_api_v1_search_options_get",
         "parameters": [
+          {
+            "name": "product_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Product Type"
+            }
+          },
+          {
+            "name": "product_types",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Product Types"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Category"
+            }
+          },
+          {
+            "name": "skill",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Skill"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Tag"
+            }
+          },
+          {
+            "name": "instructor_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "title": "Instructor Id"
+            }
+          },
+          {
+            "name": "trainer_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "title": "Trainer Id"
+            }
+          },
+          {
+            "name": "min_price",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string",
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Price"
+            }
+          },
+          {
+            "name": "max_price",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string",
+                  "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Price"
+            }
+          },
+          {
+            "name": "currency_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Currency Code"
+            }
+          },
+          {
+            "name": "min_rating",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "maximum": 5,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Rating"
+            }
+          },
+          {
+            "name": "max_rating",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "maximum": 5,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Rating"
+            }
+          },
+          {
+            "name": "min_duration_minutes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Duration Minutes"
+            }
+          },
+          {
+            "name": "max_duration_minutes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Duration Minutes"
+            }
+          },
+          {
+            "name": "expert_instructor_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Expert Instructor Only"
+            }
+          },
           {
             "name": "expert_only",
             "in": "query",
@@ -8497,6 +8732,11 @@
             "title": "Include Debug",
             "default": false
           },
+          "personalize": {
+            "type": "boolean",
+            "title": "Personalize",
+            "default": true
+          },
           "limit": {
             "type": "integer",
             "maximum": 100.0,
@@ -8731,6 +8971,51 @@
               }
             ],
             "title": "Debug"
+          },
+          "legacy_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Id",
+            "description": "Id of the legacy record behind this product (the number in its slug)."
+          },
+          "course": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CourseResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Legacy course or diploma record; set for course and diploma products."
+          },
+          "package": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CollectionResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Legacy package record; set for package products."
+          },
+          "consultation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConsultationResponse"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Legacy consultation record; set for consultation products."
           }
         },
         "type": "object",

@@ -265,6 +265,57 @@ body {
     }
   }
 
+  /* ---------- Search filters: sidebar from 900px, native popover drawer below ----------
+     One element, two presentations. As a popover it is hidden until opened (no JS); from 900px
+     the popover behaviour is switched off and it sits in the page as a plain sticky column. */
+  .filter-drawer {
+    border: 0;
+    background: var(--surface);
+    color: var(--text);
+  }
+  @media (min-width: 900px) {
+    .filter-drawer {
+      display: block;
+      position: sticky;
+      inset: auto;
+      top: calc(var(--header-h) + var(--space-6));
+      width: auto;
+      height: auto;
+      max-height: calc(100dvh - var(--header-h) - var(--space-12));
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      background: transparent;
+    }
+  }
+  @media (max-width: 899.98px) {
+    .filter-drawer {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      max-width: none;
+      height: 100dvh;
+      max-height: none;
+      margin: 0;
+      padding: calc(env(safe-area-inset-top, 0px) + var(--space-4)) var(--space-4)
+        calc(env(safe-area-inset-bottom, 0px) + var(--space-6));
+      overflow-y: auto;
+      opacity: 0;
+      transition:
+        opacity var(--dur) var(--ease),
+        display var(--dur) allow-discrete,
+        overlay var(--dur) allow-discrete;
+    }
+    .filter-drawer:popover-open {
+      opacity: 1;
+    }
+    @starting-style {
+      .filter-drawer:popover-open {
+        opacity: 0;
+      }
+    }
+  }
+
   /* ---------- Offscreen rendering skip for long below-the-fold sections ---------- */
   .cv-auto {
     content-visibility: auto;

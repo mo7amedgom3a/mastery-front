@@ -1,4 +1,5 @@
 import { getSiteUrl } from "@/config/env";
+import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
 import { aboutCopy, heroCopy } from "@/features/landing/content/copy";
 import { fallbackFaqs } from "@/features/landing/content/faqs";
@@ -44,6 +45,11 @@ export function GET() {
     "## روابط",
     "",
     `- [الصفحة الرئيسية](${siteUrl}/)`,
+    `- [كل البرامج (بحث وتصفية)](${siteUrl}${routes.search})`,
+    `- [الدورات](${siteUrl}${routes.courses})`,
+    `- [الدبلومات](${siteUrl}${routes.diplomas})`,
+    `- [الباقات](${siteUrl}${routes.packages})`,
+    `- [الاستشارات](${siteUrl}${routes.consultations})`,
     `- [من نحن](${siteUrl}/#about)`,
     `- [الخبراء](${siteUrl}/#experts)`,
     `- [حلول تدريب الشركات](${siteUrl}/#business)`,

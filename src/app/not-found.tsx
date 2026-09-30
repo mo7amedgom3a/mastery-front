@@ -4,19 +4,21 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AppLink } from "@/components/ui/app-link";
 import { ButtonLink } from "@/components/ui/button";
-import { routes, type LandingSectionId } from "@/config/routes";
+import type { Route } from "next";
+
+import { routes } from "@/config/routes";
 
 export const metadata: Metadata = {
   title: "الصفحة غير موجودة",
   robots: { index: false, follow: true },
 };
 
-const shortcuts: { id: LandingSectionId; label: string }[] = [
-  { id: "courses", label: "الدورات" },
-  { id: "diplomas", label: "الدبلومات" },
-  { id: "packages", label: "الباقات" },
-  { id: "consultations", label: "الاستشارات" },
-  { id: "faq", label: "الأسئلة الشائعة" },
+const shortcuts: { href: Route; label: string }[] = [
+  { href: routes.courses, label: "الدورات" },
+  { href: routes.diplomas, label: "الدبلومات" },
+  { href: routes.packages, label: "الباقات" },
+  { href: routes.consultations, label: "الاستشارات" },
+  { href: routes.section("faq"), label: "الأسئلة الشائعة" },
 ];
 
 /** Real 404 (status and noindex) that still gives crawlers and people a way back into the site. */
@@ -40,8 +42,8 @@ export default function NotFound() {
             <nav aria-label="روابط سريعة">
               <ul className="ma-cluster m-0 list-none p-0">
                 {shortcuts.map((shortcut) => (
-                  <li key={shortcut.id}>
-                    <AppLink href={routes.section(shortcut.id)}>{shortcut.label}</AppLink>
+                  <li key={shortcut.href}>
+                    <AppLink href={shortcut.href}>{shortcut.label}</AppLink>
                   </li>
                 ))}
               </ul>
