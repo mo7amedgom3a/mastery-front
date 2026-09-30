@@ -68,16 +68,13 @@ export function FilterLink({ href, scroll = false, children, ...rest }: FilterLi
   );
 }
 
-type SearchFormProps = Omit<ComponentProps<"form">, "action" | "method" | "onSubmit"> & {
-  /** A popover (the mobile filter drawer) to close once the form is submitted. */
-  closePopoverId?: string;
-};
+type SearchFormProps = Omit<ComponentProps<"form">, "action" | "method" | "onSubmit">;
 
 /**
  * GET form for the search page. With JavaScript the fields are read into the canonical URL and
  * followed as a transition; without it the browser submits the same fields itself.
  */
-export function SearchForm({ closePopoverId, children, ...rest }: SearchFormProps) {
+export function SearchForm({ children, ...rest }: SearchFormProps) {
   const nav = useContext(SearchNavContext);
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -89,10 +86,6 @@ export function SearchForm({ closePopoverId, children, ...rest }: SearchFormProp
       if (typeof value !== "string" || !value.trim()) continue;
       const existing = raw[name];
       raw[name] = existing === undefined ? value : [...(Array.isArray(existing) ? existing : [existing]), value];
-    }
-    if (closePopoverId) {
-      const popover = document.getElementById(closePopoverId);
-      if (popover?.matches(":popover-open")) popover.hidePopover();
     }
     nav.navigate(searchHref(parseSearchParams(raw)));
   };
@@ -113,7 +106,10 @@ export function AutoSubmitSelect({ children, ...rest }: Omit<ComponentProps<"sel
   );
 }
 
-/** Dims its content while a filter change is loading, and tells assistive tech it is busy. */
+/**
+ * Dims the results while a filter change is loading, and tells assistive tech they are busy. The
+ * filters themselves stay outside it, so more of them can be changed without waiting.
+ */
 export function PendingRegion({ className, children }: { className?: string; children: ReactNode }) {
   const pending = useContext(SearchNavContext)?.pending ?? false;
   return (

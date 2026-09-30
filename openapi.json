@@ -7647,6 +7647,11 @@
           "context": {
             "type": "string",
             "title": "Context"
+          },
+          "personalized": {
+            "type": "boolean",
+            "title": "Personalized",
+            "default": false
           }
         },
         "type": "object",

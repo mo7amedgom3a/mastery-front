@@ -1,4 +1,4 @@
-import { SlidersHorizontal, TriangleAlert } from "lucide-react";
+import { Sparkles, TriangleAlert } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { Pagination } from "@/components/ui/pagination";
@@ -8,8 +8,9 @@ import { formatCount, formatNumber } from "@/lib/format";
 
 import { getSearchView } from "../api/get-search-page";
 import { ActiveFilters } from "../components/active-filters";
-import { FacetChips } from "../components/facet-chips";
-import { FILTER_PANEL_ID, FilterPanel } from "../components/filter-panel";
+import { FacetBar } from "../components/facet-bar";
+import { FilterPanel } from "../components/filter-panel";
+import { RecommendationRail } from "../components/recommendation-rail";
 import { AutoSubmitSelect, FilterLink, PendingRegion, SearchForm } from "../components/search-nav";
 import { StateInputs } from "../components/state-inputs";
 import { NEWEST_LABEL, RESULT_FORMS, sortLabel } from "../content/copy";
@@ -17,7 +18,6 @@ import {
   PAGE_SIZE,
   SORTS,
   clearFilters,
-  emptySearchState,
   hasFilters,
   isIndexableState,
   searchHref,
@@ -28,9 +28,9 @@ import {
 import type { SearchCatalog, SearchResultsVM } from "../model/types";
 import { SearchJsonLd } from "../seo/json-ld";
 
-/** Three cards per row beside the sidebar, two on tablets, one on phones. */
-const CARD_SIZES = "(min-width: 1200px) 290px, (min-width: 900px) 40vw, (min-width: 600px) 45vw, 100vw";
-const GRID = "m-0 grid list-none gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3";
+/** Four cards per row on desktop, three from 900px, two on tablets, one on phones. */
+const CARD_SIZES = "(min-width: 1200px) 290px, (min-width: 900px) 30vw, (min-width: 600px) 45vw, 100vw";
+const GRID = "m-0 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
 
 function SortControl({ state }: { state: SearchState }) {
   // Without a query nothing is ranked: the default order is "newest", so it takes that label.
@@ -68,57 +68,42 @@ function SortControl({ state }: { state: SearchState }) {
   );
 }
 
-function EmptyState({ state, catalog }: { state: SearchState; catalog: SearchCatalog }) {
+/** A search that matched nothing: why, and the quickest ways out. Recommendations follow below it. */
+function EmptyState({ state }: { state: SearchState }) {
   const filtered = hasFilters(state);
+  const canGoSmart = Boolean(state.q) && state.mode === "lexical";
   return (
     <div className="flex flex-col items-start gap-4 border border-line p-6 md:p-10">
       <h2 className="m-0 text-2xl leading-10 font-bold">لم نجد برامج مطابقة</h2>
       <p className="m-0 max-w-[52ch] text-fg-muted">
         {state.q
-          ? "جرّب كلمات أقل أو أعمّ، أو تحقّق من الإملاء."
+          ? canGoSmart
+            ? "البحث العادي يطابق الكلمات كما كتبتها. فعّل البحث الذكي ليبحث بالمعنى، أو جرّب كلمات أقل."
+            : "جرّب كلمات أقل أو أعمّ، أو تحقّق من الإملاء."
           : "لا توجد برامج بهذه الفلاتر معاً. أزل أحدها لترى نتائج أكثر."}
       </p>
-      <ul className="ma-cluster m-0 list-none p-0">
-        {filtered ? (
-          <li>
-            <FilterLink href={searchHref(clearFilters(state))} rel="nofollow" className="ma-btn ma-btn--outline">
-              امسح الفلاتر
-            </FilterLink>
-          </li>
-        ) : null}
-        {state.q && state.mode === "lexical" ? (
-          <li>
-            <FilterLink
-              href={searchHref(withFilters(state, { mode: "hybrid" }))}
-              rel="nofollow"
-              className="ma-btn ma-btn--outline"
-            >
-              فعّل البحث الذكي
-            </FilterLink>
-          </li>
-        ) : null}
-        <li>
-          <FilterLink href={searchHref(emptySearchState)} className="ma-btn ma-btn--ghost">
-            تصفّح كل البرامج
-          </FilterLink>
-        </li>
-      </ul>
-      {catalog.topCategories.length > 0 ? (
-        <div className="mt-2 flex flex-col gap-3">
-          <p className="m-0 text-sm font-medium">أو ابدأ من أحد المجالات:</p>
-          <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
-            {catalog.topCategories.map((category) => (
-              <li key={category.code}>
-                <FilterLink
-                  href={searchHref({ ...emptySearchState, categories: [category.code] })}
-                  className="ma-btn ma-btn--outline ma-btn--sm max-md:min-h-11"
-                >
-                  {category.label}
-                </FilterLink>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {canGoSmart || filtered ? (
+        <ul className="ma-cluster m-0 list-none p-0">
+          {canGoSmart ? (
+            <li>
+              <FilterLink
+                href={searchHref(withFilters(state, { mode: "hybrid" }))}
+                rel="nofollow"
+                className="ma-btn ma-btn--secondary"
+              >
+                <Sparkles aria-hidden="true" className="size-5 fill-none" />
+                فعّل البحث الذكي
+              </FilterLink>
+            </li>
+          ) : null}
+          {filtered ? (
+            <li>
+              <FilterLink href={searchHref(clearFilters(state))} rel="nofollow" className="ma-btn ma-btn--outline">
+                امسح الفلاتر
+              </FilterLink>
+            </li>
+          ) : null}
+        </ul>
       ) : null}
     </div>
   );
@@ -146,11 +131,15 @@ function ResultGrid({ state, results, heading }: { state: SearchState; results: 
   return (
     <>
       <ul className={GRID}>
-        {results.cards.map((card) => (
-          <li key={card.key} className="min-w-0">
-            <ProductCard {...toCard(card)} tags={card.tags} sizes={CARD_SIZES} />
-          </li>
-        ))}
+        {results.cards.map((card) => {
+          // `toCard` returns a key for list rendering; React wants it passed on its own.
+          const { key, ...props } = toCard(card);
+          return (
+            <li key={key} className="min-w-0">
+              <ProductCard {...props} tags={card.tags} sizes={CARD_SIZES} />
+            </li>
+          );
+        })}
       </ul>
       <Pagination
         page={state.page}
@@ -181,14 +170,16 @@ type SearchResultsProps = {
   state: SearchState;
   catalog: SearchCatalog;
   heading: string;
+  /** The unfiltered listing: where a visitor lands first. */
+  isRoot: boolean;
 };
 
 /**
- * Everything that depends on the search request: the quick-filter chips (their counts follow the
- * filters), the filters in force, the side panel, the toolbar and the results. Streams in behind
- * the page header; later filter changes swap it in place (see `SearchNavProvider`).
+ * Everything that depends on the search request: the filter bar (its counts follow the filters),
+ * the filters in force, the drawer with every filter, the toolbar and the results. Streams in
+ * behind the page header; later filter changes swap it in place (see `SearchNavProvider`).
  */
-export async function SearchResults({ state, catalog, heading }: SearchResultsProps) {
+export async function SearchResults({ state, catalog, heading, isRoot }: SearchResultsProps) {
   const view = await getSearchView(state, catalog);
   const { results } = view;
 
@@ -197,90 +188,89 @@ export async function SearchResults({ state, catalog, heading }: SearchResultsPr
     redirect(searchHref({ ...state, page: results.pageCount }));
   }
 
+  const empty = results !== null && results.cards.length === 0;
+  // Recommendations open the unfiltered listing, and stand in for results when a search has none.
+  const startRail = isRoot && state.page === 1;
+  const fallbackRail = empty && !startRail;
+  // Counts describe the catalog, not a keyword search, so they are hidden while one is active.
+  const showCounts = view.countsKnown && !state.q;
+
   return (
-    <PendingRegion className="min-w-0 space-y-8">
-      <section aria-label="فلاتر سريعة" className="min-w-0 space-y-6">
-        <FacetChips facets={view.facets} showCounts={view.countsKnown && !state.q} />
-        <ActiveFilters state={state} filters={view.activeFilters} />
-      </section>
+    <div className="min-w-0 space-y-8">
+      {startRail ? <RecommendationRail className="border-b border-line pb-10" /> : null}
 
-      <div className="md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:items-start md:gap-10">
-        <FilterPanel state={state} trainers={catalog.trainers} />
+      <div className="min-w-0">
+        <section aria-label="الفلاتر" className="space-y-4">
+          <FacetBar facets={view.facets} showCounts={showCounts} activeCount={view.activeFilters.length} />
+          <ActiveFilters state={state} filters={view.activeFilters} />
+        </section>
+        <FilterPanel state={state} facets={view.facets} showCounts={showCounts} trainers={catalog.trainers} />
 
-        <section aria-labelledby="results-title" className="min-w-0">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-line pb-4">
-            <h2 id="results-title" className="sr-only">
-              النتائج
-            </h2>
-            {/* Announced on every filter change: the count is the feedback that it worked. */}
-            <p role="status" className="m-0 font-medium">
-              {results
-                ? results.total > 0
+        <PendingRegion className="mt-6 min-w-0">
+          <section aria-labelledby="results-title">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-y border-line py-3">
+              <h2 id="results-title" className="sr-only">
+                النتائج
+              </h2>
+              {/* Announced on every filter change: the count is the feedback that it worked. */}
+              <p role="status" className="m-0 font-medium">
+                {results && results.total > 0
                   ? `${formatCount(results.total, RESULT_FORMS)}${
                       results.pageCount > 1
                         ? ` · الصفحة ${formatNumber(state.page)} من ${formatNumber(results.pageCount)}`
                         : ""
                     }`
-                  : "لا توجد نتائج"
-                : null}
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                popoverTarget={FILTER_PANEL_ID}
-                className="ma-btn ma-btn--outline ma-btn--sm min-h-11 md:hidden"
-              >
-                <SlidersHorizontal aria-hidden="true" className="size-4 fill-none" />
-                الفلاتر
-              </button>
+                  : results && !isRoot
+                    ? "لا توجد نتائج"
+                    : null}
+              </p>
               <SortControl state={state} />
             </div>
-          </div>
 
-          {!results ? (
-            <ErrorState state={state} />
-          ) : results.cards.length === 0 ? (
-            <EmptyState state={state} catalog={catalog} />
-          ) : (
-            <ResultGrid state={state} results={results} heading={heading} />
-          )}
-        </section>
+            {!results ? (
+              <ErrorState state={state} />
+            ) : !empty ? (
+              <ResultGrid state={state} results={results} heading={heading} />
+            ) : isRoot ? (
+              // Nothing was searched for, so nothing was "not found": the rail above is the page.
+              <p className="m-0 text-fg-muted">لا توجد برامج معروضة هنا الآن.</p>
+            ) : (
+              <EmptyState state={state} />
+            )}
+          </section>
+        </PendingRegion>
       </div>
-    </PendingRegion>
+
+      {fallbackRail ? <RecommendationRail className="border-t border-line pt-10" /> : null}
+    </div>
   );
 }
 
-const SKELETON_CHIP_WIDTHS = ["w-20", "w-28", "w-24", "w-32", "w-20", "w-24"];
+const SKELETON_BUTTON_WIDTHS = ["w-20", "w-24", "w-24", "w-20"];
 
-/** First-load placeholder with the same footprint as the chips and the card grid. */
+/** First-load placeholder with the same footprint as the filter bar and the card grid. */
 export function SearchResultsSkeleton() {
   return (
-    <div role="status" className="min-w-0 space-y-8">
+    <div role="status" className="min-w-0">
       <span className="sr-only">جارٍ تحميل النتائج…</span>
-      <div aria-hidden="true" className="space-y-4">
-        {[0, 1, 2].map((row) => (
-          <div key={row} className="flex gap-2 overflow-hidden">
-            {SKELETON_CHIP_WIDTHS.map((width, index) => (
-              <div key={index} className={`h-9 shrink-0 animate-pulse bg-line ${width}`} />
-            ))}
-          </div>
+      <div aria-hidden="true" className="flex gap-2 overflow-hidden">
+        {SKELETON_BUTTON_WIDTHS.map((width, index) => (
+          <div key={index} className={`h-11 shrink-0 animate-pulse bg-line ${width}`} />
         ))}
       </div>
-      <div aria-hidden="true" className="md:grid md:grid-cols-[16rem_minmax(0,1fr)] md:gap-10">
-        <div className="h-96 animate-pulse bg-line max-md:hidden" />
-        <ul className={GRID}>
-          {Array.from({ length: 6 }, (_, index) => (
-            <li key={index} className="border border-line">
-              <div className="aspect-[16/10] animate-pulse bg-line" />
-              <div className="flex flex-col gap-3 p-4">
-                <div className="h-5 w-3/4 animate-pulse bg-line" />
-                <div className="h-4 w-full animate-pulse bg-line" />
-                <div className="h-4 w-1/2 animate-pulse bg-line" />
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <div aria-hidden="true" className="mt-6 mb-6 h-14 border-y border-line" />
+      <ul aria-hidden="true" className={GRID}>
+        {Array.from({ length: 8 }, (_, index) => (
+          <li key={index} className="border border-line">
+            <div className="aspect-[16/10] animate-pulse bg-line" />
+            <div className="flex flex-col gap-3 p-4">
+              <div className="h-5 w-3/4 animate-pulse bg-line" />
+              <div className="h-4 w-full animate-pulse bg-line" />
+              <div className="h-4 w-1/2 animate-pulse bg-line" />
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

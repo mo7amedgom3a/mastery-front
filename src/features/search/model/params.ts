@@ -26,9 +26,13 @@ const DURATION_SORTS = ["duration_asc", "duration_desc"] as const;
 export type SearchSort = (typeof BASE_SORTS)[number] | (typeof DURATION_SORTS)[number];
 export const SORTS: readonly SearchSort[] = DURATION_FILTER_ENABLED ? [...BASE_SORTS, ...DURATION_SORTS] : BASE_SORTS;
 
-/** `hybrid` is the default ("smart search" on); `lexical` is the toggle off; `semantic` is URL-only. */
-export const SEARCH_MODES = ["hybrid", "lexical", "semantic"] as const;
+/**
+ * `lexical` is the default (smart search off); `hybrid` is smart search, switched on by the
+ * visitor; `semantic` is URL-only.
+ */
+export const SEARCH_MODES = ["lexical", "hybrid", "semantic"] as const;
 export type SearchMode = (typeof SEARCH_MODES)[number];
+export const DEFAULT_MODE: SearchMode = "lexical";
 
 export const PAGE_SIZE = 24;
 const MAX_PAGE = 500;
@@ -71,7 +75,7 @@ export const emptySearchState: SearchState = {
   hoursMin: null,
   hoursMax: null,
   sort: "relevance",
-  mode: "hybrid",
+  mode: DEFAULT_MODE,
   page: 1,
 };
 
@@ -150,7 +154,7 @@ export function parseSearchParams(raw: RawSearchParams): SearchState {
     hoursMin,
     hoursMax,
     sort: isOneOf(SORTS, sort) ? sort : "relevance",
-    mode: isOneOf(SEARCH_MODES, mode) ? mode : "hybrid",
+    mode: isOneOf(SEARCH_MODES, mode) ? mode : DEFAULT_MODE,
     page: Math.min(Math.max(page, 1), MAX_PAGE),
   };
 }
@@ -188,7 +192,7 @@ export function searchEntries(state: SearchState): [string, string][] {
   if (state.hoursMin !== null) entries.push(["hours_min", String(state.hoursMin)]);
   if (state.hoursMax !== null) entries.push(["hours_max", String(state.hoursMax)]);
   if (state.sort !== "relevance") entries.push(["sort", state.sort]);
-  if (state.mode !== "hybrid") entries.push(["mode", state.mode]);
+  if (state.mode !== DEFAULT_MODE) entries.push(["mode", state.mode]);
   if (state.page > 1) entries.push(["page", String(state.page)]);
   return entries;
 }
@@ -248,7 +252,7 @@ export function isIndexableState(state: SearchState): boolean {
     state.hoursMin === null &&
     state.hoursMax === null &&
     state.sort === "relevance" &&
-    state.mode === "hybrid"
+    state.mode === DEFAULT_MODE
   );
 }
 

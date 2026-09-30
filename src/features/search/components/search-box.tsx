@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -10,7 +10,8 @@ import { StateInputs } from "./state-inputs";
 
 /** The query field with the page's one primary action, and the smart-search switch under it. */
 export function SearchBox({ state }: { state: SearchState }) {
-  // "Smart" is anything that reads meaning (hybrid, or semantic from a hand-written URL).
+  // Off by default: the visitor turns it on. "Smart" is anything that reads meaning (hybrid, or
+  // semantic from a hand-written URL).
   const smart = state.mode !== "lexical";
 
   return (
@@ -39,25 +40,19 @@ export function SearchBox({ state }: { state: SearchState }) {
         </button>
       </SearchForm>
 
-      <FilterLink
-        href={searchHref(withFilters(state, { mode: smart ? "lexical" : "hybrid" }))}
-        role="switch"
-        aria-checked={smart}
-        className="inline-flex min-h-11 items-center gap-3 self-start text-fg no-underline"
-      >
-        {/* Same look as the kit checkbox: a square that fills coral with an ink dot. */}
-        <span
-          aria-hidden="true"
-          className={cn(
-            "grid size-5 shrink-0 place-content-center border",
-            smart ? "border-accent bg-accent" : "border-line-strong bg-surface",
-          )}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <FilterLink
+          href={searchHref(withFilters(state, { mode: smart ? "lexical" : "hybrid" }))}
+          role="switch"
+          aria-checked={smart}
+          rel="nofollow"
+          className={cn(buttonClass({ variant: smart ? "secondary" : "outline", size: "sm" }), "min-h-11")}
         >
-          {smart ? <span className="size-2 bg-ink" /> : null}
-        </span>
-        <span className="font-medium">{searchCopy.smart}</span>
-        <span className="text-sm text-fg-muted max-sm:hidden">{searchCopy.smartHint}</span>
-      </FilterLink>
+          <Sparkles aria-hidden="true" className="size-4 fill-none" />
+          {searchCopy.smart}
+        </FilterLink>
+        <span className="text-sm text-fg-muted">{smart ? searchCopy.smartOn : searchCopy.smartOff}</span>
+      </div>
     </div>
   );
 }

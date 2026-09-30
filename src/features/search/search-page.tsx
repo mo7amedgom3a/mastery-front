@@ -25,7 +25,7 @@ export function SearchPage({ state, catalog, heading }: SearchPageProps) {
       <div className="ma-section pt-8 md:pt-10">
         <div className="ma-container">
           <Suspense fallback={<SearchResultsSkeleton />}>
-            <SearchResults state={state} catalog={catalog} heading={heading} />
+            <SearchResults state={state} catalog={catalog} heading={heading} isRoot={isRoot} />
           </Suspense>
         </div>
       </div>

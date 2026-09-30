@@ -2023,6 +2023,11 @@ export interface components {
             limit: number;
             /** Context */
             context: string;
+            /**
+             * Personalized
+             * @default false
+             */
+            personalized: boolean;
         };
         /** RefreshRequest */
         RefreshRequest: {
