@@ -37,6 +37,8 @@ export function HeroSection() {
           renderItem={(expert) => (
             <div className={cn("relative aspect-[600/811] overflow-hidden rounded-photo", brandBg[expert.color])}>
               {/* Decorative backdrop: sized to the column (2 on phones, 3 in 48% on desktop), low quality is invisible at this opacity. */}
+              {/* Loaded up front at low priority, not lazily: a portrait that first downloads and
+                  decodes as it slides into view pops in and makes the moving column hitch. */}
               <Image
                 src={expert.image}
                 alt=""
@@ -44,6 +46,8 @@ export function HeroSection() {
                 height={346}
                 sizes="(min-width: 900px) 16vw, 45vw"
                 quality={60}
+                loading="eager"
+                fetchPriority="low"
                 className="size-full object-cover"
               />
             </div>

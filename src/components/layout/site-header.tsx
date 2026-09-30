@@ -32,9 +32,9 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        {/* Three groups: the icon tools (one joined strip), the sign-up action, the drawer toggle. */}
+        {/* Three groups: the icon tools, the sign-up action, the drawer toggle. */}
         <div className="ma-nav__actions items-center">
-          <div role="group" aria-label="أدوات الموقع" className="flex [&>*+*]:-ms-px">
+          <div role="group" aria-label="أدوات الموقع" className="flex items-center gap-2">
             {/* From 1200px only: below that the bar has no room, and the nav links lead to search anyway. */}
             <AppLink
               href={routes.search}

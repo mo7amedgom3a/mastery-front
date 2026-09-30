@@ -180,12 +180,33 @@ body {
 
   /* ---------- Vertical marquee grid (hero background) ---------- */
   .vmarquee {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(var(--vmarquee-cols, 3), minmax(0, 1fr));
     gap: var(--space-4);
     height: 100%;
     overflow: hidden;
-    mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
+    /* Nothing inside affects, or is repainted with, the rest of the page. */
+    contain: layout paint;
+  }
+  /* Edge fades are two static gradients in the backdrop colour laid over the columns. A mask would
+     re-composite every moving column through an offscreen surface on each frame, which stutters. */
+  .vmarquee::before,
+  .vmarquee::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    z-index: 1;
+    height: 14%;
+    pointer-events: none;
+  }
+  .vmarquee::before {
+    top: 0;
+    background: linear-gradient(to bottom, var(--vmarquee-fade, var(--surface-alt)), transparent);
+  }
+  .vmarquee::after {
+    bottom: 0;
+    background: linear-gradient(to top, var(--vmarquee-fade, var(--surface-alt)), transparent);
   }
   .vmarquee__col {
     --vmarquee-gap: var(--space-4);

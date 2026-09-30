@@ -18,7 +18,8 @@ const SPEED_FACTORS = [1, 1.25, 0.9, 1.15, 1.05];
 /**
  * Infinite vertical marquee grid (hero background). Adjacent columns scroll in opposite
  * directions; each column holds its list twice so a -50% loop is seamless. Pure CSS, decorative:
- * the whole grid is hidden from assistive tech.
+ * the whole grid is hidden from assistive tech. The top and bottom fade into `--surface-alt`; on
+ * another backdrop set `--vmarquee-fade` to its colour.
  */
 export function VerticalMarqueeGrid<T>({ columns, getKey, renderItem, duration = 60, className }: VerticalMarqueeGridProps<T>) {
   const gridStyle = { "--vmarquee-cols": columns.length } as CSSProperties;
