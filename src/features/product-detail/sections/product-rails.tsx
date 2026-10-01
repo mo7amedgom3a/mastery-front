@@ -18,7 +18,7 @@ const kindColor: Record<RailCardVM["kind"], BrandColor> = {
 
 export function toCard(card: RailCardVM) {
   const meta: ProductCardMeta[] = [];
-  if (card.instructor) meta.push({ icon: UserRound, label: card.instructor });
+  if (card.instructor) meta.push({ icon: UserRound, label: card.instructor, avatar: card.instructorAvatar });
   if (card.duration) meta.push({ icon: Clock, label: card.duration });
   if (card.courseCount) meta.push({ icon: Layers, label: formatCount(card.courseCount, COURSE_FORMS) });
   return {

@@ -67,7 +67,7 @@ function FilterChips({
 
 function courseMeta(course: CourseCardVM): ProductCardMeta[] {
   const meta: ProductCardMeta[] = [];
-  if (course.instructor) meta.push({ icon: UserRound, label: course.instructor });
+  if (course.instructor) meta.push({ icon: UserRound, label: course.instructor, avatar: course.instructorAvatar });
   if (course.duration) meta.push({ icon: Clock, label: course.duration });
   return meta;
 }

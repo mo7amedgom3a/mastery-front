@@ -183,6 +183,7 @@ export function courseCard(dto: CourseDto, instructors?: InstructorNames): RailC
     duration: card.duration,
     courseCount: null,
     instructor: card.instructor,
+    instructorAvatar: card.instructorAvatar,
     price: card.price,
     priceAmount: card.priceAmount,
   };
@@ -202,6 +203,7 @@ export function packageCard(dto: PackageDto): RailCardVM {
     duration: null,
     courseCount: card.courseCount > 0 ? card.courseCount : null,
     instructor: null,
+    instructorAvatar: null,
     price: card.price,
     priceAmount: card.priceAmount,
   };

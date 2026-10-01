@@ -102,6 +102,8 @@ export function consultationCard(dto: ConsultationDto): RailCardVM {
     duration: [sessions, card.sessionLength].filter(Boolean).join(" · ") || null,
     courseCount: null,
     instructor: card.consultant,
+    // The consultation's artwork is already the consultant's portrait.
+    instructorAvatar: null,
     price: card.price,
     priceAmount: card.priceAmount,
   };

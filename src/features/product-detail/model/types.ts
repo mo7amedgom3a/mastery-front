@@ -104,6 +104,8 @@ export type RailCardVM = {
   courseCount: number | null;
   /** Lead instructor ("… وآخرون" when several) or the consultant; null for packages and when unknown. */
   instructor: string | null;
+  /** The lead instructor's profile photo; null when unknown, and for packages and consultations. */
+  instructorAvatar: string | null;
   price: Pricing;
   priceAmount: number | null;
 };

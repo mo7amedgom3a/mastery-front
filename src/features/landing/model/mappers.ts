@@ -106,6 +106,7 @@ export function packagePricing(dto: PackageDto, rows?: readonly PriceRow[]) {
 }
 
 export function mapCourse(dto: CourseDto, filterKeys: string[] = [], instructors?: InstructorNames): CourseCardVM {
+  const trainers = instructors?.get(`${dto.is_diploma ? "diploma" : "course"}:${dto.id}`);
   return {
     id: dto.id,
     title: cleanText(dto.name) ?? "",
@@ -114,7 +115,8 @@ export function mapCourse(dto: CourseDto, filterKeys: string[] = [], instructors
     href: dto.is_diploma ? routes.diploma(dto.id, dto.link_name) : routes.course(dto.id, dto.link_name),
     category: cleanText(dto.category_name),
     duration: formatDurationFromSeconds(dto.duration),
-    instructor: instructorLabel(instructors?.get(`${dto.is_diploma ? "diploma" : "course"}:${dto.id}`)),
+    instructor: instructorLabel(trainers?.map((trainer) => trainer.name)),
+    instructorAvatar: trainers?.[0]?.avatar ?? null,
     ...coursePricing(dto),
     filterKeys,
   };

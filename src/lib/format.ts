@@ -174,6 +174,16 @@ export function stripHonorific(name: string): string {
   return name.replace(/^(?:أ\.?\s*د\.?|أ\.|د\.|م\.)\s*/u, "");
 }
 
+/**
+ * Key for matching the same person across lists that share no id (the search index names a
+ * course's trainers, the experts list has their photos): the name, whitespace-normalised and
+ * without its honorific.
+ */
+export function personNameKey(name: string | null | undefined): string | null {
+  const clean = cleanText(name);
+  return clean ? stripHonorific(clean).trim() || clean : null;
+}
+
 /** Legacy rich text as plain-text blocks: paragraphs and lists, nothing else survives. */
 export type TextBlock = { type: "p"; text: string } | { type: "list"; ordered: boolean; items: string[] };
 

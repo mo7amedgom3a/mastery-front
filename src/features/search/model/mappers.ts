@@ -246,7 +246,9 @@ function resultCard(item: SearchItemDto, catalog: SearchCatalog): ResultCardVM |
   if (item.course && isPublishable(item.course)) {
     const kind: ProductType = item.course.is_diploma ? "diploma" : "course";
     const names = item.instructors.map((name) => cleanText(name)).filter((name): name is string => !!name);
-    const instructors: InstructorNames = new Map([[`${kind}:${item.course.id}`, [...new Set(names)]]]);
+    // The index has names only: these cards show the plain instructor icon, no photo.
+    const trainers = [...new Set(names)].map((name) => ({ name, avatar: null }));
+    const instructors: InstructorNames = new Map([[`${kind}:${item.course.id}`, trainers]]);
     card = courseCard(item.course, instructors);
   } else if (item.package && isPublishable(item.package)) {
     card = packageCard(item.package);

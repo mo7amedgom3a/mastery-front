@@ -12,6 +12,8 @@ import type { Pricing } from "@/lib/pricing";
 export type ProductCardMeta = {
   icon: LucideIcon;
   label: string;
+  /** A person's photo (the instructor), shown as a small round avatar in place of the icon. */
+  avatar?: string | null;
 };
 
 export type ProductCardTag = {
@@ -126,10 +128,17 @@ export function ProductCard({
           // `mt-auto`: cards in a rail share the tallest one's height; the spare room goes above the
           // meta row, so it always sits right on the footer instead of floating over a gap.
           <ul className="ma-card__meta m-0 mt-auto list-none p-0">
-            {meta.map(({ icon: Icon, label }) => (
+            {meta.map(({ icon: Icon, label, avatar }) => (
               <li key={label} className="inline-flex items-center gap-1">
-                {/* `fill-none`: the kit fills meta svgs, which turns Lucide outline icons into solid shapes. */}
-                <Icon aria-hidden="true" className="size-3.5 shrink-0 fill-none" strokeWidth={2} />
+                {avatar ? (
+                  // Decorative: the name beside it says who it is.
+                  <span className="relative me-0.5 size-6 shrink-0 overflow-hidden rounded-full border border-line bg-surface-alt">
+                    <Image src={avatar} alt="" fill sizes="24px" className="object-cover" />
+                  </span>
+                ) : (
+                  // `fill-none`: the kit fills meta svgs, which turns Lucide outline icons into solid shapes.
+                  <Icon aria-hidden="true" className="size-3.5 shrink-0 fill-none" strokeWidth={2} />
+                )}
                 {label}
               </li>
             ))}
