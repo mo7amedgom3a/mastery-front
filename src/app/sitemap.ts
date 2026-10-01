@@ -60,6 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
   const listings = [
     listing(searchHref(emptySearchState), 0.9),
+    listing(routes.live, 0.8),
     ...PRODUCT_TYPES.map((type) => listing(searchHref({ ...emptySearchState, types: [type] }), 0.9)),
     ...(valueOf(searchOptions, "sitemap search options")?.categories ?? [])
       .filter((category) => category.count > 0)

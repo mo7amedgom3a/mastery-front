@@ -10,6 +10,7 @@ import {
   getLegacyPackages,
   type LandingPageResponse,
 } from "@/lib/api/legacy";
+import { getNewestLiveTraining } from "@/features/live-training/api/get-live-trainings";
 import { getInstructorNames } from "@/lib/api/instructor-names";
 import { withResolvedPrices } from "@/lib/api/legacy-pricing";
 import { searchProducts } from "@/lib/api/search";
@@ -59,6 +60,7 @@ export const getLandingData = cache(async (): Promise<LandingData> => {
     diplomaSearch,
     packageSearch,
     instructors,
+    liveTraining,
   ] = await Promise.allSettled([
     landingRequest,
     landingRequest.catch(() => null).then(getCategoryCourses),
@@ -68,6 +70,7 @@ export const getLandingData = cache(async (): Promise<LandingData> => {
     searchProducts({ product_type: ["diploma"], limit: SEARCH_PAGE_SIZE }, cachedRead),
     searchProducts({ product_type: ["package"], limit: SEARCH_PAGE_SIZE }, cachedRead),
     getInstructorNames(cachedRead),
+    getNewestLiveTraining(),
   ]);
 
   const landingPage = valueOf(landing, "landing-page");
@@ -103,5 +106,6 @@ export const getLandingData = cache(async (): Promise<LandingData> => {
     diplomaIndex: toSearchIndex("diploma", valueOf(diplomaSearch, "diploma search")),
     packageIndex: toSearchIndex("package", valueOf(packageSearch, "package search")),
     instructors: valueOf(instructors, "instructor names") ?? new Map(),
+    liveTraining: valueOf(liveTraining, "live trainings"),
   });
 });

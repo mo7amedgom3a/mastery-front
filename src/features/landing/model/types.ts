@@ -1,5 +1,6 @@
 import type { Route } from "next";
 
+import type { LiveTrainingVM } from "@/features/live-training/model/types";
 import type { Pricing } from "@/lib/pricing";
 
 /** View models: what sections render. Mapped from API DTOs in `mappers.ts`, never used raw. */
@@ -94,4 +95,6 @@ export type LandingData = {
   consultationFilters: FilterVM[];
   faqs: FaqVM[];
   stats: StatVM[];
+  /** Spotlight banner: the next live training; null when none is open. */
+  liveTraining: LiveTrainingVM | null;
 };

@@ -1,4 +1,5 @@
 import { routes } from "@/config/routes";
+import type { LiveTrainingVM } from "@/features/live-training/model/types";
 import type { InstructorNames } from "@/lib/api/instructor-names";
 import type {
   LandingPageResponse,
@@ -289,6 +290,7 @@ export const emptyLandingData: LandingData = {
   consultationFilters: [],
   faqs: [],
   stats: [],
+  liveTraining: null,
 };
 
 export type LandingSources = {
@@ -301,6 +303,7 @@ export type LandingSources = {
   diplomaIndex: SearchIndex;
   packageIndex: SearchIndex;
   instructors: InstructorNames;
+  liveTraining: LiveTrainingVM | null;
 };
 
 export function mapLandingData({
@@ -312,9 +315,10 @@ export function mapLandingData({
   diplomaIndex,
   packageIndex,
   instructors,
+  liveTraining,
 }: LandingSources): LandingData {
   if (!landing && !activeDiplomas && !allPackages && !allConsultations) {
-    return emptyLandingData;
+    return { ...emptyLandingData, liveTraining };
   }
 
   const categories = (landing?.categories ?? [])
@@ -355,5 +359,6 @@ export function mapLandingData({
     consultationFilters: consultationRail.filters,
     faqs: (landing?.faqs ?? []).map(mapFaq).filter((faq): faq is FaqVM => faq !== null),
     stats: mapStats(landing?.insights),
+    liveTraining,
   };
 }

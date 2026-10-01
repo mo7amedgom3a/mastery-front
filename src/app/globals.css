@@ -56,6 +56,12 @@
    and baseline everywhere. Raleway, the Latin face, has old-style figures and is kept off numbers. */
 body {
   font-variant-numeric: lining-nums;
+  /* Arabic letters hang well below the baseline (ي، ج، the dots of ب), so an underline drawn at the
+     usual position cuts through them. Every underline (links, `hover:underline`, `.ma-link`) sits
+     under the lowest descender instead, with a little air. Both properties inherit, and an
+     `underline-offset-*` utility on an element still overrides the offset. */
+  text-underline-position: under;
+  text-underline-offset: 0.2em;
 }
 
 @layer components {
@@ -92,6 +98,12 @@ body {
     --base-color: color-mix(in srgb, var(--text) 12%, var(--surface));
     --highlight-color: color-mix(in srgb, var(--text) 4%, var(--surface));
     border-radius: var(--radius-none);
+  }
+
+  /* ---------- Header nav: the hover/current line is a bottom border; a bit more room above it
+     keeps it clear of Arabic descenders ---------- */
+  .ma-nav__links a {
+    padding-block-end: var(--space-3);
   }
 
   /* ---------- Section header rhythm (more air between rule, title, accent and lead) ---------- */

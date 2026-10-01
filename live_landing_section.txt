@@ -1,0 +1,33 @@
+This section is commonly referred to in web design and UI/UX as a Hero Banner Section, a Featured Course Showcase, or a Spotlight Carousel / Banner.
+Core UI/UX Elements to Replicate for the Cinematic Vibe
+
+To achieve the exact cinematic, high-production look for your Newest Live Diploma section, incorporate these design breakdown techniques:
+1. Dark Mode & Deep Contrast Background
+
+    Base: Pure black (#000000) or deep charcoal canvas background.
+
+    Lighting/Glow: Use a vivid, colorful gradient halo or radial blur behind the instructors/instructors' cutouts (like the pink/purple light aura in MasterClass).
+
+2. Studio Portraiture Visuals (Cutouts)
+
+    High-Key Photography: Use high-resolution, transparent PNG cutouts of your live diploma instructors or top speakers.
+
+    Lighting: Apply dramatic key lighting (rim lighting/edge glow) on the instructors to make them seamlessly blend with the background aura.
+
+    Foreground Depth: Seat the main instructor prominently in the center with secondary instructors slightly behind to create 3D depth of field.
+
+3. Cinematic Content Overlay Layout
+
+    Headline & Subtitle: Bold, clean sans-serif typography above or alongside the card (e.g., “Meet the world's best. New classes added every month.”).
+
+    Badge / Tag: A sleek, high-contrast micro-badge (e.g., NEW, LIVE DIPLOMA, LIMITED SEATS).
+
+    Feature Title: Large crisp typography outlining the course title ("Revolutionize Your Workflows with AI").
+
+    Social Proof / Instructor Tag: Short text indicating authority ("Featuring 3 AI Experts" or "Led by Industry Experts").
+
+4. Cinematic Call-To-Action (CTA)
+
+    Trailer Button: Outlined or translucent dark button with a play icon (► Watch Trailer or ► Preview Diploma).
+
+    Primary Conversion Button: Vibrant accent CTA (e.g., Enroll Now or Claim Your Seat).

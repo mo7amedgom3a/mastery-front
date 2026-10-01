@@ -1,5 +1,6 @@
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { LiveSpotlight } from "@/features/live-training/sections/live-spotlight";
 
 import { fallbackFaqs } from "./content/faqs";
 import { MAX_CARDS } from "./model/mappers";
@@ -32,6 +33,7 @@ export function LandingPage({ data }: { data: LandingData }) {
       <SiteHeader />
       <main id="main" tabIndex={-1} className="outline-none">
         <HeroSection />
+        <LiveSpotlight training={data.liveTraining} />
         <StatsSection stats={data.stats} />
         <ExpertsTicker />
         <OfferingsSection />

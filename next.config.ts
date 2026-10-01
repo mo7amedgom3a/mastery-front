@@ -61,6 +61,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       ...s3Buckets,
       { protocol: "https", hostname: "live.emasteryacademy.com", pathname: "/uploads/**" },
+      // Built assets of the live site, e.g. trainer cutouts for the live-training spotlight.
+      { protocol: "https", hostname: "live.emasteryacademy.com", pathname: "/assets/**" },
       { protocol: "https", hostname: "public.emasteryacademy.com", pathname: "/**" },
       ...(bunnyCdnHostname ? [{ protocol: "https" as const, hostname: bunnyCdnHostname, pathname: "/**" }] : []),
     ],
