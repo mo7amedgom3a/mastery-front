@@ -3,7 +3,6 @@ import Image from "next/image";
 import { Marquee } from "@/components/motion/marquee";
 import { brandBg } from "@/components/ui/brand-colors";
 import { ButtonLink } from "@/components/ui/button";
-import { TrustedCompanies } from "@/features/business/components/trusted-companies";
 import { b2bCopy } from "@/features/business/content/b2b";
 import { cn } from "@/lib/cn";
 
@@ -28,8 +27,8 @@ function ExpertCard({ expert }: { expert: Expert }) {
 }
 
 /**
- * Companies banner: the pitch in brief over a slow, tilted wall of expert cards, then the companies
- * that trained with us. The request form itself lives on `/business`.
+ * Companies banner: the pitch in brief over a slow, tilted wall of expert cards. The request form
+ * itself lives on `/business`.
  */
 export function BusinessSection() {
   const { banner } = b2bCopy;
@@ -78,7 +77,6 @@ export function BusinessSection() {
           </div>
         </div>
       </div>
-      <TrustedCompanies />
     </section>
   );
 }

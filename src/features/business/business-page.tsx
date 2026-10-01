@@ -11,7 +11,6 @@ import { cn } from "@/lib/cn";
 
 import type { BusinessCatalogVM, CatalogChipVM } from "./api/get-business-catalog";
 import { B2BLeadForm } from "./components/b2b-lead-form";
-import { TrustedCompanies } from "./components/trusted-companies";
 import { b2bCopy, businessPageCopy as copy, corporatePrograms } from "./content/b2b";
 
 const pad = (index: number) => String(index + 1).padStart(2, "0");
@@ -58,8 +57,6 @@ export function BusinessPage({ catalog }: { catalog: BusinessCatalogVM }) {
             </a>
           </div>
         </header>
-
-        <TrustedCompanies className="border-t-0" />
 
         <Section aria-labelledby="steps-title">
           <SectionHeader id="steps-title" label={copy.steps.label} title={copy.steps.title} />
