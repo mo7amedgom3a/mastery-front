@@ -19,7 +19,18 @@ export const siteConfig = {
    * Official social profiles → `sameAs` in the Organization JSON-LD (entity signal for Google and
    * AI answer engines). Only add accounts the brand actually controls.
    */
-  social: [] as readonly string[],
+  social: [
+    "https://instagram.com/emasteryacademy",
+    "https://www.facebook.com/emasteryacademy",
+    "https://x.com/emasteryacademy",
+    "https://www.linkedin.com/company/emasteryacademy",
+    "https://www.youtube.com/c/eMasteryAcademy",
+  ] as readonly string[],
+  /** The mobile app's store listings. */
+  apps: {
+    appStore: "https://apps.apple.com/tr/app/mastery-academy/id1661460868",
+    googlePlay: "https://play.google.com/store/apps/details?id=co.emastery.emasteryacademy",
+  },
   introVideoUrl: "https://public.emasteryacademy.com/intronosound.mp4",
 } as const;
 

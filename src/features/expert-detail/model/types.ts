@@ -1,11 +1,12 @@
 import type { Route } from "next";
 
+import type { SocialNetwork } from "@/components/icons/social-icons";
 import type { RailCardVM } from "@/features/product-detail/model/types";
 import type { TextBlock } from "@/lib/format";
 
 /** View models for the expert profile page. Mapped from API DTOs in `mappers.ts`, never used raw. */
 
-export type SocialKind = "facebook" | "instagram" | "youtube";
+export type SocialKind = Extract<SocialNetwork, "facebook" | "instagram" | "youtube">;
 export type SocialLinkVM = { kind: SocialKind; href: string };
 
 export type ExpertCountsVM = {

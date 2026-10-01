@@ -74,6 +74,13 @@ export function formatMinutes(minutes: number | null | undefined): string | null
 const longDateFormatter = new Intl.DateTimeFormat(LOCALE, { weekday: "long", day: "numeric", month: "long" });
 const timeFormatter = new Intl.DateTimeFormat(LOCALE, { hour: "numeric", minute: "2-digit" });
 
+const calendarDateFormatter = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
+/** A calendar date with no time of day (`2026-10-01`), e.g. "1 أكتوبر 2026". Same output on every server and browser. */
+export function formatCalendarDate(isoDate: string): string {
+  return calendarDateFormatter.format(new Date(`${isoDate}T00:00:00Z`));
+}
+
 /** A day in the reader's own timezone, e.g. "السبت، 3 أكتوبر". */
 export function formatLongDate(date: Date): string {
   return longDateFormatter.format(date);
