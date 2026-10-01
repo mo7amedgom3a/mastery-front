@@ -17,6 +17,12 @@ const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
 ];
 
+// Sign-in forms and the session endpoints must never be shown inside another site's frame (clickjacking).
+const noFraming = [
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+  { key: "X-Frame-Options", value: "DENY" },
+];
+
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
@@ -40,7 +46,10 @@ const nextConfig: NextConfig = {
       ? securityHeaders
       : // Staging / previews: also covers non-HTML responses (images, llms.txt) that meta robots can't.
         [...securityHeaders, { key: "X-Robots-Tag", value: "noindex, nofollow" }];
-    return [{ source: "/:path*", headers }];
+    return [
+      { source: "/:path*", headers },
+      ...["/login", "/register", "/api/auth/:path*"].map((source) => ({ source, headers: noFraming })),
+    ];
   },
   images: {
     formats: ["image/avif", "image/webp"],

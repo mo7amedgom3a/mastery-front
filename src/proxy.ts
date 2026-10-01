@@ -1,22 +1,31 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const ACCESS_COOKIE = "b2c_access_token";
-const REFRESH_COOKIE = "b2c_refresh_token";
+import { safeNextPath } from "@/features/auth/model/next-path";
+import { SESSION_COOKIE } from "@/lib/auth/cookie-names";
 
-export function middleware(request: NextRequest) {
-  const hasAccessToken = request.cookies.has(ACCESS_COOKIE);
-  const hasRefreshToken = request.cookies.has(REFRESH_COOKIE);
+const AUTH_PAGES = new Set(["/login", "/register"]);
 
-  if (hasAccessToken || hasRefreshToken) {
-    return NextResponse.next();
+/**
+ * Routing by whether a session may exist: account pages send a guest to sign in, and the auth
+ * pages send a signed-in visitor on. It only looks at a cookie's presence, which says nothing
+ * about the session being valid: the backend checks the token on every call that needs one.
+ */
+export function proxy(request: NextRequest) {
+  const hasSession = request.cookies.has(SESSION_COOKIE);
+  const { pathname, search, searchParams } = request.nextUrl;
+
+  if (AUTH_PAGES.has(pathname)) {
+    if (!hasSession) return NextResponse.next();
+    return NextResponse.redirect(new URL(safeNextPath(searchParams.get("next") ?? undefined), request.url));
   }
 
-  const loginUrl = new URL("/login", request.url);
-  loginUrl.searchParams.set("next", `${request.nextUrl.pathname}${request.nextUrl.search}`);
+  if (hasSession) return NextResponse.next();
 
+  const loginUrl = new URL("/login", request.url);
+  loginUrl.searchParams.set("next", `${pathname}${search}`);
   return NextResponse.redirect(loginUrl);
 }
 
 export const config = {
-  matcher: ["/students/:path*"],
+  matcher: ["/students/:path*", "/login", "/register"],
 };

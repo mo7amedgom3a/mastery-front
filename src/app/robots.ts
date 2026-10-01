@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { getSiteUrl, isIndexable } from "@/config/env";
 
 // Per-visitor pages (also noindexed in their metadata) have nothing for a crawler.
-const PRIVATE_PATHS = ["/api/", "/students/", "/cart", "/wishlist", "/checkout/"];
+const PRIVATE_PATHS = ["/api/", "/students/", "/cart", "/wishlist", "/checkout/", "/login", "/register"];
 
 /**
  * AI crawlers are allowed on purpose (business decision: maximum visibility in AI answers and

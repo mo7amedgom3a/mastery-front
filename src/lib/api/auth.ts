@@ -63,6 +63,10 @@ export type LogoutRequest = {
   refresh_token?: string | null;
 };
 
+/**
+ * The backend's auth endpoints. Called by this app's route handlers (`app/api/auth/*`), which keep
+ * the returned tokens in httpOnly cookies; pages use `lib/auth/client` instead.
+ */
 const authPaths = {
   register: "/api/v1/auth/register",
   login: "/api/v1/auth/login",

@@ -1,7 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { apiRequest, type ApiRequestContext, type ApiRequestOptions } from "@/lib/api/client";
+import { ApiError, apiRequest, type ApiRequestContext, type ApiRequestOptions } from "@/lib/api/client";
 import type { PathParams, QueryParams, RequestBody, SuccessResponse } from "@/lib/api/operation-types";
+import { refreshOnce } from "@/lib/auth/client";
 
 type MeOperation = "me_api_v1_me_get";
 type UpdateMeOperation = "update_me_api_v1_me_patch";
@@ -56,6 +57,22 @@ export const customerKeys = {
   wishlist: (params?: WishlistItemsParams) => [...customerKeys.all, "wishlist", params ?? {}] as const,
 };
 
+/**
+ * A call about the signed-in customer. In the browser it goes through this app, which holds the
+ * session in httpOnly cookies; an expired access token is renewed once and the call repeated.
+ */
+async function customerRequest<T>(method: string, path: string, options: ApiRequestOptions): Promise<T> {
+  if (typeof window === "undefined") return apiRequest<T>(method, path, options);
+  const viaApp = { ...options, sameOrigin: true };
+  try {
+    return await apiRequest<T>(method, path, viaApp);
+  } catch (error) {
+    if (!(error instanceof ApiError && error.status === 401)) throw error;
+    if (!(await refreshOnce())) throw error;
+    return apiRequest<T>(method, path, viaApp);
+  }
+}
+
 function withAuthCookies(options?: AuthenticatedRequestOptions): AuthenticatedRequestOptions & { credentials: "include" } {
   return {
     ...options,
@@ -64,70 +81,70 @@ function withAuthCookies(options?: AuthenticatedRequestOptions): AuthenticatedRe
 }
 
 export function getMe(options?: AuthenticatedRequestOptions): Promise<CustomerProfileResponse> {
-  return apiRequest<CustomerProfileResponse>("GET", customerPaths.me, withAuthCookies(options));
+  return customerRequest<CustomerProfileResponse>("GET", customerPaths.me, withAuthCookies(options));
 }
 
 export function updateMe(
   body: CustomerProfileUpdateRequest,
   options?: AuthenticatedRequestOptions,
 ): Promise<CustomerProfileResponse> {
-  return apiRequest<CustomerProfileResponse>("PATCH", customerPaths.me, {
+  return customerRequest<CustomerProfileResponse>("PATCH", customerPaths.me, {
     ...withAuthCookies(options),
     body,
   });
 }
 
 export function getLearningProfile(options?: AuthenticatedRequestOptions): Promise<LearningProfileResponse> {
-  return apiRequest<LearningProfileResponse>("GET", customerPaths.learningProfile, withAuthCookies(options));
+  return customerRequest<LearningProfileResponse>("GET", customerPaths.learningProfile, withAuthCookies(options));
 }
 
 export function upsertLearningProfile(
   body: LearningProfileUpsertRequest,
   options?: AuthenticatedRequestOptions,
 ): Promise<LearningProfileResponse> {
-  return apiRequest<LearningProfileResponse>("PUT", customerPaths.learningProfile, {
+  return customerRequest<LearningProfileResponse>("PUT", customerPaths.learningProfile, {
     ...withAuthCookies(options),
     body,
   });
 }
 
 export function getSkills(options?: AuthenticatedRequestOptions): Promise<SkillGraphResponse> {
-  return apiRequest<SkillGraphResponse>("GET", customerPaths.skills, withAuthCookies(options));
+  return customerRequest<SkillGraphResponse>("GET", customerPaths.skills, withAuthCookies(options));
 }
 
 export function setTargetSkills(
   body: TargetSkillsUpdateRequest,
   options?: AuthenticatedRequestOptions,
 ): Promise<CustomerTargetSkillsResponse> {
-  return apiRequest<CustomerTargetSkillsResponse>("PUT", customerPaths.skills, {
+  return customerRequest<CustomerTargetSkillsResponse>("PUT", customerPaths.skills, {
     ...withAuthCookies(options),
     body,
   });
 }
 
 export function getOnboardingQuestions(options?: AuthenticatedRequestOptions): Promise<OnboardingQuestionsResponse> {
-  return apiRequest<OnboardingQuestionsResponse>("GET", customerPaths.onboardingQuestions, withAuthCookies(options));
+  return customerRequest<OnboardingQuestionsResponse>("GET", customerPaths.onboardingQuestions, withAuthCookies(options));
 }
 
 export function completeOnboarding(
   body: OnboardingAnswersRequest,
   options?: AuthenticatedRequestOptions,
 ): Promise<OnboardingAnswersResponse> {
-  return apiRequest<OnboardingAnswersResponse>("POST", customerPaths.onboardingAnswers, {
+  return customerRequest<OnboardingAnswersResponse>("POST", customerPaths.onboardingAnswers, {
     ...withAuthCookies(options),
     body,
   });
 }
 
 export function getRecommendationContext(options?: AuthenticatedRequestOptions): Promise<RecommendationContextResponse> {
-  return apiRequest<RecommendationContextResponse>("GET", customerPaths.recommendationContext, withAuthCookies(options));
+  return customerRequest<RecommendationContextResponse>("GET", customerPaths.recommendationContext, withAuthCookies(options));
 }
 
 export function getWishlistItems(
   params: WishlistItemsParams | undefined,
   options?: AuthenticatedRequestOptions,
 ): Promise<WishlistPageResponse> {
-  return apiRequest<WishlistPageResponse>("GET", customerPaths.wishlist, {
+  return customerRequest<WishlistPageResponse>("GET", customerPaths.wishlist, {
     ...withAuthCookies(options),
     query: params,
   });
@@ -137,7 +154,7 @@ export function addWishlistItem(
   body: WishlistAddRequest,
   options?: AuthenticatedRequestOptions,
 ): Promise<WishlistItemResponse> {
-  return apiRequest<WishlistItemResponse>("POST", customerPaths.wishlist, {
+  return customerRequest<WishlistItemResponse>("POST", customerPaths.wishlist, {
     ...withAuthCookies(options),
     body,
   });
@@ -147,7 +164,7 @@ export function removeWishlistItem(
   productId: PathParams<RemoveWishlistItemOperation>["product_id"],
   options?: AuthenticatedRequestOptions,
 ): Promise<RemoveWishlistItemResponse> {
-  return apiRequest<RemoveWishlistItemResponse>("DELETE", customerPaths.wishlistItem, {
+  return customerRequest<RemoveWishlistItemResponse>("DELETE", customerPaths.wishlistItem, {
     ...withAuthCookies(options),
     path: { product_id: productId },
   });

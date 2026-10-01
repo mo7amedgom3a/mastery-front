@@ -15,10 +15,8 @@ type AuthGateDialogProps = {
 
 /**
  * Shown when a guest presses pay: an order belongs to an account, so they sign in or register
- * first. The cart is kept in the browser, and the auth pages send them back to it.
- *
- * TODO(auth): the sign-in and registration forms are a separate feature; until it ships the two
- * buttons lead to `/login` and `/register`, and mock checkout offers a test customer instead.
+ * first. The cart is kept in the browser, and the auth pages send them back to it. Mock checkout
+ * also offers a test customer, to try the payment steps without an account.
  */
 export function AuthGateDialog({ onMockContinue }: AuthGateDialogProps) {
   const open = useShopStore((state) => state.authGateOpen);
@@ -70,7 +68,7 @@ export function AuthGateDialog({ onMockContinue }: AuthGateDialogProps) {
           <div className="flex flex-col items-start gap-3 border-t border-line pt-5">
             <span className="ma-tag ma-tag--yellow">وضع تجريبي</span>
             <p className="m-0 text-sm leading-6 text-fg-muted">
-              صفحات تسجيل الدخول قيد الإنشاء. لتجربة خطوات الدفع الآن، تابع كعميل تجريبي: لن يُنشأ حساب ولن يُخصم أي مبلغ.
+              لتجربة خطوات الدفع دون حساب، تابع كعميل تجريبي: لن يُنشأ حساب ولن يُخصم أي مبلغ.
             </p>
             <button type="button" onClick={onMockContinue} className="ma-btn ma-btn--secondary ma-btn--block">
               متابعة كعميل تجريبي

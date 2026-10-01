@@ -1,181 +1,94 @@
 import { create } from "zustand";
 
-import { ApiError } from "@/lib/api/client";
-import {
-  getCurrentAuthUser,
-  login,
-  logout,
-  refreshSession,
-  register,
-  verifyTwoFactor,
-  type AuthResponse,
-  type CustomerAuthResponse,
-  type LoginChallengeResponse,
-  type LoginRequest,
-  type RegisterRequest,
-  type RegisterResponse,
-  type TwoFactorCheckRequest,
-} from "@/lib/api/auth";
+import { getSession, onSessionLost, refreshOnce, signOut, verifyLoginCode } from "./client";
+import type { AuthCustomer } from "./contract";
 
 export type AuthStatus = "idle" | "loading" | "authenticated" | "unauthenticated";
 
 export type AuthState = {
   status: AuthStatus;
-  user: CustomerAuthResponse | null;
-  provider: string | null;
-  legacy: Record<string, unknown> | null;
-  challenge: LoginChallengeResponse | null;
-  error: string | null;
-  register: (payload: RegisterRequest) => Promise<RegisterResponse>;
-  login: (payload: LoginRequest) => Promise<LoginChallengeResponse>;
-  verifyTwoFactor: (payload: TwoFactorCheckRequest) => Promise<AuthResponse>;
-  bootstrap: () => Promise<CustomerAuthResponse | null>;
-  refresh: () => Promise<AuthResponse | null>;
+  user: AuthCustomer | null;
+  /** Asks the server who is signed in, renewing the session if it can. Null: nobody. */
+  bootstrap: () => Promise<AuthCustomer | null>;
+  refresh: () => Promise<AuthCustomer | null>;
+  /** Finishes a sign-in with the emailed code. */
+  verifyCode: (code: string) => Promise<AuthCustomer>;
   logout: () => Promise<void>;
-  setAuthenticated: (response: AuthResponse) => void;
-  setUnauthenticated: (error?: string | null) => void;
+  setAuthenticated: (user: AuthCustomer) => void;
+  setUnauthenticated: () => void;
 };
 
-const initialSnapshot = {
-  status: "idle" as AuthStatus,
-  user: null,
-  provider: null,
-  legacy: null,
-  challenge: null,
-  error: null,
-};
+type AuthMessage = "signed-in" | "signed-out";
 
+/** Tells this browser's other tabs when one of them signs in or out. */
+const channel =
+  typeof window !== "undefined" && typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("mastery-auth") : null;
+
+function announce(message: AuthMessage): void {
+  channel?.postMessage(message);
+}
+
+let bootstrapping: Promise<AuthCustomer | null> | null = null;
+
+/**
+ * Who is signed in, for the UI. It holds the customer's profile only: the tokens live in httpOnly
+ * cookies that the `/api/auth/*` route handlers manage.
+ */
 export const useAuthStore = create<AuthState>((set, get) => ({
-  ...initialSnapshot,
+  status: "idle",
+  user: null,
 
-  register: async (payload) => {
-    set({ status: "loading", error: null });
-    try {
-      const response = await register(payload);
-      set({ status: "unauthenticated", error: null });
-      return response;
-    } catch (error) {
-      setAuthError(set, error);
-      throw error;
-    }
-  },
-
-  login: async (payload) => {
-    set({ status: "loading", challenge: null, error: null });
-    try {
-      const challenge = await login(payload);
-      set({ status: "unauthenticated", challenge, error: null });
-      return challenge;
-    } catch (error) {
-      setAuthError(set, error);
-      throw error;
-    }
-  },
-
-  verifyTwoFactor: async (payload) => {
-    set({ status: "loading", error: null });
-    try {
-      const response = await verifyTwoFactor(payload);
-      get().setAuthenticated(response);
-      return response;
-    } catch (error) {
-      setAuthError(set, error);
-      throw error;
-    }
-  },
-
-  bootstrap: async () => {
-    set({ status: "loading", error: null });
-    try {
-      const user = await getCurrentAuthUser();
-      set({
-        status: "authenticated",
-        user,
-        provider: null,
-        legacy: null,
-        challenge: null,
-        error: null,
-      });
-      return user;
-    } catch (error) {
-      if (isUnauthorized(error)) {
-        const refreshed = await get().refresh();
-        return refreshed?.customer ?? null;
+  bootstrap: () => {
+    bootstrapping ??= (async () => {
+      // A session already on screen stays there while it is re-checked.
+      if (get().status !== "authenticated") set({ status: "loading" });
+      try {
+        const session = await getSession();
+        const user = session.customer ?? (session.refreshable ? await refreshOnce() : null);
+        if (user) get().setAuthenticated(user);
+        else get().setUnauthenticated();
+        return user;
+      } catch (error) {
+        get().setUnauthenticated();
+        throw error;
+      } finally {
+        bootstrapping = null;
       }
-      setAuthError(set, error);
-      throw error;
-    }
+    })();
+    return bootstrapping;
   },
 
   refresh: async () => {
-    set({ status: "loading", error: null });
-    try {
-      const response = await refreshSession();
-      get().setAuthenticated(response);
-      return response;
-    } catch (error) {
-      if (isUnauthorized(error)) {
-        get().setUnauthenticated(null);
-        return null;
-      }
-      setAuthError(set, error);
-      throw error;
-    }
+    // A refresh that finds no session signs out through `onSessionLost` below.
+    const user = await refreshOnce();
+    if (user) get().setAuthenticated(user);
+    return user;
+  },
+
+  verifyCode: async (code) => {
+    const user = await verifyLoginCode(code);
+    get().setAuthenticated(user);
+    announce("signed-in");
+    return user;
   },
 
   logout: async () => {
-    set({ status: "loading", error: null });
     try {
-      await logout();
+      await signOut();
     } finally {
-      get().setUnauthenticated(null);
+      get().setUnauthenticated();
+      announce("signed-out");
     }
   },
 
-  setAuthenticated: (response) => {
-    set({
-      status: "authenticated",
-      user: response.customer,
-      provider: response.provider,
-      legacy: response.legacy ?? null,
-      challenge: null,
-      error: null,
-    });
-  },
-
-  setUnauthenticated: (error = null) => {
-    set({
-      ...initialSnapshot,
-      status: "unauthenticated",
-      error,
-    });
-  },
+  setAuthenticated: (user) => set({ status: "authenticated", user }),
+  setUnauthenticated: () => set({ status: "unauthenticated", user: null }),
 }));
 
-function isUnauthorized(error: unknown): boolean {
-  return error instanceof ApiError && error.status === 401;
-}
+onSessionLost(() => useAuthStore.getState().setUnauthenticated());
 
-function getAuthErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    return error.message;
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return "Authentication failed";
-}
-
-function setAuthError(
-  set: (partial: Partial<AuthState>) => void,
-  error: unknown,
-): void {
-  set({
-    status: "unauthenticated",
-    user: null,
-    provider: null,
-    legacy: null,
-    challenge: null,
-    error: getAuthErrorMessage(error),
-  });
-}
+channel?.addEventListener("message", (event: MessageEvent<AuthMessage>) => {
+  if (event.data === "signed-out") useAuthStore.getState().setUnauthenticated();
+  // The other tab's cookies are this tab's too: read the session they now describe.
+  else if (event.data === "signed-in") useAuthStore.getState().bootstrap().catch(() => undefined);
+});

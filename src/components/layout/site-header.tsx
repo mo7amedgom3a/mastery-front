@@ -4,9 +4,9 @@ import { Logo } from "@/components/brand/logo";
 import { HeaderShopLinks } from "@/components/shop/header-shop-links";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { AppLink } from "@/components/ui/app-link";
-import { ButtonLink } from "@/components/ui/button";
 import { routes } from "@/config/routes";
 
+import { HeaderAccount } from "./header-account";
 import { MobileNavButton } from "./mobile-nav-button";
 import { MobileNavLinks } from "./mobile-nav-links";
 import { mobileNav, primaryNav } from "./nav-items";
@@ -46,9 +46,7 @@ export function SiteHeader() {
             <HeaderShopLinks />
             <ThemeToggle className="max-md:hidden" />
           </div>
-          <ButtonLink href={routes.register} variant="secondary" size="sm" className="min-h-11 max-sm:hidden">
-            سجل الآن
-          </ButtonLink>
+          <HeaderAccount placement="bar" />
           <MobileNavButton
             popoverId={MOBILE_NAV_ID}
             action="open"
@@ -69,9 +67,7 @@ export function SiteHeader() {
           <span className="text-fg-muted">المظهر</span>
           <ThemeToggle />
         </div>
-        <ButtonLink href={routes.register} variant="primary" block>
-          سجل الآن
-        </ButtonLink>
+        <HeaderAccount placement="drawer" />
       </div>
     </header>
   );

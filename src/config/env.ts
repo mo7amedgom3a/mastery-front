@@ -81,3 +81,29 @@ export function getBunnyConfig(): BunnyConfig | null {
   }
   return { libraryId, cdnHostname };
 }
+
+/**
+ * Whether session cookies carry `Secure`. On in production; `AUTH_COOKIE_SECURE=false` allows a
+ * production build to be tried over plain HTTP (a browser drops `Secure` cookies there).
+ */
+export function isAuthCookieSecure(): boolean {
+  const flag = process.env.AUTH_COOKIE_SECURE;
+  if (flag === "true") return true;
+  if (flag === "false") return false;
+  return process.env.NODE_ENV === "production";
+}
+
+const DEV_AUTH_COOKIE_SECRET = "development-only-auth-cookie-secret-change-me";
+
+/**
+ * Key material for sealing the pending-login cookie (see `lib/auth/server/challenge`). Required in
+ * production: without it sign-in is refused rather than sealed with a key anyone can read here.
+ */
+export function getAuthCookieSecret(): string {
+  const value = process.env.AUTH_COOKIE_SECRET?.trim();
+  if (value && value.length >= 32) return value;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("AUTH_COOKIE_SECRET must be set to at least 32 characters");
+  }
+  return value || DEV_AUTH_COOKIE_SECRET;
+}

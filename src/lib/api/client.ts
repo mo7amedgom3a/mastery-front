@@ -1,6 +1,8 @@
 import { getApiBaseUrl } from "@/config/env";
 
 const API_PREFIX = "/api/v1";
+/** This app's same-origin door to the backend (`app/api/b2c/[...path]`). */
+const APP_PROXY_PREFIX = "/api/b2c";
 
 type QueryValue = string | number | boolean | null | undefined;
 type QueryParams = Record<string, QueryValue | QueryValue[]>;
@@ -22,6 +24,12 @@ export type ApiRequestOptions = Omit<RequestInit, "body" | "headers" | "method">
   path?: PathParams;
   query?: QueryParams;
   context?: ApiRequestContext;
+  /**
+   * Browser only: send the request to this app instead of the backend. The backend is on another
+   * origin, which the session cookies are never sent to. `/api/v1/...` paths go through
+   * `/api/b2c/...`; any other path (`/api/auth/...`) is used as it is.
+   */
+  sameOrigin?: boolean;
   next?: {
     revalidate?: number | false;
     tags?: string[];
@@ -55,9 +63,9 @@ export async function apiRequest<T>(
   path: string,
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const { body, headers: requestHeaders, path: pathParams, query, context, ...requestOptions } = options;
+  const { body, headers: requestHeaders, path: pathParams, query, context, sameOrigin, ...requestOptions } = options;
   const headers = buildHeaders(requestHeaders, context);
-  const url = buildApiUrl(path, pathParams, query);
+  const url = sameOrigin ? buildAppUrl(path, pathParams, query) : buildApiUrl(path, pathParams, query);
 
   if (body !== undefined && !isFormData(body) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
@@ -127,6 +135,21 @@ function buildApiUrl(path: string, pathParams: PathParams | undefined, query: Qu
   }
 
   return url.toString();
+}
+
+function buildAppUrl(path: string, pathParams: PathParams | undefined, query: QueryParams | undefined): string {
+  const apiPath = interpolatePath(path, pathParams);
+  const appPath = apiPath.startsWith(`${API_PREFIX}/`) ? `${APP_PROXY_PREFIX}${apiPath.slice(API_PREFIX.length)}` : apiPath;
+  // The base only makes the relative path parseable; it is dropped again below.
+  const url = new URL(appPath, "http://app.invalid");
+
+  if (query) {
+    for (const [key, value] of Object.entries(query)) {
+      appendQueryParam(url, key, value);
+    }
+  }
+
+  return `${url.pathname}${url.search}`;
 }
 
 function normalizeApiPath(path: string, baseUrl: string): string {

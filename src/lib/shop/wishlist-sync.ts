@@ -12,7 +12,7 @@ import { useShopStore, type WishlistEntry } from "./store";
  */
 async function resolveProductId(entry: WishlistEntry): Promise<string> {
   if (entry.productId) return entry.productId;
-  const detail = await getCatalogProduct(`${entry.kind}-${entry.id}`);
+  const detail = await getCatalogProduct(`${entry.kind}-${entry.id}`, { sameOrigin: true });
   const productId = detail.product.product_id;
   useShopStore.getState().setWishlistProductId(entry.key, productId);
   return productId;
