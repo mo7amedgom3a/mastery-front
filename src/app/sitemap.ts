@@ -59,9 +59,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "daily",
     priority,
   });
+  const page = (path: string, priority: number): MetadataRoute.Sitemap[number] => ({
+    url: `${siteUrl}${path}`,
+    changeFrequency: "monthly",
+    priority,
+  });
   const listings = [
     listing(searchHref(emptySearchState), 0.9),
     listing(routes.live, 0.8),
+    page(routes.business, 0.8),
+    page(routes.trainers, 0.7),
     ...PRODUCT_TYPES.map((type) => listing(searchHref({ ...emptySearchState, types: [type] }), 0.9)),
     ...(valueOf(searchOptions, "sitemap search options")?.categories ?? [])
       .filter((category) => category.count > 0)

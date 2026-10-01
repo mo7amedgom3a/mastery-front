@@ -13,6 +13,25 @@ export function getApiBaseUrl(): string {
   return value.replace(/\/$/, "");
 }
 
+const DEFAULT_LEGACY_FORMS_BASE_URL = "https://v1.emasteryacademy.com";
+
+/**
+ * Origin of the legacy backend that still receives the trainer-application and company-training
+ * forms (`/v1/trainerapplication`, `/api/b2b/subscribe`). Server-only: its CORS allows the brand
+ * domain alone, so the forms post to it from Server Actions.
+ */
+export function getLegacyFormsBaseUrl(): string {
+  const value = process.env.LEGACY_FORMS_BASE_URL || DEFAULT_LEGACY_FORMS_BASE_URL;
+
+  try {
+    new URL(value);
+  } catch {
+    throw new Error("LEGACY_FORMS_BASE_URL must be a valid absolute URL");
+  }
+
+  return value.replace(/\/$/, "");
+}
+
 /**
  * Whether search engines may index this deployment. Staging/preview opt out explicitly with
  * `NEXT_PUBLIC_ENV=staging` (any value other than "production"); Vercel previews opt out on their

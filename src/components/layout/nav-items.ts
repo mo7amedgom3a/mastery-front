@@ -10,7 +10,8 @@ export const primaryNav: readonly NavItem[] = [
   { label: "الدبلومات", href: routes.diplomas },
   { label: "الباقات", href: routes.packages },
   { label: "الاستشارات", href: routes.consultations },
-  { label: "للشركات", href: routes.section("business") },
+  { label: "للشركات", href: routes.business },
+  { label: "للمدربين", href: routes.trainers },
 ];
 
 /** The drawer has room for a search entry; the desktop bar shows it as an icon instead. */

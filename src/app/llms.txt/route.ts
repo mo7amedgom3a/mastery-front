@@ -53,7 +53,8 @@ export function GET() {
     `- [دورات البث المباشر](${siteUrl}${routes.live})`,
     `- [من نحن](${siteUrl}/#about)`,
     `- [الخبراء](${siteUrl}/#experts)`,
-    `- [حلول تدريب الشركات](${siteUrl}/#business)`,
+    `- [حلول تدريب الشركات](${siteUrl}${routes.business})`,
+    `- [انضم كمدرب](${siteUrl}${routes.trainers})`,
     `- [خريطة الموقع](${siteUrl}/sitemap.xml)`,
     "",
   ].join("\n");

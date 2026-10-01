@@ -78,7 +78,8 @@ export const routes = {
   package: (id: number | string) => route(`/packages/${encodeURIComponent(String(id))}`),
   consultations: route("/search?type=consultation"),
   consultation: (id: number | string) => route(`/consultations/${encodeURIComponent(String(id))}`),
-  business: route("/#business"),
+  business: route("/business"),
+  trainers: route("/trainers"),
   cart: route("/cart"),
   wishlist: route("/wishlist"),
   /** MOCK: stand-in for a payment provider's hosted page (see features/checkout). */

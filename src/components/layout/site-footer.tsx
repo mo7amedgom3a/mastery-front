@@ -21,7 +21,8 @@ const columns: { title: string; links: { label: string; href: Route }[] }[] = [
     links: [
       { label: "من نحن", href: routes.section("about") },
       { label: "الخبراء", href: routes.section("experts") },
-      { label: "للشركات", href: routes.section("business") },
+      { label: "للشركات", href: routes.business },
+      { label: "للمدربين", href: routes.trainers },
       { label: "الأسئلة الشائعة", href: routes.section("faq") },
     ],
   },

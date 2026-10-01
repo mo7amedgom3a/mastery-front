@@ -1,29 +1,31 @@
-import { Section } from "@/components/ui/section";
-import { SectionHeader } from "@/components/ui/section-header";
+import { ButtonLink } from "@/components/ui/button";
+import { b2bCopy } from "@/features/business/content/b2b";
 
-import { B2BLeadForm } from "../components/b2b-lead-form";
-import { b2bCopy } from "../content/b2b";
-
+/** Companies banner: the pitch in brief, leading to `/business` where the request form lives. */
 export function BusinessSection() {
+  const { banner } = b2bCopy;
   return (
-    <Section id="business" aria-labelledby="business-title" deferRender>
-      <div className="grid gap-12 md:grid-cols-2 md:gap-16">
-        <div>
-          <SectionHeader id="business-title" label={b2bCopy.label} title={b2bCopy.title} lead={b2bCopy.lead} />
-          <dl className="m-0 mt-10 flex flex-col">
-            {b2bCopy.benefits.map((benefit) => (
-              <div key={benefit.title} className="grid gap-2 border-t border-line py-5 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-6">
-                <dt className="text-lg font-bold">{benefit.title}</dt>
-                <dd className="m-0 text-fg-muted">{benefit.body}</dd>
-              </div>
-            ))}
-          </dl>
+    <section id="business" aria-labelledby="business-title" className="cv-auto bg-yellow text-ink">
+      <div className="ma-container grid gap-10 py-16 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:items-end md:gap-16 md:py-24">
+        <div className="flex flex-col items-start gap-5">
+          <span className="text-sm font-bold">{b2bCopy.label}</span>
+          <h2 id="business-title" className="t-section m-0">
+            {banner.title}
+          </h2>
+          <p className="m-0 max-w-[40rem] text-lg">{banner.lead}</p>
+          <ButtonLink href={banner.action.href} variant="on-color" size="lg" className="mt-2">
+            {banner.action.label}
+          </ButtonLink>
         </div>
-        <div className="self-start border border-line-strong bg-surface-alt p-5 sm:p-8">
-          <h3 className="m-0 mb-6 text-2xl font-bold">{b2bCopy.form.title}</h3>
-          <B2BLeadForm />
-        </div>
+        <ul className="m-0 flex list-none flex-col p-0">
+          {b2bCopy.benefits.map((benefit) => (
+            <li key={benefit.title} className="flex flex-col gap-1 border-t border-ink py-4">
+              <span className="font-bold">{benefit.title}</span>
+              <span>{benefit.body}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-    </Section>
+    </section>
   );
 }

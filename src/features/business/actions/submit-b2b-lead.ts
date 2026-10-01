@@ -2,18 +2,27 @@
 
 import { z } from "zod";
 
-import { b2bCopy } from "../content/b2b";
+import { subscribeB2B } from "@/lib/api/legacy-forms";
+
+import { b2bFormCopy, companyRanges } from "../content/b2b";
+
+const text = (message: string, max = 120) => z.string().trim().min(2, message).max(max);
 
 const leadSchema = z.object({
-  company: z.string().trim().min(2, "اكتب اسم الشركة").max(120),
-  name: z.string().trim().min(2, "اكتب اسمك").max(120),
-  email: z.email("اكتب بريداً إلكترونياً صحيحاً").max(200),
-  phone: z
+  companyName: text("اكتب اسم الشركة"),
+  contactName: text("اكتب اسمك"),
+  jobTitle: text("اكتب مسمّاك الوظيفي"),
+  companyEmail: z.email("اكتب بريداً إلكترونياً صحيحاً").max(200),
+  contactPhone: z
     .string()
     .trim()
     .regex(/^\+?[0-9\s-]{7,20}$/, "اكتب رقم هاتف صحيحاً مع رمز الدولة"),
-  teamSize: z.enum(b2bCopy.form.teamSizes, "اختر حجم الفريق"),
-  field: z.enum(b2bCopy.form.fields, "اختر مجال التدريب"),
+  companyRange: z.enum(
+    companyRanges.map((range) => range.value),
+    "اختر حجم الشركة",
+  ),
+  country: text("اكتب الدولة", 80),
+  city: text("اكتب المدينة", 80),
 });
 
 export type B2BLeadField = keyof z.infer<typeof leadSchema>;
@@ -24,9 +33,19 @@ export type B2BLeadValues = Partial<Record<B2BLeadField, string>>;
 export type B2BLeadState =
   | { status: "idle"; values?: B2BLeadValues }
   | { status: "invalid"; values: B2BLeadValues; fieldErrors: Partial<Record<B2BLeadField, string>> }
-  | { status: "unavailable"; values: B2BLeadValues; message: string };
+  | { status: "error"; values: B2BLeadValues; message: string }
+  | { status: "success" };
 
-const FIELDS: readonly B2BLeadField[] = ["company", "name", "email", "phone", "teamSize", "field"];
+const FIELDS: readonly B2BLeadField[] = [
+  "companyName",
+  "contactName",
+  "jobTitle",
+  "companyEmail",
+  "contactPhone",
+  "companyRange",
+  "country",
+  "city",
+];
 
 function readValues(formData: FormData): B2BLeadValues {
   const values: B2BLeadValues = {};
@@ -37,11 +56,7 @@ function readValues(formData: FormData): B2BLeadValues {
   return values;
 }
 
-/**
- * B2B lead capture. Validates on the server; there is no backend endpoint yet, so a valid lead is
- * NOT stored or sent anywhere. TODO(api): POST to the B2B leads endpoint once it exists, then
- * return a `success` state.
- */
+/** Company training request: validated here, then posted to the legacy B2B endpoint. */
 export async function submitB2BLead(_previous: B2BLeadState, formData: FormData): Promise<B2BLeadState> {
   const values = readValues(formData);
   const parsed = leadSchema.safeParse(values);
@@ -55,9 +70,22 @@ export async function submitB2BLead(_previous: B2BLeadState, formData: FormData)
     return { status: "invalid", values, fieldErrors };
   }
 
-  return {
-    status: "unavailable",
-    values,
-    message: "استقبال طلبات الشركات عبر الموقع قيد التفعيل حالياً. شكراً لاهتمامك، يرجى المحاولة لاحقاً.",
-  };
+  const lead = parsed.data;
+  const range = companyRanges.find((item) => item.value === lead.companyRange) ?? companyRanges[0];
+  const accepted = await subscribeB2B({
+    id: null,
+    status: 1,
+    type: range.type,
+    appliedOn: new Date().toISOString(),
+    companyName: lead.companyName,
+    contactName: lead.contactName,
+    companyEmail: lead.companyEmail,
+    contactPhone: lead.contactPhone.replace(/[\s-]/g, ""),
+    jobTitle: lead.jobTitle,
+    companyRange: range.value,
+    country: lead.country,
+    city: lead.city,
+  });
+
+  return accepted ? { status: "success" } : { status: "error", values, message: b2bFormCopy.error };
 }
