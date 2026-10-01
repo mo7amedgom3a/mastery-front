@@ -21,6 +21,11 @@ function buildColumns(items: readonly Expert[], count: number): Expert[][] {
 
 const columns = buildColumns(experts, COLUMN_COUNT);
 
+/** Phones show the first two columns; their top portraits are what first paint shows. */
+const PHONE_COLUMNS = 2;
+const isAboveTheFold = (column: number, index: number, duplicate: boolean) =>
+  !duplicate && index === 0 && column < PHONE_COLUMNS;
+
 /**
  * Cinematic hero: headline + CTA pair over an infinite vertical grid of expert portraits.
  * No client JS here — the H1 is the LCP element and paints with the HTML.
@@ -34,11 +39,13 @@ export function HeroSection() {
           getKey={(expert) => expert.id}
           duration={70}
           className="px-4 md:px-0"
-          renderItem={(expert) => (
+          renderItem={(expert, column, index, duplicate) => (
             <div className={cn("relative aspect-[600/811] overflow-hidden rounded-photo", brandBg[expert.color])}>
               {/* Decorative backdrop: sized to the column (2 on phones, 3 in 48% on desktop), low quality is invisible at this opacity. */}
-              {/* Loaded up front at low priority, not lazily: a portrait that first downloads and
-                  decodes as it slides into view pops in and makes the moving column hitch. */}
+              {/* Loaded up front, not lazily: a portrait that first downloads and decodes as it
+                  slides into view pops in and makes the moving column hitch. The first portrait of
+                  each column is on screen at first paint and is the page's LCP element, so it
+                  loads at high priority; the rest wait behind it at low priority. */}
               <Image
                 src={expert.image}
                 alt=""
@@ -47,7 +54,7 @@ export function HeroSection() {
                 sizes="(min-width: 900px) 16vw, 45vw"
                 quality={60}
                 loading="eager"
-                fetchPriority="low"
+                fetchPriority={isAboveTheFold(column, index, duplicate) ? "high" : "low"}
                 className="size-full object-cover"
               />
             </div>

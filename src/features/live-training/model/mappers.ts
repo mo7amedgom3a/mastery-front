@@ -1,8 +1,9 @@
 import { brandColorAt } from "@/components/ui/brand-colors";
+import { routes } from "@/config/routes";
 import { formatCount } from "@/lib/format";
 import { toPricing } from "@/lib/pricing";
 
-import type { LiveTrainingDto, LiveTrainingVM } from "./types";
+import type { LiveTrainingDetailDto, LiveTrainingDetailVM, LiveTrainingDto, LiveTrainingVM } from "./types";
 
 // Arabic copy with Latin digits, like `lib/format`.
 const LOCALE = "ar-u-nu-latn";
@@ -61,7 +62,10 @@ export function toLiveTrainingVM(dto: LiveTrainingDto): LiveTrainingVM {
     location: dto.location,
     certificate: dto.certificate,
     price: toPricing(dto.price.usd),
+    priceAmount: dto.price.usd,
     priceSar: dto.price.sar,
+    startsAt: dto.starts_at,
+    endsAt: dto.ends_at,
     trailerEmbedUrl: dto.intro_video_youtube_id
       ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(dto.intro_video_youtube_id)}?autoplay=1&rel=0&modestbranding=1&playsinline=1`
       : null,
@@ -69,5 +73,16 @@ export function toLiveTrainingVM(dto: LiveTrainingDto): LiveTrainingVM {
     enrollUrl: dto.enroll_url,
     highlights: dto.highlights,
     color: brandColorAt(dto.id),
+    href: routes.liveTraining(dto.slug),
+  };
+}
+
+export function toLiveTrainingDetailVM(dto: LiveTrainingDetailDto): LiveTrainingDetailVM {
+  const digits = dto.details.whatsapp?.replace(/\D/g, "") ?? "";
+  return {
+    ...toLiveTrainingVM(dto),
+    details: dto.details,
+    whatsappHref: digits ? `https://wa.me/${digits}` : null,
+    whatsappLabel: digits ? `+${digits}` : null,
   };
 }

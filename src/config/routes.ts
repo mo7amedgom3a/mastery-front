@@ -73,6 +73,7 @@ export const routes = {
   /** A trainer's profile is their expert page: the trainer id is the expert key. */
   instructor: (id: number, name?: string | null) => expertRoute(id, name),
   live: route("/live"),
+  liveTraining: (slug: string) => route(`/live/${encodeURIComponent(slug)}`),
   packages: route("/search?type=package"),
   package: (id: number | string) => route(`/packages/${encodeURIComponent(String(id))}`),
   consultations: route("/search?type=consultation"),

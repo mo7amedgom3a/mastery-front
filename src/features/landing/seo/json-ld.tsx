@@ -1,11 +1,15 @@
 import { getSiteUrl } from "@/config/env";
 import { siteConfig } from "@/config/site";
 
+import type { LiveTrainingVM } from "@/features/live-training/model/types";
+
 import type { CourseCardVM, FaqVM } from "../model/types";
 
 type JsonLdProps = {
   courses: CourseCardVM[];
   faqs: readonly FaqVM[];
+  /** The spotlight's live training: a course with a dated online instance. */
+  liveTraining?: LiveTrainingVM | null;
 };
 
 /** Escapes `<` so user-controlled strings can never close the script tag. */
@@ -13,7 +17,7 @@ function serialize(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-export function LandingJsonLd({ courses, faqs }: JsonLdProps) {
+export function LandingJsonLd({ courses, faqs, liveTraining }: JsonLdProps) {
   const siteUrl = getSiteUrl();
   const organizationId = `${siteUrl}/#organization`;
   const websiteId = `${siteUrl}/#website`;
@@ -86,6 +90,36 @@ export function LandingJsonLd({ courses, faqs }: JsonLdProps) {
             : {}),
         },
       })),
+    });
+  }
+
+  if (liveTraining) {
+    const url = `${siteUrl}${liveTraining.href}`;
+    const instructor = { "@type": "Person", name: liveTraining.trainerName };
+    graph.push({
+      "@type": "Course",
+      "@id": `${url}#course`,
+      name: liveTraining.title,
+      url,
+      description: liveTraining.summary ?? liveTraining.subtitle ?? liveTraining.title,
+      ...(liveTraining.coverImage ? { image: liveTraining.coverImage } : {}),
+      inLanguage: "ar",
+      provider: { "@id": organizationId },
+      instructor,
+      offers: {
+        "@type": "Offer",
+        url,
+        price: liveTraining.priceAmount,
+        priceCurrency: siteConfig.currency,
+        category: "Paid",
+      },
+      hasCourseInstance: {
+        "@type": "CourseInstance",
+        courseMode: "Online",
+        startDate: liveTraining.startsAt,
+        endDate: liveTraining.endsAt,
+        instructor,
+      },
     });
   }
 

@@ -99,6 +99,52 @@ async function checkHome() {
   }
 }
 
+/** Head tags, one H1 and JSON-LD types for an inner page, as a crawler without JavaScript sees it. */
+async function checkPage(path: string, jsonLdTypes: readonly string[]) {
+  console.log(`${path} (as GPTBot — no JavaScript)`);
+  const { response, text: html } = await get(path, "GPTBot");
+  check("status 200", response.status === 200, `got ${response.status}`);
+
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
+  check("title ≤ 60 chars", title.length > 0 && [...title].length <= 60, `${[...title].length}`);
+  const description = metaContent(html, "name", "description") ?? "";
+  check("meta description ≤ 160 chars", description.length > 0 && [...description].length <= 160, `${[...description].length}`);
+  const ogDescription = metaContent(html, "property", "og:description") ?? "";
+  check("og:description ≤ 125 chars", ogDescription.length > 0 && [...ogDescription].length <= 125, `${[...ogDescription].length}`);
+
+  const canonical = html.match(/<link[^>]*rel="canonical"[^>]*href="([^"]*)"/)?.[1] ?? "";
+  check("canonical is this page", canonical.endsWith(path), canonical || "missing");
+
+  const h1Count = html.match(/<h1[\s>]/g)?.length ?? 0;
+  check("exactly one <h1>", h1Count === 1, `found ${h1Count}`);
+
+  const types = new Set<string>();
+  for (const [, block] of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+    try {
+      const data = JSON.parse(block) as { "@graph"?: { "@type": string }[] };
+      for (const node of data["@graph"] ?? []) types.add(node["@type"]);
+    } catch (error) {
+      check("JSON-LD parses", false, String(error));
+    }
+  }
+  for (const type of jsonLdTypes) {
+    check(`JSON-LD has ${type}`, types.has(type));
+  }
+}
+
+/** The live-trainings listing and its first training's page (slug read from the mock API). */
+async function checkLive() {
+  await checkPage("/live", []);
+  const list = (await fetch(`${baseUrl}/api/live-trainings?limit=1`).then((r) => r.json())) as { items?: { slug: string }[] };
+  const slug = list.items?.[0]?.slug;
+  if (!slug) {
+    console.log("  (no open live training: detail page skipped)");
+    return;
+  }
+  console.log("");
+  await checkPage(`/live/${slug}`, ["Course", "BreadcrumbList", "FAQPage"]);
+}
+
 async function checkFiles() {
   console.log("Crawl files");
   const robots = await get("/robots.txt");
@@ -129,6 +175,8 @@ async function checkFiles() {
 async function main() {
   console.log(`SEO check against ${baseUrl} (expect ${expectIndexable ? "indexable" : "noindex"})\n`);
   await checkHome();
+  console.log("");
+  await checkLive();
   console.log("");
   await checkFiles();
   console.log(`\n${passed} passed, ${failures.length} failed`);

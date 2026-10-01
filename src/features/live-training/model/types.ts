@@ -1,3 +1,5 @@
+import type { Route } from "next";
+
 import type { BrandColor } from "@/components/ui/brand-colors";
 import type { Pricing } from "@/lib/pricing";
 
@@ -45,10 +47,34 @@ export type LiveTrainingDto = {
   /** YouTube video id of the trailer. */
   intro_video_youtube_id: string | null;
   brochure_url: string | null;
-  /** Where enrolment happens (the live site) until a detail page ships here. */
+  /** Where the seat is paid for (the live site's checkout) until live trainings join the cart. */
   enroll_url: string;
   highlights: string[];
 };
+
+/** A labelled point, e.g. an objective ("الفهم: …") or a feature. */
+export type LabelledTextDto = { label: string; text: string };
+
+/** Long-form page content: what `GET /api/live-trainings/{slug}` adds to the list item. */
+export type LiveTrainingDetailsDto = {
+  about: { title: string; paragraphs: string[] };
+  objectives: LabelledTextDto[];
+  audience: { lead: string; items: string[] };
+  axes: {
+    title: string;
+    lead: string;
+    items: { title: string; title_en: string; text: string }[];
+  };
+  activities: { lead: string; groups: { title: string; items: string[] }[] };
+  method: LabelledTextDto[];
+  trainer_bio: { credentials: string[]; roles: string; paragraphs: string[] };
+  features: LabelledTextDto[];
+  certificates: { title: string; text: string }[];
+  faqs: { question: string; answer: string }[];
+  whatsapp: string | null;
+};
+
+export type LiveTrainingDetailDto = LiveTrainingDto & { details: LiveTrainingDetailsDto };
 
 export type LiveTrainingsResponse = {
   items: LiveTrainingDto[];
@@ -76,11 +102,26 @@ export type LiveTrainingVM = {
   location: string;
   certificate: string | null;
   price: Pricing;
+  /** USD amount, for structured data. */
+  priceAmount: number;
   priceSar: number | null;
+  /** ISO start of the first session and end of the last (structured data). */
+  startsAt: string;
+  endsAt: string;
   trailerEmbedUrl: string | null;
   brochureUrl: string | null;
   enrollUrl: string;
   highlights: string[];
   /** Solid field behind the trainer cutout. */
   color: BrandColor;
+  /** The training's page on this site. */
+  href: Route;
+};
+
+export type LiveTrainingDetailVM = LiveTrainingVM & {
+  details: LiveTrainingDetailsDto;
+  /** `https://wa.me/…` link, or null. */
+  whatsappHref: string | null;
+  /** The number as people read it, e.g. "+971506116685". */
+  whatsappLabel: string | null;
 };

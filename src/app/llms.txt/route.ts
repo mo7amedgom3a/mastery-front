@@ -33,10 +33,10 @@ export function GET() {
     "",
     "## ما تقدّمه الأكاديمية",
     "",
-    // Live sessions have no landing section of their own; they point at the offerings tabs.
+    // Live sessions have their own listing page; the rest point at their landing sections.
     ...offerings.map(
       (offering) =>
-        `- [${offering.label}](${siteUrl}/#${offering.id === "live" ? "offerings" : offering.id}): ${offering.title}. ${offering.body}`,
+        `- [${offering.label}](${offering.id === "live" ? `${siteUrl}${routes.live}` : `${siteUrl}/#${offering.id}`}): ${offering.title}. ${offering.body}`,
     ),
     "",
     "## الأسئلة الشائعة",
@@ -50,6 +50,7 @@ export function GET() {
     `- [الدبلومات](${siteUrl}${routes.diplomas})`,
     `- [الباقات](${siteUrl}${routes.packages})`,
     `- [الاستشارات](${siteUrl}${routes.consultations})`,
+    `- [دورات البث المباشر](${siteUrl}${routes.live})`,
     `- [من نحن](${siteUrl}/#about)`,
     `- [الخبراء](${siteUrl}/#experts)`,
     `- [حلول تدريب الشركات](${siteUrl}/#business)`,

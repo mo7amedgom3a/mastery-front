@@ -1,6 +1,7 @@
 import { CalendarDays, Clock, MonitorPlay } from "lucide-react";
 import Image from "next/image";
 
+import { AppLink } from "@/components/ui/app-link";
 import { brandBg } from "@/components/ui/brand-colors";
 import { cn } from "@/lib/cn";
 
@@ -8,9 +9,8 @@ import { livePageCopy } from "../content/copy";
 import type { LiveTrainingVM } from "../model/types";
 
 /**
- * Kit `.ma-card` for one live training. Same anatomy as `ProductCard`, but the link leaves the site
- * (enrolment lives on the live site until a detail page ships), which `ProductCard`'s typed routes
- * don't allow. The title link stretches over the whole card.
+ * Kit `.ma-card` for one live training, linking to its page. Same anatomy as `ProductCard`, with the
+ * trainer and live schedule in place of the catalog meta. The title link stretches over the card.
  */
 export function LiveTrainingCard({ training, priority = false }: { training: LiveTrainingVM; priority?: boolean }) {
   const meta = [
@@ -40,9 +40,9 @@ export function LiveTrainingCard({ training, priority = false }: { training: Liv
           {training.cohort ? <span className="ma-tag ma-tag--outline">{training.cohort}</span> : null}
         </div>
         <h2 className="ma-card__title line-clamp-2">
-          <a href={training.enrollUrl} className="text-fg no-underline after:absolute after:inset-0 after:content-['']">
+          <AppLink href={training.href} className="text-fg no-underline after:absolute after:inset-0 after:content-['']">
             {training.title}
-          </a>
+          </AppLink>
         </h2>
         <p className="m-0 text-sm font-medium">{training.trainerName}</p>
         {training.subtitle ? <p className="m-0 line-clamp-2 text-sm leading-6 text-fg-muted">{training.subtitle}</p> : null}

@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { isPublishable, type CourseDto } from "@/features/landing/model/mappers";
+import { getLiveTrainingSlugs } from "@/features/live-training/api/get-live-trainings";
 import { emptySearchState, PRODUCT_TYPES, searchHref } from "@/features/search/model/params";
 import {
   getLegacyConsultations,
@@ -103,5 +104,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...listings,
     ...products.values(),
+    ...(await getLiveTrainingSlugs()).map((slug): MetadataRoute.Sitemap[number] => ({
+      url: `${siteUrl}${routes.liveTraining(slug)}`,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    })),
   ];
 }

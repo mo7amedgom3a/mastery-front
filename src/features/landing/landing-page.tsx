@@ -49,7 +49,7 @@ export function LandingPage({ data }: { data: LandingData }) {
         <CtaBand />
       </main>
       <SiteFooter />
-      <LandingJsonLd courses={data.courses.slice(0, MAX_CARDS)} faqs={faqs} />
+      <LandingJsonLd courses={data.courses.slice(0, MAX_CARDS)} faqs={faqs} liveTraining={data.liveTraining} />
     </>
   );
 }

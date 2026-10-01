@@ -6,7 +6,8 @@ type VerticalMarqueeGridProps<T> = {
   /** One array per column; each column loops independently. */
   columns: readonly (readonly T[])[];
   getKey: (item: T) => string;
-  renderItem: (item: T, column: number) => ReactNode;
+  /** `index` is the item's position in its column; `duplicate` marks the loop's second copy. */
+  renderItem: (item: T, column: number, index: number, duplicate: boolean) => ReactNode;
   /** Base loop duration in seconds; columns are staggered around it. */
   duration?: number;
   className?: string;
@@ -32,8 +33,8 @@ export function VerticalMarqueeGrid<T>({ columns, getKey, renderItem, duration =
         } as CSSProperties;
         const track = (duplicate: boolean) => (
           <ul className="vmarquee__track" aria-hidden={duplicate || undefined}>
-            {column.map((item) => (
-              <li key={getKey(item)}>{renderItem(item, columnIndex)}</li>
+            {column.map((item, index) => (
+              <li key={getKey(item)}>{renderItem(item, columnIndex, index, duplicate)}</li>
             ))}
           </ul>
         );
