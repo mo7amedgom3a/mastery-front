@@ -13,7 +13,7 @@ const ROWS = [0, 3, 6].map((offset) => [...experts.slice(offset), ...experts.sli
 
 function ExpertCard({ expert }: { expert: Expert }) {
   return (
-    <div className="flex w-40 flex-col border border-line bg-surface md:w-48">
+    <div className="flex w-40 flex-col overflow-hidden rounded-panel border border-line bg-surface md:w-48">
       <div className={cn("relative aspect-[600/811] overflow-hidden", brandBg[expert.color])}>
         {/* Decorative and dimmed: low quality is invisible, lazy is fine below the fold. */}
         <Image src={expert.image} alt="" fill sizes="192px" quality={60} className="object-cover" />
@@ -56,8 +56,8 @@ export function BusinessSection() {
           <div className="hidden h-full w-[62%] bg-surface-alt/85 md:block" />
         </div>
 
-        <div className="ma-container grid gap-10 py-20 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] md:py-28">
-          <div className="flex max-w-[36rem] flex-col items-start gap-6">
+        <div className="ma-container grid gap-10 py-[clamp(3rem,8svh,7rem)] md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+          <div className="flex max-w-[36rem] flex-col items-start gap-6 short:gap-4">
             <span className="ma-tag ma-tag--coral">{b2bCopy.label}</span>
             <h2 id="business-title" className="t-section m-0">
               {banner.title}
@@ -65,7 +65,7 @@ export function BusinessSection() {
             <p className="t-lead m-0">{banner.lead}</p>
             <ul className="m-0 flex w-full list-none flex-col p-0">
               {b2bCopy.benefits.map((benefit) => (
-                <li key={benefit.title} className="flex flex-col gap-1 border-t border-line py-4">
+                <li key={benefit.title} className="flex flex-col gap-1 border-t border-line py-4 short:py-3">
                   <span className="font-bold">{benefit.title}</span>
                   <span className="text-fg-muted">{benefit.body}</span>
                 </li>

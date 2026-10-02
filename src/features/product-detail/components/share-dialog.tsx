@@ -182,7 +182,7 @@ export function ShareButton(props: ShareDialogProps) {
         type="button"
         onClick={() => dialogRef.current?.showModal()}
         aria-haspopup="dialog"
-        className={cn("ma-btn ma-btn--outline ma-btn--sm gap-2", variant === "block" ? "ma-btn--block" : "shrink-0")}
+        className={cn("ma-btn ma-btn--soft ma-btn--sm gap-2", variant === "block" ? "ma-btn--block" : "shrink-0")}
       >
         <Share2 aria-hidden="true" className="size-4" />
         مشاركة
@@ -195,27 +195,27 @@ export function ShareButton(props: ShareDialogProps) {
           if (event.target === event.currentTarget) close();
         }}
         aria-labelledby={titleId}
-        className="m-auto max-h-[calc(100svh-2rem)] w-[min(34rem,calc(100vw-2rem))] overflow-y-auto border border-line-strong bg-surface p-0 text-fg backdrop:bg-ink/70"
+        className="m-auto max-h-[calc(100svh-2rem)] w-[min(34rem,calc(100vw-2rem))] overflow-y-auto rounded-panel border border-line-strong bg-surface p-0 text-fg backdrop:bg-ink/70"
       >
         <div className="flex flex-col gap-6 p-5 sm:p-7">
           <div className="flex items-center justify-between gap-4">
             <h2 id={titleId} className="m-0 text-xl font-bold">
               شارك ال{kindLabel}
             </h2>
-            <button type="button" onClick={close} aria-label="إغلاق" className="ma-btn ma-btn--ghost ma-btn--icon size-10 min-h-10">
+            <button type="button" onClick={close} aria-label="إغلاق" className="ma-btn ma-btn--bare ma-btn--icon size-10 min-h-10">
               <X aria-hidden="true" className="size-5" />
             </button>
           </div>
 
           {/* Share card: what a friend sees in a screenshot or when scanning the code. */}
-          <figure className="m-0 grid gap-5 border border-line bg-surface-alt p-5 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <figure className="m-0 grid gap-5 rounded-panel border border-line bg-surface-alt p-5 sm:grid-cols-[minmax(0,1fr)_auto]">
             <div className="flex min-w-0 flex-col gap-4">
               <span className={cn("ma-tag self-start", tagClassName)}>{kindLabel}</span>
               <figcaption className="text-lg leading-8 font-bold text-balance">{title}</figcaption>
               {facts.length > 0 ? (
                 <ul className="m-0 flex list-none flex-wrap gap-2 p-0 text-sm">
                   {facts.map((fact) => (
-                    <li key={fact} className="border border-line bg-surface px-2.5 py-1">
+                    <li key={fact} className="rounded-chip border border-line bg-surface px-2.5 py-1">
                       {fact}
                     </li>
                   ))}
@@ -243,7 +243,7 @@ export function ShareButton(props: ShareDialogProps) {
                     href={network.href(tagged(url, network.key), text)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ma-btn ma-btn--outline ma-btn--sm ma-btn--block"
+                    className="ma-btn ma-btn--soft ma-btn--sm ma-btn--block"
                   >
                     {network.label}
                   </a>
@@ -254,7 +254,7 @@ export function ShareButton(props: ShareDialogProps) {
 
           <div className="flex flex-col gap-2">
             <div className="flex items-stretch gap-2">
-              <span className="flex min-w-0 flex-1 items-center gap-2 border border-line px-3 text-sm text-fg-muted">
+              <span className="flex min-w-0 flex-1 items-center gap-2 rounded-ctl border border-line px-3 text-sm text-fg-muted">
                 <Link2 aria-hidden="true" className="size-4 shrink-0" />
                 <span dir="ltr" className="truncate">
                   {url}
@@ -263,7 +263,7 @@ export function ShareButton(props: ShareDialogProps) {
               <button
                 type="button"
                 onClick={copyLink}
-                className={cn("ma-btn ma-btn--sm shrink-0 gap-2", copied ? "ma-btn--secondary" : "ma-btn--outline")}
+                className={cn("ma-btn ma-btn--sm shrink-0 gap-2", copied ? "ma-btn--secondary" : "ma-btn--soft")}
               >
                 {copied ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
                 {copied ? "تم النسخ" : "نسخ الرابط"}

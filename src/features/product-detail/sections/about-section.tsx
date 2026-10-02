@@ -17,7 +17,7 @@ function AudienceList({ blocks }: { blocks: readonly TextBlock[] }) {
         ) : (
           <ul key={index} className="m-0 grid list-none gap-3 p-0 md:grid-cols-2">
             {block.items.map((item, itemIndex) => (
-              <li key={itemIndex} className="flex items-start gap-3 border border-line p-4 leading-7">
+              <li key={itemIndex} className="flex items-start gap-3 rounded-panel border border-line p-4 leading-7">
                 <UserRound aria-hidden="true" className="mt-1 size-5 shrink-0 text-accent" />
                 <span className="text-pretty">{item}</span>
               </li>

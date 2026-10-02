@@ -22,7 +22,7 @@ export function InstructorSection({ trainers }: { trainers: readonly TrainerVM[]
       </h2>
       <div className="mt-6 flex flex-col gap-10">
         {trainers.map((trainer, index) => (
-          <article key={trainer.id} className="flex flex-col gap-5 border border-line p-6 md:flex-row md:gap-8">
+          <article key={trainer.id} className="flex flex-col gap-5 rounded-panel border border-line p-6 md:flex-row md:gap-8">
             <AppLink href={trainer.href} className="shrink-0 self-start" tabIndex={-1} aria-hidden="true">
               <TrainerAvatar trainer={trainer} size={112} index={index} />
             </AppLink>

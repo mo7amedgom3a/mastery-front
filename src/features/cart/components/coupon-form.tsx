@@ -37,7 +37,7 @@ export function CouponForm({ code, result, checking, onApply }: CouponFormProps)
 
   if (applied && verdict) {
     return (
-      <div className="flex items-start justify-between gap-3 border border-line-strong p-3">
+      <div className="flex items-start justify-between gap-3 rounded-panel border border-line-strong p-3">
         <div className="flex min-w-0 items-start gap-3">
           <TicketPercent aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-accent" />
           <p role="status" className="m-0 min-w-0 text-sm leading-6">
@@ -54,7 +54,7 @@ export function CouponForm({ code, result, checking, onApply }: CouponFormProps)
             onApply(null);
           }}
           aria-label={`إزالة القسيمة ${verdict.code}`}
-          className="ma-btn ma-btn--ghost ma-btn--icon ma-btn--sm size-11 shrink-0"
+          className="ma-btn ma-btn--bare ma-btn--icon ma-btn--sm size-11 shrink-0"
         >
           <X aria-hidden="true" className="size-4 fill-none" />
         </button>
@@ -87,7 +87,7 @@ export function CouponForm({ code, result, checking, onApply }: CouponFormProps)
         <button
           type="submit"
           disabled={checking || text.trim() === ""}
-          className={cn("ma-btn ma-btn--outline shrink-0", checking && code !== null && "is-loading")}
+          className={cn("ma-btn ma-btn--soft shrink-0", checking && code !== null && "is-loading")}
         >
           تطبيق
         </button>

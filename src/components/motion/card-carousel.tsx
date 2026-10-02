@@ -20,7 +20,8 @@ const SWIPE_VELOCITY = 400;
 const SPRING = { type: "spring", stiffness: 300, damping: 30 } as const;
 
 /**
- * Multi-card carousel (Motion). Cards per view come from CSS (`--per-view` at the kit breakpoints),
+ * Multi-card carousel (Motion). Cards per view come from CSS (`--per-view`: 1 / 2 / 3 at the kit
+ * breakpoints — never 4, so the artwork stays large),
  * so the server render already has the final layout; JS only moves the track. The arrows never cover
  * a card: from 900px they sit in their own lanes beside the track, below that in a row under it.
  * Everything stays inside the page container's gutter, clear of the screen edges. RTL-aware: the
@@ -103,7 +104,7 @@ export function CardCarousel({ label, children, className }: CardCarouselProps) 
       <div
         ref={viewportRef}
         // `clip` (not `hidden`) so focusing an off-screen card can't scroll the viewport natively.
-        className="order-first min-w-0 basis-full overflow-x-clip md:order-none md:flex-1 md:basis-0 [--gap:var(--space-6)] [--per-view:1] sm:[--per-view:2] md:[--per-view:3] lg:[--per-view:4]"
+        className="order-first min-w-0 basis-full overflow-x-clip md:order-none md:flex-1 md:basis-0 [--gap:var(--space-6)] [--per-view:1] sm:[--per-view:2] md:[--per-view:3]"
         onDragStartCapture={(event) => event.preventDefault()}
         onClickCapture={(event) => {
           if (draggedRef.current) {
@@ -169,8 +170,8 @@ function CarouselButton({
       whileHover={disabled ? undefined : { scale: 1.08 }}
       whileTap={disabled ? undefined : { scale: 0.94 }}
       className={cn(
-        "grid size-11 shrink-0 place-items-center rounded-full border border-line-strong bg-surface text-fg shadow-sm transition-opacity",
-        disabled ? "cursor-not-allowed opacity-40" : "opacity-90 hover:opacity-100",
+        "grid size-11 shrink-0 place-items-center rounded-full bg-(--fill-soft) text-fg transition-[background-color,opacity]",
+        disabled ? "cursor-not-allowed opacity-40" : "hover:bg-(--fill-soft-hover)",
       )}
     >
       <Icon aria-hidden className="size-5 rtl:-scale-x-100" strokeWidth={2} />

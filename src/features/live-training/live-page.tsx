@@ -31,7 +31,7 @@ export function LivePage({ trainings }: { trainings: LiveTrainingVM[] }) {
               ))}
             </ul>
           ) : (
-            <div className="flex flex-col items-start gap-4 border border-line p-8">
+            <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-8">
               <h2 className="m-0 text-xl font-bold">{livePageCopy.empty.title}</h2>
               <p className="m-0 text-fg-muted">{livePageCopy.empty.lead}</p>
               <ButtonLink href={livePageCopy.empty.action.href} variant="primary">

@@ -20,7 +20,7 @@ export function FacetChip({ option, showCount }: FacetChipProps) {
       // Finer filter combinations are not worth a crawler's time; the listings themselves are.
       rel={option.indexable ? undefined : "nofollow"}
       className={cn(
-        buttonClass({ variant: option.selected ? "secondary" : "outline", size: "sm" }),
+        buttonClass({ variant: option.selected ? "secondary" : "soft", size: "sm" }),
         "max-md:min-h-11",
       )}
     >

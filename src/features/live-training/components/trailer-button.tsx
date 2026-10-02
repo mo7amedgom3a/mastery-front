@@ -36,7 +36,7 @@ export function TrailerButton({ embedUrl, title, label, dialogLabel, className }
         type="button"
         onClick={show}
         aria-haspopup="dialog"
-        className={cn("ma-btn ma-btn--outline ma-btn--lg", className)}
+        className={cn("ma-btn ma-btn--soft ma-btn--lg", className)}
       >
         <Play aria-hidden="true" className="size-4 fill-current" />
         {label}
@@ -51,13 +51,13 @@ export function TrailerButton({ embedUrl, title, label, dialogLabel, className }
         }}
         aria-labelledby={titleId}
         data-theme="dark"
-        className="m-auto w-[min(64rem,calc(100vw-2rem))] max-w-none border border-line bg-surface-alt p-0 text-fg backdrop:bg-ink/90"
+        className="m-auto w-[min(64rem,calc(100vw-2rem))] max-w-none overflow-hidden rounded-panel border border-line bg-surface-alt p-0 text-fg backdrop:bg-ink/90"
       >
         <div className="flex items-center justify-between gap-4 border-b border-line px-4 py-2">
           <h2 id={titleId} className="m-0 truncate text-base font-bold">
             {dialogLabel}: {title}
           </h2>
-          <button type="button" onClick={close} aria-label="إغلاق" className="ma-btn ma-btn--ghost ma-btn--icon size-11 min-h-11">
+          <button type="button" onClick={close} aria-label="إغلاق" className="ma-btn ma-btn--bare ma-btn--icon size-11 min-h-11">
             <X aria-hidden="true" className="size-5" />
           </button>
         </div>

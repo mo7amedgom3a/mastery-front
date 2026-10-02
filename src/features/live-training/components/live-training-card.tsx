@@ -37,7 +37,7 @@ export function LiveTrainingCard({ training, priority = false }: { training: Liv
       <div className="ma-card__body">
         <div className="flex flex-wrap gap-2">
           <span className="ma-tag ma-tag--coral">بث مباشر</span>
-          {training.cohort ? <span className="ma-tag ma-tag--outline">{training.cohort}</span> : null}
+          {training.cohort ? <span className="ma-tag ma-tag--soft">{training.cohort}</span> : null}
         </div>
         <h2 className="ma-card__title line-clamp-2">
           <AppLink href={training.href} className="text-fg no-underline after:absolute after:inset-0 after:content-['']">

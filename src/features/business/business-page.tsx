@@ -25,7 +25,7 @@ function ChipList({ title, chips }: { title: string; chips: CatalogChipVM[] }) {
           <li key={chip.code}>
             <AppLink
               href={chip.href}
-              className="inline-flex min-h-11 items-center gap-2 border border-line-strong px-4 text-sm font-bold no-underline hover:border-accent hover:text-accent"
+              className="ma-btn ma-btn--soft ma-btn--sm min-h-11 gap-2 font-bold no-underline"
             >
               {chip.label}
               <span className="text-fg-muted" aria-label={`${chip.count} برنامج`}>
@@ -60,7 +60,7 @@ export function BusinessPage({ catalog }: { catalog: BusinessCatalogVM }) {
 
         <Section aria-labelledby="steps-title">
           <SectionHeader id="steps-title" label={copy.steps.label} title={copy.steps.title} />
-          <ol className="m-0 mt-10 grid list-none gap-px border border-line bg-line p-0 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="m-0 mt-10 grid list-none gap-px overflow-hidden rounded-panel border border-line bg-line p-0 sm:grid-cols-2 lg:grid-cols-4">
             {copy.steps.items.map((step, index) => (
               <li key={step.title} className="flex flex-col gap-3 bg-surface p-6">
                 <span className="text-sm font-bold text-accent" aria-hidden="true">
@@ -75,7 +75,7 @@ export function BusinessPage({ catalog }: { catalog: BusinessCatalogVM }) {
 
         <Section tone="alt" aria-labelledby="programs-title">
           <SectionHeader id="programs-title" label={copy.programs.label} title={copy.programs.title} lead={copy.programs.lead} />
-          <ul className="m-0 mt-10 grid list-none gap-px border border-line bg-line p-0 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="m-0 mt-10 grid list-none gap-px overflow-hidden rounded-panel border border-line bg-line p-0 sm:grid-cols-2 lg:grid-cols-3">
             {corporatePrograms.map((program) => {
               const href = categoryHref.get(program.category);
               return (
@@ -117,7 +117,7 @@ export function BusinessPage({ catalog }: { catalog: BusinessCatalogVM }) {
                 ))}
               </dl>
             </div>
-            <div className="self-start border border-line-strong bg-surface p-5 sm:p-8">
+            <div className="self-start rounded-panel border border-line-strong bg-surface p-5 sm:p-8">
               <h3 className="m-0 mb-6 text-2xl font-bold">{copy.form.title}</h3>
               <B2BLeadForm />
             </div>

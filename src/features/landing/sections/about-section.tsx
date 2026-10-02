@@ -34,7 +34,7 @@ export function AboutSection() {
         <LazyVideo
           src={siteConfig.introVideoUrl}
           label={aboutCopy.videoLabel}
-          className="reveal aspect-video w-full"
+          className="reveal aspect-video w-full overflow-hidden rounded-panel"
           poster={
             <Image
               src={aboutCopy.teamImage.src}

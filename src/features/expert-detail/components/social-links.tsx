@@ -16,7 +16,7 @@ export function SocialLinks({ links, name }: { links: readonly SocialLinkVM[]; n
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`${name} على ${socialLabel[kind]}`}
-            className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-10 min-h-10"
+            className="ma-btn ma-btn--bare ma-btn--icon ma-btn--sm size-10 min-h-10"
           >
             <SocialIcon network={kind} className="size-5" />
           </a>

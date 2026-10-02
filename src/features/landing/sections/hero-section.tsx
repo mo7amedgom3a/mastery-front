@@ -40,7 +40,7 @@ export function HeroSection() {
           duration={70}
           className="px-4 md:px-0"
           renderItem={(expert, column, index, duplicate) => (
-            <div className={cn("relative aspect-[600/811] overflow-hidden rounded-photo", brandBg[expert.color])}>
+            <div className={cn("relative aspect-[600/811] overflow-hidden rounded-panel", brandBg[expert.color])}>
               {/* Decorative backdrop: sized to the column (2 on phones, 3 in 48% on desktop), low quality is invisible at this opacity. */}
               {/* Loaded up front, not lazily: a portrait that first downloads and decodes as it
                   slides into view pops in and makes the moving column hitch. The first portrait of
@@ -62,19 +62,21 @@ export function HeroSection() {
         />
       </div>
 
-      <div className="ma-container flex min-h-[min(calc(100svh-var(--header-h)),58rem)] items-center py-20 md:py-24">
+      {/* Fills the screen under the header and never more: type, gaps and padding scale with the
+          viewport height, so the tag, headline, lead and both CTAs are visible together. */}
+      <div className="ma-container flex min-h-[min(calc(100svh-var(--header-h)),64rem)] items-center py-[clamp(2rem,6svh,6rem)]">
         {/* Text column stops well short of the marquee (48% from the inline end) for breathing room. */}
         <div className="flex max-w-[34rem] flex-col items-start md:w-[44%]">
-          <span className="ma-tag ma-tag--outline">{heroCopy.kicker}</span>
-          <h1 id="hero-title" className="t-hero m-0 mt-6">
+          <span className="ma-tag ma-tag--soft">{heroCopy.kicker}</span>
+          <h1 id="hero-title" className="t-hero m-0 mt-6 short:mt-4">
             {heroCopy.title}
           </h1>
-          <p className="t-lead m-0 mt-8 max-w-[32rem] text-fg">{heroCopy.lead}</p>
-          <div className="ma-cluster mt-10">
+          <p className="t-lead m-0 mt-8 max-w-[32rem] text-fg short:mt-5">{heroCopy.lead}</p>
+          <div className="ma-cluster mt-10 w-full short:mt-6 max-sm:flex-col max-sm:items-stretch">
             <ButtonLink href={heroCopy.primary.href} variant="primary" size="lg">
               {heroCopy.primary.label}
             </ButtonLink>
-            <ButtonLink href={heroCopy.secondary.href} variant="outline" size="lg">
+            <ButtonLink href={heroCopy.secondary.href} variant="soft" size="lg">
               {heroCopy.secondary.label}
             </ButtonLink>
           </div>

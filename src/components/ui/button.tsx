@@ -5,7 +5,7 @@ import type { ComponentProps, ReactNode } from "react";
 
 import { AppLink } from "@/components/ui/app-link";
 
-export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "on-color";
+export type ButtonVariant = "primary" | "secondary" | "soft" | "ghost" | "bare" | "on-color";
 export type ButtonSize = "sm" | "md" | "lg";
 
 type ButtonStyleProps = {

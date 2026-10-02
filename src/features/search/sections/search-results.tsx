@@ -30,8 +30,8 @@ import type { SearchCatalog, SearchResultsVM } from "../model/types";
 import { SearchJsonLd } from "../seo/json-ld";
 
 /** Four cards per row on desktop, three from 900px, two on tablets, one on phones. */
-const CARD_SIZES = "(min-width: 1200px) 290px, (min-width: 900px) 30vw, (min-width: 600px) 45vw, 100vw";
-const GRID = "m-0 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
+const CARD_SIZES = "(min-width: 1200px) 390px, (min-width: 900px) 30vw, (min-width: 600px) 45vw, 100vw";
+const GRID = "m-0 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3";
 
 function SortControl({ state }: { state: SearchState }) {
   // Without a query nothing is ranked: the default order is "newest", so it takes that label.
@@ -61,7 +61,7 @@ function SortControl({ state }: { state: SearchState }) {
       </AutoSubmitSelect>
       {/* Without JavaScript the select can't submit itself. */}
       <noscript>
-        <button type="submit" className="ma-btn ma-btn--outline ma-btn--sm min-h-11">
+        <button type="submit" className="ma-btn ma-btn--soft ma-btn--sm min-h-11">
           رتّب
         </button>
       </noscript>
@@ -74,7 +74,7 @@ function EmptyState({ state }: { state: SearchState }) {
   const filtered = hasFilters(state);
   const canGoSmart = Boolean(state.q) && state.mode === "lexical";
   return (
-    <div className="flex flex-col items-start gap-4 border border-line p-6 md:p-10">
+    <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10">
       <h2 className="m-0 text-2xl leading-10 font-bold">لم نجد برامج مطابقة</h2>
       <p className="m-0 max-w-[52ch] text-fg-muted">
         {state.q
@@ -99,7 +99,7 @@ function EmptyState({ state }: { state: SearchState }) {
           ) : null}
           {filtered ? (
             <li>
-              <FilterLink href={searchHref(clearFilters(state))} rel="nofollow" className="ma-btn ma-btn--outline">
+              <FilterLink href={searchHref(clearFilters(state))} rel="nofollow" className="ma-btn ma-btn--soft">
                 امسح الفلاتر
               </FilterLink>
             </li>
@@ -261,8 +261,8 @@ export function SearchResultsSkeleton() {
       </div>
       <div aria-hidden="true" className="mt-6 mb-6 h-14 border-y border-line" />
       <ul aria-hidden="true" className={GRID}>
-        {Array.from({ length: 8 }, (_, index) => (
-          <li key={index} className="border border-line">
+        {Array.from({ length: 6 }, (_, index) => (
+          <li key={index} className="overflow-hidden rounded-panel border border-line">
             <CardSkeleton lines={3} />
           </li>
         ))}

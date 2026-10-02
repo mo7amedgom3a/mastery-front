@@ -57,7 +57,7 @@ export default function AnimatedCardActions({ item, purchasable }: CardActionsPr
         aria-pressed={saved}
         aria-label={saved ? `إزالة «${item.title}» من المفضلة` : `حفظ «${item.title}» في المفضلة`}
         whileTap={{ scale: 0.85 }}
-        className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-10 min-h-10"
+        className="ma-btn ma-btn--bare ma-btn--icon ma-btn--sm size-10 min-h-10"
       >
         <HeartFillIcon ref={heart} filled={saved} size={18} />
       </motion.button>
@@ -73,7 +73,7 @@ export default function AnimatedCardActions({ item, purchasable }: CardActionsPr
           aria-pressed={inCart}
           aria-label={inCart ? `إزالة «${item.title}» من السلة` : `إضافة «${item.title}» إلى السلة`}
           whileTap={{ scale: 0.94 }}
-          className={clsx("ma-btn ma-btn--sm min-h-10 gap-1.5 px-3", inCart ? "ma-btn--secondary" : "ma-btn--outline")}
+          className={clsx("ma-btn ma-btn--sm min-h-10 gap-1.5 px-3", inCart ? "ma-btn--secondary" : "ma-btn--soft")}
         >
           <span className="relative grid size-[18px] place-items-center">
             <AnimatePresence mode="popLayout" initial={false}>

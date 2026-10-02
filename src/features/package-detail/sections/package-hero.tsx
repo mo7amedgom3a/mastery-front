@@ -64,7 +64,7 @@ export function PackageHero({ product, share }: { product: PackageDetailVM; shar
             <div className="ma-cluster gap-2">
               <span className="ma-tag ma-tag--green">باقة</span>
               {product.savings ? (
-                <span className="ma-tag ma-tag--outline">وفّر {product.savings.percent}٪</span>
+                <span className="ma-tag ma-tag--soft">وفّر {product.savings.percent}٪</span>
               ) : null}
             </div>
             {/* Share sits beside the title (below it on phones), where the decision to share is made. */}
@@ -84,7 +84,7 @@ export function PackageHero({ product, share }: { product: PackageDetailVM; shar
               {facts.map(({ key, label }) => {
                 const Icon = factIcon[key];
                 return (
-                  <li key={key} className="flex items-center gap-3 border border-line bg-surface px-4 py-3">
+                  <li key={key} className="flex items-center gap-3 rounded-panel border border-line bg-surface px-4 py-3">
                     <Icon aria-hidden="true" className="size-6 shrink-0 text-accent" />
                     <span className="text-lg font-bold md:text-xl">{label}</span>
                   </li>

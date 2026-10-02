@@ -86,7 +86,7 @@ export function CartPage() {
     return (
       <div className="flex flex-col gap-12">
         {undoNotice}
-        <div className="flex flex-col items-start gap-4 border border-line p-6 md:p-10">
+        <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10">
           <ShoppingCart aria-hidden="true" className="size-8 text-accent" />
           <h2 className="m-0 text-2xl leading-10 font-bold">سلتك فارغة</h2>
           <p className="m-0 max-w-[52ch] text-fg-muted">
@@ -100,7 +100,7 @@ export function CartPage() {
             </li>
             {wishlist.length > 0 ? (
               <li>
-                <ButtonLink href={routes.wishlist} variant="outline">
+                <ButtonLink href={routes.wishlist} variant="soft">
                   افتح المفضلة
                 </ButtonLink>
               </li>
@@ -186,7 +186,7 @@ export function CartSkeleton() {
       <span className="sr-only">جارٍ تحميل السلة…</span>
       <div aria-hidden="true" className="flex flex-col gap-4">
         {[0, 1].map((index) => (
-          <div key={index} className="flex gap-4 border border-line p-4 sm:p-5">
+          <div key={index} className="flex gap-4 rounded-panel border border-line p-4 sm:p-5">
             <Skeleton className="aspect-[16/10] w-24 shrink-0 sm:w-36" />
             <div className="flex flex-1 flex-col gap-3">
               <Skeleton className="h-5 w-3/4" />
@@ -196,7 +196,7 @@ export function CartSkeleton() {
         ))}
       </div>
       {/* The order summary: totals, coupon, then the pay button. */}
-      <div aria-hidden="true" className="flex flex-col gap-4 border border-line p-6">
+      <div aria-hidden="true" className="flex flex-col gap-4 rounded-panel border border-line p-6">
         <Skeleton className="h-6 w-1/2" />
         <Skeleton className="h-5" />
         <Skeleton className="h-5" />

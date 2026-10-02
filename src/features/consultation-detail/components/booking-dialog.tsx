@@ -105,7 +105,7 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
       }}
       aria-labelledby={titleId}
       // `max-w`: the browser's own dialog max-width would cost the calendar cells their touch size on phones.
-      className="m-auto max-h-[calc(100svh-1rem)] w-[min(46rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] overflow-y-auto border border-line-strong bg-surface p-0 text-fg backdrop:bg-ink/70"
+      className="m-auto max-h-[calc(100svh-1rem)] w-[min(46rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] overflow-y-auto rounded-panel border border-line-strong bg-surface p-0 text-fg backdrop:bg-ink/70"
     >
       <div className="flex flex-col gap-6 p-3 sm:p-7">
         <div className="flex items-start justify-between gap-4">
@@ -118,13 +118,13 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
               {booking.expertName ? ` · ${booking.expertName}` : null}
             </p>
           </div>
-          <button type="button" onClick={close} aria-label="إغلاق" className="ma-btn ma-btn--ghost ma-btn--icon size-10 min-h-10 shrink-0">
+          <button type="button" onClick={close} aria-label="إغلاق" className="ma-btn ma-btn--bare ma-btn--icon size-10 min-h-10 shrink-0">
             <X aria-hidden="true" className="size-5" />
           </button>
         </div>
 
         {step === "pick" && freeDays.length === 0 ? (
-          <div className="flex flex-col items-start gap-3 border border-line p-5">
+          <div className="flex flex-col items-start gap-3 rounded-panel border border-line p-5">
             <CalendarX aria-hidden="true" className="size-6 text-accent" />
             <p className="m-0 font-bold">لا توجد مواعيد متاحة حالياً</p>
             <p className="m-0 text-sm leading-6 text-fg-muted">
@@ -177,7 +177,7 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
                           onClick={() => setStart(slot.start)}
                           className={cn(
                             "ma-btn ma-btn--sm ma-btn--block tabular-nums",
-                            selected ? "ma-btn--secondary" : "ma-btn--outline",
+                            selected ? "ma-btn--secondary" : "ma-btn--soft",
                             slot.taken && "opacity-50",
                           )}
                         >
@@ -248,7 +248,7 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
               <ButtonLink href={routes.loginThen(returnTo)} variant="primary">
                 تسجيل الدخول
               </ButtonLink>
-              <ButtonLink href={routes.registerThen(returnTo)} variant="outline">
+              <ButtonLink href={routes.registerThen(returnTo)} variant="soft">
                 إنشاء حساب
               </ButtonLink>
             </div>
@@ -258,7 +258,7 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
 
         {step === "summary" && startDate ? (
           <div className="flex flex-col gap-5">
-            <dl className="m-0 grid gap-x-6 gap-y-3 border border-line p-5 text-[15px] sm:grid-cols-[auto_minmax(0,1fr)]">
+            <dl className="m-0 grid gap-x-6 gap-y-3 rounded-panel border border-line p-5 text-[15px] sm:grid-cols-[auto_minmax(0,1fr)]">
               <SummaryRow term="الاستشارة">{booking.title}</SummaryRow>
               {booking.expertName ? <SummaryRow term="الخبير">{booking.expertName}</SummaryRow> : null}
               <SummaryRow term="اليوم">{formatLongDate(startDate)}</SummaryRow>

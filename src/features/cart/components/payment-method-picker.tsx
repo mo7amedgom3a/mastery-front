@@ -103,7 +103,7 @@ export function PaymentMethodPicker({ offered, options, selected, onSelect }: Pa
  */
 export function PaymentMark({ name }: { name: string }) {
   return (
-    <span dir="ltr" className="inline-flex min-h-6 items-center border border-line px-1.5 text-[11px] leading-none font-bold tracking-wide">
+    <span dir="ltr" className="inline-flex min-h-6 items-center rounded-chip border border-line px-1.5 text-[11px] leading-none font-bold tracking-wide">
       {name}
     </span>
   );

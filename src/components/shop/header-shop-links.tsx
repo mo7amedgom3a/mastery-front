@@ -19,7 +19,7 @@ type CountLinkProps = {
   children: ReactNode;
 };
 
-/** Outline icon link with a count badge that pops in on change. */
+/** Bare icon link with a count badge that pops in on change. */
 function CountLink({ href, label, count, onPlay, onStop, children }: CountLinkProps) {
   return (
     <AppLink
@@ -29,7 +29,7 @@ function CountLink({ href, label, count, onPlay, onStop, children }: CountLinkPr
       onFocus={onPlay}
       onBlur={onStop}
       aria-label={count > 0 ? `${label} (${count})` : label}
-      className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm relative size-11"
+      className="ma-btn ma-btn--bare ma-btn--icon size-11 relative"
     >
       {children}
       <AnimatePresence initial={false}>
@@ -41,7 +41,7 @@ function CountLink({ href, label, count, onPlay, onStop, children }: CountLinkPr
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.3, opacity: 0 }}
             transition={{ type: "spring", stiffness: 600, damping: 22 }}
-            className="absolute -top-2 -end-2 z-10 grid min-w-5 place-items-center bg-accent px-1 text-[11px] leading-5 font-bold text-on-accent tabular-nums"
+            className="absolute -top-0.5 -end-0.5 z-10 grid min-w-5 place-items-center rounded-full bg-accent px-1.5 text-[11px] leading-5 font-bold text-on-accent tabular-nums"
           >
             {count}
           </motion.span>

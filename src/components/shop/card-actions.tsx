@@ -79,7 +79,7 @@ export function CardActions(props: CardActionsProps) {
         <AppLink
           href={props.item.href as Route}
           aria-label={`سجّل مجاناً في «${props.item.title}»`}
-          className="ma-btn ma-btn--sm ma-btn--outline min-h-10 px-3 text-[13px]"
+          className="ma-btn ma-btn--sm ma-btn--soft min-h-10 px-3 text-[13px]"
         >
           سجّل مجاناً
         </AppLink>
@@ -101,7 +101,7 @@ function StaticCardActions({ item, purchasable }: CardActionsProps) {
         onClick={() => toggleWishlist(item)}
         aria-pressed={saved}
         aria-label={saved ? `إزالة «${item.title}» من المفضلة` : `حفظ «${item.title}» في المفضلة`}
-        className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-10 min-h-10"
+        className="ma-btn ma-btn--bare ma-btn--icon ma-btn--sm size-10 min-h-10"
       >
         <StaticIcon className={clsx(saved && "text-accent [&_path]:fill-current")}>
           <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
@@ -114,7 +114,7 @@ function StaticCardActions({ item, purchasable }: CardActionsProps) {
           onClick={() => toggleCart(item)}
           aria-pressed={inCart}
           aria-label={inCart ? `إزالة «${item.title}» من السلة` : `إضافة «${item.title}» إلى السلة`}
-          className={clsx("ma-btn ma-btn--sm min-h-10 gap-1.5 px-3", inCart ? "ma-btn--secondary" : "ma-btn--outline")}
+          className={clsx("ma-btn ma-btn--sm min-h-10 gap-1.5 px-3", inCart ? "ma-btn--secondary" : "ma-btn--soft")}
         >
           <span className="relative grid size-[18px] place-items-center">
             <StaticIcon>

@@ -20,7 +20,7 @@ export function ExpertSection({ expert }: { expert: ExpertVM | null }) {
       <h2 id="instructor-title" className="m-0 text-2xl font-bold">
         عن الخبير
       </h2>
-      <article className="mt-6 flex flex-col gap-5 border border-line p-6 md:flex-row md:gap-8">
+      <article className="mt-6 flex flex-col gap-5 rounded-panel border border-line p-6 md:flex-row md:gap-8">
         {expert.href ? (
           <AppLink href={expert.href} className="shrink-0 self-start" tabIndex={-1} aria-hidden="true">
             {avatar}

@@ -24,13 +24,13 @@ export function SectionHeader({ id, label, index, title, lead, action, className
         <span>{label}</span>
         {index ? <span aria-hidden="true">{index}</span> : null}
       </div>
-      <div className="mt-10 flex flex-wrap items-end justify-between gap-x-8 gap-y-6 md:mt-12">
+      <div className="mt-10 flex flex-wrap items-end justify-between gap-x-8 gap-y-6 md:mt-12 short:mt-6">
         <h2 id={id} className="ma-sechead__title t-section mt-0 max-w-[22ch]">
           {title}
         </h2>
         {action ? <div className="shrink-0">{action}</div> : null}
       </div>
-      {lead ? <p className="ma-sechead__lead t-lead mt-6 md:mt-8">{lead}</p> : null}
+      {lead ? <p className="ma-sechead__lead t-lead mt-6 md:mt-8 short:mt-4">{lead}</p> : null}
     </header>
   );
 }

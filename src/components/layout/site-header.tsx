@@ -34,12 +34,12 @@ export function SiteHeader() {
 
         {/* Three groups: the icon tools, the sign-up action, the drawer toggle. */}
         <div className="ma-nav__actions items-center">
-          <div role="group" aria-label="أدوات الموقع" className="flex items-center gap-2">
+          <div role="group" aria-label="أدوات الموقع" className="flex items-center gap-1">
             {/* From 1200px only: below that the bar has no room, and the nav links lead to search anyway. */}
             <AppLink
               href={routes.search}
               aria-label="البحث في البرامج"
-              className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-11 max-lg:hidden"
+              className="ma-btn ma-btn--bare ma-btn--icon size-11 max-lg:hidden"
             >
               <Search aria-hidden="true" className="size-5 fill-none" />
             </AppLink>
@@ -50,7 +50,7 @@ export function SiteHeader() {
           <MobileNavButton
             popoverId={MOBILE_NAV_ID}
             action="open"
-            className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-11 md:hidden"
+            className="ma-btn ma-btn--bare ma-btn--icon size-11 md:hidden"
           />
         </div>
       </div>

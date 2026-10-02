@@ -50,7 +50,7 @@ export function ObjectivesBlock({ objectives }: { objectives: Details["objective
     <Block id="objectives" title={detailCopy.objectivesTitle}>
       <ol className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
         {objectives.map((item, index) => (
-          <li key={item.label} className="flex gap-4 border border-line p-5">
+          <li key={item.label} className="flex gap-4 rounded-panel border border-line p-5">
             <span aria-hidden="true" className="text-2xl font-bold text-accent tabular-nums">
               {counter(index)}
             </span>
@@ -88,7 +88,7 @@ export function AxesBlock({ axes }: { axes: Details["axes"] }) {
     <Block id="curriculum" title={axes.title} lead={axes.lead}>
       <ol className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2">
         {axes.items.map((axis, index) => (
-          <li key={axis.title_en} className="flex flex-col border border-line">
+          <li key={axis.title_en} className="flex flex-col overflow-hidden rounded-panel border border-line">
             <div className={cn("flex items-end justify-between gap-4 p-5 text-ink", brandBg[brandColorAt(index)])}>
               <span className="text-xl font-bold">
                 {counter(index)}. {axis.title}
@@ -147,7 +147,7 @@ export function InstructorBlock({ training }: { training: LiveTrainingDetailVM }
   const bio = training.details.trainer_bio;
   return (
     <Block id="instructor" title={detailCopy.instructorTitle}>
-      <article className="grid gap-6 border border-line p-6 sm:grid-cols-[10rem_minmax(0,1fr)] md:gap-8">
+      <article className="grid gap-6 rounded-panel border border-line p-6 sm:grid-cols-[10rem_minmax(0,1fr)] md:gap-8">
         {training.heroImage ? (
           <div className={cn("relative h-52 self-start overflow-hidden sm:h-56", brandBg[training.color])}>
             <Image
@@ -167,7 +167,7 @@ export function InstructorBlock({ training }: { training: LiveTrainingDetailVM }
           {bio.credentials.length > 0 ? (
             <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
               {bio.credentials.map((credential) => (
-                <li key={credential} className="ma-tag ma-tag--outline">
+                <li key={credential} className="ma-tag ma-tag--soft">
                   {credential}
                 </li>
               ))}
@@ -193,7 +193,7 @@ export function CertificatesSection({ details }: { details: Details }) {
       <div className="mt-12 grid gap-10 lg:grid-cols-2 lg:gap-16">
         <ul className="m-0 grid list-none gap-4 p-0">
           {details.certificates.map((certificate) => (
-            <li key={certificate.title} className="flex items-start gap-4 border border-line bg-surface p-5">
+            <li key={certificate.title} className="flex items-start gap-4 rounded-panel border border-line bg-surface p-5">
               <BadgeCheck aria-hidden="true" className="mt-1 size-6 shrink-0 text-accent" />
               <span className="flex flex-col gap-2">
                 <strong className="font-bold">{certificate.title}</strong>
@@ -206,7 +206,7 @@ export function CertificatesSection({ details }: { details: Details }) {
           <h3 className="m-0 text-xl font-bold">{detailCopy.featuresTitle}</h3>
           <ul className="m-0 mt-6 grid list-none gap-3 p-0 sm:grid-cols-2">
             {details.features.map((feature) => (
-              <li key={feature.label} className="flex flex-col gap-1 border border-line bg-surface p-4 text-[15px] leading-7">
+              <li key={feature.label} className="flex flex-col gap-1 rounded-panel border border-line bg-surface p-4 text-[15px] leading-7">
                 <strong className="font-bold">{feature.label}</strong>
                 <span className="text-fg-muted">{feature.text}</span>
               </li>

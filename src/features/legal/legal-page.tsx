@@ -38,7 +38,7 @@ export function LegalPage({ document, related }: { document: LegalDocument; rela
       <main id="main" tabIndex={-1} className="outline-none">
         <header className="border-b border-line bg-surface-alt">
           <div className="ma-container flex flex-col items-start py-14 md:py-20">
-            <span className="ma-tag ma-tag--outline">ماستري أكاديمي</span>
+            <span className="ma-tag ma-tag--soft">ماستري أكاديمي</span>
             <h1 className="t-section m-0 mt-5">{document.title}</h1>
             <p className="t-lead m-0 mt-4 max-w-[44rem] text-fg-muted">{document.description}</p>
             <p className="m-0 mt-6 text-sm text-fg-muted">

@@ -56,7 +56,7 @@ export function CartLineRow({ line, quoted, unavailable, saved, onToggleAddon, o
   const titleId = `cart-line-${line.key.replace(":", "-")}`;
 
   return (
-    <article aria-labelledby={titleId} className={cn("flex flex-col gap-4 border border-line bg-surface p-4 sm:p-5", unavailable && "border-dashed")}>
+    <article aria-labelledby={titleId} className={cn("flex flex-col gap-4 rounded-panel border border-line bg-surface p-4 sm:p-5", unavailable && "border-dashed")}>
       <div className="flex gap-4">
         <div className={cn("relative aspect-[16/10] w-24 shrink-0 overflow-hidden sm:w-36", brandBg[kindColor[kind]], unavailable && "opacity-50")}>
           {image ? <Image src={image} alt="" fill sizes="(min-width: 600px) 144px, 96px" className="object-cover" /> : null}
@@ -64,7 +64,7 @@ export function CartLineRow({ line, quoted, unavailable, saved, onToggleAddon, o
 
         <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
           <div className="flex min-w-0 flex-col items-start gap-1.5">
-            <span className="ma-tag ma-tag--outline">{kindLabel[kind]}</span>
+            <span className="ma-tag ma-tag--soft">{kindLabel[kind]}</span>
             <h3 id={titleId} className="m-0 text-base leading-7 font-bold sm:text-lg">
               <AppLink href={href} className="text-fg no-underline hover:underline">
                 {title}

@@ -31,7 +31,7 @@ export function BookingCard({ consultation, share }: { consultation: Consultatio
 
   return (
     // `lg:short:` — beside the content on a short viewport, tighter spacing so the whole card fits.
-    <aside aria-label="حجز الاستشارة" className="border border-line-strong bg-surface p-6 lg:short:p-5">
+    <aside aria-label="حجز الاستشارة" className="rounded-panel border border-line-strong bg-surface p-6 lg:short:p-5">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 tabular-nums">
         {price.free ? (
           <span className="ma-tag ma-tag--green text-base font-bold">مجانية</span>

@@ -66,7 +66,7 @@ export function ExpertHero({ expert, share }: { expert: ExpertVM; share?: ReactN
                 </li>
               ))}
               {expert.specialties.map((specialty) => (
-                <li key={specialty} className="ma-tag ma-tag--outline">
+                <li key={specialty} className="ma-tag ma-tag--soft">
                   {specialty}
                 </li>
               ))}
@@ -96,7 +96,7 @@ export function ExpertHero({ expert, share }: { expert: ExpertVM; share?: ReactN
                     {/* Each tile jumps to that kind's section further down the page. */}
                     <a
                       href={`#${key}`}
-                      className="flex items-center gap-3 border border-line bg-surface px-4 py-3 text-fg no-underline transition-colors hover:border-line-strong"
+                      className="flex items-center gap-3 rounded-panel border border-line bg-surface px-4 py-3 text-fg no-underline transition-colors hover:border-line-strong"
                     >
                       <Icon aria-hidden="true" className="size-6 shrink-0 text-accent" />
                       <span className="text-lg font-bold md:text-xl">{label}</span>

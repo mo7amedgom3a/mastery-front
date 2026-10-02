@@ -60,7 +60,7 @@ function ItemRow({ item }: { item: PackageItemVM }) {
   const artworkClass = "relative block aspect-[16/10] w-full shrink-0 self-start overflow-hidden bg-surface-alt sm:w-48 md:w-56";
 
   return (
-    <article aria-labelledby={titleId} className="relative flex gap-4 border border-line bg-surface p-4 md:gap-6 md:p-5">
+    <article aria-labelledby={titleId} className="relative flex gap-4 rounded-panel border border-line bg-surface p-4 md:gap-6 md:p-5">
       <span
         aria-hidden="true"
         className="absolute -top-3 start-4 grid size-7 place-items-center rounded-full bg-fg text-sm font-bold text-surface tabular-nums"
@@ -83,7 +83,7 @@ function ItemRow({ item }: { item: PackageItemVM }) {
             <span className={item.kind === "diploma" ? "ma-tag ma-tag--yellow" : "ma-tag ma-tag--coral"}>
               {kindLabel[item.kind]}
             </span>
-            {item.category ? <span className="ma-tag ma-tag--outline">{item.category}</span> : null}
+            {item.category ? <span className="ma-tag ma-tag--soft">{item.category}</span> : null}
           </div>
           <h3 id={titleId} className="m-0 mt-3 text-lg leading-8 font-bold text-pretty">
             {item.href ? (

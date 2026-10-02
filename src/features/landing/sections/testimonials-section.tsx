@@ -11,7 +11,7 @@ function initialOf(name: string): string {
 
 function ReviewCard({ testimonial }: { testimonial: Testimonial }) {
   return (
-    <figure className="m-0 flex h-full w-72 flex-col gap-3 border border-line bg-surface p-4 transition-colors hover:border-line-strong sm:w-80">
+    <figure className="m-0 flex h-full w-72 flex-col gap-3 rounded-panel border border-line bg-surface p-5 transition-colors hover:border-line-strong sm:w-80">
       <figcaption className="flex items-center gap-3">
         <span aria-hidden="true" className={cn("ma-avatar size-9 text-sm", brandBg[testimonial.color])}>
           {initialOf(testimonial.name)}
@@ -42,12 +42,12 @@ export function TestimonialsSection() {
           <div className="ma-sechead__run pt-3">
             <span>آراء المتعلّمين</span>
           </div>
-          <h2 id="testimonials-title" className="ma-sechead__title t-section mt-10 md:mt-12">
+          <h2 id="testimonials-title" className="ma-sechead__title t-section mt-10 md:mt-12 short:mt-6">
             ماذا يقول متعلّمو ماستري
           </h2>
         </header>
       </div>
-      <div className="mt-12 flex flex-col gap-4">
+      <div className="mt-12 flex flex-col gap-4 short:mt-6">
         {rows.map((row, index) => (
           <Marquee
             key={index}

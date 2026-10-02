@@ -42,7 +42,7 @@ export function ExpertHighlights({ name, whatTheyDo, whoTheyHelp }: ExpertHighli
             <h3 className="m-0 text-lg font-bold">لمن يقدّم خبرته</h3>
             <ul className="m-0 grid list-none gap-3 p-0">
               {whoTheyHelp.map((item) => (
-                <li key={item} className="flex items-start gap-3 border border-line p-4 leading-7">
+                <li key={item} className="flex items-start gap-3 rounded-panel border border-line p-4 leading-7">
                   <UserRound aria-hidden="true" className="mt-1 size-5 shrink-0 text-accent" />
                   <span className="text-pretty">{item}</span>
                 </li>

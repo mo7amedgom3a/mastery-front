@@ -62,7 +62,7 @@ export function Pagination({ page, pageCount, hrefFor, label, link: PageLink = A
             <PageLink
               href={hrefFor(page - 1)}
               rel="prev"
-              className={cn(buttonClass({ variant: "outline", size: "sm" }), cell)}
+              className={cn(buttonClass({ variant: "soft", size: "sm" }), cell)}
             >
               {/* RTL: "previous" points right. */}
               <ArrowRight aria-hidden="true" className="size-4 fill-none" />
@@ -83,7 +83,7 @@ export function Pagination({ page, pageCount, hrefFor, label, link: PageLink = A
                 href={hrefFor(item)}
                 aria-label={`الصفحة ${item}`}
                 aria-current={item === page ? "page" : undefined}
-                className={cn(buttonClass({ variant: item === page ? "secondary" : "outline", size: "sm" }), cell)}
+                className={cn(buttonClass({ variant: item === page ? "secondary" : "soft", size: "sm" }), cell)}
               >
                 {formatNumber(item)}
               </PageLink>
@@ -95,7 +95,7 @@ export function Pagination({ page, pageCount, hrefFor, label, link: PageLink = A
             <PageLink
               href={hrefFor(page + 1)}
               rel="next"
-              className={cn(buttonClass({ variant: "outline", size: "sm" }), cell)}
+              className={cn(buttonClass({ variant: "soft", size: "sm" }), cell)}
             >
               التالي
               <ArrowLeft aria-hidden="true" className="size-4 fill-none" />

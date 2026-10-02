@@ -39,8 +39,8 @@ import {
 } from "./model/view";
 
 /** Four cards per row on desktop, three from 900px, two on tablets, one on phones. */
-const CARD_SIZES = "(min-width: 1200px) 290px, (min-width: 900px) 30vw, (min-width: 600px) 45vw, 100vw";
-const GRID = "m-0 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
+const CARD_SIZES = "(min-width: 1200px) 390px, (min-width: 900px) 30vw, (min-width: 600px) 45vw, 100vw";
+const GRID = "m-0 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3";
 /** The search box only earns its place once the list is long enough to scan. */
 const SEARCH_FROM = 6;
 
@@ -109,7 +109,7 @@ export function WishlistPage() {
             أُزيل «{undo.pending.entry.title}» من المفضلة.
           </UndoNotice>
         ) : null}
-        <div className="flex flex-col items-start gap-4 border border-line p-6 md:p-10">
+        <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10">
           <Heart aria-hidden="true" className="size-8 text-accent" />
           <h2 className="m-0 text-2xl leading-10 font-bold">قائمة المفضلة فارغة</h2>
           <p className="m-0 max-w-[52ch] text-fg-muted">
@@ -122,7 +122,7 @@ export function WishlistPage() {
               </ButtonLink>
             </li>
             <li>
-              <ButtonLink href={routes.consultations} variant="outline">
+              <ButtonLink href={routes.consultations} variant="soft">
                 تصفّح الاستشارات
               </ButtonLink>
             </li>
@@ -288,10 +288,10 @@ export function WishlistPage() {
           ))}
         </ul>
       ) : (
-        <div className="flex flex-col items-start gap-4 border border-line p-6 md:p-10">
+        <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10">
           <h2 className="m-0 text-2xl leading-10 font-bold">لا عناصر بهذه الفلاتر</h2>
           <p className="m-0 max-w-[52ch] text-fg-muted">في قائمتك عناصر أخرى لا تطابق ما اخترته. امسح الفلاتر لتراها كلها.</p>
-          <button type="button" onClick={clearFilters} className="ma-btn ma-btn--outline">
+          <button type="button" onClick={clearFilters} className="ma-btn ma-btn--soft">
             امسح الفلاتر
           </button>
         </div>
@@ -322,7 +322,7 @@ function TypeChip({
       type="button"
       aria-pressed={selected}
       onClick={onSelect}
-      className={cn("ma-btn ma-btn--sm min-h-11 gap-2", selected ? "ma-btn--secondary" : "ma-btn--outline")}
+      className={cn("ma-btn ma-btn--sm min-h-11 gap-2", selected ? "ma-btn--secondary" : "ma-btn--soft")}
     >
       {label}
       <span className="tabular-nums opacity-70">{formatNumber(count)}</span>
@@ -341,8 +341,8 @@ export function WishlistSkeleton() {
         ))}
       </div>
       <ul aria-hidden="true" className={cn(GRID, "mt-8")}>
-        {[0, 1, 2, 3].map((index) => (
-          <li key={index} className={cn("border border-line", index > 0 && "max-sm:hidden", index > 1 && "max-md:hidden", index > 2 && "max-lg:hidden")}>
+        {[0, 1, 2].map((index) => (
+          <li key={index} className={cn("overflow-hidden rounded-panel border border-line", index > 0 && "max-sm:hidden", index > 1 && "max-md:hidden")}>
             <CardSkeleton />
           </li>
         ))}

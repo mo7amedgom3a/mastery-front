@@ -59,7 +59,7 @@ export function DetailHero({ product, share }: { product: ProductDetailVM; share
               <span className={product.kind === "diploma" ? "ma-tag ma-tag--yellow" : "ma-tag ma-tag--coral"}>
                 {kindLabel[product.kind]}
               </span>
-              {product.category ? <span className="ma-tag ma-tag--outline">{product.category}</span> : null}
+              {product.category ? <span className="ma-tag ma-tag--soft">{product.category}</span> : null}
             </div>
             {/* Share sits beside the title (below it on phones), where the decision to share is made. */}
             <div className="mt-6 flex w-full flex-col items-start gap-4 sm:flex-row sm:justify-between sm:gap-8">
@@ -76,7 +76,7 @@ export function DetailHero({ product, share }: { product: ProductDetailVM; share
             ) : null}
             <ul aria-label="تفاصيل البرنامج" className="m-0 mt-10 flex list-none flex-wrap gap-3 p-0">
               {product.rating ? (
-                <li className="flex items-center gap-3 border border-line bg-surface px-4 py-3">
+                <li className="flex items-center gap-3 rounded-panel border border-line bg-surface px-4 py-3">
                   <Star aria-hidden="true" className="size-6 fill-yellow text-yellow" />
                   <span className="sr-only">التقييم</span>
                   <span dir="ltr" className="text-lg font-bold tabular-nums md:text-xl">
@@ -87,7 +87,7 @@ export function DetailHero({ product, share }: { product: ProductDetailVM; share
               {facts.map(({ key, label }) => {
                 const Icon = factIcon[key];
                 return (
-                  <li key={key} className="flex items-center gap-3 border border-line bg-surface px-4 py-3">
+                  <li key={key} className="flex items-center gap-3 rounded-panel border border-line bg-surface px-4 py-3">
                     <Icon aria-hidden="true" className="size-6 shrink-0 text-accent" />
                     <span className="text-lg font-bold md:text-xl">{label}</span>
                   </li>

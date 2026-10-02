@@ -78,7 +78,7 @@ export function RangeFilter({ legend, unit, minName, maxName, min, max, step }: 
         <button
           type="submit"
           aria-label={`تطبيق ${legend}`}
-          className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-11"
+          className="ma-btn ma-btn--bare ma-btn--icon ma-btn--sm size-11"
         >
           <ArrowLeft aria-hidden="true" className="size-4 fill-none" />
         </button>

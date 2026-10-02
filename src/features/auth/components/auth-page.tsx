@@ -25,7 +25,7 @@ export function AuthPage({ id, title, lead, alternative, children }: AuthPagePro
             </h1>
             <p className="m-0 leading-7 text-fg-muted">{lead}</p>
           </header>
-          <div className="border border-line-strong bg-surface p-5 sm:p-8">{children}</div>
+          <div className="rounded-panel border border-line-strong bg-surface p-5 sm:p-8">{children}</div>
           <p className="m-0 text-fg-muted">
             {alternative.question}{" "}
             <AppLink href={alternative.href} prefetch className="ma-link">

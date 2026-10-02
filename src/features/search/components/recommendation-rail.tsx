@@ -51,9 +51,9 @@ export function RecommendationRail({ className }: { className?: string }) {
       <div role="status" className={cn("min-w-0", className)}>
         <span className="sr-only">جارٍ تحميل الاقتراحات…</span>
         <Skeleton className="h-8 w-40" />
-        <ul aria-hidden="true" className="m-0 mt-6 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {[0, 1, 2, 3].map((index) => (
-            <li key={index} className={cn("border border-line", index > 0 && "max-sm:hidden", index > 1 && "max-md:hidden", index > 2 && "max-lg:hidden")}>
+        <ul aria-hidden="true" className="m-0 mt-6 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3">
+          {[0, 1, 2].map((index) => (
+            <li key={index} className={cn("overflow-hidden rounded-panel border border-line", index > 0 && "max-sm:hidden", index > 1 && "max-md:hidden")}>
               <CardSkeleton />
             </li>
           ))}

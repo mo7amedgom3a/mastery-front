@@ -106,7 +106,7 @@ export function LazyVideo({ src, poster, label, className }: LazyVideoProps) {
         onFocus={playIcon}
         onBlur={stopIcon}
         aria-label={playing ? `إيقاف ${label}` : `تشغيل ${label}`}
-        className="ma-btn ma-btn--on-color ma-btn--icon absolute bottom-4 end-4 z-10"
+        className="ma-btn ma-btn--on-color ma-btn--icon absolute bottom-4 end-4 z-10 rounded-full"
       >
         {playing ? <PauseIcon ref={icon} size={20} /> : <PlayIcon ref={icon} size={20} />}
       </button>

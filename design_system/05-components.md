@@ -2,7 +2,7 @@
 
 All classes live in `components.css`. They are plain HTML/CSS (no framework), use tokens only, and work in RTL/LTR and both themes. Port them 1:1 to React/Vue/etc. by keeping the class names.
 
-Shared rules: `border-radius: 0`, no shadows, 1px borders, 150ms colour transitions, 2px purple `:focus-visible` ring, touch targets ≥ 44px.
+Shared rules: soft rounded corners from the radius scale (`--radius-control` for buttons and fields, `--radius-card` for cards and panels, `--radius-tag` for tags), **no borders on any button**, no shadows, 1px borders only on fields and cards, 150ms colour transitions, 2px purple `:focus-visible` ring, touch targets ≥ 44px.
 
 ---
 
@@ -13,8 +13,9 @@ Shared rules: `border-radius: 0`, no shadows, 1px borders, 150ms colour transiti
 |---|---|---|---|
 | `.ma-btn--primary` | coral fill, ink text | same | THE main action. Max one per view |
 | `.ma-btn--secondary` | ink fill, white text | white fill, ink text | Strong second action ("Resume", "Browse courses") |
-| `.ma-btn--outline` | transparent, 1px ink border | 1px white border | Neutral alternative ("Log in", "View all") |
-| `.ma-btn--ghost` | text only, coral underline on hover | same | Low-emphasis inline action ("View syllabus") |
+| `.ma-btn--soft` | translucent ink fill (`--fill-soft`), no border | translucent white fill | Neutral alternative ("Log in", filter chips, add to cart) |
+| `.ma-btn--ghost` | text only, soft fill on hover | same | Low-emphasis inline action ("View all", "View syllabus") |
+| `.ma-btn--bare` | icon only, circular soft fill on hover | same | Icon tools: search, wishlist, cart, theme, menu, close. Use with `--icon` |
 | `.ma-btn--on-color` | ink fill, white text (fixed) | same | CTA placed on a coral/colour field |
 
 ### Sizes
@@ -24,16 +25,16 @@ Shared rules: `border-radius: 0`, no shadows, 1px borders, 150ms colour transiti
 | (default) | 48px | 12 / 24 | 16/24 |
 | `.ma-btn--lg` | 56px | 16 / 32 | 18/24 |
 | `.ma-btn--block` | full width | — | — |
-| `.ma-btn--icon` | 48×48 square, needs `aria-label` | — | — |
+| `.ma-btn--icon` | 48×48, needs `aria-label` (circle with `--bare`) | — | — |
 
 ### States
-| State | Primary | Secondary | Outline | Ghost | On-colour |
+| State | Primary | Secondary | Soft | Ghost / Bare | On-colour |
 |---|---|---|---|---|---|
-| Default | coral / ink | text / surface | border line-strong | text | ink / white |
-| Hover | → ink (text) fill, surface text | → coral fill, ink text | → text fill, surface text | 3px coral underline | → white fill, ink text |
-| Pressed (`:active`) | coral + 1px text-colour border | text fill + coral border | back to transparent | 3px text-colour underline | ink + white border |
-| Focus (`:focus-visible`) | 2px `--focus` ring, 2px offset — all variants |||||
-| Disabled (`:disabled`, `aria-disabled`) | transparent, muted text, `--line` border — all variants |||||
+| Default | coral / ink | text / surface | `--fill-soft` / text | transparent / text | ink / white |
+| Hover | → ink (text) fill, surface text | → coral fill, ink text | → text fill, surface text | → `--fill-soft` | → white fill, ink text |
+| Pressed (`:active`) | coral | text fill | `--fill-soft-hover` | `--fill-soft-hover` | ink |
+| Focus (`:focus-visible`) | 2px `--focus` ring, 2px offset (follows the radius) — all variants |||||
+| Disabled (`:disabled`, `aria-disabled`) | `--fill-soft` (transparent for ghost/bare), muted text — no border |||||
 | Loading (`.is-loading` + `aria-busy="true"`) | label hidden, width kept, rotating square in the label colour |||||
 
 `.is-hover`, `.is-active`, `.is-focus` exist only to document states statically.
@@ -42,15 +43,15 @@ Shared rules: `border-radius: 0`, no shadows, 1px borders, 150ms colour transiti
 ```html
 <button class="ma-btn ma-btn--primary" type="button">Enrol now</button>
 <a class="ma-btn ma-btn--secondary" href="/courses">Browse courses</a>
-<button class="ma-btn ma-btn--outline ma-btn--sm" type="button">Log in</button>
+<button class="ma-btn ma-btn--soft ma-btn--sm" type="button">Log in</button>
 
 <!-- with icon; .ma-icon-dir flips in RTL -->
 <a class="ma-btn ma-btn--primary ma-btn--lg" href="/start">
   ابدأ التعلّم الآن <svg class="ma-icon-dir" aria-hidden="true"><use href="#i-arrow"/></svg>
 </a>
 
-<!-- icon-only -->
-<button class="ma-btn ma-btn--outline ma-btn--icon" type="button" aria-label="Search">
+<!-- icon-only tool: no box, a circular soft fill on hover -->
+<button class="ma-btn ma-btn--bare ma-btn--icon" type="button" aria-label="Search">
   <svg aria-hidden="true"><use href="#i-search"/></svg>
 </button>
 
@@ -61,9 +62,9 @@ Shared rules: `border-radius: 0`, no shadows, 1px borders, 150ms colour transiti
 ### CTA patterns
 | Pattern | Composition |
 |---|---|
-| Hero pair | primary `--lg` + outline `--lg`, primary first in reading order |
+| Hero pair | primary `--lg` + soft `--lg`, primary first in reading order |
 | Nav | ghost `--sm` "Log in" + primary `--sm` "Start free" |
-| Card | whole card is the link; no button inside, or one outline `--sm` |
+| Card | whole card is the link; no button inside, or one soft `--sm` (+ a bare wishlist icon) |
 | Coral CTA band | headline + `--on-color --lg`; optional ghost in ink |
 | Sticky enrol (mobile) | bottom bar, primary `--block` |
 | Forms | primary submit, `--block` on mobile; cancel = ghost |
@@ -74,7 +75,7 @@ Shared rules: `border-radius: 0`, no shadows, 1px borders, 150ms colour transiti
 - Pair the primary with a reassurance line where it helps: "7 أيام مجانًا · بدون بطاقة دفع".
 
 ### Don't
-Rounded corners · shadows/gradients · white text on coral · coral button on coral field · two primaries side by side · icon-only without label.
+Border boxes around buttons · radii outside the token scale · shadows/gradients · white text on coral · coral button on coral field · two primaries side by side · icon-only without label.
 
 ---
 
@@ -111,10 +112,10 @@ The brand-guide header: 1px `--line-strong` rule → running header (caption, mu
 ```
 
 ## Tag — `.ma-tag`
-Flat square label. Modifiers: `--coral --yellow --purple --sky --pink --teal --lilac --green --cream --ink --outline`. Ink text on all colours, white on ink. Latin: uppercase +0.04em; Arabic: no transform.
+Flat label with `--radius-tag` corners. Modifiers: `--coral --yellow --purple --sky --pink --teal --lilac --green --cream --ink --soft` (translucent neutral fill, no border). Ink text on all colours, white on ink. Latin: uppercase +0.04em; Arabic: no transform.
 ```html
 <span class="ma-tag ma-tag--yellow">التسويق</span>
-<span class="ma-tag ma-tag--outline">50 hours</span>
+<span class="ma-tag ma-tag--soft">50 hours</span>
 ```
 Assign one colour per course track and keep it everywhere (card media, tag, poster).
 
@@ -130,7 +131,7 @@ Assign one colour per course track and keep it everywhere (card media, tag, post
 <label class="ma-check"><input type="checkbox" checked> أرسل لي شهادة CPD</label>
 <select class="ma-select">…</select>
 ```
-48px tall, 1px `--line-strong` border, surface fill, square. Focus: 2px purple outline. Error: pink edge + written message (what's wrong + how to fix). Checkbox: square that fills coral with an ink dot.
+48px tall, 1px `--line-strong` border, surface fill, `--radius-control` corners. Focus: 2px purple outline. Error: pink edge + written message (what's wrong + how to fix). Checkbox: 4px-rounded square that fills coral with an ink dot.
 
 ## Course card — `.ma-card`
 ```html
@@ -150,7 +151,7 @@ Assign one colour per course track and keep it everywhere (card media, tag, post
   </div>
 </a>
 ```
-1px `--line` border → `--line-strong` on hover. Media 16:10: a track colour field or a photo (`--radius-soft` allowed on the photo only). Whole card is one link.
+`--radius-card` corners (the media is clipped to them), 1px `--line` border → `--line-strong` on hover. Media 16:10: a track colour field or a photo. Whole card is one link. Rails and grids show at most **3 cards per row** (1 / 2 / 3 at 0 / 600 / 900px), so the artwork stays large.
 
 ## Avatar / person — `.ma-avatar`, `.ma-person`
 40px circle (`--radius-full`), brand-colour fill, ink initial. Name 14px medium + role 12px muted.
@@ -163,7 +164,7 @@ Assign one colour per course track and keep it everywhere (card media, tag, post
     <div class="ma-progress__bar" style="width:64%"></div></div>
 </div>
 ```
-8px flat track (`--line`), coral bar, number always printed (tabular).
+8px rounded track (`--line`, `--radius-full`), coral bar, number always printed (tabular).
 
 ## Alert — `.ma-alert`
 Modifiers `--success --warning --danger --info`. Solid fill, ink text, 20px filled icon, bold title + one sentence. `role="status"` (info/success) or `role="alert"` (danger).

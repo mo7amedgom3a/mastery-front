@@ -44,7 +44,7 @@ export function OrderResultPage({ outcome }: { outcome: "success" | "failed" }) 
             </ButtonLink>
           </li>
           <li>
-            <ButtonLink href={routes.search} variant="outline">
+            <ButtonLink href={routes.search} variant="soft">
               متابعة التصفّح
             </ButtonLink>
           </li>
@@ -55,7 +55,7 @@ export function OrderResultPage({ outcome }: { outcome: "success" | "failed" }) 
 
   if (!order || order.status !== "paid") {
     return (
-      <div className="flex flex-col items-start gap-4 border border-line p-6 md:p-10">
+      <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10">
         <h2 className="m-0 text-2xl leading-10 font-bold">لا يوجد طلب مكتمل لعرضه</h2>
         <p className="m-0 max-w-[52ch] text-fg-muted">تظهر هذه الصفحة بعد إتمام الدفع. إن كانت في سلتك منتجات، يمكنك إكمال طلبك منها.</p>
         <ButtonLink href={routes.cart} variant="primary">
@@ -86,7 +86,7 @@ export function OrderResultPage({ outcome }: { outcome: "success" | "failed" }) 
           </ButtonLink>
         </li>
         <li>
-          <ButtonLink href={routes.home} variant="outline">
+          <ButtonLink href={routes.home} variant="soft">
             الصفحة الرئيسية
           </ButtonLink>
         </li>

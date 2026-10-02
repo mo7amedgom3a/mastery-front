@@ -46,7 +46,7 @@ export type ProductCardProps = {
   className?: string;
 };
 
-const DEFAULT_SIZES = "(min-width: 1200px) 290px, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw";
+const DEFAULT_SIZES = "(min-width: 1200px) 390px, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw";
 
 /**
  * Kit `.ma-card`. The title link stretches over the whole card (one tab stop, one accessible name)
@@ -101,7 +101,7 @@ export function ProductCard({
 
       <div className="ma-card__body">
         {/* Tag lives in the body, not over the artwork: course images carry their own text. */}
-        {tag ? <span className="ma-tag ma-tag--outline self-start">{tag}</span> : null}
+        {tag ? <span className="ma-tag ma-tag--soft self-start">{tag}</span> : null}
         <h3 className="ma-card__title line-clamp-2">
           <AppLink href={href} className="text-fg no-underline after:absolute after:inset-0 after:content-['']">
             {title}
@@ -116,7 +116,7 @@ export function ProductCard({
                 <AppLink
                   href={item.href}
                   // The pseudo-element grows the touch target to 44px without growing the chip.
-                  className="ma-tag ma-tag--outline relative no-underline before:absolute before:inset-x-0 before:-inset-y-2.5 before:content-[''] hover:bg-fg hover:text-surface"
+                  className="ma-tag ma-tag--soft relative no-underline before:absolute before:inset-x-0 before:-inset-y-2.5 before:content-[''] transition-colors hover:bg-fg hover:text-surface"
                 >
                   {item.label}
                 </AppLink>

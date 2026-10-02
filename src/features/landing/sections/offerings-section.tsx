@@ -8,7 +8,7 @@ import { offerings, type Offering } from "../content/offerings";
 
 function OfferingPanel({ offering, position }: { offering: Offering; position: number }) {
   return (
-    <div className="grid gap-10 md:min-h-[22rem] md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] md:gap-12">
+    <div className="grid gap-10 md:min-h-[min(22rem,45svh)] md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] md:gap-12">
       <div className="flex flex-col items-start gap-6">
         <span data-tab-animate className="text-sm text-fg-muted tabular-nums" dir="ltr">
           {String(position).padStart(2, "0")} / {String(offerings.length).padStart(2, "0")}
@@ -50,7 +50,7 @@ export function OfferingsSection() {
       <AutoplayTabs
         idPrefix="offerings"
         label="خدمات أكاديمية ماستري"
-        className="mt-14"
+        className="mt-14 short:mt-8"
         tabs={offerings.map(({ id, label }) => ({ id, label }))}
         panels={offerings.map((offering, index) => (
           <OfferingPanel key={offering.id} offering={offering} position={index + 1} />

@@ -72,7 +72,7 @@ export function ConsultationHero({ consultation, share }: { consultation: Consul
             <div className="flex min-w-0 flex-col items-start">
               <div className="ma-cluster gap-2">
                 <span className="ma-tag ma-tag--lilac">استشارة</span>
-                <span className="ma-tag ma-tag--outline">جلسة فردية</span>
+                <span className="ma-tag ma-tag--soft">جلسة فردية</span>
               </div>
               {/* Share sits beside the title (below it on phones), where the decision to share is made. */}
               <div className="mt-6 flex w-full flex-col items-start gap-4 sm:flex-row sm:justify-between sm:gap-8">
@@ -93,7 +93,7 @@ export function ConsultationHero({ consultation, share }: { consultation: Consul
                 {facts.map(({ key, label }) => {
                   const Icon = factIcon[key];
                   return (
-                    <li key={key} className="flex items-center gap-3 border border-line bg-surface px-4 py-3">
+                    <li key={key} className="flex items-center gap-3 rounded-panel border border-line bg-surface px-4 py-3">
                       <Icon aria-hidden="true" className="size-6 shrink-0 text-accent" />
                       <span className="text-lg font-bold md:text-xl">{label}</span>
                     </li>

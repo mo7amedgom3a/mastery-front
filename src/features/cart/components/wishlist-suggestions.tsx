@@ -62,7 +62,7 @@ export function WishlistSuggestions() {
               type="button"
               onClick={() => addToCart(entry)}
               aria-label={`إضافة «${entry.title}» إلى السلة`}
-              className="ma-btn ma-btn--outline ma-btn--sm min-h-11 shrink-0 gap-1.5"
+              className="ma-btn ma-btn--soft ma-btn--sm min-h-11 shrink-0 gap-1.5"
             >
               <Plus aria-hidden="true" className="size-4 fill-none" />
               أضف

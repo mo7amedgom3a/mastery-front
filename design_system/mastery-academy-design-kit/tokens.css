@@ -63,7 +63,10 @@
   --space-12: 48px;
   --space-16: 64px;
   --radius-none: 0px;
+  --radius-tag: 6px;
+  --radius-control: 10px;
   --radius-soft: 12px;
+  --radius-card: 16px;
   --radius-full: 9999px;
   --rule-hairline: 1px;
   --rule-accent: 3px;
@@ -73,6 +76,13 @@
   --font-raleway: "Raleway", "Helvetica Neue", Arial, sans-serif;
   --font-plex: "IBM Plex Sans Arabic", Tahoma, sans-serif;
   --font-serif: "Margaret", Georgia, serif;
+}
+
+/* Neutral soft fills (translucent text colour) for borderless buttons and tags on any background.
+   Redeclared on every [data-theme] scope so a locally forced theme mixes its own --text. */
+:root, [data-theme] {
+  --fill-soft: color-mix(in srgb, var(--text) 7%, transparent);
+  --fill-soft-hover: color-mix(in srgb, var(--text) 12%, transparent);
 }
 
 /* Type styles — one class per style. */

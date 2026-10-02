@@ -43,7 +43,7 @@ function FilterChips({
   }
   const chips: { key: string | null; label: string }[] = [{ key: null, label: "الكل" }, ...filters];
   return (
-    <div role="group" aria-label={label} className="mt-10">
+    <div role="group" aria-label={label} className="mt-10 short:mt-6">
       <ul className="-mx-4 m-0 flex list-none gap-2 overflow-x-auto p-0 px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0">
         {chips.map((chip) => {
           const selected = (active?.key ?? null) === chip.key;
@@ -53,7 +53,7 @@ function FilterChips({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => onSelect(chip.key)}
-                className={buttonClass({ variant: selected ? "secondary" : "outline", size: "sm" })}
+                className={buttonClass({ variant: selected ? "secondary" : "soft", size: "sm" })}
               >
                 {chip.label}
               </button>

@@ -29,7 +29,7 @@ export default function NotFound() {
       <main id="main" tabIndex={-1} className="outline-none">
         <section aria-labelledby="not-found-title" className="ma-section">
           <div className="ma-container flex max-w-[40rem] flex-col items-start gap-6">
-            <span className="ma-tag ma-tag--outline">خطأ 404</span>
+            <span className="ma-tag ma-tag--soft">خطأ 404</span>
             <h1 id="not-found-title" className="t-section m-0">
               لم نجد هذه الصفحة
             </h1>

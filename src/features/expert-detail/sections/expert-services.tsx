@@ -14,7 +14,7 @@ export type ExpertServiceGroup = {
 };
 
 // Up to four cards a row inside the page container; never wider than a rail card on large screens.
-const CARD_SIZES = "(min-width: 1200px) 290px, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw";
+const CARD_SIZES = "(min-width: 1200px) 390px, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw";
 
 /**
  * Everything the expert offers, one block per kind, every card linking to its own page. A grid
@@ -36,7 +36,7 @@ export function ExpertServices({ groups }: { groups: readonly ExpertServiceGroup
             </h2>
             <span className="text-fg-muted">{group.count}</span>
           </div>
-          <ul className="m-0 mt-8 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <ul className="m-0 mt-8 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3">
             {group.cards.map((card) => {
               const { key, ...props } = toCard(card);
               return (

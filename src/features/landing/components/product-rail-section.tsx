@@ -50,7 +50,7 @@ export function ProductRailSection({
         }
       />
       {children}
-      <CardCarousel key={railKey} label={title} className="reveal mt-12">
+      <CardCarousel key={railKey} label={title} className="reveal mt-12 short:mt-6">
         {cards.map(({ key, ...card }) => (
           <ProductCard key={key} {...card} />
         ))}

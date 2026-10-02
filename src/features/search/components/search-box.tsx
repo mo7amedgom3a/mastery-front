@@ -46,7 +46,7 @@ export function SearchBox({ state }: { state: SearchState }) {
           role="switch"
           aria-checked={smart}
           rel="nofollow"
-          className={cn(buttonClass({ variant: smart ? "secondary" : "outline", size: "sm" }), "min-h-11")}
+          className={cn(buttonClass({ variant: smart ? "secondary" : "soft", size: "sm" }), "min-h-11")}
         >
           <Sparkles aria-hidden="true" className="size-4 fill-none" />
           {searchCopy.smart}

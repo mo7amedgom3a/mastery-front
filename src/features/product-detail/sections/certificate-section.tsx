@@ -28,7 +28,7 @@ export function CertificateSection() {
           <h3 className="m-0 text-xl font-bold">تمتّع بتجربة تعليمية فريدة</h3>
           <ul className="m-0 mt-6 grid list-none gap-3 p-0 sm:grid-cols-2">
             {benefits.map(({ icon: Icon, text }) => (
-              <li key={text} className="flex items-start gap-3 border border-line bg-surface p-4 text-[15px] leading-7">
+              <li key={text} className="flex items-start gap-3 rounded-panel border border-line bg-surface p-4 text-[15px] leading-7">
                 <Icon aria-hidden="true" className="mt-1 size-5 shrink-0" />
                 {text}
               </li>

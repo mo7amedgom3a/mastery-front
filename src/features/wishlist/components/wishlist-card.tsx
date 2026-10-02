@@ -48,13 +48,13 @@ export function WishlistCard({ item, inCart, onAddToCart, onRemove, sizes }: Wis
     primary = <span className="text-[13px] font-medium text-fg-muted">غير متاح حالياً</span>;
   } else if (item.kind === "consultation") {
     primary = (
-      <AppLink href={href} aria-label={`احجز موعداً في «${item.title}»`} className={cn(ACTION, "ma-btn--outline")}>
+      <AppLink href={href} aria-label={`احجز موعداً في «${item.title}»`} className={cn(ACTION, "ma-btn--soft")}>
         احجز موعداً
       </AppLink>
     );
   } else if (item.free) {
     primary = (
-      <AppLink href={href} aria-label={`سجّل مجاناً في «${item.title}»`} className={cn(ACTION, "ma-btn--outline")}>
+      <AppLink href={href} aria-label={`سجّل مجاناً في «${item.title}»`} className={cn(ACTION, "ma-btn--soft")}>
         سجّل مجاناً
       </AppLink>
     );
@@ -71,7 +71,7 @@ export function WishlistCard({ item, inCart, onAddToCart, onRemove, sizes }: Wis
         type="button"
         onClick={() => onAddToCart(item)}
         aria-label={`إضافة «${item.title}» إلى السلة`}
-        className={cn(ACTION, "ma-btn--outline")}
+        className={cn(ACTION, "ma-btn--soft")}
       >
         <ShoppingCart aria-hidden="true" className="size-[18px] fill-none" />
         أضف للسلة
@@ -79,7 +79,7 @@ export function WishlistCard({ item, inCart, onAddToCart, onRemove, sizes }: Wis
     );
   } else {
     primary = (
-      <AppLink href={href} aria-label={`تفاصيل «${item.title}»`} className={cn(ACTION, "ma-btn--outline")}>
+      <AppLink href={href} aria-label={`تفاصيل «${item.title}»`} className={cn(ACTION, "ma-btn--soft")}>
         التفاصيل
       </AppLink>
     );
@@ -106,7 +106,7 @@ export function WishlistCard({ item, inCart, onAddToCart, onRemove, sizes }: Wis
             type="button"
             onClick={() => onRemove(item)}
             aria-label={`إزالة «${item.title}» من المفضلة`}
-            className="ma-btn ma-btn--ghost ma-btn--icon ma-btn--sm size-10 min-h-10"
+            className="ma-btn ma-btn--bare ma-btn--icon ma-btn--sm size-10 min-h-10"
           >
             <Trash2 aria-hidden="true" className="size-[18px] fill-none" />
           </button>

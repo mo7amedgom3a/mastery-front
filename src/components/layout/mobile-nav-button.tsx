@@ -46,7 +46,7 @@ export function MobileNavButton({ popoverId, action, className }: MobileNavButto
       onMouseLeave={opens ? undefined : stop}
       onFocus={opens ? undefined : play}
       onBlur={opens ? undefined : stop}
-      className={className ?? "ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-11"}
+      className={className ?? "ma-btn ma-btn--bare ma-btn--icon size-11"}
     >
       <Icon ref={icon} size={20} />
     </button>

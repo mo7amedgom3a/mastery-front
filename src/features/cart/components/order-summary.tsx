@@ -54,7 +54,7 @@ export function OrderSummary({
   const canPay = mock && !!quote && quote.lines.length > 0 && !stale && !paying;
 
   return (
-    <aside aria-labelledby="order-summary-title" className="flex flex-col gap-6 border border-line-strong bg-surface p-5 sm:p-6">
+    <aside aria-labelledby="order-summary-title" className="flex flex-col gap-6 rounded-panel border border-line-strong bg-surface p-5 sm:p-6">
       <h2 id="order-summary-title" className="m-0 text-xl font-bold">
         ملخّص الطلب
       </h2>

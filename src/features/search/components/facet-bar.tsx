@@ -12,7 +12,7 @@ import { FILTER_PANEL_ID } from "./filter-panel";
 const GROUP = "search-facets";
 
 // Tighter on phones, so the four dropdowns share one line.
-const trigger = "ma-btn ma-btn--outline ma-btn--sm min-h-11 gap-2 max-sm:gap-1 max-sm:px-2.5";
+const trigger = "ma-btn ma-btn--soft ma-btn--sm min-h-11 gap-2 max-sm:gap-1 max-sm:px-2.5";
 
 function Count({ value }: { value: number }) {
   return (
@@ -55,7 +55,7 @@ export function FacetBar({ facets, showCounts, activeCount }: FacetBarProps) {
               {selected > 0 ? <Count value={selected} /> : null}
               <ChevronDown aria-hidden="true" className="size-4 fill-none transition-transform group-open:rotate-180" />
             </summary>
-            <div className="absolute inset-x-0 top-full z-40 mt-2 max-h-[60vh] overflow-y-auto border border-line-strong bg-surface p-4">
+            <div className="absolute inset-x-0 top-full z-40 mt-2 max-h-[60vh] overflow-y-auto rounded-panel border border-line-strong bg-surface p-4">
               <ul aria-label={facet.label} className="m-0 flex list-none flex-wrap gap-2 p-0">
                 {options.map((option) => (
                   <li key={option.code}>

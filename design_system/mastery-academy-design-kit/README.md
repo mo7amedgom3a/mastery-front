@@ -2,7 +2,7 @@
 
 Read this file first. It tells an AI agent (or a developer) how to build any Mastery Academy (ماستري أكاديمي) screen so it looks on-brand in Arabic and English, in light and dark mode.
 
-Mastery Academy is an Arabic-first online training academy (leadership, management, marketing, HR) founded in 2007. The 2021 identity is **sharp, flat and colourful**: an N-wave logomark with square corners, a coral + ink core with eight bright companions, bold headlines, and no rounded or shadowed UI.
+Mastery Academy is an Arabic-first online training academy (leadership, management, marketing, HR) founded in 2007. The identity is **flat, soft and colourful**: an N-wave logomark with square corners, a coral + ink core with eight bright companions, bold headlines, and a UI with soft rounded corners, borderless buttons and no shadows.
 
 ## Files in this kit
 
@@ -49,8 +49,8 @@ Theme: leave `<html>` without `data-theme` to follow the OS, or set `data-theme=
 
 ## Golden rules (never break these)
 
-1. **Sharp corners.** `border-radius: 0` on buttons, inputs, cards, tags, panels. `--radius-soft` (12px) only for photos and app tiles; `--radius-full` only for avatars.
-2. **Flat.** No shadows, no gradients, no tints of brand colours, no blur/glass. Separate with 1px rules (`--line`, `--line-strong`).
+1. **Soft rounded corners, from the scale only.** `--radius-control` (10px) for buttons, inputs and chips; `--radius-card` (16px) for cards, posters, alerts and dialogs; `--radius-tag` (6px) for tags; `--radius-soft` (12px) for photos; `--radius-full` for avatars, bare icon buttons and badges. The logo itself stays sharp.
+2. **Flat and borderless buttons.** No button draws a border: neutral actions use the translucent `--fill-soft`, icon tools are bare icons with a circular soft fill on hover. No shadows, no gradients, no tints of brand colours, no blur/glass. Separate content with 1px rules (`--line`, `--line-strong`); only fields and cards keep a 1px border.
 3. **Role tokens, not hex.** UI uses `--surface`, `--surface-alt`, `--text`, `--text-muted`, `--line`, `--line-strong`, `--accent`, `--on-accent`, `--focus`. Raw brand colours (`--coral`, `--yellow`…) only for colour fields, tags, posters and card media.
 4. **One coral primary CTA per view.** Text on coral is ink (`--on-accent`), never white.
 5. **Ink text on every brand colour.** White text only on ink, and on purple at 24px+.
@@ -62,7 +62,9 @@ Theme: leave `<html>` without `data-theme` to follow the OS, or set `data-theme=
 
 ## Agent checklist before returning code
 
-- [ ] Only `.ma-*` classes and tokens used; no new colours or radii invented.
+- [ ] Only `.ma-*` classes and tokens used; no new colours, and radii only from the `--radius-*` scale.
+- [ ] No border on any button; icon tools use `.ma-btn--bare`.
+- [ ] Each section fits one viewport at 1366×768; card rows are at most 3 wide.
 - [ ] Looks right with `data-theme="dark"` (no hard-coded `#fff`/`#000` on surfaces or text).
 - [ ] Works with `dir="rtl"` and `dir="ltr"`; directional icons use `.ma-icon-dir`.
 - [ ] One primary CTA per view; labels are specific verbs.

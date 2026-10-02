@@ -36,7 +36,7 @@ export function HeaderAccount({ placement }: { placement: "bar" | "drawer" }) {
   const name = user.full_name?.trim() || user.email;
 
   return bar ? (
-    <Button variant="outline" size="sm" className="min-h-11 max-sm:hidden" title={name} onClick={signOut}>
+    <Button variant="soft" size="sm" className="min-h-11 max-sm:hidden" title={name} onClick={signOut}>
       تسجيل الخروج
     </Button>
   ) : (
@@ -44,7 +44,7 @@ export function HeaderAccount({ placement }: { placement: "bar" | "drawer" }) {
       <p className="m-0 truncate text-fg-muted">
         <bdi>{name}</bdi>
       </p>
-      <Button variant="outline" block onClick={signOut}>
+      <Button variant="soft" block onClick={signOut}>
         تسجيل الخروج
       </Button>
     </div>

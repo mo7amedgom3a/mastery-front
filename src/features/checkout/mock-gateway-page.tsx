@@ -36,7 +36,7 @@ export function MockGatewayPage() {
 
   if (!order || order.orderId !== orderId || order.status === "paid") {
     return (
-      <div className="flex flex-col items-start gap-4 border border-line p-6 md:p-10">
+      <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10">
         <h2 className="m-0 text-2xl leading-10 font-bold">لا يوجد طلب بانتظار الدفع</h2>
         <p className="m-0 max-w-[52ch] text-fg-muted">ربما اكتمل هذا الطلب أو انتهت جلسته. عد إلى سلتك وابدأ الدفع من جديد.</p>
         <ButtonLink href={routes.cart} variant="primary">
@@ -70,7 +70,7 @@ export function MockGatewayPage() {
 
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-10">
-      <div className="flex min-w-0 flex-col gap-5 border border-line-strong bg-surface p-5 sm:p-8">
+      <div className="flex min-w-0 flex-col gap-5 rounded-panel border border-line-strong bg-surface p-5 sm:p-8">
         <div className="flex items-start gap-3">
           <FlaskConical aria-hidden="true" className="mt-1 size-6 shrink-0 text-accent" />
           <div className="flex flex-col gap-2">
@@ -114,7 +114,7 @@ export function MockGatewayPage() {
             onClick={() => void settle("failure")}
             disabled={busy !== null}
             aria-busy={busy === "failure"}
-            className={`ma-btn ma-btn--outline ${busy === "failure" ? "is-loading" : ""}`}
+            className={`ma-btn ma-btn--soft ${busy === "failure" ? "is-loading" : ""}`}
           >
             محاكاة فشل الدفع
           </button>

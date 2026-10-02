@@ -40,7 +40,7 @@ export function FilterPanel({ state, facets, showCounts, trainers }: FilterPanel
           popoverTarget={FILTER_PANEL_ID}
           popoverTargetAction="hide"
           aria-label="إغلاق الفلاتر"
-          className="ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-11"
+          className="ma-btn ma-btn--bare ma-btn--icon ma-btn--sm size-11"
         >
           <X aria-hidden="true" className="size-5 fill-none" />
         </button>

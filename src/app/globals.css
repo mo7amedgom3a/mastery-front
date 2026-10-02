@@ -39,8 +39,11 @@
   --color-green: var(--green);
   --color-cream: var(--cream);
   --font-ar: var(--font-arabic);
-  /* Kit radius-soft (12px) — photos and app tiles only. Distinct name avoids a self-referencing var. */
+  /* Kit radius scale → rounded-* utilities. Distinct names avoid self-referencing vars. */
   --radius-photo: var(--radius-soft);
+  --radius-chip: var(--radius-tag);
+  --radius-ctl: var(--radius-control);
+  --radius-panel: var(--radius-card);
 }
 
 /* Bundled faces come from next/font (see app/layout.tsx); licensed faces stay first in each stack. */
@@ -93,11 +96,11 @@ body {
     fill: none;
   }
 
-  /* ---------- Loading skeleton: kit colours (opaque, so the shimmer band has no seams), square ---------- */
+  /* ---------- Loading skeleton: kit colours (opaque, so the shimmer band has no seams), rounded ---------- */
   .react-loading-skeleton {
     --base-color: color-mix(in srgb, var(--text) 12%, var(--surface));
     --highlight-color: color-mix(in srgb, var(--text) 4%, var(--surface));
-    border-radius: var(--radius-none);
+    border-radius: var(--radius-control);
   }
 
   /* ---------- Header nav: the hover/current line is a bottom border; a bit more room above it
@@ -116,18 +119,20 @@ body {
     line-height: 1.4;
   }
 
-  /* ---------- Display type (MasterClass-scale, kit Arabic metrics) ---------- */
+  /* ---------- Display type (MasterClass-scale, kit Arabic metrics) ----------
+     Sizes follow the viewport's width AND height (the smaller wins), so a headline never pushes its
+     section's content below the fold on short laptop screens. */
   .t-hero {
     font-family: var(--font-arabic);
     font-weight: 700;
-    font-size: clamp(2.75rem, 1.4rem + 5.6vw, 5.75rem);
+    font-size: clamp(2.25rem, min(1.4rem + 5.6vw, 0.75rem + 7.5svh), 5.75rem);
     line-height: 1.18;
     text-wrap: balance;
   }
   .t-section {
     font-family: var(--font-arabic);
     font-weight: 700;
-    font-size: clamp(2rem, 1.3rem + 2.6vw, 3.5rem);
+    font-size: clamp(1.75rem, min(1.3rem + 2.6vw, 0.75rem + 4.5svh), 3.5rem);
     line-height: 1.4;
     text-wrap: balance;
   }
@@ -140,7 +145,7 @@ body {
   .t-stat {
     font-family: var(--font-arabic);
     font-weight: 700;
-    font-size: clamp(3rem, 2rem + 4vw, 5.5rem);
+    font-size: clamp(2.5rem, min(2rem + 4vw, 1rem + 7svh), 5.5rem);
     line-height: 1;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;

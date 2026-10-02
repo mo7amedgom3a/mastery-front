@@ -22,16 +22,17 @@ export function ExpertsSection({ instructorCount }: { instructorCount: number | 
             : "نخبة من الخبراء والمدرّبين العرب في التسويق والإدارة والمالية والإبداع."
         }
       />
-      <CardCarousel label="خبراء أكاديمية ماستري" className="reveal mt-12">
+      <CardCarousel label="خبراء أكاديمية ماستري" className="reveal mt-12 short:mt-6">
         {experts.map((expert) => (
           <figure key={expert.id} className="m-0 flex flex-col gap-4">
-            <div className={cn("relative aspect-[600/811] overflow-hidden rounded-photo", brandBg[expert.color])}>
+            {/* Three per view makes portraits wide; the height cap keeps the whole row on one screen. */}
+            <div className={cn("relative aspect-[600/811] max-h-[min(60svh,34rem)] w-full overflow-hidden rounded-panel", brandBg[expert.color])}>
               <Image
                 src={expert.image}
                 alt={`صورة ${expert.name}`}
                 fill
-                sizes="(min-width: 1200px) 290px, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw"
-                className="object-cover"
+                sizes="(min-width: 1200px) 390px, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw"
+                className="object-cover object-top"
               />
             </div>
             <figcaption className="flex flex-col gap-1">

@@ -14,7 +14,7 @@ export function OrderDetails({ order, linked = true }: { order: Order; linked?: 
   const { totals } = order;
 
   return (
-    <div className="flex flex-col gap-6 border border-line-strong bg-surface p-5 sm:p-6">
+    <div className="flex flex-col gap-6 rounded-panel border border-line-strong bg-surface p-5 sm:p-6">
       <dl className="m-0 grid gap-x-8 gap-y-3 text-[15px] sm:grid-cols-3">
         <div>
           <dt className="text-sm text-fg-muted">رقم الطلب</dt>

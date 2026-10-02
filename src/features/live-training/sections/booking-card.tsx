@@ -20,7 +20,7 @@ export function BookingCard({ training }: { training: LiveTrainingDetailVM }) {
   ];
 
   return (
-    <aside aria-label={detailCopy.bookingLabel} className="border border-line-strong bg-surface p-6 lg:short:p-5">
+    <aside aria-label={detailCopy.bookingLabel} className="rounded-panel border border-line-strong bg-surface p-6 lg:short:p-5">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 tabular-nums">
         <span dir="ltr" className="text-4xl font-bold lg:short:text-3xl">
           {training.price.current}
@@ -51,7 +51,7 @@ export function BookingCard({ training }: { training: LiveTrainingDetailVM }) {
             href={training.brochureUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={buttonClass({ variant: "outline", size: "sm", block: true })}
+            className={buttonClass({ variant: "soft", size: "sm", block: true })}
           >
             <FileText aria-hidden="true" className="size-4" />
             {detailCopy.brochure}

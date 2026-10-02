@@ -61,7 +61,7 @@ export function TrainerFilter({ trainers, selected }: TrainerFilterProps) {
         autoComplete="off"
         className="ma-input min-h-11 py-2 text-sm"
       />
-      <ul className="m-0 flex max-h-64 list-none flex-col overflow-y-auto border border-line p-0">
+      <ul className="m-0 flex max-h-64 list-none flex-col overflow-y-auto rounded-panel border border-line p-0">
         {trainers.map((trainer) => (
           <li key={trainer.id} hidden={!matches(trainer)} className="border-b border-line last:border-b-0">
             <label className="ma-check flex min-h-11 w-full px-3 py-1 text-sm">

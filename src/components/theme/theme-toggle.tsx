@@ -44,7 +44,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       onFocus={play}
       onBlur={stop}
       aria-label="تبديل الوضع الفاتح والداكن"
-      className={clsx("ma-btn ma-btn--outline ma-btn--icon ma-btn--sm size-11", className)}
+      className={clsx("ma-btn ma-btn--bare ma-btn--icon size-11", className)}
     >
       <SunIcon ref={sun} size={20} className="theme-dark-only" />
       <MoonIcon ref={moon} size={20} className="theme-light-only" />

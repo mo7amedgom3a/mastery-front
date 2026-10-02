@@ -40,14 +40,14 @@ export function AuthGateDialog({ onMockContinue }: AuthGateDialogProps) {
         if (event.target === event.currentTarget) close();
       }}
       aria-labelledby="auth-gate-title"
-      className="m-auto max-h-[calc(100svh-1rem)] w-[min(30rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] overflow-y-auto border border-line-strong bg-surface p-0 text-fg backdrop:bg-ink/70"
+      className="m-auto max-h-[calc(100svh-1rem)] w-[min(30rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] overflow-y-auto rounded-panel border border-line-strong bg-surface p-0 text-fg backdrop:bg-ink/70"
     >
       <div className="flex flex-col gap-5 p-5 sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <h2 id="auth-gate-title" className="m-0 text-2xl leading-9 font-bold">
             سجّل الدخول لإتمام الدفع
           </h2>
-          <button type="button" onClick={close} aria-label="إغلاق" className="ma-btn ma-btn--ghost ma-btn--icon size-11 shrink-0">
+          <button type="button" onClick={close} aria-label="إغلاق" className="ma-btn ma-btn--bare ma-btn--icon size-11 shrink-0">
             <X aria-hidden="true" className="size-5 fill-none" />
           </button>
         </div>
@@ -59,7 +59,7 @@ export function AuthGateDialog({ onMockContinue }: AuthGateDialogProps) {
           <ButtonLink href={routes.loginThen(routes.cart)} variant="primary">
             تسجيل الدخول
           </ButtonLink>
-          <ButtonLink href={routes.registerThen(routes.cart)} variant="outline">
+          <ButtonLink href={routes.registerThen(routes.cart)} variant="soft">
             إنشاء حساب
           </ButtonLink>
         </div>
