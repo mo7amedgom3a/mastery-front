@@ -82,7 +82,8 @@
    Redeclared on every [data-theme] scope so a locally forced theme mixes its own --text. */
 :root, [data-theme] {
   --fill-soft: color-mix(in srgb, var(--text) 7%, transparent);
-  --fill-soft-hover: color-mix(in srgb, var(--text) 12%, transparent);
+  --fill-soft-hover: color-mix(in srgb, var(--text) 14%, transparent);
+  --fill-soft-active: color-mix(in srgb, var(--text) 20%, transparent);
 }
 
 /* Type styles — one class per style. */

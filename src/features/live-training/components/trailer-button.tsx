@@ -36,9 +36,12 @@ export function TrailerButton({ embedUrl, title, label, dialogLabel, className }
         type="button"
         onClick={show}
         aria-haspopup="dialog"
-        className={cn("ma-btn ma-btn--soft ma-btn--lg", className)}
+        className={cn("ma-btn ma-btn--soft ma-btn--lg group", className)}
       >
-        <Play aria-hidden="true" className="size-4 fill-current" />
+        <Play
+          aria-hidden="true"
+          className="size-4 fill-current transition-transform duration-150 ease-out group-hover:scale-125 motion-reduce:transition-none"
+        />
         {label}
       </button>
 

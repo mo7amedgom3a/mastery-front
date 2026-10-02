@@ -31,13 +31,15 @@ Shared rules: soft rounded corners from the radius scale (`--radius-control` for
 | State | Primary | Secondary | Soft | Ghost / Bare | On-colour |
 |---|---|---|---|---|---|
 | Default | coral / ink | text / surface | `--fill-soft` / text | transparent / text | ink / white |
-| Hover | → ink (text) fill, surface text | → coral fill, ink text | → text fill, surface text | → `--fill-soft` | → white fill, ink text |
-| Pressed (`:active`) | coral | text fill | `--fill-soft-hover` | `--fill-soft-hover` | ink |
+| Hover | → ink (text) fill, surface text | → coral fill, ink text | → `--fill-soft-hover`, text unchanged | → `--fill-soft` | → white fill, ink text |
+| Pressed (`:active`) | coral | text fill | `--fill-soft-active` | `--fill-soft-active` | ink |
 | Focus (`:focus-visible`) | 2px `--focus` ring, 2px offset (follows the radius) — all variants |||||
 | Disabled (`:disabled`, `aria-disabled`) | `--fill-soft` (transparent for ghost/bare), muted text — no border |||||
 | Loading (`.is-loading` + `aria-busy="true"`) | label hidden, width kept, rotating square in the label colour |||||
 
 `.is-hover`, `.is-active`, `.is-focus` exist only to document states statically.
+
+Content inside a button (counts, badges, a muted second label) inherits the button's text colour, e.g. `opacity: .7` instead of `--text-muted`, so it stays readable on every state's fill.
 
 ### Markup
 ```html

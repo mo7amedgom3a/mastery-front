@@ -32,10 +32,13 @@ export function LandingPage({ data }: { data: LandingData }) {
       <AnnouncementBar banner={data.banner} />
       <SiteHeader />
       <main id="main" tabIndex={-1} className="outline-none">
-        <HeroSection />
-        <LiveSpotlight training={data.liveTraining} />
-        <StatsSection stats={data.stats} />
-        <ExpertsTicker />
+        {/* Opening run: page-colour gaps keep the hero, live banner, stats and ticker apart. */}
+        <div className="flex flex-col gap-[clamp(1.5rem,5svh,3.5rem)] pb-[clamp(1.5rem,5svh,3.5rem)]">
+          <HeroSection />
+          <LiveSpotlight training={data.liveTraining} />
+          <StatsSection stats={data.stats} />
+          <ExpertsTicker />
+        </div>
         <OfferingsSection />
         <CoursesSection courses={data.courses} total={data.coursesTotal} filters={data.courseFilters} />
         <DiplomasSection diplomas={data.diplomas} filters={data.diplomaFilters} />

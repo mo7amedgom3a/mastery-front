@@ -16,7 +16,7 @@ const trigger = "ma-btn ma-btn--soft ma-btn--sm min-h-11 gap-2 max-sm:gap-1 max-
 
 function Count({ value }: { value: number }) {
   return (
-    <span className="grid min-w-5 place-items-center bg-accent px-1 text-xs leading-5 font-bold text-on-accent tabular-nums">
+    <span className="grid min-w-5 place-items-center rounded-full bg-accent px-1.5 text-xs leading-5 font-bold text-on-accent tabular-nums">
       {formatNumber(value)}
     </span>
   );

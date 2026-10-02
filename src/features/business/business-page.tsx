@@ -28,7 +28,7 @@ function ChipList({ title, chips }: { title: string; chips: CatalogChipVM[] }) {
               className="ma-btn ma-btn--soft ma-btn--sm min-h-11 gap-2 font-bold no-underline"
             >
               {chip.label}
-              <span className="text-fg-muted" aria-label={`${chip.count} برنامج`}>
+              <span className="tabular-nums opacity-70" aria-label={`${chip.count} برنامج`}>
                 {chip.count}
               </span>
             </AppLink>

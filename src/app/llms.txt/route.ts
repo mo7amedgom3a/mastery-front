@@ -33,10 +33,9 @@ export function GET() {
     "",
     "## ما تقدّمه الأكاديمية",
     "",
-    // Live sessions have their own listing page; the rest point at their landing sections.
+    // Each offering points at its landing section; live sessions are listed under "روابط" below.
     ...offerings.map(
-      (offering) =>
-        `- [${offering.label}](${offering.id === "live" ? `${siteUrl}${routes.live}` : `${siteUrl}/#${offering.id}`}): ${offering.title}. ${offering.body}`,
+      (offering) => `- [${offering.label}](${siteUrl}/#${offering.id}): ${offering.title}. ${offering.body}`,
     ),
     "",
     "## الأسئلة الشائعة",

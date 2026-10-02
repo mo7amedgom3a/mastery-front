@@ -1,0 +1,39 @@
+1. Container & Layout Structure
+
+    Layout Model: A flexible container (display: flex; flex-wrap: wrap; or display: grid;) centered horizontally beneath the main navigation bar.
+
+    Alignment & Spacing: Standardized vertical and horizontal gap spacing (around 8px–12px) separating each chip, distributed across rows to accommodate multiple categories without horizontal overflow on desktop screens.
+
+2. Chip Anatomy
+
+Each filter button follows a consistent internal flex structure:
+
+    Container: A rounded-corner rectangular button (border-radius: 6px–8px or pill shape) with balanced padding (typically 8px–12px vertical, 12px–16px horizontal).
+
+    Leading Icon: A monochromatic line/vector icon (16–20px) placed to the left of the label to aid instant recognition (e.g., drama masks for Acting, palette for Art & Design, clapperboard for Film & TV).
+
+    Text Label: A clear, concise title-case descriptor with fixed weight and high contrast for legibility on dark backgrounds.
+
+3. Visual States & Hierarchy
+
+    Active / Selected State (e.g., Trending):
+
+        Highlighted using a distinct brand accent color (gold/yellow border, yellow icon, and matching text).
+
+        Signifies the currently applied filter or active view.
+
+    Default / Inactive State:
+
+        Low-contrast, dark surface background (#1A1A1A / #222) blending seamlessly into the dark UI.
+
+        Neutral icon and typography colors (off-white/light gray) to keep visual noise minimal.
+
+    Interactive States (Hover / Focus):
+
+        Subtle background lightening or border illumination to provide visual affordance before selection.
+
+4. Responsive Design Behavior
+
+    Desktop: Displayed as wrapped rows directly in the viewport for immediate broad category browsing without scrolling.
+
+    Mobile / Tablet: Typically converts from a multi-row wrapped layout into a single, horizontally scrollable row (overflow-x: auto; white-space: nowrap;) to preserve vertical screen space for content cards below.

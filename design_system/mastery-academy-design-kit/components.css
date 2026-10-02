@@ -72,10 +72,12 @@
 .ma-btn--secondary:hover, .ma-btn--secondary.is-hover { background: var(--accent); color: var(--on-accent); }
 .ma-btn--secondary:active, .ma-btn--secondary.is-active { background: var(--text); color: var(--surface); }
 
-/* Soft — neutral translucent fill, no border (replaces the old 1px outline button) */
+/* Soft — neutral translucent fill, no border (replaces the old 1px outline button).
+   Hover only deepens the fill; the text colour never changes, so counts, prices and muted parts
+   inside the button stay readable, and there is no light-on-light frame mid-transition. */
 .ma-btn--soft { background: var(--fill-soft); color: var(--text); }
-.ma-btn--soft:hover, .ma-btn--soft.is-hover { background: var(--text); color: var(--surface); }
-.ma-btn--soft:active, .ma-btn--soft.is-active { background: var(--fill-soft-hover); color: var(--text); }
+.ma-btn--soft:hover, .ma-btn--soft.is-hover { background: var(--fill-soft-hover); }
+.ma-btn--soft:active, .ma-btn--soft.is-active { background: var(--fill-soft-active); }
 
 /* Ghost — text-weight action; a soft fill appears on hover */
 .ma-btn--ghost { background: transparent; color: var(--text); padding-inline: var(--space-3); }
@@ -84,14 +86,14 @@
 /* Bare — icon tools (search, cart, wishlist, theme, menu): just the icon, a circular soft fill on hover */
 .ma-btn--bare { background: transparent; color: var(--text); border-radius: var(--radius-full); }
 .ma-btn--bare:hover, .ma-btn--bare.is-hover { background: var(--fill-soft); }
-.ma-btn--bare:active, .ma-btn--bare.is-active { background: var(--fill-soft-hover); }
+.ma-btn--bare:active, .ma-btn--bare.is-active { background: var(--fill-soft-active); }
 
 /* On-colour — for CTAs placed on a brand colour field (poster, band). Always ink. */
 .ma-btn--on-color { background: var(--ink); color: var(--white); }
 .ma-btn--on-color:hover, .ma-btn--on-color.is-hover { background: var(--white); color: var(--ink); }
 
 /* States — .is-hover / .is-active / .is-focus mirror the pseudo-classes for documentation only. */
-.ma-btn--ghost:active, .ma-btn--ghost.is-active { background: var(--fill-soft-hover); }
+.ma-btn--ghost:active, .ma-btn--ghost.is-active { background: var(--fill-soft-active); }
 .ma-btn--on-color:active, .ma-btn--on-color.is-active { background: var(--ink); color: var(--white); }
 .ma-btn:disabled, .ma-btn[aria-disabled="true"] { background: var(--fill-soft); color: var(--text-muted); cursor: not-allowed; }
 .ma-btn--bare:disabled, .ma-btn--bare[aria-disabled="true"], .ma-btn--ghost:disabled, .ma-btn--ghost[aria-disabled="true"] { background: transparent; }

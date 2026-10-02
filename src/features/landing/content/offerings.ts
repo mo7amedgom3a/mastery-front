@@ -3,7 +3,7 @@ import type { Route } from "next";
 import type { BrandColor } from "@/components/ui/brand-colors";
 import { routes } from "@/config/routes";
 
-export type OfferingId = "courses" | "diplomas" | "live" | "packages" | "consultations" | "business";
+export type OfferingId = "courses" | "diplomas" | "packages" | "consultations" | "business";
 
 export type Offering = {
   id: OfferingId;
@@ -32,22 +32,12 @@ export const offerings: readonly Offering[] = [
   {
     id: "diplomas",
     label: "الدبلومات",
-    title: "دبلومات احترافية على دفعات",
-    body: "مسارات أعمق تجمع عدة وحدات تدريبية في برنامج متكامل، تُقدَّم على دفعات مع خبراء ماستري وتنتهي بشهادة.",
-    points: ["برامج متكاملة متعددة الوحدات", "دفعات بمواعيد محددة", "متابعة وتقييم مع المدرّب"],
+    title: "دبلومات احترافية مسجّلة أو بث مباشر",
+    body: "مسارات أعمق تجمع عدة وحدات تدريبية في برنامج متكامل مع خبراء ماستري وتنتهي بشهادة: شاهدها مسجّلة بإيقاعك، أو احضرها بثاً مباشراً على دفعات بمواعيد محددة.",
+    points: ["برامج متكاملة متعددة الوحدات", "مسجّلة أو بث مباشر على دفعات", "تفاعل مباشر مع المدرّب وأسئلة حيّة"],
     cta: { label: "تصفّح الدبلومات", href: routes.diplomas },
     color: "yellow",
     // poster: "تخصّص",
-  },
-  {
-    id: "live",
-    label: "البث المباشر",
-    title: "سجّل مقعدك في الجلسات المباشرة",
-    body: "جلسات تفاعلية تُبث مباشرة مع الخبراء: سجّل مسبقاً، احضر في الموعد، واطرح أسئلتك في الوقت الحقيقي.",
-    points: ["تسجيل مسبق للجلسات", "تفاعل مباشر مع الخبير", "أسئلة وأجوبة حيّة"],
-    cta: { label: "الجلسات القادمة", href: routes.live },
-    color: "sky",
-    // poster: "مباشر",
   },
   {
     id: "packages",

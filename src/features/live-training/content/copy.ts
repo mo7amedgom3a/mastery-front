@@ -6,8 +6,8 @@ export const spotlightCopy = {
   headline: "تعلّم مباشرةً من نخبة الخبراء. دفعات جديدة كل شهر.",
   ledBy: "تقديم",
   details: "تفاصيل الدورة والتسجيل",
-  trailer: "شاهد الإعلان",
-  trailerDialog: "الإعلان التعريفي",
+  trailer: "شاهد الفيديو التعريفي",
+  trailerDialog: "الفيديو التعريفي",
   viewAll: { label: "كل دورات البث المباشر", href: routes.live },
   sar: "ر.س",
 } as const;
