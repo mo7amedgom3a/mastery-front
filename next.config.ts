@@ -1,5 +1,15 @@
+import FaroSourceMapUploaderPlugin from "@grafana/faro-webpack-plugin";
 import type { NextConfig } from "next";
 import { isIndexable } from "./src/config/env";
+
+// Grafana Faro source-map upload. App/stack ids come from the Faro app (see .env.example); the API
+// key is a build-time secret, so uploads are skipped (not failed) when it is absent.
+const faroAppName = process.env.NEXT_PUBLIC_FARO_APP_NAME?.trim() || "mastery-app";
+const faroUploadEndpoint =
+  process.env.FARO_API_ENDPOINT?.trim() || "https://faro-api-prod-us-west-0.grafana.net/faro/api/v1";
+const faroAppId = process.env.FARO_APP_ID?.trim() || "5762";
+const faroStackId = process.env.FARO_STACK_ID?.trim() || "1854221";
+const faroApiKey = process.env.FARO_API_KEY?.trim();
 
 // Buckets the legacy backend serves product imagery from, plus the site's own upload host.
 const s3Buckets = ["course", "curriculum", "consultant", "category", "instructor", "trainer"].map((bucket) => ({
@@ -28,6 +38,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
   poweredByHeader: false,
+  // Emit browser source maps so the Faro webpack plugin below can upload them; it deletes the files
+  // after upload, so they are never served to visitors.
+  productionBrowserSourceMaps: true,
   async redirects() {
     return [
       // Trainer profiles moved to the expert page; the trainer id is the expert key.
@@ -66,6 +79,28 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "public.emasteryacademy.com", pathname: "/**" },
       ...(bunnyCdnHostname ? [{ protocol: "https" as const, hostname: bunnyCdnHostname, pathname: "/**" }] : []),
     ],
+  },
+  // Only runs under `next build --webpack` (the build script): dev keeps Turbopack, whose plugin
+  // API the Faro uploader does not implement. The plugin injects the bundle id into the client
+  // bundles and uploads their source maps; with no API key it still injects and skips the upload.
+  webpack(config, { dev, isServer }) {
+    if (!dev && !isServer) {
+      config.plugins.push(
+        new FaroSourceMapUploaderPlugin({
+          appName: faroAppName,
+          endpoint: faroUploadEndpoint,
+          appId: faroAppId,
+          stackId: faroStackId,
+          apiKey: faroApiKey ?? "",
+          nextjs: true,
+          recursive: true,
+          gzipContents: true,
+          verbose: true,
+          skipUpload: !faroApiKey,
+        }),
+      );
+    }
+    return config;
   },
 };
 

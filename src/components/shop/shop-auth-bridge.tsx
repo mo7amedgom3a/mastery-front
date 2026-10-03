@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { useAuthStore } from "@/lib/auth/store";
+import { setFaroUser } from "@/lib/observability/faro";
 import { rehydrateShop } from "@/lib/shop/store";
 import { syncGuestWishlist } from "@/lib/shop/wishlist-sync";
 
@@ -30,9 +31,18 @@ export function ShopAuthBridge() {
       await syncGuestWishlist();
     };
 
+    // Opaque customer id only: RUM sessions link to the account without putting PII in telemetry.
+    const syncFaroUser = () => {
+      const { status, user } = useAuthStore.getState();
+      setFaroUser(status === "authenticated" && user ? { id: user.customer_id } : null);
+    };
+
     const unsubscribe = useAuthStore.subscribe((state, previous) => {
+      syncFaroUser();
       if (state.status === "authenticated" && previous.status !== "authenticated") void onAuthenticated();
     });
+
+    syncFaroUser();
 
     const cancelIdle = onIdle(() => {
       void rehydrateShop().then(() => {

@@ -1,0 +1,23 @@
+// Before you start, make sure you have installed the @grafana/faro-webpack-plugin with your package manager of choice
+// Add the following code snippet to your webpack config file - generally "webpack.config.ts"
+
+import FaroSourceMapUploaderPlugin from '@grafana/faro-webpack-plugin';
+
+// add the following lines to your config at the top level of the config object
+// (alongside other top-level configs such as output, module, etc.)
+
+// other configs...
+plugins: [
+  // other plugins...
+  new FaroSourceMapUploaderPlugin({
+    appName: 'mastery-app',
+    endpoint: 'https://faro-api-prod-us-west-0.grafana.net/faro/api/v1',
+    appId: '5762',
+    stackId: '1854221',
+    verbose: true,
+    // instructions on how to obtain your API key are in the documentation
+    // https://grafana.com/docs/grafana-cloud/monitor-applications/frontend-observability/sourcemap-upload-plugins/#obtain-an-api-key
+    apiKey: '$your-api-key',
+    gzipContents: true,
+  }),
+],
