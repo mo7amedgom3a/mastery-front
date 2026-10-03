@@ -70,8 +70,8 @@ export function RecommendationRail({ className }: { className?: string }) {
       </h2>
       <p className="m-0 mt-1 text-fg-muted">{lead}</p>
       <CardCarousel label={title} className="mt-6">
-        {data.cards.map((card) => {
-          const { key, ...props } = toCard(card);
+        {data.cards.map((card, position) => {
+          const { key, ...props } = toCard(card, { surface: "recommendation", position });
           return <ProductCard key={key} {...props} />;
         })}
       </CardCarousel>

@@ -1,10 +1,12 @@
 "use client";
 
 import { CircleCheck, CircleX } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { isMockCheckoutEnabled } from "@/config/env";
 import { routes } from "@/config/routes";
+import { trackCheckout } from "@/lib/observability/behavior";
 import { useShopHydrated, useShopStore } from "@/lib/shop/store";
 
 import { OrderDetails } from "./components/order-details";
@@ -19,6 +21,14 @@ import { OrderSkeleton } from "./components/order-skeleton";
 export function OrderResultPage({ outcome }: { outcome: "success" | "failed" }) {
   const hydrated = useShopHydrated();
   const order = useShopStore((state) => state.order);
+
+  // One event per result page visit (guarded against StrictMode's double effect).
+  const tracked = useRef(false);
+  useEffect(() => {
+    if (tracked.current || !hydrated || !order) return;
+    tracked.current = true;
+    trackCheckout("order_viewed", { order_number: order.number, status: order.status, outcome });
+  }, [hydrated, order, outcome]);
 
   if (!hydrated) {
     return <OrderSkeleton />;

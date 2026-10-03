@@ -14,6 +14,7 @@ import { RecommendationRail } from "@/features/search/components/recommendation-
 import { useAuthStore } from "@/lib/auth/store";
 import { cn } from "@/lib/cn";
 import { formatCount, formatNumber } from "@/lib/format";
+import { trackCartBulk } from "@/lib/observability/behavior";
 import { ITEM_FORMS, kindPluralLabel } from "@/lib/shop/labels";
 import { useShopHydrated, useShopStore, type WishlistEntry } from "@/lib/shop/store";
 import { removeFromWishlist } from "@/lib/shop/use-shop-actions";
@@ -234,7 +235,10 @@ export function WishlistPage() {
         {addable.length > 0 ? (
           <button
             type="button"
-            onClick={() => addable.forEach((item) => addToCart(item))}
+            onClick={() => {
+              addable.forEach((item) => addToCart(item));
+              trackCartBulk(addable);
+            }}
             className="ma-btn ma-btn--secondary ma-btn--sm min-h-11 gap-2"
           >
             <ShoppingCart aria-hidden="true" className="size-[18px] fill-none" />

@@ -37,8 +37,8 @@ export function ExpertServices({ groups }: { groups: readonly ExpertServiceGroup
             <span className="text-fg-muted">{group.count}</span>
           </div>
           <ul className="m-0 mt-8 grid list-none gap-6 p-0 sm:grid-cols-2 md:grid-cols-3">
-            {group.cards.map((card) => {
-              const { key, ...props } = toCard(card);
+            {group.cards.map((card, position) => {
+              const { key, ...props } = toCard(card, { surface: "expert", position });
               return (
                 <li key={key} className="min-w-0">
                   <ProductCard {...props} sizes={CARD_SIZES} />

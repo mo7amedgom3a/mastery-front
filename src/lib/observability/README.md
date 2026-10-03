@@ -21,9 +21,11 @@ server span that served it, and the log line that explains it, all sharing a tra
 | Path | Runtime | Role |
 | --- | --- | --- |
 | `src/instrumentation.ts` | Node / Edge | Next.js entry point. `register()` starts the server SDK; `onRequestError` reports server errors. |
-| `src/instrumentation-client.ts` | Browser | Next.js entry point. Starts Faro before hydration; forwards App Router navigations. |
-| `src/lib/observability/faro.ts` | Browser | Faro initialization and the client helpers (`pushFaroError`, `setFaroUser`, `trackFaroNavigation`). |
-| `src/lib/observability/server/otel.ts` | Node | Builds the OTel SDK: instrumentations, exporters, resource attributes. |
+| `src/instrumentation-client.ts` | Browser | Next.js entry point. Starts Faro before hydration; records the initial page view and every navigation. |
+| `src/lib/observability/faro.ts` | Browser | Faro initialization and the client helpers (`pushFaroError`, `pushFaroEvent`, `syncFaroIdentity`). |
+| `src/lib/observability/behavior.ts` | Browser | Typed product/route behavior events, fanned out to Faro and the backend. |
+| `src/lib/observability/route-pattern.ts` | Shared | URL → route pattern (+ product) matcher, used by client events and server span tagging. |
+| `src/lib/observability/server/otel.ts` | Node | Builds the OTel SDK: instrumentations, exporters, resource attributes, route tagging. |
 | `src/lib/observability/server/logger.ts` | Node | Structured logger over the OTel logs API. |
 
 The two `instrumentation*.ts` files are Next.js conventions and are imported by the framework, not
@@ -38,7 +40,9 @@ dependencies never reach the Edge runtime or the client bundle.
 
 - **Traces** — on Vercel, @vercel/otel's default `fetch` instrumentation plus the platform's
   incoming-request spans; everywhere else (the Docker image) `getNodeAutoInstrumentations()` covers
-  incoming HTTP, outgoing `fetch`, and runtime/host metrics.
+  incoming HTTP, outgoing `fetch`, and runtime/host metrics. Inbound server spans also carry an
+  `http.route` attribute (the route pattern, not the raw URL — see `route-pattern.ts`) so Grafana can
+  break rate/errors/latency down per route.
 - **Logs** — a `SimpleLogRecordProcessor` writes each record immediately via the OTLP proto
   exporter. The processor instance is kept in the module so `onRequestError` can `forceFlush()` it
   before a serverless invocation ends.
@@ -71,9 +75,10 @@ Enabled instrumentations:
 - `TracingInstrumentation` — fetch/XHR spans and the W3C `traceparent` header. This is what links a
   browser span to the Next.js server span and, when the backend honours the header, to the API.
 
-The `onRouterTransitionStart` export records each App Router navigation as an event. (The
-react-router `ReactIntegration` shown in the Grafana docs does not apply here: the App Router does
-not use react-router.)
+The `onRouterTransitionStart` export records each App Router navigation, and the file records the
+initial load once — both as a Faro `page_view` event (with the route pattern and the product on a
+detail page). (The react-router `ReactIntegration` shown in the Grafana docs does not apply here:
+the App Router does not use react-router.)
 
 ### Error boundaries
 
@@ -83,8 +88,59 @@ and then render their fallback.
 
 ### User identity
 
-`ShopAuthBridge` calls `setFaroUser({ id })` with the opaque `customer_id` on sign-in and clears it
-on sign-out. No email or other PII is sent to telemetry.
+`shop-auth-bridge.tsx` calls `syncFaroIdentity(customerId)`: signed-in visitors are keyed by the
+opaque `customer_id`, guests fall back to the random `clientFingerprint` already kept in
+localStorage. No email or other PII is sent to telemetry; anonymous browsing still links across pages.
+
+## Behavior tracking
+
+Product and route behavior (`behavior.ts`) answers "which course/diploma did someone click, and
+where did they go next". Every event fans out to **two sinks** under one taxonomy:
+
+- **Faro** (`pushFaroEvent`) — Grafana dashboards and funnels, correlated with the RUM session,
+  trace and any error.
+- **Backend** (`trackBehaviorEvent`) — `POST /api/b2c/analytics/events` → the backend
+  `/api/v1/analytics/events` (the contract already existed in `src/lib/api/analytics.ts`; it feeds
+  the recommendation history the platform owns). Guests are identified by `X-Client-Fingerprint`,
+  signed-in visitors additionally by the bearer session the proxy attaches.
+
+Both are fire-and-forget: a tracking failure never blocks navigation or a click, and a no-op when
+Faro is unconfigured or the backend is unreachable.
+
+### Events
+
+| Event | Where | Attributes (Faro) / metadata (backend) |
+| --- | --- | --- |
+| `page_view` | every route change + initial load (Faro only) | `route` pattern, `navigation_type`, product kind/id on detail pages |
+| `product_view` | product detail pages | `route`, `kind`, `legacy_entity_id` |
+| `product_click` | every product card (all surfaces) | `product_kind`, `legacy_entity_id`, `title`, `surface`, `position` |
+| `wishlist_add` / `wishlist_remove` | any wishlist toggle | `product_kind`, `legacy_entity_id`, `title`, `price_amount` |
+| `cart_add` / `cart_remove` | any cart toggle; bulk add-all sends one `cart_add` with a count | as above |
+| `search` | every search/filter/sort/pagination navigation | query, types, sort, mode, page, facet counts |
+| `login_started`, `registered`, `signed_in`, `signed_out`, `auth_gate_opened` | explicit auth actions | — |
+| `order_created`, `payment_settled`, `order_viewed` | checkout funnel | order number/status, total, method, outcome |
+
+Click context: `ProductCard` parses kind + id from the detail href, so **every** card surface is
+covered with no per-call-site work. Surfaces that know their context also pass
+`tracking={{ surface, position }}` (search results, landing rails, related/recommended, expert
+rails, wishlist, recommendations).
+
+### Route observability
+
+`route-pattern.ts` maps a path to its pattern (and, for detail pages, the product). It is used twice
+so client and server agree:
+
+- client — the `page_view` `route` attribute and product extraction;
+- server — the `http.route` attribute stamped on inbound spans (see Phase above).
+
+### Example Grafana queries
+
+- Top clicked products: Faro events where `event_name = product_click`, group by
+  `product_kind` + `legacy_entity_id`.
+- Funnel: count sessions per step `page_view → product_click → wishlist_add → cart_add →
+  order_created` (Logs/Explore on the Faro events, or the backend analytics table).
+- Route popularity: `page_view` grouped by `route`.
+- Per-route server health: Tempo metrics grouped by `http.route` (rate, error rate, p95 duration).
 
 ## Browser ↔ server correlation
 
@@ -144,10 +200,14 @@ Dev reports into the same stack tagged `environment=development` (see `.env.loca
 1. `npm run check` — types and lint.
 2. `npm run build` — must succeed under webpack; the Faro plugin logs the bundle id and map rewrites.
 3. Run the app and load a page, then look in Grafana Cloud:
-   - Frontend Observability — events, web vitals, sessions for the Faro app.
-   - Tempo — a trace containing both the browser fetch span and the server span.
+   - Frontend Observability — events, web vitals, sessions for the Faro app; `page_view` /
+     `product_click` / funnel events under the "behavior" domain.
+   - Tempo — a trace containing both the browser fetch span and the server span (the server span
+     carries `http.route`).
    - Loki — log lines for `onRequestError`, searchable by trace id.
-4. To de-minify a client error, confirm the source map upload ran and that `app.name` matches the
+4. Behavior reachability: click a product card and confirm a `POST /api/b2c/analytics/events` in the
+   network tab (guests included). The backend endpoint must be running for the event to record.
+5. To de-minify a client error, confirm the source map upload ran and that `app.name` matches the
    plugin's `appName`.
 
 ## Notes
@@ -158,3 +218,6 @@ Dev reports into the same stack tagged `environment=development` (see `.env.loca
 - Backend trace correlation depends on the backend honouring `traceparent`; otherwise its spans
   start a new trace.
 - On Vercel the platform adds incoming-request spans; on Docker the auto-instrumentations do.
+- Behavior events go to the backend independently of Faro: `NEXT_PUBLIC_FARO_URL` only controls the
+  RUM sink. Turning off client telemetry means removing the relevant variables, but the
+  `/api/b2c/analytics/events` calls still run (they are first-party).

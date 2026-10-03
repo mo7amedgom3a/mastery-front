@@ -97,6 +97,7 @@ export function WishlistCard({ item, inCart, onAddToCart, onRemove, sizes }: Wis
       meta={meta}
       price={price}
       sizes={sizes}
+      tracking={{ surface: "wishlist" }}
       className={item.available ? undefined : "[&_.ma-card\\_\\_media]:opacity-50"}
       actions={
         // Above the card's stretched title link, like every card's footer actions.

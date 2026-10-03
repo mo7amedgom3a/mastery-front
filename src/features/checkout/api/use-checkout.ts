@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { routes } from "@/config/routes";
 import { createOrder, ShopApiError, shopKeys } from "@/features/cart/api/shop-client";
+import { trackAuth, trackCheckout } from "@/lib/observability/behavior";
 import type { PaymentMethodId, Quote, QuoteRequest } from "@/lib/shop/contract";
 import { useShopStore } from "@/lib/shop/store";
 import { ensureAuthStatus } from "@/lib/shop/use-shop-actions";
@@ -47,6 +48,7 @@ export function useCheckout({ quote, request, method }: CheckoutInput) {
       const mockCustomer = !signedIn && (options.asMockCustomer || shop.mockCustomer);
       if (!signedIn && !mockCustomer) {
         shop.openAuthGate();
+        trackAuth("auth_gate_opened");
         return;
       }
 
@@ -57,6 +59,13 @@ export function useCheckout({ quote, request, method }: CheckoutInput) {
         mockCustomer: mockCustomer || undefined,
       });
       shop.setOrder(order);
+      trackCheckout("order_created", {
+        order_number: order.number,
+        status: order.status,
+        total: order.totals.total,
+        lines: order.lines.length,
+        payment_method: order.paymentMethod ?? "none",
+      });
       if (payment.action === "redirect") {
         router.push(payment.url as Route);
       } else {
@@ -68,7 +77,10 @@ export function useCheckout({ quote, request, method }: CheckoutInput) {
         if (cause.code === "price_changed" && cause.quote) {
           queryClient.setQueryData(shopKeys.quote(request), cause.quote);
         }
-        if (cause.code === "auth_required") shop.openAuthGate();
+        if (cause.code === "auth_required") {
+          shop.openAuthGate();
+          trackAuth("auth_gate_opened");
+        }
         setError(cause.message);
       } else {
         setError("تعذّر إتمام الطلب. تحقّق من اتصالك وحاول مجدداً.");

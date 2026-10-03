@@ -96,7 +96,7 @@ export function CoursesSection({
         filter?.href ? { label: `كل دورات ${filter.label}`, href: filter.href } : { label: "كل الدورات", href: routes.courses }
       }
       railKey={filter?.key}
-      cards={visible.map((course) => ({
+      cards={visible.map((course, position) => ({
         key: course.id,
         href: course.href,
         title: course.title,
@@ -107,6 +107,7 @@ export function CoursesSection({
         meta: courseMeta(course),
         price: course.price,
         actions: actionsFor("course", course),
+        tracking: { surface: "landing-courses", position },
       }))}
     >
       <FilterChips label="تصفية الدورات حسب المجال" filters={filters} active={filter} onSelect={select} />
@@ -125,7 +126,7 @@ export function DiplomasSection({ diplomas, filters }: { diplomas: CourseCardVM[
       tone="alt"
       viewAll={{ label: "كل الدبلومات", href: routes.diplomas }}
       railKey={filter?.key}
-      cards={visible.map((diploma) => ({
+      cards={visible.map((diploma, position) => ({
         key: diploma.id,
         href: diploma.href,
         title: diploma.title,
@@ -136,6 +137,7 @@ export function DiplomasSection({ diplomas, filters }: { diplomas: CourseCardVM[
         meta: courseMeta(diploma),
         price: diploma.price,
         actions: actionsFor("diploma", diploma),
+        tracking: { surface: "landing-diplomas", position },
       }))}
     >
       <FilterChips label="تصفية الدبلومات حسب المجال" filters={filters} active={filter} onSelect={select} />
@@ -153,7 +155,7 @@ export function PackagesSection({ packages, filters }: { packages: PackageCardVM
       lead="مسارات جاهزة في التسويق والمالية والمبيعات والتميز الوظيفي، تحصل فيها على عدد من الدورات معاً."
       viewAll={{ label: "كل الباقات", href: routes.packages }}
       railKey={filter?.key}
-      cards={visible.map((pkg) => {
+      cards={visible.map((pkg, position) => {
         const courses = pkg.courseCount > 0 ? formatCount(pkg.courseCount, COURSE_FORMS) : null;
         return {
           key: pkg.id,
@@ -166,6 +168,7 @@ export function PackagesSection({ packages, filters }: { packages: PackageCardVM
           meta: courses ? [{ icon: Layers, label: courses }] : [],
           price: pkg.price,
           actions: actionsFor("package", pkg),
+          tracking: { surface: "landing-packages", position },
         };
       })}
     >
@@ -191,7 +194,7 @@ export function ConsultationsSection({
       tone="alt"
       viewAll={{ label: "كل الاستشارات", href: routes.consultations }}
       railKey={filter?.key}
-      cards={visible.map((consultation) => {
+      cards={visible.map((consultation, position) => {
         const meta: ProductCardMeta[] = [];
         if (consultation.consultant) meta.push({ icon: UserRound, label: consultation.consultant });
         if (consultation.sessions > 0) {
@@ -216,6 +219,7 @@ export function ConsultationsSection({
           meta,
           price: consultation.price,
           actions: actionsFor("consultation", consultation),
+          tracking: { surface: "landing-consultations", position },
         };
       })}
     >

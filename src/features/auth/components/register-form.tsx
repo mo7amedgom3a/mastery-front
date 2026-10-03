@@ -6,6 +6,7 @@ import { AppLink } from "@/components/ui/app-link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { routes } from "@/config/routes";
 import { registerAccount, requestLoginCode } from "@/lib/auth/client";
+import { trackAuth } from "@/lib/observability/behavior";
 
 import { authErrorMessage } from "../model/messages";
 import { registerSchema, type RegisterField } from "../model/schemas";
@@ -76,6 +77,7 @@ export function RegisterForm({ next }: { next: string }) {
     setPending(true);
     try {
       await registerAccount(parsed.data);
+      trackAuth("registered");
     } catch (error) {
       setFormError(authErrorMessage(error));
       setPending(false);

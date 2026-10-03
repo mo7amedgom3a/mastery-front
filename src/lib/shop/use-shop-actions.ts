@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuthStore } from "@/lib/auth/store";
+import { trackCart, trackWishlist } from "@/lib/observability/behavior";
 
 import { useShopStore, type ShopItem } from "./store";
 import { pushWishlistEntry, removeWishlistEntry } from "./wishlist-sync";
@@ -22,6 +23,7 @@ export function saveToWishlist(item: ShopItem): void {
   const shop = useShopStore.getState();
   if (shop.wishlist.some((entry) => entry.key === item.key)) return;
   shop.addToWishlist(item);
+  trackWishlist(item, true);
   if (useAuthStore.getState().status === "authenticated") {
     const entry = useShopStore.getState().wishlist.find((saved) => saved.key === item.key);
     if (entry) void pushWishlistEntry(entry);
@@ -34,6 +36,7 @@ export function removeFromWishlist(key: string): void {
   const existing = shop.wishlist.find((entry) => entry.key === key);
   if (!existing) return;
   shop.removeFromWishlist(key);
+  trackWishlist(existing, false);
   if (useAuthStore.getState().status === "authenticated") void removeWishlistEntry(existing);
 }
 
@@ -52,9 +55,11 @@ export function useShopActions() {
     const shop = useShopStore.getState();
     if (shop.cart.some((entry) => entry.key === item.key)) {
       shop.removeFromCart(item.key);
+      trackCart(item, false);
       return false;
     }
     shop.addToCart(item);
+    trackCart(item, true);
     return true;
   };
 

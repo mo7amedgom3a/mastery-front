@@ -4,6 +4,7 @@ import type { Route } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
 
+import { TrackedCardLink } from "@/components/shop/tracked-card-link";
 import { AppLink } from "@/components/ui/app-link";
 import { brandBg, type BrandColor } from "@/components/ui/brand-colors";
 import { cn } from "@/lib/cn";
@@ -44,6 +45,8 @@ export type ProductCardProps = {
   media?: "wide" | "natural";
   sizes?: string;
   className?: string;
+  /** Where the card is rendered (e.g. "search", "related") and its position in the list, for click analytics. */
+  tracking?: { surface?: string; position?: number };
 };
 
 const DEFAULT_SIZES = "(min-width: 1200px) 390px, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw";
@@ -67,6 +70,7 @@ export function ProductCard({
   media = "wide",
   sizes = DEFAULT_SIZES,
   className,
+  tracking,
 }: ProductCardProps) {
   return (
     <article className={cn("ma-card group relative h-full focus-within:border-line-strong", className)}>
@@ -103,9 +107,14 @@ export function ProductCard({
         {/* Tag lives in the body, not over the artwork: course images carry their own text. */}
         {tag ? <span className="ma-tag ma-tag--soft self-start">{tag}</span> : null}
         <h3 className="ma-card__title line-clamp-2">
-          <AppLink href={href} className="text-fg no-underline after:absolute after:inset-0 after:content-['']">
+          <TrackedCardLink
+            href={href}
+            title={title}
+            tracking={tracking}
+            className="text-fg no-underline after:absolute after:inset-0 after:content-['']"
+          >
             {title}
-          </AppLink>
+          </TrackedCardLink>
         </h3>
         {summary ? <p className="m-0 line-clamp-2 text-sm leading-6 text-fg-muted">{summary}</p> : null}
         {tags.length > 0 ? (

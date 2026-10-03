@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 import { useAuthStore } from "@/lib/auth/store";
-import { setFaroUser } from "@/lib/observability/faro";
+import { syncFaroIdentity } from "@/lib/observability/faro";
 import { rehydrateShop } from "@/lib/shop/store";
 import { syncGuestWishlist } from "@/lib/shop/wishlist-sync";
 
@@ -31,10 +31,11 @@ export function ShopAuthBridge() {
       await syncGuestWishlist();
     };
 
-    // Opaque customer id only: RUM sessions link to the account without putting PII in telemetry.
+    // Signed-in visitors are keyed by their opaque customer id; guests keep the random
+    // client fingerprint, so anonymous browsing still links across pages (no PII either way).
     const syncFaroUser = () => {
       const { status, user } = useAuthStore.getState();
-      setFaroUser(status === "authenticated" && user ? { id: user.customer_id } : null);
+      syncFaroIdentity(status === "authenticated" && user ? user.customer_id : null);
     };
 
     const unsubscribe = useAuthStore.subscribe((state, previous) => {

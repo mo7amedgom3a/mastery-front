@@ -18,7 +18,7 @@ export function RelatedProgramsRail({ cards, fields }: RailProps & { fields: str
           : "دورات ودبلومات وباقات في المجالات نفسها، يقدّمها خبراء آخرون على ماستري."
       }
       tone="alt"
-      cards={cards.map(toCard)}
+      cards={cards.map((card, position) => toCard(card, { surface: "expert-related", position }))}
     />
   );
 }
@@ -32,7 +32,7 @@ export function RelatedConsultationsRail({ cards }: RailProps) {
       title="استشارات من خبراء آخرين"
       lead="جلسات فردية في المجالات نفسها، مع خبراء آخرين على ماستري."
       viewAll={{ label: "كل الاستشارات", href: routes.consultations }}
-      cards={cards.map(toCard)}
+      cards={cards.map((card, position) => toCard(card, { surface: "expert-consultations", position }))}
     />
   );
 }
@@ -46,7 +46,7 @@ export function ExpertRecommendedRail({ cards }: RailProps) {
       title="قد يعجبك أيضاً"
       lead="اقتراحات مبنية على المهارات والمجالات التي يغطيها ما يقدّمه هذا الخبير."
       tone="alt"
-      cards={cards.map(toCard)}
+      cards={cards.map((card, position) => toCard(card, { surface: "expert-recommended", position }))}
     />
   );
 }

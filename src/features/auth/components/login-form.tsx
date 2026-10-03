@@ -4,6 +4,7 @@ import { useId, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { requestLoginCode } from "@/lib/auth/client";
+import { trackAuth } from "@/lib/observability/behavior";
 
 import { authErrorMessage } from "../model/messages";
 import { loginSchema } from "../model/schemas";
@@ -42,6 +43,7 @@ export function LoginForm({ next }: { next: string }) {
     setPending(true);
     try {
       const sent = await requestLoginCode(parsed.data.loginName);
+      trackAuth("login_started");
       setPendingLogin({ loginName: parsed.data.loginName, resendAfter: sent.resendAfter });
     } catch (error) {
       setFormError(authErrorMessage(error));

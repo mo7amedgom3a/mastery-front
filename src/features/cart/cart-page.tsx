@@ -12,6 +12,7 @@ import { useCheckout } from "@/features/checkout/api/use-checkout";
 import { AuthGateDialog } from "@/features/checkout/components/auth-gate-dialog";
 import { RecommendationRail } from "@/features/search/components/recommendation-rail";
 import { formatCount } from "@/lib/format";
+import { trackCart } from "@/lib/observability/behavior";
 import type { QuoteRequest } from "@/lib/shop/contract";
 import { PRODUCT_FORMS } from "@/lib/shop/labels";
 import { useShopHydrated, useShopStore, type CartLine } from "@/lib/shop/store";
@@ -60,6 +61,7 @@ export function CartPage() {
     if (index < 0) return;
     undo.offer({ line, index });
     removeFromCart(line.key);
+    trackCart(line, false);
   };
   const restore = () => {
     if (!undo.pending) return;
@@ -70,6 +72,7 @@ export function CartPage() {
     saveToWishlist(line);
     undo.clear();
     removeFromCart(line.key);
+    trackCart(line, false);
   };
 
   if (!hydrated) {

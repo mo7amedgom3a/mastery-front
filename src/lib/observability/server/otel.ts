@@ -1,12 +1,22 @@
 import "server-only";
 
+import { SpanKind, type Context } from "@opentelemetry/api";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-proto";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { SimpleLogRecordProcessor } from "@opentelemetry/sdk-logs";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
+import {
+  BatchSpanProcessor,
+  type ReadableSpan,
+  type Span,
+  type SpanProcessor,
+} from "@opentelemetry/sdk-trace-base";
 import { ATTR_DEPLOYMENT_ENVIRONMENT_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { registerOTel } from "@vercel/otel";
+
+import { matchRoute } from "@/lib/observability/route-pattern";
 
 /**
  * The log processor is created here (rather than left to @vercel/otel's `"auto"`) so we keep a
@@ -50,6 +60,38 @@ function serviceVersion(): string | undefined {
 }
 
 /**
+ * Adds `http.route` (the route pattern, e.g. `/courses/[slug]`) to inbound server spans. The raw
+ * `url.path` stays on the span; the pattern is what makes per-route rate/error/latency panels
+ * possible without one series per course id.
+ *
+ * Forwards everything to the wrapped processor, so this only observes.
+ */
+class RouteTaggingSpanProcessor implements SpanProcessor {
+  constructor(private readonly delegate: SpanProcessor) {}
+
+  onStart(span: Span, parentContext: Context): void {
+    if (span.kind === SpanKind.SERVER) {
+      const attributes = span.attributes as Record<string, unknown>;
+      const path = (attributes["url.path"] ?? attributes["http.target"]) as string | undefined;
+      if (path) span.setAttribute("http.route", matchRoute(path).pattern);
+    }
+    this.delegate.onStart(span, parentContext);
+  }
+
+  onEnd(span: ReadableSpan): void {
+    this.delegate.onEnd(span);
+  }
+
+  forceFlush(): Promise<void> {
+    return this.delegate.forceFlush();
+  }
+
+  shutdown(): Promise<void> {
+    return this.delegate.shutdown();
+  }
+}
+
+/**
  * Registers the OpenTelemetry SDK once per server instance. Traces, logs and metrics all point at
  * the OTLP endpoint/headers from the standard `OTEL_EXPORTER_OTLP_*` variables (Grafana Cloud).
  *
@@ -68,15 +110,22 @@ export function startOtel(): void {
 
   logProcessor = new SimpleLogRecordProcessor({ exporter: new OTLPLogExporter() });
 
+  const onVercel = Boolean(process.env.VERCEL);
+
   registerOTel({
     serviceName: process.env.OTEL_SERVICE_NAME?.trim() || "mastery-app",
     attributes,
-    instrumentations: process.env.VERCEL
+    instrumentations: onVercel
       ? ["fetch"]
       : getNodeAutoInstrumentations({
           // Off by default and very chatty; the rest of the defaults are the useful set.
           "@opentelemetry/instrumentation-host-metrics": { enabled: true },
         }),
+    // On Vercel the platform owns the trace exporter; elsewhere we tag spans with their route as
+    // they start and hand them to an OTLP exporter built from the standard OTEL_* variables.
+    ...(onVercel
+      ? {}
+      : { spanProcessors: [new RouteTaggingSpanProcessor(new BatchSpanProcessor(new OTLPTraceExporter()))] }),
     logRecordProcessors: [logProcessor],
     metricReaders: [
       new PeriodicExportingMetricReader({

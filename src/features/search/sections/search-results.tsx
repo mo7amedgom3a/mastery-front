@@ -132,9 +132,9 @@ function ResultGrid({ state, results, heading }: { state: SearchState; results: 
   return (
     <>
       <ul className={GRID}>
-        {results.cards.map((card) => {
+        {results.cards.map((card, index) => {
           // `toCard` returns a key for list rendering; React wants it passed on its own.
-          const { key, ...props } = toCard(card);
+          const { key, ...props } = toCard(card, { surface: "search", position: (state.page - 1) * PAGE_SIZE + index });
           return (
             <li key={key} className="min-w-0">
               <ProductCard {...props} tags={card.tags} sizes={CARD_SIZES} />

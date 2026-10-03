@@ -9,6 +9,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { routes } from "@/config/routes";
 import { confirmMockPayment, ShopApiError } from "@/features/cart/api/shop-client";
 import { findPaymentMethod } from "@/features/cart/model/payment-methods";
+import { trackCheckout } from "@/lib/observability/behavior";
 import { useShopHydrated, useShopStore } from "@/lib/shop/store";
 
 import { OrderDetails } from "./components/order-details";
@@ -55,6 +56,12 @@ export function MockGatewayPage() {
       const result = await confirmMockPayment({ orderId: order.orderId, outcome });
       const shop = useShopStore.getState();
       shop.setOrder({ ...order, status: result.status, paidAt: result.paidAt });
+      trackCheckout("payment_settled", {
+        order_number: order.number,
+        outcome,
+        status: result.status,
+        total: order.totals.total,
+      });
       if (result.status === "paid") {
         shop.clearCart();
         router.replace(routes.checkoutSuccess);

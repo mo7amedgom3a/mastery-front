@@ -14,7 +14,7 @@ export function ConsultationsRail({ cards }: RailProps) {
       title="استشارات قد تهمّك"
       lead="جلسات فردية أخرى مع خبراء ماستري، في هذا المجال وما يقاربه."
       viewAll={{ label: "كل الاستشارات", href: routes.consultations }}
-      cards={cards.map(toCard)}
+      cards={cards.map((card, position) => toCard(card, { surface: "consultation", position }))}
     />
   );
 }
@@ -32,7 +32,7 @@ export function ProgramsRail({ cards, expertName }: RailProps & { expertName: st
           : "برامج قريبة من موضوع الاستشارة، لتبني عليها ما تخرج به من الجلسة."
       }
       tone="alt"
-      cards={cards.map(toCard)}
+      cards={cards.map((card, position) => toCard(card, { surface: "consultation", position }))}
     />
   );
 }

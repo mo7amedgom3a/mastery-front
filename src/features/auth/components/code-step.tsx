@@ -7,6 +7,7 @@ import { useEffect, useId, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { resendLoginCode } from "@/lib/auth/client";
 import { useAuthStore } from "@/lib/auth/store";
+import { trackAuth } from "@/lib/observability/behavior";
 
 import { authErrorMessage, retryAfterSeconds } from "../model/messages";
 import { verifySchema } from "../model/schemas";
@@ -52,6 +53,7 @@ export function CodeStep({ loginName, resendAfter, next, onBack }: CodeStepProps
     setPending(true);
     try {
       await useAuthStore.getState().verifyCode(parsed.data.code);
+      trackAuth("signed_in");
     } catch (error) {
       setFormError(authErrorMessage(error));
       setPending(false);

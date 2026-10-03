@@ -16,7 +16,7 @@ const kindColor: Record<RailCardVM["kind"], BrandColor> = {
   consultation: "lilac",
 };
 
-export function toCard(card: RailCardVM) {
+export function toCard(card: RailCardVM, tracking?: { surface: string; position: number }) {
   const meta: ProductCardMeta[] = [];
   if (card.instructor) meta.push({ icon: UserRound, label: card.instructor, avatar: card.instructorAvatar });
   if (card.duration) meta.push({ icon: Clock, label: card.duration });
@@ -34,6 +34,7 @@ export function toCard(card: RailCardVM) {
     meta,
     price: card.price,
     actions: actionsFor(card.kind, card),
+    tracking,
   };
 }
 
@@ -47,7 +48,7 @@ export function RelatedRail({ cards }: RailProps) {
       label="ذات صلة"
       title="برامج ذات صلة"
       lead="دورات ودبلومات وباقات قريبة من هذا الموضوع، لتكمل بها مسارك."
-      cards={cards.map(toCard)}
+      cards={cards.map((card, position) => toCard(card, { surface: "related", position }))}
     />
   );
 }
@@ -61,7 +62,7 @@ export function RecommendedRail({ cards }: RailProps) {
       title="قد يعجبك أيضاً"
       lead="اقتراحات مبنية على المهارات والمجالات التي يغطيها هذا البرنامج."
       tone="alt"
-      cards={cards.map(toCard)}
+      cards={cards.map((card, position) => toCard(card, { surface: "recommended", position }))}
     />
   );
 }

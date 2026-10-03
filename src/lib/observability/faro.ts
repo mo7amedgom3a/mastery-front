@@ -1,6 +1,8 @@
 import { getWebInstrumentations, initializeFaro, type Faro } from "@grafana/faro-web-sdk";
 import { TracingInstrumentation } from "@grafana/faro-web-tracing";
 
+import { getClientFingerprint } from "@/lib/customer-tracking";
+
 /**
  * Grafana Faro (Real User Monitoring) lives behind this module so client code and the
  * Next.js instrumentation entry point share one instance. Initialization is deliberately
@@ -56,13 +58,19 @@ export function initFaro(): Faro | undefined {
     console.warn("[faro] initialization failed", error);
   }
 
+  syncFaroIdentity();
   return faro;
 }
 
-/** Attaches the signed-in user to every subsequent signal. Pass null on sign-out. */
-export function setFaroUser(user: { id: string; username?: string } | null): void {
+/**
+ * Attaches the visitor to every subsequent signal. Signed-in visitors are keyed by their opaque
+ * customer id; guests fall back to the random `clientFingerprint` already kept in localStorage, so
+ * anonymous browsing can still be followed across pages without any PII.
+ */
+export function syncFaroIdentity(customerId?: string | null): void {
   if (!faro) return;
-  if (user) faro.api.setUser({ id: user.id, username: user.username });
+  const id = customerId ?? getClientFingerprint();
+  if (id) faro.api.setUser({ id });
   else faro.api.resetUser();
 }
 
@@ -73,7 +81,11 @@ export function pushFaroError(error: unknown, context?: Record<string, string>):
   faro.api.pushError(value, context ? { context } : undefined);
 }
 
-/** Records an App Router navigation as an event, so it appears in Faro's event stream. */
-export function trackFaroNavigation(url: string, navigationType: string): void {
-  faro?.api.pushEvent("navigation", { url, navigationType }, "navigation");
+/** Pushes a named event with attributes; a no-op when Faro is not initialized. */
+export function pushFaroEvent(name: string, attributes?: Record<string, unknown>): void {
+  if (!faro) return;
+  const clean = attributes
+    ? Object.fromEntries(Object.entries(attributes).filter(([, value]) => value !== undefined && value !== null))
+    : undefined;
+  faro.api.pushEvent(name, clean as Record<string, string> | undefined, "behavior");
 }

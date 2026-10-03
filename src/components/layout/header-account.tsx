@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { routes } from "@/config/routes";
 import { useAuthStore } from "@/lib/auth/store";
+import { trackAuth } from "@/lib/observability/behavior";
 
 /**
  * The header's account action: "register" for a guest, "sign out" once there is a session. Rendered
@@ -30,6 +31,7 @@ export function HeaderAccount({ placement }: { placement: "bar" | "drawer" }) {
   const signOut = async () => {
     // Signed out in this browser even if the request fails; the server's copy then expires on its own.
     await useAuthStore.getState().logout().catch(() => undefined);
+    trackAuth("signed_out");
     // Re-render what the server made for a signed-in visitor.
     router.refresh();
   };

@@ -15,6 +15,7 @@ import {
 } from "react";
 
 import { cn } from "@/lib/cn";
+import { trackSearch } from "@/lib/observability/behavior";
 
 import { SEARCH_PATH, parseSearchParams, searchHref, type RawSearchParams } from "../model/params";
 
@@ -26,6 +27,34 @@ type SearchNav = {
 
 const SearchNavContext = createContext<SearchNav | null>(null);
 
+/** Reports the search state a navigation is moving to (query, facets, sort, mode, page). */
+function trackDestination(href: string): void {
+  try {
+    const query = new URL(href, window.location.origin).searchParams;
+    const raw: RawSearchParams = {};
+    query.forEach((value, key) => {
+      const existing = raw[key];
+      raw[key] = existing === undefined ? value : [...(Array.isArray(existing) ? existing : [existing]), value];
+    });
+    const state = parseSearchParams(raw);
+    trackSearch({
+      q: state.q,
+      types: state.types,
+      categories: state.categories,
+      skills: state.skills,
+      tags: state.tags,
+      trainers: state.trainers.map(String),
+      priceMin: state.priceMin,
+      priceMax: state.priceMax,
+      sort: state.sort,
+      mode: state.mode,
+      page: state.page,
+    });
+  } catch {
+    // A malformed href is not worth an event.
+  }
+}
+
 /**
  * Runs every filter change as one transition, so the current results stay on screen (dimmed, see
  * `PendingRegion`) until the next ones arrive instead of being swapped for a skeleton. Links and
@@ -35,7 +64,10 @@ export function SearchNavProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const navigate = useCallback<SearchNav["navigate"]>(
-    (href, { scroll = false } = {}) => startTransition(() => router.push(href, { scroll })),
+    (href, { scroll = false } = {}) => {
+      trackDestination(href);
+      startTransition(() => router.push(href, { scroll }));
+    },
     [router],
   );
   const value = useMemo(() => ({ pending, navigate }), [pending, navigate]);
