@@ -74,21 +74,6 @@
   "links": [],
   "panels": [
     {
-      "id": 0,
-      "type": "text",
-      "title": "Read me — if Loki panels show “No data”",
-      "gridPos": {
-        "h": 6,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "options": {
-        "mode": "markdown",
-        "content": "**How this dashboard reads Faro data**\n\nFaro telemetry is stored in your **Grafana Cloud Logs** Loki data source. Grafana Cloud promotes the Faro attributes `app_id`, `kind` (and `app_key`) to **labels** — there is no `app` label. Queries therefore select `{app_id=~\"$app_id\", kind=\"event\"}`.\n\n**If panels show “No data”:**\n1. Set the **Loki** data source to the `-logs` instance (name ends in `-logs`), not `…-usage-insights`.\n2. Pick your app in the **Faro app id** dropdown (All is fine). If it is empty, run `{kind=\"event\"}` in Explore — no results means frontend telemetry is not reaching this stack (check the collector URL / redeploy).\n3. Verify fields parse: `{kind=\"event\"} | logfmt | event_name=\"page_view\"` should return lines.\n\nThe **Server (Tempo)** row needs server-side OTLP env vars (`OTEL_*`) deployed; it stays empty until then."
-      }
-    },
-    {
       "id": 1,
       "type": "row",
       "title": "Overview",
@@ -97,7 +82,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 6
+        "y": 0
       },
       "panels": []
     },
@@ -105,7 +90,7 @@
       "id": 2,
       "type": "stat",
       "title": "Page views",
-      "description": "Client page_view events reported by Faro.",
+      "description": "Client page_view events reported by Faro (one per route change and initial load).",
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"
@@ -114,7 +99,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 7
+        "y": 1
       },
       "targets": [
         {
@@ -161,7 +146,7 @@
       "id": 3,
       "type": "stat",
       "title": "Unique pages",
-      "description": "Distinct route patterns seen.",
+      "description": "Number of distinct route patterns seen in the range.",
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"
@@ -170,7 +155,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 7
+        "y": 1
       },
       "targets": [
         {
@@ -217,7 +202,7 @@
       "id": 4,
       "type": "stat",
       "title": "Product views",
-      "description": "Product detail pages opened.",
+      "description": "Product detail pages opened (course/diploma/package/consultation).",
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"
@@ -226,7 +211,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 7
+        "y": 1
       },
       "targets": [
         {
@@ -273,7 +258,7 @@
       "id": 5,
       "type": "stat",
       "title": "Product clicks",
-      "description": "Clicks on product cards, any surface.",
+      "description": "Product-card clicks across every surface.",
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"
@@ -282,7 +267,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 7
+        "y": 1
       },
       "targets": [
         {
@@ -337,7 +322,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 11
+        "y": 5
       },
       "targets": [
         {
@@ -391,7 +376,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 13
       },
       "panels": []
     },
@@ -399,7 +384,7 @@
       "id": 8,
       "type": "table",
       "title": "Top pages by views",
-      "description": "Pages (route patterns) ranked by page_view count.",
+      "description": "Pages ranked by page_view count; the “Page” column is the route pattern.",
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"
@@ -408,7 +393,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 20
+        "y": 14
       },
       "targets": [
         {
@@ -472,7 +457,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 20
+        "y": 14
       },
       "targets": [
         {
@@ -483,7 +468,8 @@
           },
           "editorMode": "code",
           "expr": "sum by (route) (count_over_time({app_id=~\"$app_id\", kind=\"event\"} | logfmt | event_name=\"page_view\" | route=~\"$route\" [$__range]))",
-          "queryType": "instant"
+          "queryType": "instant",
+          "legendFormat": "{{route}}"
         }
       ],
       "options": {
@@ -506,7 +492,31 @@
           "unit": "short"
         },
         "overrides": []
-      }
+      },
+      "transformations": [
+        {
+          "id": "reduce",
+          "options": {
+            "mode": "seriesToRows",
+            "reducers": [
+              "lastNotNull"
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Field": true
+            },
+            "renameByName": {
+              "Metric": "Page",
+              "Value": "Views"
+            }
+          }
+        }
+      ]
     },
     {
       "id": 10,
@@ -517,7 +527,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 24
       },
       "panels": []
     },
@@ -533,7 +543,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 31
+        "y": 25
       },
       "targets": [
         {
@@ -591,7 +601,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 31
+        "y": 25
       },
       "targets": [
         {
@@ -649,7 +659,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 33
       },
       "targets": [
         {
@@ -672,8 +682,9 @@
             },
             "indexByName": {},
             "renameByName": {
-              "Value #A": "Views",
-              "Value": "Views"
+              "Value #A": "Clicks",
+              "Value": "Clicks",
+              "route": "Page"
             }
           }
         }
@@ -709,7 +720,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 42
       },
       "panels": []
     },
@@ -725,7 +736,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 49
+        "y": 43
       },
       "targets": [
         {
@@ -774,7 +785,8 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "Products ranked by product_click count, with their type and title."
     },
     {
       "id": 16,
@@ -788,7 +800,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 49
+        "y": 43
       },
       "targets": [
         {
@@ -837,13 +849,14 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "Products ranked by product_view count (detail pages opened)."
     },
     {
       "id": 17,
       "type": "bargauge",
       "title": "Conversion funnel",
-      "description": "Event counts per funnel step over the dashboard time range.",
+      "description": "Event counts per funnel step; the drop between bars is the conversion loss.",
       "datasource": {
         "type": "loki",
         "uid": "${DS_LOKI}"
@@ -852,7 +865,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 59
+        "y": 53
       },
       "targets": [
         {
@@ -928,7 +941,25 @@
       "fieldConfig": {
         "defaults": {},
         "overrides": []
-      }
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value #A": "1. page_view",
+              "Value #B": "2. product_click",
+              "Value #C": "3. wishlist_add",
+              "Value #D": "4. cart_add",
+              "Value #E": "5. order_created"
+            }
+          }
+        }
+      ]
     },
     {
       "id": 18,
@@ -939,7 +970,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 67
+        "y": 61
       },
       "panels": []
     },
@@ -955,7 +986,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 68
+        "y": 62
       },
       "targets": [
         {
@@ -1011,7 +1042,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 68
+        "y": 62
       },
       "targets": [
         {
@@ -1067,7 +1098,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 68
+        "y": 62
       },
       "targets": [
         {
@@ -1123,7 +1154,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 68
+        "y": 62
       },
       "targets": [
         {
@@ -1179,7 +1210,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 72
+        "y": 66
       },
       "targets": [
         {
@@ -1234,7 +1265,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 80
+        "y": 74
       },
       "panels": []
     },
@@ -1250,7 +1281,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 81
+        "y": 75
       },
       "targets": [
         {
@@ -1305,7 +1336,7 @@
         "h": 8,
         "w": 18,
         "x": 6,
-        "y": 81
+        "y": 75
       },
       "targets": [
         {
@@ -1362,7 +1393,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 89
+        "y": 83
       },
       "targets": [
         {
@@ -1425,7 +1456,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 89
+        "y": 83
       },
       "targets": [
         {
@@ -1485,7 +1516,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 98
+        "y": 92
       },
       "panels": []
     },
@@ -1502,7 +1533,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 99
+        "y": 93
       },
       "targets": [
         {
@@ -1557,7 +1588,7 @@
         "h": 8,
         "w": 18,
         "x": 6,
-        "y": 99
+        "y": 93
       },
       "targets": [
         {
@@ -1614,7 +1645,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 107
+        "y": 101
       },
       "targets": [
         {
@@ -1672,7 +1703,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 107
+        "y": 101
       },
       "targets": [
         {
@@ -1726,7 +1757,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 115
+        "y": 109
       },
       "panels": []
     },
@@ -1742,7 +1773,7 @@
         "h": 8,
         "w": 10,
         "x": 0,
-        "y": 116
+        "y": 110
       },
       "targets": [
         {
@@ -1801,7 +1832,7 @@
         "h": 8,
         "w": 14,
         "x": 10,
-        "y": 116
+        "y": 110
       },
       "targets": [
         {
@@ -1827,6 +1858,461 @@
               "Value #A": "Searches",
               "Value": "Searches",
               "query": "Search term"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 37,
+      "type": "row",
+      "title": "Click details",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 118
+      },
+      "panels": []
+    },
+    {
+      "id": 38,
+      "type": "table",
+      "title": "Pages by clicks",
+      "description": "Which pages receive the most product-card clicks.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 119
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "topk(20, sum by (route) (count_over_time({app_id=~\"$app_id\", kind=\"event\"} | logfmt | event_name=\"product_click\" [$__range])))",
+          "queryType": "instant"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value #A": "Clicks",
+              "Value": "Clicks",
+              "route": "Page"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 39,
+      "type": "table",
+      "title": "Clicks by surface",
+      "description": "Where the card was clicked: search, landing rails, recommendations, wishlist, expert grids…",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 119
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "topk(20, sum by (surface) (count_over_time({app_id=~\"$app_id\", kind=\"event\"} | logfmt | event_name=\"product_click\" [$__range])))",
+          "queryType": "instant"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value #A": "Clicks",
+              "Value": "Clicks",
+              "surface": "Surface"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 40,
+      "type": "table",
+      "title": "Engagement by product type",
+      "description": "Per product type: detail-page views, card clicks, wishlist adds and cart adds.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 128
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (product_kind) (count_over_time({app_id=~\"$app_id\", kind=\"event\"} | logfmt | event_name=\"product_view\" [$__range]))",
+          "queryType": "instant"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (product_kind) (count_over_time({app_id=~\"$app_id\", kind=\"event\"} | logfmt | event_name=\"product_click\" [$__range]))",
+          "queryType": "instant"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (product_kind) (count_over_time({app_id=~\"$app_id\", kind=\"event\"} | logfmt | event_name=\"wishlist_add\" [$__range]))",
+          "queryType": "instant"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (product_kind) (count_over_time({app_id=~\"$app_id\", kind=\"event\"} | logfmt | event_name=\"cart_add\" [$__range]))",
+          "queryType": "instant"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "product_kind",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "product_kind": "Type",
+              "Value #A": "Views",
+              "Value #B": "Clicks",
+              "Value #C": "Wishlist",
+              "Value #D": "Cart"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 41,
+      "type": "table",
+      "title": "Clicks by card position",
+      "description": "Click share by the card's position in its rail/result list (0 = first).",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 128
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "topk(20, sum by (position) (count_over_time({app_id=~\"$app_id\", kind=\"event\"} | logfmt | event_name=\"product_click\" | position!=\"\" [$__range])))",
+          "queryType": "instant"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "Value #A": "Clicks",
+              "Value": "Clicks",
+              "position": "Position"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 42,
+      "type": "row",
+      "title": "Product & search detail",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 137
+      },
+      "panels": []
+    },
+    {
+      "id": 43,
+      "type": "table",
+      "title": "Detail page views by type",
+      "description": "Views of each detail route (course, diploma, package, consultation, expert, live).",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 138
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "topk(20, sum by (route) (count_over_time({app_id=~\"$app_id\", kind=\"event\"} | logfmt | event_name=\"product_view\" [$__range])))",
+          "queryType": "instant"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "route": "Page",
+              "Value #A": "Views",
+              "Value": "Views"
+            }
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 44,
+      "type": "table",
+      "title": "Search detail (by product type filter)",
+      "description": "Search actions grouped by the product types the visitor filtered on.",
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 138
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "${DS_LOKI}"
+          },
+          "editorMode": "code",
+          "expr": "topk(20, sum by (types) (count_over_time({app_id=~\"$app_id\", kind=\"event\"} | logfmt | event_name=\"search\" | types!=\"\" [$__range])))",
+          "queryType": "instant"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {
+              "types": "Product types",
+              "Value #A": "Searches",
+              "Value": "Searches"
             }
           }
         }

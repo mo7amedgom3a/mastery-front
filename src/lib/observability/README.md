@@ -146,8 +146,9 @@ so client and server agree:
 
 `grafana/top-pages-dashboard.json` is an importable dashboard with the pages/behavior views above:
 overview stats, top pages (table + treemap "map"), a per-route detail section driven by the `route`
-variable, product behavior (most clicked/viewed, funnel), search activity, web vitals, errors, and
-server-side per-route RED from Tempo.
+variable, product behavior (most clicked/viewed, funnel), click details, engagement and detail-page
+breakdowns by product type, search activity, web vitals, errors, and server-side per-route RED from
+Tempo.
 
 Import it with **Dashboards → New → Import → Upload JSON**, then pick the Loki and Tempo data
 sources when prompted. The `Route` dropdown defaults to All and is populated from
@@ -158,6 +159,8 @@ sources when prompted. The `Route` dropdown defaults to All and is populated fro
 | --- | --- | --- |
 | Page views, unique pages, page views over time, top pages, page share | `page_view` events | Loki (`{app_id, kind="event"}`) |
 | Page detail, products clicked from a page, funnel | `product_*`, `wishlist_*`, `cart_*`, `order_*` events | Loki |
+| Click details (pages by clicks, clicks by surface / card position) | `product_click` events | Loki |
+| Product & search detail (engagement by product type, detail-page views by type, search by product-type filter) | `product_*`, `search` events | Loki |
 | Search activity (over time, top terms) | `search` events | Loki |
 | Web vitals (TTFB/FCP/LCP/CLS) | `kind="measurement"` | Loki |
 | Exceptions | `kind="exception"` | Loki |
@@ -170,6 +173,10 @@ Good to know:
   `{app_id=~"$app_id", kind="…"}`.
 - Every page-scoped event (`product_click`, `wishlist_*`, `cart_*`, `search`, auth, checkout) carries
   the `route` it happened on, so the per-route panels work — not just `page_view`/`product_view`.
+- Table and funnel columns are renamed (Page, Views, Clicks, and the funnel steps) so no raw
+  `Value #A` / `Value #B` labels appear.
+- The page-share treemap reduces each route's series to `Metric`/`Value` rows (a `seriesToRows`
+  transformation); without that step its tiles stay empty even when the data is there.
 - TraceQL metrics queries are capped at a 24-hour window; the dashboard defaults to 6h.
 - The Faro event attribute used for pages is our `route` field (a route pattern). If it is absent in
   a given environment, the panels fall back to empty — `page_url` (Faro meta) is present on every
