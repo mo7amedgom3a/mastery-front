@@ -23,6 +23,16 @@ function clip(value?: string | null): string | undefined {
   return value.length > TITLE_LIMIT ? value.slice(0, TITLE_LIMIT) : value;
 }
 
+/**
+ * The route pattern the visitor is on right now. Stamped on every page-scoped event so a click,
+ * wishlist add or cart add can be attributed to the page (e.g. `/search`) it happened on, not only
+ * page views.
+ */
+function currentRoute(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  return matchRoute(window.location.pathname).pattern;
+}
+
 type BackendEvent = {
   entityType: string;
   legacyId?: number | null;
@@ -76,7 +86,9 @@ export function trackProductClick(
   product: { kind: ProductKind; id: number; title?: string | null },
   context?: ClickContext,
 ): void {
+  const route = currentRoute();
   const attributes: Record<string, unknown> = {
+    route,
     product_kind: product.kind,
     legacy_entity_id: product.id,
     title: clip(product.title),
@@ -86,7 +98,7 @@ export function trackProductClick(
   send("product_click", attributes, {
     entityType: "product",
     legacyId: product.id,
-    metadata: { kind: product.kind, title: clip(product.title) ?? null, surface: context?.surface ?? null, position: context?.position ?? null },
+    metadata: { route: route ?? null, kind: product.kind, title: clip(product.title) ?? null, surface: context?.surface ?? null, position: context?.position ?? null },
   });
 }
 
@@ -102,11 +114,17 @@ export function trackProductClickFromHref(
 }
 
 function productMetadata(item: ShopItem): Record<string, unknown> {
-  return { kind: item.kind, title: clip(item.title) ?? null, price_amount: item.priceAmount ?? null };
+  return {
+    route: currentRoute() ?? null,
+    kind: item.kind,
+    title: clip(item.title) ?? null,
+    price_amount: item.priceAmount ?? null,
+  };
 }
 
 function productAttributes(item: ShopItem, action: "add" | "remove"): Record<string, unknown> {
   return {
+    route: currentRoute(),
     product_kind: item.kind,
     legacy_entity_id: item.id,
     title: clip(item.title),
@@ -137,10 +155,11 @@ export function trackCart(item: ShopItem, added: boolean): void {
 export function trackCartBulk(items: readonly ShopItem[]): void {
   if (items.length === 0) return;
   const keys = items.map((item) => item.key);
+  const route = currentRoute();
   send(
     "cart_add",
-    { product_kind: "mixed", count: items.length, keys: keys.join(",") },
-    { entityType: "product", metadata: { count: items.length, keys } },
+    { route, product_kind: "mixed", count: items.length, keys: keys.join(",") },
+    { entityType: "product", metadata: { route: route ?? null, count: items.length, keys } },
   );
 }
 
@@ -160,9 +179,11 @@ export type SearchSummary = {
 
 export function trackSearch(summary: SearchSummary): void {
   const filterCount = summary.categories.length + summary.skills.length + summary.tags.length + summary.trainers.length;
+  const route = currentRoute();
   send(
     "search",
     {
+      route,
       query: clip(summary.q),
       types: summary.types.join(","),
       sort: summary.sort,
@@ -173,6 +194,7 @@ export function trackSearch(summary: SearchSummary): void {
     {
       entityType: "search",
       metadata: {
+        route: route ?? null,
         q: clip(summary.q) ?? null,
         types: summary.types,
         categories: summary.categories,
@@ -192,7 +214,9 @@ export function trackSearch(summary: SearchSummary): void {
 export type AuthEvent = "login_started" | "registered" | "signed_in" | "signed_out" | "auth_gate_opened";
 
 export function trackAuth(eventType: AuthEvent, metadata?: Record<string, unknown>): void {
-  send(eventType, { ...metadata }, { entityType: "auth", metadata: metadata ?? {} });
+  const route = currentRoute();
+  const payload = { route, ...metadata };
+  send(eventType, payload, { entityType: "auth", metadata: { ...payload, route: route ?? null } });
 }
 
 export type CheckoutEvent = "order_created" | "payment_settled" | "order_viewed";
@@ -202,5 +226,6 @@ export function trackCheckout(
   attributes: Record<string, string | number | boolean | undefined>,
   metadata?: Record<string, unknown>,
 ): void {
-  send(eventType, attributes, { entityType: "order", metadata: metadata ?? attributes });
+  const route = currentRoute();
+  send(eventType, { route, ...attributes }, { entityType: "order", metadata: metadata ?? { ...attributes, route } });
 }

@@ -142,6 +142,63 @@ so client and server agree:
 - Route popularity: `page_view` grouped by `route`.
 - Per-route server health: Tempo metrics grouped by `http.route` (rate, error rate, p95 duration).
 
+### Grafana dashboard
+
+`grafana/top-pages-dashboard.json` is an importable dashboard with the pages/behavior views above:
+overview stats, top pages (table + treemap "map"), a per-route detail section driven by the `route`
+variable, product behavior (most clicked/viewed, funnel), search activity, web vitals, errors, and
+server-side per-route RED from Tempo.
+
+Import it with **Dashboards → New → Import → Upload JSON**, then pick the Loki and Tempo data
+sources when prompted. The `Route` dropdown defaults to All and is populated from
+`route-pattern.ts`; `Faro app id` lists the `app_id` label values, and `OTel service` defaults to
+`mastery-app`.
+
+| Panels | Data | Source |
+| --- | --- | --- |
+| Page views, unique pages, page views over time, top pages, page share | `page_view` events | Loki (`{app_id, kind="event"}`) |
+| Page detail, products clicked from a page, funnel | `product_*`, `wishlist_*`, `cart_*`, `order_*` events | Loki |
+| Search activity (over time, top terms) | `search` events | Loki |
+| Web vitals (TTFB/FCP/LCP/CLS) | `kind="measurement"` | Loki |
+| Exceptions | `kind="exception"` | Loki |
+| Requests / p95 / errors per route | server spans with `http.route` | Tempo (TraceQL metrics) |
+
+Good to know:
+
+- Grafana Cloud Logs promotes the Faro attributes `app_id`, `kind` and `app_key` to **labels**.
+  There is **no `app` label** (that one is for self-hosted Faro → Alloy). The dashboard selects
+  `{app_id=~"$app_id", kind="…"}`.
+- Every page-scoped event (`product_click`, `wishlist_*`, `cart_*`, `search`, auth, checkout) carries
+  the `route` it happened on, so the per-route panels work — not just `page_view`/`product_view`.
+- TraceQL metrics queries are capped at a 24-hour window; the dashboard defaults to 6h.
+- The Faro event attribute used for pages is our `route` field (a route pattern). If it is absent in
+  a given environment, the panels fall back to empty — `page_url` (Faro meta) is present on every
+  signal as an alternative grouping key.
+- There is no geospatial map: Faro does not send location by default. The "page share" treemap is
+  the page map; add a geomap panel only if you enrich signals with a `country` attribute.
+
+#### "No data" on import
+
+Two things must be right: the **data source** and the **label schema**.
+
+- **Data source:** Grafana Cloud provisions several Loki instances; pick the **Grafana Cloud Logs**
+  one — its name ends in `-logs` (`grafanacloud-<stack>-logs`). `grafanacloud-<stack>-usage-insights`
+  only holds Grafana's own usage logs and never frontend telemetry.
+- **Labels:** the Faro telemetry carries `app_id`, `kind`, `app_key` labels (no `app`). Confirm in
+  Explore on the Logs data source with `{kind="event"}` (any results = data is arriving), then
+  `{kind="event"} | logfmt | event_name="page_view"` (results = the event fields parse).
+
+If `{kind="event"}` is empty, no frontend signal is reaching this stack:
+
+1. Confirm `NEXT_PUBLIC_FARO_URL` is the collector URL from **this** stack's Frontend Observability
+   app (it embeds the app key). A URL from another stack writes elsewhere.
+2. Make sure the site's origin is listed in the app's **CORS Allowed Origins**, then redeploy —
+   `NEXT_PUBLIC_*` is inlined at build time, so a deployment built before the variable existed still
+   sends nothing.
+
+The **Server (Tempo)** row needs the server-side `OTEL_*` variables deployed; until then it stays
+empty even though Faro's own client traces appear in Tempo.
+
 ## Browser ↔ server correlation
 
 The browser puts a `traceparent` header on its requests. The server (via
@@ -195,6 +252,52 @@ silent instead of retrying failed exports. The client pipeline starts only when
 To turn telemetry off in an environment, remove the relevant variables; no code change is needed.
 Dev reports into the same stack tagged `environment=development` (see `.env.local`).
 
+## Deploying to Vercel
+
+Client telemetry only works once the observability code is **deployed** and the build has the
+`NEXT_PUBLIC_*` values. `NEXT_PUBLIC_*` is inlined at build time, so adding a variable in Vercel does
+nothing until you **redeploy** — an env change alone is not enough.
+
+1. **Set the client variables** for the Production environment (Settings → Environment Variables, or
+   `vercel env add <name> production`):
+   - `NEXT_PUBLIC_FARO_URL` — the collector URL **from this stack's app** (copy it from Frontend
+     Observability → your app → Configuration; it embeds the app key). A URL from another stack
+     sends data elsewhere.
+   - `NEXT_PUBLIC_FARO_APP_NAME` (`mastery-app`), `NEXT_PUBLIC_FARO_APP_NAMESPACE` (`production`),
+     `NEXT_PUBLIC_FARO_APP_VERSION`.
+2. **Allow the origin in CORS.** In the Frontend Observability app, add the exact production origin
+   under **CORS Allowed Origins** (e.g. `https://emasteryacademy.com`, plus `https://www.…` or a
+   `https://*.emasteryacademy.com` wildcard if used). With no match the browser blocks the POST and
+   no data ever arrives. Changes take ~2 minutes to propagate.
+3. **Redeploy** (`vercel --prod`, or Redeploy in the dashboard) so the new variables are inlined.
+
+### Server-side OTLP variables
+
+The server pipeline (`OTEL_*`) is read at runtime, but a new deployment is still required for Vercel
+to inject them. Set, for Production:
+
+- `OTEL_EXPORTER_OTLP_ENDPOINT` — e.g. `https://otlp-gateway-prod-us-central-0.grafana.net/otlp`
+  (use the endpoint shown for **your** Grafana Cloud stack).
+- `OTEL_EXPORTER_OTLP_PROTOCOL` — `http/protobuf`.
+- `OTEL_SERVICE_NAME` — `mastery-app`.
+- `OTEL_EXPORTER_OTLP_HEADERS` — `Authorization=Basic <base64(instanceId:token)>`. It is a secret:
+  do not prefix it with `NEXT_PUBLIC_`. The endpoint and header are shown together in Grafana Cloud
+  under **OpenTelemetry / Send data**; the value must decode to `<instanceID>:<token>`. Generate it
+  with `printf 'INSTANCE_ID:TOKEN' | base64 -w0` if you build it by hand.
+
+Vercel dashboard: the value may contain spaces (the dashboard field accepts the whole
+`Authorization=Basic …` string). Vercel CLI (quote it, and avoid a trailing newline):
+
+```bash
+printf 'Authorization=Basic %s' "$BASE64_INSTANCE_TOKEN" | vercel env add OTEL_EXPORTER_OTLP_HEADERS production
+```
+
+While `OTEL_EXPORTER_OTLP_HEADERS` is left as the `Authorization=` placeholder, the server exporter
+stays off by design (no failed exports); set the real token to turn it on.
+
+If you later add a `Content-Security-Policy` header, add the Faro collector and OTLP gateway to its
+`connect-src` or the browser will block telemetry.
+
 ## Verifying
 
 1. `npm run check` — types and lint.
@@ -207,7 +310,11 @@ Dev reports into the same stack tagged `environment=development` (see `.env.loca
    - Loki — log lines for `onRequestError`, searchable by trace id.
 4. Behavior reachability: click a product card and confirm a `POST /api/b2c/analytics/events` in the
    network tab (guests included). The backend endpoint must be running for the event to record.
-5. To de-minify a client error, confirm the source map upload ran and that `app.name` matches the
+5. Browser (production): open DevTools → Network, filter for `collect`; you should see a POST to
+   `faro-collector-…grafana.net/collect/…` returning 2xx on page load. A CORS error there means the
+   origin is missing from CORS Allowed Origins; no request at all means the code isn't deployed or
+   `NEXT_PUBLIC_FARO_URL` was empty at build time.
+6. To de-minify a client error, confirm the source map upload ran and that `app.name` matches the
    plugin's `appName`.
 
 ## Notes
