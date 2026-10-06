@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { useAuthStore } from "@/lib/auth/store";
 import { syncFaroIdentity } from "@/lib/observability/faro";
+import { identifyCustomer } from "@/lib/observability/posthog";
 import { rehydrateShop } from "@/lib/shop/store";
 import { syncGuestWishlist } from "@/lib/shop/wishlist-sync";
 
@@ -31,19 +32,22 @@ export function ShopAuthBridge() {
       await syncGuestWishlist();
     };
 
-    // Signed-in visitors are keyed by their opaque customer id; guests keep the random
-    // client fingerprint, so anonymous browsing still links across pages (no PII either way).
-    const syncFaroUser = () => {
+    // Signed-in visitors are keyed by their opaque customer id (no PII). In Faro, guests keep the
+    // random client fingerprint; in PostHog they stay anonymous until they sign in, and signing out
+    // resets to a new anonymous id. Only settled states count: `idle`/`loading` say nothing yet.
+    const syncIdentity = () => {
       const { status, user } = useAuthStore.getState();
-      syncFaroIdentity(status === "authenticated" && user ? user.customer_id : null);
+      const customerId = status === "authenticated" && user ? user.customer_id : null;
+      syncFaroIdentity(customerId);
+      if (status === "authenticated" || status === "unauthenticated") identifyCustomer(customerId);
     };
 
     const unsubscribe = useAuthStore.subscribe((state, previous) => {
-      syncFaroUser();
+      syncIdentity();
       if (state.status === "authenticated" && previous.status !== "authenticated") void onAuthenticated();
     });
 
-    syncFaroUser();
+    syncIdentity();
 
     const cancelIdle = onIdle(() => {
       void rehydrateShop().then(() => {

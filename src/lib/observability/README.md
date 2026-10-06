@@ -1,7 +1,18 @@
 # Observability
 
-Frontend and server telemetry for the app, sent to Grafana Cloud. There are two independent
-pipelines that meet in one trace:
+Telemetry is split by audience:
+
+- **Grafana (Faro + OpenTelemetry) — engineering.** Errors, web vitals, logs, fetch/XHR traces,
+  server spans. "Is it broken, and where?"
+- **PostHog — product and business.** Course views, search, cart, coupons, payment method,
+  checkout and payment outcome, plus session replay and heatmaps. "What do customers do, and where
+  do they drop off?"
+
+A business question starts in PostHog (e.g. Tamara conversion dropped); its session replay shows the
+visitor's view; the `faro_session_id` on every PostHog event leads to the Faro session, whose trace
+follows the failing request into the server and backend.
+
+The engineering side is two pipelines that meet in one trace:
 
 ```
 Browser ── Faro RUM (errors, web vitals, sessions, user actions)
@@ -21,9 +32,10 @@ server span that served it, and the log line that explains it, all sharing a tra
 | Path | Runtime | Role |
 | --- | --- | --- |
 | `src/instrumentation.ts` | Node / Edge | Next.js entry point. `register()` starts the server SDK; `onRequestError` reports server errors. |
-| `src/instrumentation-client.ts` | Browser | Next.js entry point. Starts Faro before hydration; records the initial page view and every navigation. |
-| `src/lib/observability/faro.ts` | Browser | Faro initialization and the client helpers (`pushFaroError`, `pushFaroEvent`, `syncFaroIdentity`). |
-| `src/lib/observability/behavior.ts` | Browser | Typed product/route behavior events, fanned out to Faro and the backend. |
+| `src/instrumentation-client.ts` | Browser | Next.js entry point. Starts Faro before hydration, schedules PostHog for idle time, records product views on the initial load and every navigation. |
+| `src/lib/observability/faro.ts` | Browser | Faro initialization and the client helpers (`pushFaroError`, `syncFaroIdentity`, `getFaroSessionId`). |
+| `src/lib/observability/posthog.ts` | Browser | Lazy PostHog loader and helpers (`captureEvent`, `identifyCustomer`, `registerSuperProps`). |
+| `src/lib/observability/behavior.ts` | Browser | Typed product behavior events, fanned out to PostHog and the backend. |
 | `src/lib/observability/route-pattern.ts` | Shared | URL → route pattern (+ product) matcher, used by client events and server span tagging. |
 | `src/lib/observability/server/otel.ts` | Node | Builds the OTel SDK: instrumentations, exporters, resource attributes, route tagging. |
 | `src/lib/observability/server/logger.ts` | Node | Structured logger over the OTel logs API. |
@@ -75,10 +87,9 @@ Enabled instrumentations:
 - `TracingInstrumentation` — fetch/XHR spans and the W3C `traceparent` header. This is what links a
   browser span to the Next.js server span and, when the backend honours the header, to the API.
 
-The `onRouterTransitionStart` export records each App Router navigation, and the file records the
-initial load once — both as a Faro `page_view` event (with the route pattern and the product on a
-detail page). (The react-router `ReactIntegration` shown in the Grafana docs does not apply here:
-the App Router does not use react-router.)
+Faro receives **no business events**: page views, clicks, cart and checkout go to PostHog (below).
+(The react-router `ReactIntegration` shown in the Grafana docs does not apply here: the App Router
+does not use react-router.)
 
 ### Error boundaries
 
@@ -88,80 +99,109 @@ and then render their fallback.
 
 ### User identity
 
-`shop-auth-bridge.tsx` calls `syncFaroIdentity(customerId)`: signed-in visitors are keyed by the
-opaque `customer_id`, guests fall back to the random `clientFingerprint` already kept in
-localStorage. No email or other PII is sent to telemetry; anonymous browsing still links across pages.
+`shop-auth-bridge.tsx` keeps both tools in step with the session:
+
+- Faro — `syncFaroIdentity(customerId)`: signed-in visitors are keyed by the opaque `customer_id`,
+  guests fall back to the random `clientFingerprint` already kept in localStorage.
+- PostHog — `identifyCustomer(customerId)`: `identify` on sign-in (merging the anonymous history),
+  `reset` on sign-out so the next person on the device starts fresh. Guests stay anonymous.
+
+No email or other PII is sent to either tool.
+
+## Product analytics (PostHog)
+
+`posthog.ts` loads `posthog-js` with a dynamic `import()` once the browser is idle
+(`requestIdleCallback`). The SDK is therefore not in the hydration bundle and cannot delay LCP or
+interactivity; calls made before it loads are queued and replayed. It never loads when
+`NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` is unset, or for bots/headless browsers (crawlers get the same
+server-rendered HTML, so SEO is unaffected).
+
+Configuration (see `initPostHog`):
+
+- `$pageview` / `$pageleave` on every App Router navigation (`capture_pageview: "history_change"`).
+- Autocapture and heatmaps on; session replay on for everyone, with **all inputs and text masked**.
+- `capture_exceptions` and `capture_performance` off — errors and web vitals stay in Faro.
+- `person_profiles: "identified_only"`; signed-in visitors are identified by `customer_id`.
+- Every event carries `faro_session_id` (super property) to jump from PostHog to the Faro session.
+
+Ingestion goes through the same-origin **`/ingest`** rewrite in `next.config.ts` (fewer events lost
+to ad-blockers, no CSP `connect-src` entry needed). PostHog's API paths end in `/`, so the config
+sets `skipTrailingSlashRedirect` and re-adds the slash-stripping redirect for every other path —
+page URLs keep one canonical form. `/ingest/` is disallowed in `robots.ts`.
 
 ## Behavior tracking
 
-Product and route behavior (`behavior.ts`) answers "which course/diploma did someone click, and
-where did they go next". Every event fans out to **two sinks** under one taxonomy:
+Product behavior (`behavior.ts`) answers "which course did someone view, what did they put in the
+cart, which payment method did they choose, and where did they drop off". Every event fans out to
+**two sinks**:
 
-- **Faro** (`pushFaroEvent`) — Grafana dashboards and funnels, correlated with the RUM session,
-  trace and any error.
+- **PostHog** (`captureEvent`) — business taxonomy (below): funnels, conversion by payment method or
+  country, replay and heatmaps.
 - **Backend** (`trackBehaviorEvent`) — `POST /api/b2c/analytics/events` → the backend
   `/api/v1/analytics/events` (the contract already existed in `src/lib/api/analytics.ts`; it feeds
-  the recommendation history the platform owns). Guests are identified by `X-Client-Fingerprint`,
-  signed-in visitors additionally by the bearer session the proxy attaches.
+  the recommendation history the platform owns). It keeps its historical `event_type` names. Guests
+  are identified by `X-Client-Fingerprint`, signed-in visitors additionally by the bearer session
+  the proxy attaches.
 
 Both are fire-and-forget: a tracking failure never blocks navigation or a click, and a no-op when
-Faro is unconfigured or the backend is unreachable.
+PostHog is unconfigured or the backend is unreachable.
 
 ### Events
 
-| Event | Where | Attributes (Faro) / metadata (backend) |
-| --- | --- | --- |
-| `page_view` | every route change + initial load (Faro only) | `route` pattern, `navigation_type`, product kind/id on detail pages |
-| `product_view` | product detail pages | `route`, `kind`, `legacy_entity_id` |
-| `product_click` | every product card (all surfaces) | `product_kind`, `legacy_entity_id`, `title`, `surface`, `position` |
-| `wishlist_add` / `wishlist_remove` | any wishlist toggle | `product_kind`, `legacy_entity_id`, `title`, `price_amount` |
-| `cart_add` / `cart_remove` | any cart toggle; bulk add-all sends one `cart_add` with a count | as above |
-| `search` | every search/filter/sort/pagination navigation | query, types, sort, mode, page, facet counts |
-| `login_started`, `registered`, `signed_in`, `signed_out`, `auth_gate_opened` | explicit auth actions | — |
-| `order_created`, `payment_settled`, `order_viewed` | checkout funnel | order number/status, total, method, outcome |
+| PostHog event | Backend `event_type` | Where | Properties |
+| --- | --- | --- | --- |
+| `$pageview` | — | every route change + initial load (automatic) | URL, referrer, UTM, geo |
+| `course_viewed` / `diploma_viewed` / `package_viewed` / `consultation_viewed` | `product_view` | product detail pages | `route`, `product_kind`, `legacy_entity_id` |
+| `product_clicked` | `product_click` | every product card (all surfaces) | `product_kind`, `legacy_entity_id`, `title`, `surface`, `position` |
+| `wishlist_added` / `wishlist_removed` | `wishlist_add` / `wishlist_remove` | any wishlist toggle | `product_kind`, `legacy_entity_id`, `title`, `price_amount` |
+| `cart_added` / `cart_removed` | `cart_add` / `cart_remove` | any cart toggle; bulk add-all sends one `cart_added` with a count | as above |
+| `course_searched` | `search` | every search/filter/sort/pagination navigation | query, types, sort, mode, page, filter count |
+| `coupon_applied` / `coupon_rejected` | — | the quote's verdict on a coupon code (once per code) | `code`, `status`, `discount_amount`, `currency` |
+| `payment_method_selected` | — | payment method picker on the cart | `payment_method` (`card`, `mada`, `apple_pay`, `tabby`, `tamara`), `total`, `currency` |
+| `checkout_started` | `order_created` | order created at "pay" | `order_number`, `status`, `total`, `currency`, `lines`, `payment_method` |
+| `payment_completed` / `payment_failed` | `payment_settled` | payment outcome | `order_number`, `status`, `total`, `currency`, `payment_method` |
+| `order_viewed` | `order_viewed` | order result page | `order_number`, `status`, `outcome` |
+| `login_started`, `signed_up`, `signed_in`, `signed_out`, `auth_gate_opened` | same (`registered` for `signed_up`) | explicit auth actions | `route` |
+
+Reserved in `ProductEvent` for features that don't exist yet: `subscription_started`,
+`subscription_cancelled`, `lesson_started`, `lesson_completed`, `ai_advisor_opened`,
+`ai_recommendation_clicked`. New features should use these names.
 
 Click context: `ProductCard` parses kind + id from the detail href, so **every** card surface is
 covered with no per-call-site work. Surfaces that know their context also pass
 `tracking={{ surface, position }}` (search results, landing rails, related/recommended, expert
 rails, wishlist, recommendations).
 
+### Questions PostHog answers
+
+- How many people saw course X? — `course_viewed` filtered by `legacy_entity_id`.
+- Where do people abandon checkout? — funnel `cart_added → payment_method_selected →
+  checkout_started → payment_completed`.
+- Tabby vs Tamara vs card conversion? — the same funnel broken down by `payment_method`.
+- Which country converts best? — any funnel broken down by the GeoIP country PostHog adds.
+- Which courses lead to purchases? — funnel `course_viewed → payment_completed` broken down by
+  `legacy_entity_id`.
+
 ### Route observability
 
 `route-pattern.ts` maps a path to its pattern (and, for detail pages, the product). It is used twice
 so client and server agree:
 
-- client — the `page_view` `route` attribute and product extraction;
+- client — the `route` property on behavior events and product extraction;
 - server — the `http.route` attribute stamped on inbound spans (see Phase above).
-
-### Example Grafana queries
-
-- Top clicked products: Faro events where `event_name = product_click`, group by
-  `product_kind` + `legacy_entity_id`.
-- Funnel: count sessions per step `page_view → product_click → wishlist_add → cart_add →
-  order_created` (Logs/Explore on the Faro events, or the backend analytics table).
-- Route popularity: `page_view` grouped by `route`.
-- Per-route server health: Tempo metrics grouped by `http.route` (rate, error rate, p95 duration).
 
 ### Grafana dashboard
 
-`grafana/top-pages-dashboard.json` is an importable dashboard with the pages/behavior views above:
-overview stats, top pages (table + treemap "map"), a per-route detail section driven by the `route`
-variable, product behavior (most clicked/viewed, funnel), click details, engagement and detail-page
-breakdowns by product type, search activity, web vitals, errors, and server-side per-route RED from
-Tempo.
+`grafana/top-pages-dashboard.json` (and its v2 export `dashboard-result.json`) is the engineering
+dashboard: web vitals, exceptions, and server-side per-route RED from Tempo. Behavior panels were
+removed when product events moved to PostHog.
 
 Import it with **Dashboards → New → Import → Upload JSON**, then pick the Loki and Tempo data
-sources when prompted. The `Route` dropdown defaults to All and is populated from
-`route-pattern.ts`; `Faro app id` lists the `app_id` label values, and `OTel service` defaults to
+sources when prompted. `Faro app id` lists the `app_id` label values, and `OTel service` defaults to
 `mastery-app`.
 
 | Panels | Data | Source |
 | --- | --- | --- |
-| Page views, unique pages, page views over time, top pages, page share | `page_view` events | Loki (`{app_id, kind="event"}`) |
-| Page detail, products clicked from a page, funnel | `product_*`, `wishlist_*`, `cart_*`, `order_*` events | Loki |
-| Click details (pages by clicks, clicks by surface / card position) | `product_click` events | Loki |
-| Product & search detail (engagement by product type, detail-page views by type, search by product-type filter) | `product_*`, `search` events | Loki |
-| Search activity (over time, top terms) | `search` events | Loki |
 | Web vitals (TTFB/FCP/LCP/CLS) | `kind="measurement"` | Loki |
 | Exceptions | `kind="exception"` | Loki |
 | Requests / p95 / errors per route | server spans with `http.route` | Tempo (TraceQL metrics) |
@@ -171,18 +211,7 @@ Good to know:
 - Grafana Cloud Logs promotes the Faro attributes `app_id`, `kind` and `app_key` to **labels**.
   There is **no `app` label** (that one is for self-hosted Faro → Alloy). The dashboard selects
   `{app_id=~"$app_id", kind="…"}`.
-- Every page-scoped event (`product_click`, `wishlist_*`, `cart_*`, `search`, auth, checkout) carries
-  the `route` it happened on, so the per-route panels work — not just `page_view`/`product_view`.
-- Table and funnel columns are renamed (Page, Views, Clicks, and the funnel steps) so no raw
-  `Value #A` / `Value #B` labels appear.
-- The page-share treemap reduces each route's series to `Metric`/`Value` rows (a `seriesToRows`
-  transformation); without that step its tiles stay empty even when the data is there.
 - TraceQL metrics queries are capped at a 24-hour window; the dashboard defaults to 6h.
-- The Faro event attribute used for pages is our `route` field (a route pattern). If it is absent in
-  a given environment, the panels fall back to empty — `page_url` (Faro meta) is present on every
-  signal as an alternative grouping key.
-- There is no geospatial map: Faro does not send location by default. The "page share" treemap is
-  the page map; add a geomap panel only if you enrich signals with a `country` attribute.
 
 #### "No data" on import
 
@@ -192,10 +221,9 @@ Two things must be right: the **data source** and the **label schema**.
   one — its name ends in `-logs` (`grafanacloud-<stack>-logs`). `grafanacloud-<stack>-usage-insights`
   only holds Grafana's own usage logs and never frontend telemetry.
 - **Labels:** the Faro telemetry carries `app_id`, `kind`, `app_key` labels (no `app`). Confirm in
-  Explore on the Logs data source with `{kind="event"}` (any results = data is arriving), then
-  `{kind="event"} | logfmt | event_name="page_view"` (results = the event fields parse).
+  Explore on the Logs data source with `{kind="measurement"}` (any results = data is arriving).
 
-If `{kind="event"}` is empty, no frontend signal is reaching this stack:
+If `{kind="measurement"}` is empty, no frontend signal is reaching this stack:
 
 1. Confirm `NEXT_PUBLIC_FARO_URL` is the collector URL from **this** stack's Frontend Observability
    app (it embeds the app key). A URL from another stack writes elsewhere.
@@ -233,6 +261,9 @@ Client (inlined at build time; see `.env.example`):
 - `NEXT_PUBLIC_FARO_APP_NAME` — must match the source-map plugin's `appName`.
 - `NEXT_PUBLIC_FARO_APP_NAMESPACE` — `app.environment` (e.g. `production`, `development`).
 - `NEXT_PUBLIC_FARO_APP_VERSION` — `app.version`.
+- `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` — PostHog project token (`phc_…`). Unset disables PostHog.
+- `NEXT_PUBLIC_POSTHOG_HOST` — ingestion host the `/ingest` rewrite forwards to
+  (`https://us.i.posthog.com`, or `https://eu.i.posthog.com` for EU projects).
 
 Build-time (source-map upload):
 
@@ -310,13 +341,13 @@ If you later add a `Content-Security-Policy` header, add the Faro collector and 
 1. `npm run check` — types and lint.
 2. `npm run build` — must succeed under webpack; the Faro plugin logs the bundle id and map rewrites.
 3. Run the app and load a page, then look in Grafana Cloud:
-   - Frontend Observability — events, web vitals, sessions for the Faro app; `page_view` /
-     `product_click` / funnel events under the "behavior" domain.
+   - Frontend Observability — errors, web vitals, sessions for the Faro app (no behavior events).
    - Tempo — a trace containing both the browser fetch span and the server span (the server span
      carries `http.route`).
    - Loki — log lines for `onRequestError`, searchable by trace id.
-4. Behavior reachability: click a product card and confirm a `POST /api/b2c/analytics/events` in the
-   network tab (guests included). The backend endpoint must be running for the event to record.
+4. Behavior reachability: click a product card and confirm a `POST /api/b2c/analytics/events` and,
+   once idle, `POST /ingest/e/` (PostHog) in the network tab (guests included). PostHog → Activity
+   shows the events live; Replay shows the masked session. The backend endpoint must be running for the event to record.
 5. Browser (production): open DevTools → Network, filter for `collect`; you should see a POST to
    `faro-collector-…grafana.net/collect/…` returning 2xx on page load. A CORS error there means the
    origin is missing from CORS Allowed Origins; no request at all means the code isn't deployed or
@@ -332,6 +363,6 @@ If you later add a `Content-Security-Policy` header, add the Faro collector and 
 - Backend trace correlation depends on the backend honouring `traceparent`; otherwise its spans
   start a new trace.
 - On Vercel the platform adds incoming-request spans; on Docker the auto-instrumentations do.
-- Behavior events go to the backend independently of Faro: `NEXT_PUBLIC_FARO_URL` only controls the
-  RUM sink. Turning off client telemetry means removing the relevant variables, but the
-  `/api/b2c/analytics/events` calls still run (they are first-party).
+- Behavior events go to the backend independently of PostHog: the PostHog token only controls the
+  product-analytics sink. Removing it stops PostHog, but the `/api/b2c/analytics/events` calls still
+  run (they are first-party).

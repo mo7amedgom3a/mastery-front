@@ -63,6 +63,7 @@ export function useCheckout({ quote, request, method }: CheckoutInput) {
         order_number: order.number,
         status: order.status,
         total: order.totals.total,
+        currency: order.totals.currency,
         lines: order.lines.length,
         payment_method: order.paymentMethod ?? "none",
       });

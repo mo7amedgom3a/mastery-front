@@ -1,0 +1,101 @@
+                   Next.js
+                        │
+          ┌─────────────┴─────────────┐
+          │                           │
+     Grafana Faro                 PostHog
+          │                           │
+ Technical telemetry             Product events
+          │                           │
+ ┌────────┼────────┐          ┌───────┼──────────┐
+ │        │        │          │       │          │
+Errors   Logs   Traces      Funnels  Replay   Retention
+ │        │        │          │       │          │
+ └────────┼────────┘          └───────┼──────────┘
+          │                           │
+        Grafana                    PostHog
+          │                           │
+      Engineering                   Product
+
+
+Faro events
+Keep Faro focused on technical health:
+JS exceptions
+network errors
+API latency
+page load
+Core Web Vitals
+frontend logs
+trace IDs
+resource loading
+React exceptions
+
+PostHog events
+Send business/product events:
+course_viewed
+course_searched
+
+checkout_started
+coupon_applied
+
+payment_method_selected
+
+payment_completed
+payment_failed
+
+subscription_started
+subscription_cancelled
+
+lesson_started
+lesson_completed
+
+diploma_viewed
+ai_advisor_opened
+ai_recommendation_clicked
+
+Then PostHog becomes your answer to:
+How many users saw course X?
+
+Which country converts best?
+
+Stripe vs Tamara vs Tabby conversion?
+
+Monthly vs yearly subscription conversion?
+
+Where do people abandon checkout?
+
+Does AI Advisor increase conversion?
+
+Which courses lead to subscriptions?
+
+PostHog is specifically built around this event-centric product analytics model. PostHog
+An important example for your payment system
+Suppose Tamara conversion falls from:
+65% → 40%
+
+PostHog tells you:
+Tamara checkout conversion dropped.
+
+Then you look at session replay:
+Users click "Pay with Tamara"
+        ↓
+spinner appears
+        ↓
+nothing happens
+
+Then Faro tells you:
+POST /payments/tamara/session
+503 Service Unavailable
+
+trace:
+frontend
+   ↓
+FastAPI
+   ↓
+Temporal
+   ↓
+Tamara adapter
+   ↓
+timeout 10s
+
+Then Grafana/Tempo/Loki lets you follow it all the way into your backend.
+That's a much stronger observability stack than choosing only one.

@@ -61,6 +61,8 @@ export function MockGatewayPage() {
         outcome,
         status: result.status,
         total: order.totals.total,
+        currency: order.totals.currency,
+        payment_method: order.paymentMethod ?? "none",
       });
       if (result.status === "paid") {
         shop.clearCart();

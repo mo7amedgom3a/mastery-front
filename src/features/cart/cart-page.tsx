@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { ShoppingCart } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { UndoNotice } from "@/components/shop/undo-notice";
 import { ButtonLink } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { useCheckout } from "@/features/checkout/api/use-checkout";
 import { AuthGateDialog } from "@/features/checkout/components/auth-gate-dialog";
 import { RecommendationRail } from "@/features/search/components/recommendation-rail";
 import { formatCount } from "@/lib/format";
-import { trackCart } from "@/lib/observability/behavior";
+import { trackCart, trackCoupon, trackPaymentMethod } from "@/lib/observability/behavior";
 import type { QuoteRequest } from "@/lib/shop/contract";
 import { PRODUCT_FORMS } from "@/lib/shop/labels";
 import { useShopHydrated, useShopStore, type CartLine } from "@/lib/shop/store";
@@ -54,6 +54,17 @@ export function CartPage() {
   const offeredMethods = useOfferedMethods();
   const method = quote ? effectiveMethod(chosenMethod, offeredMethods, quote.paymentMethods) : null;
   const checkout = useCheckout({ quote: stale ? undefined : quote, request, method });
+
+  // One coupon event per code and verdict: re-quotes for cart changes carry the same verdict.
+  const trackedCoupon = useRef<string | null>(null);
+  const couponVerdict = stale ? null : quote?.coupon;
+  useEffect(() => {
+    if (!couponVerdict || !quote) return;
+    const key = `${couponVerdict.code.toUpperCase()}|${couponVerdict.status}`;
+    if (trackedCoupon.current === key) return;
+    trackedCoupon.current = key;
+    trackCoupon(couponVerdict, quote.totals.currency);
+  }, [couponVerdict, quote]);
 
   const undo = useUndo<Removed>();
   const remove = (line: CartLine) => {
@@ -163,6 +174,7 @@ export function CartPage() {
             onSelectMethod={(next) => {
               checkout.clearError();
               setPaymentMethod(next);
+              trackPaymentMethod(next, quote?.totals.total, quote?.totals.currency);
             }}
             paying={checkout.busy}
             payError={checkout.error}

@@ -11,6 +11,11 @@ const faroAppId = process.env.FARO_APP_ID?.trim() || "5762";
 const faroStackId = process.env.FARO_STACK_ID?.trim() || "1854221";
 const faroApiKey = process.env.FARO_API_KEY?.trim();
 
+// PostHog ingestion, proxied same-origin under /ingest (fewer events lost to ad-blockers, no
+// third-party connection before the visitor interacts). EU projects use eu.i.posthog.com.
+const posthogHost = (process.env.NEXT_PUBLIC_POSTHOG_HOST?.trim() || "https://us.i.posthog.com").replace(/\/$/, "");
+const posthogAssetsHost = posthogHost.replace(".i.posthog.com", "-assets.i.posthog.com");
+
 // Buckets the legacy backend serves product imagery from, plus the site's own upload host.
 const s3Buckets = ["course", "curriculum", "consultant", "category", "instructor", "trainer"].map((bucket) => ({
   protocol: "https" as const,
@@ -41,8 +46,19 @@ const nextConfig: NextConfig = {
   // Emit browser source maps so the Faro webpack plugin below can upload them; it deletes the files
   // after upload, so they are never served to visitors.
   productionBrowserSourceMaps: true,
+  // PostHog's API paths end in a slash (`/e/`, `/flags/`), so the built-in slash-stripping redirect
+  // is turned off and re-added below for every path except /ingest: page URLs keep one canonical form.
+  skipTrailingSlashRedirect: true,
+  async rewrites() {
+    return [
+      { source: "/ingest/static/:path*", destination: `${posthogAssetsHost}/static/:path*` },
+      { source: "/ingest/array/:path*", destination: `${posthogAssetsHost}/array/:path*` },
+      { source: "/ingest/:path*", destination: `${posthogHost}/:path*` },
+    ];
+  },
   async redirects() {
     return [
+      { source: "/:path((?!ingest(?:/|$)).+)/", destination: "/:path", permanent: true },
       // Trainer profiles moved to the expert page; the trainer id is the expert key.
       { source: "/instructors/:id", destination: "/experts/:id", permanent: true },
       // One listing for every product type: the search page, filtered. Sources match the bare

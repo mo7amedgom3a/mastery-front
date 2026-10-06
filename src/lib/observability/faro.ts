@@ -81,11 +81,7 @@ export function pushFaroError(error: unknown, context?: Record<string, string>):
   faro.api.pushError(value, context ? { context } : undefined);
 }
 
-/** Pushes a named event with attributes; a no-op when Faro is not initialized. */
-export function pushFaroEvent(name: string, attributes?: Record<string, unknown>): void {
-  if (!faro) return;
-  const clean = attributes
-    ? Object.fromEntries(Object.entries(attributes).filter(([, value]) => value !== undefined && value !== null))
-    : undefined;
-  faro.api.pushEvent(name, clean as Record<string, string> | undefined, "behavior");
+/** The current Faro session id, so product analytics can link a replay to its RUM session. */
+export function getFaroSessionId(): string | undefined {
+  return faro?.api.getSession()?.id;
 }

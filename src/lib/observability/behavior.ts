@@ -1,19 +1,52 @@
 import { trackBehaviorEvent } from "@/lib/api/analytics";
-import { pushFaroEvent } from "@/lib/observability/faro";
+import { captureEvent } from "@/lib/observability/posthog";
 import { matchRoute, productFromUrl, type ProductKind } from "@/lib/observability/route-pattern";
 import type { ShopItem } from "@/lib/shop/store";
 
 /**
  * Product and route behavior tracking. Every event fans out to two sinks:
  *
- * - Faro (`pushFaroEvent`) — Grafana dashboards and funnels, correlated with RUM sessions, traces
- *   and errors.
+ * - PostHog (`captureEvent`) — product analytics for the business: funnels, conversion, replay and
+ *   heatmaps. Events use the business taxonomy below (`course_viewed`, `checkout_started`, …).
  * - The backend (`trackBehaviorEvent`, via the same-origin `/api/b2c` door) — the analytics and
- *   recommendation history the platform owns.
+ *   recommendation history the platform owns. It keeps its own `event_type` names.
+ *
+ * Faro deliberately receives none of these: it is the engineering stream (errors, vitals, traces).
  *
  * Calls are fire-and-forget: a tracking failure must never affect what the visitor is doing, and a
- * no-op when Faro is not configured or the backend is unreachable.
+ * no-op when PostHog is not configured or the backend is unreachable.
  */
+
+/**
+ * PostHog event names. `subscription_*`, `lesson_*` and `ai_*` have no flow in the app yet; they
+ * are named here so the features that add them use the agreed taxonomy.
+ */
+export type ProductEvent =
+  | `${ProductKind}_viewed`
+  | "product_clicked"
+  | "course_searched"
+  | "wishlist_added"
+  | "wishlist_removed"
+  | "cart_added"
+  | "cart_removed"
+  | "coupon_applied"
+  | "coupon_rejected"
+  | "payment_method_selected"
+  | "checkout_started"
+  | "payment_completed"
+  | "payment_failed"
+  | "order_viewed"
+  | "login_started"
+  | "signed_up"
+  | "signed_in"
+  | "signed_out"
+  | "auth_gate_opened"
+  | "subscription_started"
+  | "subscription_cancelled"
+  | "lesson_started"
+  | "lesson_completed"
+  | "ai_advisor_opened"
+  | "ai_recommendation_clicked";
 
 /** Titles are capped so a stray long string cannot bloat an event. */
 const TITLE_LIMIT = 120;
@@ -40,8 +73,14 @@ type BackendEvent = {
   metadata?: Record<string, unknown>;
 };
 
-function send(eventType: string, attributes: Record<string, unknown>, backend: BackendEvent): void {
-  pushFaroEvent(eventType, attributes);
+/** PostHog gets `event`; the backend keeps its historical `eventType`. */
+function send(
+  event: ProductEvent,
+  eventType: string,
+  attributes: Record<string, unknown>,
+  backend: BackendEvent,
+): void {
+  captureEvent(event, attributes);
   void trackBehaviorEvent(
     {
       event_type: eventType,
@@ -55,29 +94,22 @@ function send(eventType: string, attributes: Record<string, unknown>, backend: B
 }
 
 /**
- * A route change (initial load or client navigation). Always a Faro `page_view`; product detail
- * pages additionally emit a backend `product_view`.
+ * A route (initial load or client navigation). Only product detail pages emit an event —
+ * `course_viewed`, `diploma_viewed`, … — page views themselves are PostHog's own `$pageview`.
  */
-export function trackPageView(input: { url: string; navigationType: string }): void {
-  const match = matchRoute(input.url);
-  const attributes: Record<string, unknown> = {
-    route: match.pattern,
-    navigation_type: input.navigationType,
-  };
-
-  if (match.product) {
-    attributes.product_kind = match.product.kind;
-    attributes.legacy_entity_id = match.product.id;
-    send("product_view", attributes, {
+export function trackProductView(url: string): void {
+  const match = matchRoute(url);
+  if (!match.product) return;
+  send(
+    `${match.product.kind}_viewed`,
+    "product_view",
+    { route: match.pattern, product_kind: match.product.kind, legacy_entity_id: match.product.id },
+    {
       entityType: "product",
       legacyId: match.product.id,
       metadata: { route: match.pattern, kind: match.product.kind },
-    });
-    return;
-  }
-
-  // Route popularity is a RUM concern; the backend only needs entity events.
-  pushFaroEvent("page_view", attributes);
+    },
+  );
 }
 
 export type ClickContext = { surface?: string; position?: number };
@@ -95,7 +127,7 @@ export function trackProductClick(
     surface: context?.surface,
     position: context?.position,
   };
-  send("product_click", attributes, {
+  send("product_clicked", "product_click", attributes, {
     entityType: "product",
     legacyId: product.id,
     metadata: { route: route ?? null, kind: product.kind, title: clip(product.title) ?? null, surface: context?.surface ?? null, position: context?.position ?? null },
@@ -135,7 +167,7 @@ function productAttributes(item: ShopItem, action: "add" | "remove"): Record<str
 
 export function trackWishlist(item: ShopItem, added: boolean): void {
   const action = added ? "add" : "remove";
-  send(added ? "wishlist_add" : "wishlist_remove", productAttributes(item, action), {
+  send(added ? "wishlist_added" : "wishlist_removed", added ? "wishlist_add" : "wishlist_remove", productAttributes(item, action), {
     entityType: "product",
     legacyId: item.id,
     metadata: productMetadata(item),
@@ -144,7 +176,7 @@ export function trackWishlist(item: ShopItem, added: boolean): void {
 
 export function trackCart(item: ShopItem, added: boolean): void {
   const action = added ? "add" : "remove";
-  send(added ? "cart_add" : "cart_remove", productAttributes(item, action), {
+  send(added ? "cart_added" : "cart_removed", added ? "cart_add" : "cart_remove", productAttributes(item, action), {
     entityType: "product",
     legacyId: item.id,
     metadata: productMetadata(item),
@@ -157,6 +189,7 @@ export function trackCartBulk(items: readonly ShopItem[]): void {
   const keys = items.map((item) => item.key);
   const route = currentRoute();
   send(
+    "cart_added",
     "cart_add",
     { route, product_kind: "mixed", count: items.length, keys: keys.join(",") },
     { entityType: "product", metadata: { route: route ?? null, count: items.length, keys } },
@@ -181,6 +214,7 @@ export function trackSearch(summary: SearchSummary): void {
   const filterCount = summary.categories.length + summary.skills.length + summary.tags.length + summary.trainers.length;
   const route = currentRoute();
   send(
+    "course_searched",
     "search",
     {
       route,
@@ -216,7 +250,7 @@ export type AuthEvent = "login_started" | "registered" | "signed_in" | "signed_o
 export function trackAuth(eventType: AuthEvent, metadata?: Record<string, unknown>): void {
   const route = currentRoute();
   const payload = { route, ...metadata };
-  send(eventType, payload, { entityType: "auth", metadata: { ...payload, route: route ?? null } });
+  send(eventType === "registered" ? "signed_up" : eventType, eventType, payload, { entityType: "auth", metadata: { ...payload, route: route ?? null } });
 }
 
 export type CheckoutEvent = "order_created" | "payment_settled" | "order_viewed";
@@ -227,5 +261,33 @@ export function trackCheckout(
   metadata?: Record<string, unknown>,
 ): void {
   const route = currentRoute();
-  send(eventType, { route, ...attributes }, { entityType: "order", metadata: metadata ?? { ...attributes, route } });
+  send(checkoutEvent(eventType, attributes), eventType, { route, ...attributes }, {
+    entityType: "order",
+    metadata: metadata ?? { ...attributes, route },
+  });
+}
+
+function checkoutEvent(eventType: CheckoutEvent, attributes: Record<string, unknown>): ProductEvent {
+  if (eventType === "order_created") return "checkout_started";
+  if (eventType === "payment_settled") return attributes.status === "paid" ? "payment_completed" : "payment_failed";
+  return "order_viewed";
+}
+
+/**
+ * The quote's verdict on a coupon code (PostHog only: the backend sees the coupon on the order).
+ * Fired once per code and verdict, not on every re-quote.
+ */
+export function trackCoupon(coupon: { code: string; status: string; discountAmount: number }, currency?: string): void {
+  captureEvent(coupon.status === "applied" ? "coupon_applied" : "coupon_rejected", {
+    route: currentRoute(),
+    code: coupon.code.toUpperCase(),
+    status: coupon.status,
+    discount_amount: coupon.discountAmount,
+    currency,
+  });
+}
+
+/** The visitor picked a payment method (card, mada, apple_pay, tabby, tamara) on the cart page. */
+export function trackPaymentMethod(method: string, total?: number, currency?: string): void {
+  captureEvent("payment_method_selected", { route: currentRoute(), payment_method: method, total, currency });
 }
