@@ -18,7 +18,7 @@ export function SiteHeader() {
   return (
     <header className="ma-nav">
       <div className="ma-container ma-nav__inner">
-        <AppLink href={routes.home} aria-label="ماستري أكاديمي — الصفحة الرئيسية" className="flex shrink-0 items-center">
+        <AppLink href={routes.home} prefetch aria-label="ماستري أكاديمي — الصفحة الرئيسية" className="flex shrink-0 items-center">
           <Logo priority className="w-40 sm:w-48" />
         </AppLink>
 

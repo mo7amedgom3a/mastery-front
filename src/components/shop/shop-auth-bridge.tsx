@@ -30,6 +30,8 @@ function onIdle(callback: () => void): () => void {
 export function ShopAuthBridge() {
   useEffect(() => {
     const onAuthenticated = async () => {
+      // The "sign in to pay" dialog has done its job.
+      useShopStore.getState().closeAuthGate();
       await rehydrateShop();
       await Promise.all([syncGuestWishlist(), syncAccountCart()]);
     };

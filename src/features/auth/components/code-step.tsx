@@ -59,9 +59,10 @@ export function CodeStep({ loginName, resendAfter, next, onBack }: CodeStepProps
       setPending(false);
       return;
     }
-    // Stays pending while the next page loads. `refresh` re-renders what the server made for a guest.
+    // Stays pending while the next page loads. No `router.refresh()` here: fired during the pending
+    // navigation it re-fetches /login and briefly renders the auth chrome over the destination. Nothing
+    // server-rendered depends on the session, and the destination is fetched fresh anyway.
     router.replace(next as Route);
-    router.refresh();
   };
 
   const resend = async () => {

@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { routes } from "@/config/routes";
+import { useAuthStore } from "@/lib/auth/store";
 import { useShopStore } from "@/lib/shop/store";
 
 /**
@@ -13,7 +14,10 @@ import { useShopStore } from "@/lib/shop/store";
  * send them back to it.
  */
 export function AuthGateDialog() {
-  const open = useShopStore((state) => state.authGateOpen);
+  // Signed in, there is nothing to ask: the flag may still be set from before the sign-in, since
+  // the auth pages return here by client-side navigation and the store outlives it.
+  const signedIn = useAuthStore((state) => state.status === "authenticated");
+  const open = useShopStore((state) => state.authGateOpen) && !signedIn;
   const close = useShopStore((state) => state.closeAuthGate);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
