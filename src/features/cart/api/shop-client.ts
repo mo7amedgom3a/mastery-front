@@ -1,26 +1,14 @@
 import { keepPreviousData, queryOptions } from "@tanstack/react-query";
 
-import type {
-  OrderRequest,
-  OrderResponse,
-  PaymentConfirmRequest,
-  PaymentConfirmResponse,
-  Quote,
-  QuoteRequest,
-  ResolveItemsResponse,
-  ShopErrorBody,
-  ShopErrorCode,
-} from "@/lib/shop/contract";
+import type { Quote, QuoteRequest, ResolveItemsResponse, ShopErrorBody, ShopErrorCode } from "@/lib/shop/contract";
 
 /**
- * Browser client for the shop endpoints (`/api/shop/*`, served by this app while they are mocked).
- * TODO(api): point these at the backend's cart, order and payment endpoints once they exist.
+ * Browser client for this app's catalog-backed shop endpoints (`/api/shop/*`): artwork and links for
+ * saved items, and a guest's cart preview. Orders and payments go to the backend (`lib/api/commerce`).
  */
 const paths = {
   resolve: "/api/shop/items/resolve",
   quote: "/api/shop/cart/quote",
-  orders: "/api/shop/orders",
-  confirm: "/api/shop/payments/mock-confirm",
 } as const;
 
 export class ShopApiError extends Error {
@@ -59,14 +47,6 @@ export function resolveShopItems(keys: string[], signal?: AbortSignal): Promise<
 
 export function getCartQuote(request: QuoteRequest, signal?: AbortSignal): Promise<Quote> {
   return post<Quote>(paths.quote, request, signal);
-}
-
-export function createOrder(request: OrderRequest): Promise<OrderResponse> {
-  return post<OrderResponse>(paths.orders, request);
-}
-
-export function confirmMockPayment(request: PaymentConfirmRequest): Promise<PaymentConfirmResponse> {
-  return post<PaymentConfirmResponse>(paths.confirm, request);
 }
 
 export const shopKeys = {

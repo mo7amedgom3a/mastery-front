@@ -1,4 +1,5 @@
 import { CardActions } from "@/components/shop/card-actions";
+import { BuyNowButton } from "@/features/checkout/components/buy-now-button";
 import type { Pricing } from "@/lib/pricing";
 import type { ShopItem, ShopItemKind } from "@/lib/shop/store";
 
@@ -21,7 +22,7 @@ export function toShopItem(kind: ShopItemKind, source: ShopSource): ShopItem {
     image: source.image,
     priceAmount: source.priceAmount,
   };
-} 
+}
 
 /** Whether the item can go in the cart: priced, not free, and not a consultation (those need a booked slot). */
 export function isPurchasable(kind: ShopItemKind, source: ShopSource): boolean {
@@ -35,5 +36,16 @@ export function isPurchasable(kind: ShopItemKind, source: ShopSource): boolean {
 export function actionsFor(kind: ShopItemKind, source: ShopSource) {
   return (
     <CardActions item={toShopItem(kind, source)} purchasable={isPurchasable(kind, source)} free={source.price.free} />
+  );
+}
+
+/** Detail pages: "buy now" for purchasable items, above the wishlist and cart controls. */
+export function purchaseActionsFor(kind: ShopItemKind, source: ShopSource) {
+  const item = toShopItem(kind, source);
+  return (
+    <div className="flex flex-col gap-3">
+      {isPurchasable(kind, source) ? <BuyNowButton item={item} /> : null}
+      {actionsFor(kind, source)}
+    </div>
   );
 }

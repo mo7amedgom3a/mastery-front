@@ -1,7 +1,7 @@
 import { Award, BookOpen, CalendarCheck, Clock, Gift, MonitorSmartphone } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { actionsFor } from "@/components/shop/card-actions-for";
+import { purchaseActionsFor } from "@/components/shop/card-actions-for";
 import { formatCount } from "@/lib/format";
 
 import { kindLabel } from "../content/copy";
@@ -54,7 +54,7 @@ export function PurchaseCard({ product, share }: { product: ProductDetailVM; sha
       </div>
 
       <div className="mt-5 lg:short:mt-4">
-        {actionsFor(product.kind, {
+        {purchaseActionsFor(product.kind, {
           id: product.id,
           title: product.title,
           href: product.href,

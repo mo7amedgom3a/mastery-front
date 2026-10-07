@@ -33,9 +33,11 @@ const STATIC_ROUTES: Record<string, string> = {
   "/trainers": "/trainers",
   "/privacy": "/privacy",
   "/terms": "/terms",
-  "/checkout/mock-gateway": "/checkout/mock-gateway",
   "/checkout/success": "/checkout/success",
+  "/checkout/cancelled": "/checkout/cancelled",
   "/checkout/failed": "/checkout/failed",
+  "/students/orders": "/students/orders",
+  "/students/access": "/students/access",
 };
 
 const API_ROUTES: readonly (readonly [RegExp, string])[] = [
@@ -47,8 +49,6 @@ const API_ROUTES: readonly (readonly [RegExp, string])[] = [
   [/^\/api\/search\/recommendations$/, "/api/search/recommendations"],
   [/^\/api\/shop\/cart\/quote$/, "/api/shop/cart/quote"],
   [/^\/api\/shop\/items\/resolve$/, "/api/shop/items/resolve"],
-  [/^\/api\/shop\/orders$/, "/api/shop/orders"],
-  [/^\/api\/shop\/payments\/mock-confirm$/, "/api/shop/payments/mock-confirm"],
   [/^\/api\/.+$/, "/api/[...path]"],
 ];
 
@@ -94,6 +94,8 @@ export function matchRoute(url: string): RouteMatch {
     const segment = safeDecode(second);
     if (first === "experts") return { pattern: "/experts/[key]" };
     if (first === "live") return { pattern: "/live/[slug]" };
+    // Order ids stay out of the pattern: one series for every order page.
+    if (first === "students" && second === "orders") return { pattern: "/students/orders/[orderId]" };
 
     const product = PRODUCT_ROUTES[first];
     if (product) {

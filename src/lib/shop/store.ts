@@ -4,7 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { AddonCode, Order, PaymentMethodId, ShopItemKind } from "./contract";
+import type { ShopItemKind } from "./contract";
 
 export type { ShopItemKind } from "./contract";
 
@@ -31,24 +31,25 @@ export type WishlistEntry = ShopItem & {
 };
 
 export type CartLine = ShopItem & {
-  /** Paid extras chosen for this item (see the quote for what each costs). */
-  addons: AddonCode[];
   addedAt: number;
+  /** Catalog product UUID, resolved from the slug when the line reaches the account cart. */
+  productId?: string;
+  /** The account cart's line id (`b2c.cart_items`); set once the line is on the account. */
+  cartItemId?: string;
 };
 
 type PersistedShop = {
   cart: CartLine[];
   wishlist: WishlistEntry[];
-  coupon: string | null;
-  paymentMethod: PaymentMethodId | null;
-  order: Order | null;
 };
 
 type ShopState = PersistedShop & {
   /** Drives the "sign in to pay" dialog on the cart page. Not persisted. */
   authGateOpen: boolean;
-  /** MOCK: the visitor chose to continue as the test customer (mock checkout only). Not persisted. */
-  mockCustomer: boolean;
+  /** Items that could not move to the account cart at sign-in, ready to show. Not persisted. */
+  cartNotice: string | null;
+  /** Bumped whenever the account cart was changed outside the cart page's queries. Not persisted. */
+  accountCartRevision: number;
 
   addToWishlist: (item: ShopItem) => void;
   removeFromWishlist: (key: string) => void;
@@ -62,16 +63,15 @@ type ShopState = PersistedShop & {
   addToCart: (item: ShopItem) => void;
   removeFromCart: (key: string) => void;
   restoreCartLine: (line: CartLine, index: number) => void;
-  toggleCartAddon: (key: string, addon: AddonCode) => void;
+  /** Signed in: the account cart is the truth, and this mirror is replaced by it. */
+  replaceCart: (lines: CartLine[]) => void;
+  setCartLineAccount: (key: string, productId: string, cartItemId?: string) => void;
   clearCart: () => void;
-
-  setCoupon: (code: string | null) => void;
-  setPaymentMethod: (method: PaymentMethodId | null) => void;
-  setOrder: (order: Order | null) => void;
+  setCartNotice: (notice: string | null) => void;
+  bumpAccountCart: () => void;
 
   openAuthGate: () => void;
   closeAuthGate: () => void;
-  setMockCustomer: (value: boolean) => void;
 };
 
 const has = (list: { key: string }[], key: string) => list.some((entry) => entry.key === key);
@@ -100,43 +100,56 @@ type PersistedV2 = {
   pendingCart?: ShopItem | null;
 };
 
+type PersistedV3 = {
+  cart?: (CartLine & { addons?: unknown })[];
+  wishlist?: WishlistEntry[];
+};
+
 /**
- * v1/v2 → v3. v2 kept a guest's cart item aside (`pendingCart`) until they signed in; guests now
- * add to the cart directly, so that item simply joins the cart. Lines gain add-ons and a date.
+ * v1/v2 → v3: v2 kept a guest's cart item aside (`pendingCart`) until they signed in; guests now
+ * add to the cart directly, so that item simply joins the cart.
+ * v3 → v4: the mock checkout's coupon, payment method, order and per-line add-ons are gone; payment
+ * happens on Stripe, and orders live on the account.
  */
 function migrate(persisted: unknown, version: number): PersistedShop {
-  if (version >= 3) return persisted as PersistedShop;
+  if (version >= 4) return persisted as PersistedShop;
+  if (version === 3) {
+    const old = (persisted ?? {}) as PersistedV3;
+    return {
+      cart: (old.cart ?? []).map((line) => {
+        const kept: CartLine & { addons?: unknown } = { ...line };
+        delete kept.addons;
+        return kept;
+      }),
+      wishlist: old.wishlist ?? [],
+    };
+  }
   const old = (persisted ?? {}) as PersistedV2;
   const now = Date.now();
   const cartItems = [...(old.cart ?? [])];
   if (old.pendingCart && !has(cartItems, old.pendingCart.key)) cartItems.push(old.pendingCart);
   return {
     // Older entries first: the stored order is the order they were added in.
-    cart: cartItems.map((item, index) => ({ ...item, addons: [], addedAt: now - (cartItems.length - index) })),
+    cart: cartItems.map((item, index) => ({ ...item, addedAt: now - (cartItems.length - index) })),
     wishlist: (old.wishlist ?? []).map((entry, index, list) => ({ ...entry, addedAt: now - (list.length - index) })),
-    coupon: null,
-    paymentMethod: null,
-    order: null,
   };
 }
 
 /**
  * Guest-first shop state, persisted in localStorage (product references only — never credentials).
  * - Wishlist: anyone can save; entries sync to the account on sign-in (see `wishlist-sync.ts`).
- * - Cart: anyone can fill it; signing in is asked for at payment (see the cart page).
+ * - Cart: guests fill it here. On sign-in it is merged into the account cart, and from then on this
+ *   is only a mirror of the account cart (for the header count and artwork); see `cart-sync.ts`.
  * Prices here are snapshots for display before the catalog answers; totals always come from the quote.
- * TODO(api): replace the local cart with the B2C cart API once it exists.
  */
 export const useShopStore = create<ShopState>()(
   persist(
     (set) => ({
       cart: [],
       wishlist: [],
-      coupon: null,
-      paymentMethod: null,
-      order: null,
       authGateOpen: false,
-      mockCustomer: false,
+      cartNotice: null,
+      accountCartRevision: 0,
 
       addToWishlist: (item) =>
         set((state) =>
@@ -165,45 +178,30 @@ export const useShopStore = create<ShopState>()(
         set((state) =>
           has(state.cart, item.key)
             ? state
-            : { cart: [...state.cart, { ...toShopItem(item), addons: [], addedAt: Date.now() }] },
+            : { cart: [...state.cart, { ...toShopItem(item), addedAt: Date.now() }] },
         ),
       removeFromCart: (key) => set((state) => ({ cart: state.cart.filter((entry) => entry.key !== key) })),
       restoreCartLine: (line, index) =>
         set((state) => (has(state.cart, line.key) ? state : { cart: insertAt(state.cart, line, index) })),
-      toggleCartAddon: (key, addon) =>
+      replaceCart: (cart) => set({ cart }),
+      setCartLineAccount: (key, productId, cartItemId) =>
         set((state) => ({
           cart: state.cart.map((line) =>
-            line.key !== key
-              ? line
-              : {
-                  ...line,
-                  addons: line.addons.includes(addon)
-                    ? line.addons.filter((code) => code !== addon)
-                    : [...line.addons, addon],
-                },
+            line.key === key ? { ...line, productId, cartItemId: cartItemId ?? line.cartItemId } : line,
           ),
         })),
-      clearCart: () => set({ cart: [], coupon: null }),
-
-      setCoupon: (coupon) => set({ coupon }),
-      setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
-      setOrder: (order) => set({ order }),
+      clearCart: () => set({ cart: [] }),
+      setCartNotice: (cartNotice) => set({ cartNotice }),
+      bumpAccountCart: () => set((state) => ({ accountCartRevision: state.accountCartRevision + 1 })),
 
       openAuthGate: () => set({ authGateOpen: true }),
       closeAuthGate: () => set({ authGateOpen: false }),
-      setMockCustomer: (mockCustomer) => set({ mockCustomer }),
     }),
     {
       name: "ma-shop",
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
-      partialize: ({ cart, wishlist, coupon, paymentMethod, order }): PersistedShop => ({
-        cart,
-        wishlist,
-        coupon,
-        paymentMethod,
-        order,
-      }),
+      partialize: ({ cart, wishlist }): PersistedShop => ({ cart, wishlist }),
       migrate,
       // Hydrate after mount: server HTML and the first client render must both see an empty store.
       skipHydration: true,

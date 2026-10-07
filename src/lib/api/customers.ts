@@ -34,7 +34,7 @@ export type WishlistAddRequest = RequestBody<AddWishlistItemOperation>;
 export type WishlistItemResponse = SuccessResponse<AddWishlistItemOperation>;
 export type RemoveWishlistItemResponse = SuccessResponse<RemoveWishlistItemOperation>;
 
-type AuthenticatedRequestOptions = Omit<ApiRequestOptions, "credentials">;
+export type AuthenticatedRequestOptions = Omit<ApiRequestOptions, "credentials">;
 
 const customerPaths = {
   me: "/api/v1/me",
@@ -61,7 +61,7 @@ export const customerKeys = {
  * A call about the signed-in customer. In the browser it goes through this app, which holds the
  * session in httpOnly cookies; an expired access token is renewed once and the call repeated.
  */
-async function customerRequest<T>(method: string, path: string, options: ApiRequestOptions): Promise<T> {
+export async function customerRequest<T>(method: string, path: string, options: ApiRequestOptions): Promise<T> {
   if (typeof window === "undefined") return apiRequest<T>(method, path, options);
   const viaApp = { ...options, sameOrigin: true };
   try {
@@ -73,7 +73,7 @@ async function customerRequest<T>(method: string, path: string, options: ApiRequ
   }
 }
 
-function withAuthCookies(options?: AuthenticatedRequestOptions): AuthenticatedRequestOptions & { credentials: "include" } {
+export function withAuthCookies(options?: AuthenticatedRequestOptions): AuthenticatedRequestOptions & { credentials: "include" } {
   return {
     ...options,
     credentials: "include",

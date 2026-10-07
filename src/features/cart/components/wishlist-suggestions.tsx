@@ -8,6 +8,7 @@ import { Money } from "@/components/shop/money";
 import { AppLink } from "@/components/ui/app-link";
 import { routes } from "@/config/routes";
 import { kindLabel } from "@/lib/shop/labels";
+import { addToCart } from "@/lib/shop/use-shop-actions";
 import { useShopStore } from "@/lib/shop/store";
 
 /** Rows shown; the rest are one click away on the wishlist page. */
@@ -20,7 +21,6 @@ const LIMIT = 4;
 export function WishlistSuggestions() {
   const wishlist = useShopStore((state) => state.wishlist);
   const cart = useShopStore((state) => state.cart);
-  const addToCart = useShopStore((state) => state.addToCart);
 
   const inCart = new Set(cart.map((line) => line.key));
   const candidates = wishlist
@@ -60,7 +60,7 @@ export function WishlistSuggestions() {
             </div>
             <button
               type="button"
-              onClick={() => addToCart(entry)}
+              onClick={() => addToCart(entry, { track: false })}
               aria-label={`إضافة «${entry.title}» إلى السلة`}
               className="ma-btn ma-btn--soft ma-btn--sm min-h-11 shrink-0 gap-1.5"
             >

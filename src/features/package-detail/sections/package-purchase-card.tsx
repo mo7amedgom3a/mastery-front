@@ -1,7 +1,7 @@
 import { Award, BookOpen, CalendarCheck, Clock, Layers, MonitorSmartphone, PiggyBank } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { actionsFor } from "@/components/shop/card-actions-for";
+import { purchaseActionsFor } from "@/components/shop/card-actions-for";
 import { formatCount } from "@/lib/format";
 
 import { itemsLabel } from "../model/facts";
@@ -61,7 +61,7 @@ export function PackagePurchaseCard({ product, share }: { product: PackageDetail
       ) : null}
 
       <div className="mt-5 lg:short:mt-4">
-        {actionsFor("package", {
+        {purchaseActionsFor("package", {
           id: product.id,
           title: product.title,
           href: product.href,

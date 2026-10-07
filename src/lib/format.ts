@@ -36,6 +36,11 @@ export function formatMoney(amount: number): string {
   return Number.isInteger(value) ? priceFormatter.format(value) : centsFormatter.format(value);
 }
 
+/** API amounts are integers in minor units (cents); the UI works in major units. */
+export function fromMinor(amountMinor: number): number {
+  return Math.round(amountMinor) / 100;
+}
+
 export function formatNumber(value: number): string {
   return numberFormatter.format(value);
 }
@@ -89,6 +94,25 @@ export function formatLongDate(date: Date): string {
 /** Time of day in the reader's own timezone, e.g. "5:00 م". */
 export function formatTimeOfDay(date: Date): string {
   return timeFormatter.format(date);
+}
+
+const dateFormatter = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "long", year: "numeric" });
+const dateTimeFormatter = new Intl.DateTimeFormat(LOCALE, {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+/** An API timestamp as a day in the reader's timezone, e.g. "3 أكتوبر 2026". */
+export function formatDate(iso: string): string {
+  return dateFormatter.format(new Date(iso));
+}
+
+/** An API timestamp with its time of day, in the reader's timezone. */
+export function formatDateTime(iso: string): string {
+  return dateTimeFormatter.format(new Date(iso));
 }
 
 const pluralRules = new Intl.PluralRules("ar");

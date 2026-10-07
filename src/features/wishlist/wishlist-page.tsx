@@ -17,7 +17,7 @@ import { formatCount, formatNumber } from "@/lib/format";
 import { trackCartBulk } from "@/lib/observability/behavior";
 import { ITEM_FORMS, kindPluralLabel } from "@/lib/shop/labels";
 import { useShopHydrated, useShopStore, type WishlistEntry } from "@/lib/shop/store";
-import { removeFromWishlist } from "@/lib/shop/use-shop-actions";
+import { removeFromWishlist, addToCart } from "@/lib/shop/use-shop-actions";
 import { useUndo } from "@/lib/shop/use-undo";
 import { pushWishlistEntry } from "@/lib/shop/wishlist-sync";
 
@@ -56,7 +56,6 @@ export function WishlistPage() {
   const hydrated = useShopHydrated();
   const entries = useShopStore((state) => state.wishlist);
   const cart = useShopStore((state) => state.cart);
-  const addToCart = useShopStore((state) => state.addToCart);
   const signedOut = useAuthStore((state) => state.status === "unauthenticated");
   useAccountWishlist(hydrated);
 
@@ -236,7 +235,7 @@ export function WishlistPage() {
           <button
             type="button"
             onClick={() => {
-              addable.forEach((item) => addToCart(item));
+              addable.forEach((item) => addToCart(item, { track: false }));
               trackCartBulk(addable);
             }}
             className="ma-btn ma-btn--secondary ma-btn--sm min-h-11 gap-2"

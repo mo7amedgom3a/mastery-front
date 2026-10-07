@@ -1,10 +1,9 @@
 /**
  * The shop API contract: what the browser sends to, and gets from, `/api/shop/*`.
  *
- * MOCK: these endpoints are served by this app (see `src/app/api/shop`) until the B2C cart, order and
- * payment modules exist. The shapes follow the backend tables (`b2c.cart_items`, `b2c.orders`,
- * `b2c.order_items`, `b2c.promotions`, `b2c.payments`), so moving to the real API is a change of
- * client paths, not of the UI.
+ * These endpoints are served by this app (see `src/app/api/shop`) from the catalog: item artwork and
+ * links, and a guest's cart preview. A signed-in customer's cart, orders and payments are the
+ * backend's (`lib/api/commerce`); the cart page maps the backend quote onto `Quote` so one UI shows both.
  *
  * Amounts are numbers in major units of `currency`, with at most two decimals.
  */
@@ -138,55 +137,6 @@ export type Quote = {
   totals: QuoteTotals;
   paymentMethods: PaymentMethodOption[];
 };
-
-/* ---------- Order ---------- */
-
-export type OrderRequest = QuoteRequest & {
-  /** Null only when the total is zero. */
-  paymentMethod: PaymentMethodId | null;
-  /** The total the customer saw; the order is refused when prices moved since. */
-  expectedTotal: number;
-  /** MOCK: stands in for a session while sign-in isn't built (only honoured in mock checkout). */
-  mockCustomer?: boolean;
-};
-
-export type OrderStatus = "pending_payment" | "paid" | "failed";
-
-export type OrderLine = {
-  key: ShopItemKey;
-  kind: ShopItemKind;
-  title: string;
-  href: string;
-  image: string | null;
-  unitAmount: number;
-  originalAmount: number | null;
-  addons: { code: AddonCode; title: string; amount: number }[];
-  discountAmount: number;
-  totalAmount: number;
-};
-
-export type Order = {
-  orderId: string;
-  /** Short reference shown to the customer. */
-  number: string;
-  status: OrderStatus;
-  createdAt: string;
-  paidAt: string | null;
-  paymentMethod: PaymentMethodId | null;
-  couponCode: string | null;
-  lines: OrderLine[];
-  totals: QuoteTotals;
-};
-
-export type OrderResponse = {
-  order: Order;
-  /** `redirect`: send the customer to the provider's page at `url`. `none`: nothing to pay. */
-  payment: { action: "redirect"; url: string } | { action: "none" };
-};
-
-export type PaymentConfirmRequest = { orderId: string; outcome: "success" | "failure" };
-
-export type PaymentConfirmResponse = { orderId: string; status: OrderStatus; paidAt: string | null };
 
 /** Error body of the shop endpoints. */
 export type ShopErrorCode =

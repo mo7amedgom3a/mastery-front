@@ -7,7 +7,7 @@ import { AppLink } from "@/components/ui/app-link";
 import { brandBg, type BrandColor } from "@/components/ui/brand-colors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/cn";
-import type { AddonCode, Quote, QuoteLine, ShopItemKind } from "@/lib/shop/contract";
+import type { Quote, QuoteLine, ShopItemKind } from "@/lib/shop/contract";
 import { kindLabel } from "@/lib/shop/labels";
 import type { CartLine } from "@/lib/shop/store";
 
@@ -36,17 +36,16 @@ type CartLineRowProps = {
   unavailable: UnavailableReason | undefined;
   /** Whether the item is already in the wishlist ("save for later" then only removes it here). */
   saved: boolean;
-  onToggleAddon: (key: string, addon: AddonCode) => void;
   onSaveForLater: (line: CartLine) => void;
   onRemove: (line: CartLine) => void;
 };
 
 /**
- * One product in the cart: what it is, what it costs now (the offer price, with the original struck
- * through), its paid extras, and the coupon's share. Titles, artwork and prices come from the quote
- * once it arrives; until then the row shows what was saved with the item.
+ * One product in the cart: what it is and what it costs now (the offer price, with the original
+ * struck through). Titles, artwork and prices come from the quote once it arrives; until then the
+ * row shows what was saved with the item.
  */
-export function CartLineRow({ line, quoted, unavailable, saved, onToggleAddon, onSaveForLater, onRemove }: CartLineRowProps) {
+export function CartLineRow({ line, quoted, unavailable, saved, onSaveForLater, onRemove }: CartLineRowProps) {
   const item = quoted?.item;
   const title = item?.title ?? line.title;
   const image = item?.image ?? line.image;
@@ -108,38 +107,6 @@ export function CartLineRow({ line, quoted, unavailable, saved, onToggleAddon, o
         <p role="note" className="m-0 border-s-4 border-accent ps-3 text-sm leading-6">
           {unavailableText[unavailable]}
         </p>
-      ) : null}
-
-      {quoted && quoted.addons.length > 0 ? (
-        <div role="group" aria-label={`إضافات «${title}»`} className="flex min-w-0 flex-col gap-1 border-t border-line pt-3">
-          <p className="m-0 text-sm font-bold">أضف إلى هذا المنتج</p>
-          {quoted.addons.map((addon) => {
-            // Checked state follows the cart itself, so a tick shows at once; the quote catches up.
-            const checked = line.addons.includes(addon.code);
-            return (
-              <label
-                key={addon.code}
-                className={cn("ma-check w-full items-start gap-3 py-2", checked && "font-medium")}
-              >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => onToggleAddon(line.key, addon.code)}
-                  className="mt-1 shrink-0"
-                />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span>{addon.title}</span>
-                  <span className="text-sm leading-6 font-normal text-fg-muted">{addon.description}</span>
-                </span>
-                <span className="shrink-0 font-bold">
-                  <span aria-hidden="true">+</span>
-                  <span className="sr-only">بإضافة </span>
-                  <Money amount={addon.amount} />
-                </span>
-              </label>
-            );
-          })}
-        </div>
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-line pt-3">

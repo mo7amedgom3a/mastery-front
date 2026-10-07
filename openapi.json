@@ -47,6 +47,154 @@
         }
       }
     },
+    "/api/v1/me/entitlements/{entitlement_id}/extension-options": {
+      "get": {
+        "tags": [
+          "Access Extensions"
+        ],
+        "summary": "Extension Options",
+        "operationId": "extension_options_api_v1_me_entitlements__entitlement_id__extension_options_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "entitlement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entitlement Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AccessExtensionOptionResponse"
+                  },
+                  "title": "Response Extension Options Api V1 Me Entitlements  Entitlement Id  Extension Options Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/access-extensions/checkout": {
+      "post": {
+        "tags": [
+          "Access Extensions"
+        ],
+        "summary": "Access Extension Checkout",
+        "operationId": "access_extension_checkout_api_v1_access_extensions_checkout_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccessExtensionCheckoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "tags": [
@@ -408,6 +556,206 @@
         }
       }
     },
+    "/api/v1/admin/bundles": {
+      "post": {
+        "tags": [
+          "Admin Bundles"
+        ],
+        "summary": "Create Bundle",
+        "operationId": "create_bundle_api_v1_admin_bundles_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BundleUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/bundles/{product_id}": {
+      "get": {
+        "tags": [
+          "Admin Bundles"
+        ],
+        "summary": "Get Bundle",
+        "operationId": "get_bundle_api_v1_admin_bundles__product_id__get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin Bundles"
+        ],
+        "summary": "Update Bundle",
+        "operationId": "update_bundle_api_v1_admin_bundles__product_id__put",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Product Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BundleUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BundleDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/catalog/product-types": {
       "get": {
         "tags": [
@@ -731,6 +1079,411 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RecommendationPageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cart": {
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Get Cart",
+        "operationId": "get_cart_api_v1_cart_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "currency_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "default": "USD",
+              "title": "Currency Code"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cart/items": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Add Cart Item",
+        "operationId": "add_cart_item_api_v1_cart_items_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cart/items/{cart_item_id}": {
+      "patch": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Update Cart Item",
+        "operationId": "update_cart_item_api_v1_cart_items__cart_item_id__patch",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cart_item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cart Item Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartItemUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Remove Cart Item",
+        "operationId": "remove_cart_item_api_v1_cart_items__cart_item_id__delete",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "cart_item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cart Item Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checkout/quote": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Checkout Quote",
+        "operationId": "checkout_quote_api_v1_checkout_quote_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "currency_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "default": "USD",
+              "title": "Currency Code"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutQuoteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/checkout/sessions": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Create Checkout Session",
+        "operationId": "create_checkout_session_api_v1_checkout_sessions_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutSessionResponse"
                 }
               }
             }
@@ -1466,6 +2219,163 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/entitlements": {
+      "get": {
+        "tags": [
+          "Entitlements"
+        ],
+        "summary": "List Entitlements",
+        "operationId": "list_entitlements_api_v1_me_entitlements_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntitlementPageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/entitlements/{entitlement_id}": {
+      "get": {
+        "tags": [
+          "Entitlements"
+        ],
+        "summary": "Get Entitlement",
+        "operationId": "get_entitlement_api_v1_me_entitlements__entitlement_id__get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "entitlement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entitlement Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntitlementDetailResponse"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -2877,6 +3787,686 @@
         }
       }
     },
+    "/api/v1/legacy/commands/enrollments": {
+      "post": {
+        "tags": [
+          "Legacy write gateway"
+        ],
+        "summary": "Create Legacy Enrollment",
+        "operationId": "create_legacy_enrollment_api_v1_legacy_commands_enrollments_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "X-Legacy-Command-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Legacy-Command-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyEnrollmentCommandRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyCommandResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/legacy/commands/enrollments/revoke": {
+      "post": {
+        "tags": [
+          "Legacy write gateway"
+        ],
+        "summary": "Revoke Legacy Enrollment",
+        "operationId": "revoke_legacy_enrollment_api_v1_legacy_commands_enrollments_revoke_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "X-Legacy-Command-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Legacy-Command-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyEnrollmentCommandRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyCommandResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/legacy/commands/enrollments/expiry": {
+      "patch": {
+        "tags": [
+          "Legacy write gateway"
+        ],
+        "summary": "Update Legacy Enrollment Expiry",
+        "operationId": "update_legacy_enrollment_expiry_api_v1_legacy_commands_enrollments_expiry_patch",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "X-Legacy-Command-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Legacy-Command-Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LegacyEnrollmentExpiryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyCommandResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "List Orders",
+        "operationId": "list_orders_api_v1_orders_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Get Order",
+        "operationId": "get_order_api_v1_orders__order_id__get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}/transactions": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Order Transactions",
+        "operationId": "order_transactions_api_v1_orders__order_id__transactions_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderTransactionResponse"
+                  },
+                  "title": "Response Order Transactions Api V1 Orders  Order Id  Transactions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}/invoices": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Order Invoices",
+        "operationId": "order_invoices_api_v1_orders__order_id__invoices_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderInvoiceResponse"
+                  },
+                  "title": "Response Order Invoices Api V1 Orders  Order Id  Invoices Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/intents/{payment_intent_id}": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Payment Intent Status",
+        "operationId": "payment_intent_status_api_v1_payments_intents__payment_intent_id__get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "payment_intent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Payment Intent Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentIntentStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/intents/{payment_intent_id}/reconcile": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Reconcile Payment Intent",
+        "description": "Owner-triggered reconciliation (e.g. after the Stripe success redirect).\n\nThe webhook remains the source of truth; this only wakes the workflow so the\nbuyer does not wait for the 30-minute fallback when a delivery is delayed.",
+        "operationId": "reconcile_payment_intent_api_v1_payments_intents__payment_intent_id__reconcile_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "payment_intent_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Payment Intent Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentIntentStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/payments/webhooks/stripe": {
+      "post": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Stripe Webhook",
+        "operationId": "stripe_webhook_api_v1_payments_webhooks_stripe_post",
+        "parameters": [
+          {
+            "name": "Stripe-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Stripe-Signature"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookAckResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/recommendations/products/{slug}": {
       "get": {
         "tags": [
@@ -3292,7 +4882,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0.0
+                  "minimum": 0
                 },
                 {
                   "type": "string",
@@ -3313,7 +4903,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0.0
+                  "minimum": 0
                 },
                 {
                   "type": "string",
@@ -3724,7 +5314,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0.0
+                  "minimum": 0
                 },
                 {
                   "type": "string",
@@ -3745,7 +5335,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0.0
+                  "minimum": 0
                 },
                 {
                   "type": "string",
@@ -4090,6 +5680,138 @@
   },
   "components": {
     "schemas": {
+      "AccessExtensionCheckoutRequest": {
+        "properties": {
+          "entitlement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entitlement Id"
+          },
+          "option_code": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Option Code"
+          },
+          "success_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Success Url"
+          },
+          "cancel_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancel Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entitlement_id",
+          "option_code"
+        ],
+        "title": "AccessExtensionCheckoutRequest"
+      },
+      "AccessExtensionOptionResponse": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "extended_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extended Days"
+          },
+          "lifetime": {
+            "type": "boolean",
+            "title": "Lifetime"
+          },
+          "eligible": {
+            "type": "boolean",
+            "title": "Eligible"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "entitlement_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entitlement Id"
+          },
+          "amount_minor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Minor"
+          },
+          "currency_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "label",
+          "lifetime",
+          "eligible"
+        ],
+        "title": "AccessExtensionOptionResponse"
+      },
       "AuthResponse": {
         "properties": {
           "customer": {
@@ -4281,7 +6003,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1.0
+                "minimum": 1
               },
               {
                 "type": "null"
@@ -4338,6 +6060,419 @@
           "request_id"
         ],
         "title": "BehaviorEventResponse"
+      },
+      "BundleDetailResponse": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Amount"
+          },
+          "access_duration_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Duration Days"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/BundleMemberResponse"
+            },
+            "type": "array",
+            "title": "Members"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "slug",
+          "title",
+          "status",
+          "currency_code",
+          "amount",
+          "access_duration_days",
+          "members"
+        ],
+        "title": "BundleDetailResponse"
+      },
+      "BundleMemberRequest": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "sort_order": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Sort Order",
+            "default": 0
+          },
+          "quantity": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Quantity",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "title": "BundleMemberRequest"
+      },
+      "BundleMemberResponse": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "product_type": {
+            "type": "string",
+            "title": "Product Type"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "slug",
+          "product_type",
+          "title",
+          "status",
+          "sort_order",
+          "quantity"
+        ],
+        "title": "BundleMemberResponse"
+      },
+      "BundleUpsertRequest": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "maxLength": 260,
+            "minLength": 1,
+            "title": "Slug"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Status",
+            "default": "draft"
+          },
+          "currency_code": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 3,
+            "title": "Currency Code",
+            "default": "USD"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Amount"
+          },
+          "access_duration_days": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Duration Days"
+          },
+          "cpd_eligible": {
+            "type": "boolean",
+            "title": "Cpd Eligible",
+            "default": false
+          },
+          "category_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Category Ids"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/BundleMemberRequest"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Members"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "title",
+          "amount",
+          "members"
+        ],
+        "title": "BundleUpsertRequest"
+      },
+      "CartItemRequest": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "maximum": 10,
+            "minimum": 1,
+            "title": "Quantity",
+            "default": 1
+          },
+          "currency_code": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 3,
+            "title": "Currency Code",
+            "default": "USD"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "title": "CartItemRequest"
+      },
+      "CartItemUpdateRequest": {
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "maximum": 10,
+            "minimum": 1,
+            "title": "Quantity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quantity"
+        ],
+        "title": "CartItemUpdateRequest"
+      },
+      "CartLineResponse": {
+        "properties": {
+          "cart_item_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Cart Item Id"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "product_type": {
+            "type": "string",
+            "title": "Product Type"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "unit_amount_minor": {
+            "type": "integer",
+            "title": "Unit Amount Minor"
+          },
+          "total_amount_minor": {
+            "type": "integer",
+            "title": "Total Amount Minor"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cart_item_id",
+          "product_id",
+          "slug",
+          "product_type",
+          "quantity",
+          "unit_amount_minor",
+          "total_amount_minor",
+          "currency_code"
+        ],
+        "title": "CartLineResponse"
+      },
+      "CartResponse": {
+        "properties": {
+          "cart_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Cart Id"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Customer Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/CartLineResponse"
+            },
+            "type": "array",
+            "title": "Lines",
+            "default": []
+          },
+          "subtotal_amount_minor": {
+            "type": "integer",
+            "title": "Subtotal Amount Minor"
+          },
+          "discount_amount_minor": {
+            "type": "integer",
+            "title": "Discount Amount Minor"
+          },
+          "tax_amount_minor": {
+            "type": "integer",
+            "title": "Tax Amount Minor"
+          },
+          "total_amount_minor": {
+            "type": "integer",
+            "title": "Total Amount Minor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cart_id",
+          "customer_id",
+          "status",
+          "currency_code",
+          "subtotal_amount_minor",
+          "discount_amount_minor",
+          "tax_amount_minor",
+          "total_amount_minor"
+        ],
+        "title": "CartResponse"
       },
       "CertificateResponse": {
         "properties": {
@@ -4423,6 +6558,201 @@
           "number_of_logos"
         ],
         "title": "CertificateResponse"
+      },
+      "CheckoutQuoteResponse": {
+        "properties": {
+          "cart_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Cart Id"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Customer Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/CartLineResponse"
+            },
+            "type": "array",
+            "title": "Lines",
+            "default": []
+          },
+          "subtotal_amount_minor": {
+            "type": "integer",
+            "title": "Subtotal Amount Minor"
+          },
+          "discount_amount_minor": {
+            "type": "integer",
+            "title": "Discount Amount Minor"
+          },
+          "tax_amount_minor": {
+            "type": "integer",
+            "title": "Tax Amount Minor"
+          },
+          "total_amount_minor": {
+            "type": "integer",
+            "title": "Total Amount Minor"
+          },
+          "unavailable_product_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Unavailable Product Ids",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "cart_id",
+          "customer_id",
+          "status",
+          "currency_code",
+          "subtotal_amount_minor",
+          "discount_amount_minor",
+          "tax_amount_minor",
+          "total_amount_minor"
+        ],
+        "title": "CheckoutQuoteResponse"
+      },
+      "CheckoutSessionRequest": {
+        "properties": {
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "quantity": {
+            "type": "integer",
+            "maximum": 10,
+            "minimum": 1,
+            "title": "Quantity",
+            "default": 1
+          },
+          "currency_code": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 3,
+            "title": "Currency Code",
+            "default": "USD"
+          },
+          "success_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Success Url"
+          },
+          "cancel_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancel Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CheckoutSessionRequest"
+      },
+      "CheckoutSessionResponse": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "payment_intent_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Intent Id"
+          },
+          "payment_attempt_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Attempt Id"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "checkout_session_id": {
+            "type": "string",
+            "title": "Checkout Session Id"
+          },
+          "checkout_url": {
+            "type": "string",
+            "title": "Checkout Url"
+          },
+          "amount_minor": {
+            "type": "integer",
+            "title": "Amount Minor"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "temporal_workflow_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temporal Workflow Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "payment_intent_id",
+          "payment_attempt_id",
+          "provider",
+          "checkout_session_id",
+          "checkout_url",
+          "amount_minor",
+          "currency_code",
+          "status"
+        ],
+        "title": "CheckoutSessionResponse"
       },
       "CollectionDetailResponse": {
         "properties": {
@@ -5511,6 +7841,329 @@
         ],
         "title": "DatabasePoolResponse"
       },
+      "EntitlementDetailResponse": {
+        "properties": {
+          "entitlement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entitlement Id"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Customer Id"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "product_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Type"
+          },
+          "product_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Slug"
+          },
+          "product_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Title"
+          },
+          "source_type": {
+            "type": "string",
+            "title": "Source Type"
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "fulfillment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulfillment Status"
+          },
+          "fulfillments": {
+            "items": {
+              "$ref": "#/components/schemas/EntitlementFulfillmentResponse"
+            },
+            "type": "array",
+            "title": "Fulfillments",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "entitlement_id",
+          "customer_id",
+          "product_id",
+          "source_type",
+          "source_id",
+          "status",
+          "starts_at"
+        ],
+        "title": "EntitlementDetailResponse"
+      },
+      "EntitlementFulfillmentResponse": {
+        "properties": {
+          "fulfillment_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Fulfillment Id"
+          },
+          "target_system": {
+            "type": "string",
+            "title": "Target System"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "retry_count": {
+            "type": "integer",
+            "title": "Retry Count"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fulfillment_id",
+          "target_system",
+          "status",
+          "retry_count"
+        ],
+        "title": "EntitlementFulfillmentResponse"
+      },
+      "EntitlementPageResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EntitlementSummaryResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "EntitlementPageResponse"
+      },
+      "EntitlementSummaryResponse": {
+        "properties": {
+          "entitlement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entitlement Id"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Customer Id"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "product_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Type"
+          },
+          "product_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Slug"
+          },
+          "product_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Title"
+          },
+          "source_type": {
+            "type": "string",
+            "title": "Source Type"
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "fulfillment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulfillment Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entitlement_id",
+          "customer_id",
+          "product_id",
+          "source_type",
+          "source_id",
+          "status",
+          "starts_at"
+        ],
+        "title": "EntitlementSummaryResponse"
+      },
       "ExpertDetailResponse": {
         "properties": {
           "expert": {
@@ -6281,8 +8934,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 1440.0,
-                "minimum": 0.0
+                "maximum": 1440,
+                "minimum": 0
               },
               {
                 "type": "null"
@@ -6402,6 +9055,139 @@
           "course_ids"
         ],
         "title": "LearningResourceDetailResponse"
+      },
+      "LegacyCommandResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "command": {
+            "type": "string",
+            "title": "Command"
+          },
+          "legacy_reference_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Reference Id"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "command",
+          "request_id"
+        ],
+        "title": "LegacyCommandResponse"
+      },
+      "LegacyEnrollmentCommandRequest": {
+        "properties": {
+          "legacy_user_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Legacy User Id"
+          },
+          "legacy_resource_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Legacy Resource Id"
+          },
+          "order_reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Reference"
+          },
+          "actor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "legacy_user_id",
+          "legacy_resource_id"
+        ],
+        "title": "LegacyEnrollmentCommandRequest"
+      },
+      "LegacyEnrollmentExpiryRequest": {
+        "properties": {
+          "legacy_user_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Legacy User Id"
+          },
+          "legacy_resource_id": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Legacy Resource Id"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "actor_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "legacy_user_id",
+          "legacy_resource_id",
+          "expires_at"
+        ],
+        "title": "LegacyEnrollmentExpiryRequest"
       },
       "LegacyPageResponse_CategoryResponse_": {
         "properties": {
@@ -7064,6 +9850,610 @@
           "is_active"
         ],
         "title": "OnboardingQuestionResponse"
+      },
+      "OrderDetailResponse": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Customer Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "amount_minor": {
+            "type": "integer",
+            "title": "Amount Minor"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "placed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placed At"
+          },
+          "payment_intent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Intent Id"
+          },
+          "payment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Status"
+          },
+          "fulfillment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulfillment Status"
+          },
+          "invoice_count": {
+            "type": "integer",
+            "title": "Invoice Count",
+            "default": 0
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/OrderLineResponse"
+            },
+            "type": "array",
+            "title": "Lines",
+            "default": []
+          },
+          "invoices": {
+            "items": {
+              "$ref": "#/components/schemas/OrderInvoiceResponse"
+            },
+            "type": "array",
+            "title": "Invoices",
+            "default": []
+          },
+          "transactions": {
+            "items": {
+              "$ref": "#/components/schemas/OrderTransactionResponse"
+            },
+            "type": "array",
+            "title": "Transactions",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "customer_id",
+          "status",
+          "amount_minor",
+          "currency_code"
+        ],
+        "title": "OrderDetailResponse"
+      },
+      "OrderInvoiceResponse": {
+        "properties": {
+          "invoice_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Invoice Id"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "payment_intent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Intent Id"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "provider_invoice_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Invoice Id"
+          },
+          "s3_bucket": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "S3 Bucket"
+          },
+          "s3_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "S3 Key"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Type"
+          },
+          "pdf_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pdf Url"
+          },
+          "download_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Download Url"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Issued At"
+          },
+          "invoice_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice_id",
+          "order_id",
+          "provider",
+          "issued_at"
+        ],
+        "title": "OrderInvoiceResponse"
+      },
+      "OrderLineResponse": {
+        "properties": {
+          "order_item_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Item Id"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "product_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Type"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "unit_amount_minor": {
+            "type": "integer",
+            "title": "Unit Amount Minor"
+          },
+          "total_amount_minor": {
+            "type": "integer",
+            "title": "Total Amount Minor"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "product_snapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Product Snapshot",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_item_id",
+          "product_id",
+          "quantity",
+          "unit_amount_minor",
+          "total_amount_minor",
+          "currency_code"
+        ],
+        "title": "OrderLineResponse"
+      },
+      "OrderPageResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderSummaryResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "OrderPageResponse"
+      },
+      "OrderSummaryResponse": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Customer Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "amount_minor": {
+            "type": "integer",
+            "title": "Amount Minor"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "placed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placed At"
+          },
+          "payment_intent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Intent Id"
+          },
+          "payment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Status"
+          },
+          "fulfillment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulfillment Status"
+          },
+          "invoice_count": {
+            "type": "integer",
+            "title": "Invoice Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "customer_id",
+          "status",
+          "amount_minor",
+          "currency_code"
+        ],
+        "title": "OrderSummaryResponse"
+      },
+      "OrderTransactionResponse": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Transaction Id"
+          },
+          "payment_intent_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Intent Id"
+          },
+          "payment_attempt_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Attempt Id"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "amount_minor": {
+            "type": "integer",
+            "title": "Amount Minor"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "payment_intent_id",
+          "provider",
+          "event_type",
+          "status",
+          "amount_minor",
+          "currency_code"
+        ],
+        "title": "OrderTransactionResponse"
+      },
+      "PaymentIntentStatusResponse": {
+        "properties": {
+          "payment_intent_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Intent Id"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "amount_minor": {
+            "type": "integer",
+            "title": "Amount Minor"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "latest_payment_attempt_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Payment Attempt Id"
+          },
+          "provider_session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Session Id"
+          },
+          "provider_payment_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Payment Id"
+          },
+          "checkout_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkout Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payment_intent_id",
+          "order_id",
+          "provider",
+          "amount_minor",
+          "currency_code",
+          "status"
+        ],
+        "title": "PaymentIntentStatusResponse"
       },
       "PriceResponse": {
         "properties": {
@@ -8598,7 +11988,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string",
@@ -8614,7 +12004,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "string",
@@ -8643,8 +12033,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 5.0,
-                "minimum": 0.0
+                "maximum": 5,
+                "minimum": 0
               },
               {
                 "type": "null"
@@ -8656,8 +12046,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 5.0,
-                "minimum": 0.0
+                "maximum": 5,
+                "minimum": 0
               },
               {
                 "type": "null"
@@ -8669,7 +12059,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "null"
@@ -8681,7 +12071,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 0.0
+                "minimum": 0
               },
               {
                 "type": "null"
@@ -8744,14 +12134,14 @@
           },
           "limit": {
             "type": "integer",
-            "maximum": 100.0,
-            "minimum": 1.0,
+            "maximum": 100,
+            "minimum": 1,
             "title": "Limit",
             "default": 50
           },
           "offset": {
             "type": "integer",
-            "minimum": 0.0,
+            "minimum": 0,
             "title": "Offset",
             "default": 0
           }
@@ -9329,6 +12719,40 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WebhookAckResponse": {
+        "properties": {
+          "webhook_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Webhook Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "external_event_id": {
+            "type": "string",
+            "title": "External Event Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "webhook_id",
+          "source",
+          "event_type",
+          "external_event_id",
+          "status"
+        ],
+        "title": "WebhookAckResponse"
       },
       "WishlistAddRequest": {
         "properties": {

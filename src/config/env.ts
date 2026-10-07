@@ -44,20 +44,6 @@ export function isIndexable(): boolean {
   return !vercelEnv || vercelEnv === "production";
 }
 
-/**
- * MOCK: whether the simulated checkout (order creation and the stand-in payment page) is switched
- * on. The real order and payment APIs don't exist yet, so production keeps it off and the cart only
- * says that payment is coming. On by default outside production; `NEXT_PUBLIC_MOCK_CHECKOUT` forces
- * it either way ("true" / "false"), e.g. "true" on staging.
- * TODO(api): remove with the mock once checkout talks to the backend.
- */
-export function isMockCheckoutEnabled(): boolean {
-  const flag = process.env.NEXT_PUBLIC_MOCK_CHECKOUT;
-  if (flag === "true") return true;
-  if (flag === "false") return false;
-  return process.env.NODE_ENV !== "production";
-}
-
 /** Host Vercel serves this deployment on (system env vars, no scheme), if any. */
 function vercelSiteUrl(): string | undefined {
   const host =

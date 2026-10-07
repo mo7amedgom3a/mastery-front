@@ -1,19 +1,14 @@
 "use client";
 
-import { getCatalogProduct } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/client";
 import { addWishlistItem, removeWishlistItem } from "@/lib/api/customers";
 
+import { resolveCatalogProductId } from "./catalog-ids";
 import { useShopStore, type WishlistEntry } from "./store";
 
-/**
- * Landing cards carry legacy ids; the account wishlist is keyed by catalog `product_id` (UUID).
- * The catalog slug for a legacy item is `${kind}-${legacyId}` (e.g. `course-4`).
- */
 async function resolveProductId(entry: WishlistEntry): Promise<string> {
   if (entry.productId) return entry.productId;
-  const detail = await getCatalogProduct(`${entry.kind}-${entry.id}`, { sameOrigin: true });
-  const productId = detail.product.product_id;
+  const productId = await resolveCatalogProductId(entry);
   useShopStore.getState().setWishlistProductId(entry.key, productId);
   return productId;
 }

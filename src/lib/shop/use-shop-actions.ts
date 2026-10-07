@@ -3,7 +3,8 @@
 import { useAuthStore } from "@/lib/auth/store";
 import { trackCart, trackWishlist } from "@/lib/observability/behavior";
 
-import { useShopStore, type ShopItem } from "./store";
+import { dropCartLine, pushCartLine } from "./cart-sync";
+import { useShopStore, type CartLine, type ShopItem } from "./store";
 import { pushWishlistEntry, removeWishlistEntry } from "./wishlist-sync";
 
 /** Resolves whether there's a session, checking with the API once if we don't know yet. */
@@ -40,6 +41,28 @@ export function removeFromWishlist(key: string): void {
   if (useAuthStore.getState().status === "authenticated") void removeWishlistEntry(existing);
 }
 
+/**
+ * Adds an item to the cart; signed in, to the account cart too. No-op when already there.
+ * `track: false` when the caller reports the add itself (bulk adds).
+ */
+export function addToCart(item: ShopItem, { track = true }: { track?: boolean } = {}): void {
+  const shop = useShopStore.getState();
+  if (shop.cart.some((entry) => entry.key === item.key)) return;
+  shop.addToCart(item);
+  if (track) trackCart(item, true);
+  if (useAuthStore.getState().status === "authenticated") {
+    const line = useShopStore.getState().cart.find((entry) => entry.key === item.key);
+    if (line) void pushCartLine(line);
+  }
+}
+
+/** Removes a cart line; signed in, from the account cart too. */
+export function removeFromCart(line: CartLine): void {
+  useShopStore.getState().removeFromCart(line.key);
+  trackCart(line, false);
+  if (useAuthStore.getState().status === "authenticated") void dropCartLine(line);
+}
+
 /** Wishlist and cart are both open to guests; signing in is asked for at payment. */
 export function useShopActions() {
   const toggleWishlist = (item: ShopItem): boolean => {
@@ -52,14 +75,12 @@ export function useShopActions() {
   };
 
   const toggleCart = (item: ShopItem): boolean => {
-    const shop = useShopStore.getState();
-    if (shop.cart.some((entry) => entry.key === item.key)) {
-      shop.removeFromCart(item.key);
-      trackCart(item, false);
+    const existing = useShopStore.getState().cart.find((entry) => entry.key === item.key);
+    if (existing) {
+      removeFromCart(existing);
       return false;
     }
-    shop.addToCart(item);
-    trackCart(item, true);
+    addToCart(item);
     return true;
   };
 

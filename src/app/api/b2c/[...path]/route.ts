@@ -22,7 +22,18 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^catalog\/products\/[A-Za-z0-9_-]+$/, session: false },
   // Behavior events from the browser; open to guests too (identified by X-Client-Fingerprint).
   { methods: ["POST"], pattern: /^analytics\/events$/, session: false },
+  // The signed-in customer's cart, checkout and purchases.
+  { methods: ["GET"], pattern: /^cart$/, session: true },
+  { methods: ["POST"], pattern: /^cart\/items$/, session: true },
+  { methods: ["PATCH", "DELETE"], pattern: /^cart\/items\/[A-Za-z0-9-]+$/, session: true },
+  { methods: ["POST"], pattern: /^checkout\/(quote|sessions)$/, session: true },
+  { methods: ["GET"], pattern: /^payments\/intents\/[A-Za-z0-9-]+$/, session: true },
+  { methods: ["POST"], pattern: /^payments\/intents\/[A-Za-z0-9-]+\/reconcile$/, session: true },
+  { methods: ["GET"], pattern: /^orders(\/[A-Za-z0-9-]+(\/(invoices|transactions))?)?$/, session: true },
 ];
+
+/** Same charset the backend accepts; anything else is dropped rather than forwarded. */
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{1,200}$/;
 
 type Context = RouteContext<"/api/b2c/[...path]">;
 
@@ -49,6 +60,10 @@ async function forward(request: NextRequest, context: Context): Promise<NextResp
   }
 
   const headers = backendHeaders(request, accessToken);
+  const idempotencyKey = request.headers.get("idempotency-key");
+  if (mutation && idempotencyKey && IDEMPOTENCY_KEY_PATTERN.test(idempotencyKey)) {
+    headers.set("Idempotency-Key", idempotencyKey);
+  }
   let body: string | undefined;
   if (mutation && request.method !== "DELETE") {
     body = await request.text();

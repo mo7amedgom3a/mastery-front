@@ -82,10 +82,14 @@ export const routes = {
   trainers: route("/trainers"),
   cart: route("/cart"),
   wishlist: route("/wishlist"),
-  /** MOCK: stand-in for a payment provider's hosted page (see features/checkout). */
-  checkoutGateway: (orderId: string) => route(`/checkout/mock-gateway?order=${encodeURIComponent(orderId)}`),
+  /** Stripe sends the buyer back here; the backend appends `order_id` and `payment_intent_id`. */
   checkoutSuccess: route("/checkout/success"),
+  checkoutCancelled: route("/checkout/cancelled"),
   checkoutFailed: route("/checkout/failed"),
+  /** The student's purchases. The dashboard that will frame these pages comes later. */
+  studentOrders: route("/students/orders"),
+  studentOrder: (orderId: string) => route(`/students/orders/${encodeURIComponent(orderId)}`),
+  studentAccess: route("/students/access"),
   privacy: route("/privacy"),
   terms: route("/terms"),
 } as const;

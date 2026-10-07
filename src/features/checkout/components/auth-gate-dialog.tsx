@@ -4,25 +4,18 @@ import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
-import { isMockCheckoutEnabled } from "@/config/env";
 import { routes } from "@/config/routes";
 import { useShopStore } from "@/lib/shop/store";
 
-type AuthGateDialogProps = {
-  /** MOCK: the visitor chose to go on as the test customer. */
-  onMockContinue: () => void;
-};
-
 /**
  * Shown when a guest presses pay: an order belongs to an account, so they sign in or register
- * first. The cart is kept in the browser, and the auth pages send them back to it. Mock checkout
- * also offers a test customer, to try the payment steps without an account.
+ * first. The cart is kept in the browser, merged into the account on sign-in, and the auth pages
+ * send them back to it.
  */
-export function AuthGateDialog({ onMockContinue }: AuthGateDialogProps) {
+export function AuthGateDialog() {
   const open = useShopStore((state) => state.authGateOpen);
   const close = useShopStore((state) => state.closeAuthGate);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const mock = isMockCheckoutEnabled();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -63,18 +56,6 @@ export function AuthGateDialog({ onMockContinue }: AuthGateDialogProps) {
             إنشاء حساب
           </ButtonLink>
         </div>
-
-        {mock ? (
-          <div className="flex flex-col items-start gap-3 border-t border-line pt-5">
-            <span className="ma-tag ma-tag--yellow">وضع تجريبي</span>
-            <p className="m-0 text-sm leading-6 text-fg-muted">
-              لتجربة خطوات الدفع دون حساب، تابع كعميل تجريبي: لن يُنشأ حساب ولن يُخصم أي مبلغ.
-            </p>
-            <button type="button" onClick={onMockContinue} className="ma-btn ma-btn--secondary ma-btn--block">
-              متابعة كعميل تجريبي
-            </button>
-          </div>
-        ) : null}
 
         <button type="button" onClick={close} className="ma-btn ma-btn--ghost ma-btn--sm min-h-11 self-center">
           متابعة التسوّق

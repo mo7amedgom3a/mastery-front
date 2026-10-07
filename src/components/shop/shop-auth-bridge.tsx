@@ -5,7 +5,8 @@ import { useEffect } from "react";
 import { useAuthStore } from "@/lib/auth/store";
 import { syncFaroIdentity } from "@/lib/observability/faro";
 import { identifyCustomer } from "@/lib/observability/posthog";
-import { rehydrateShop } from "@/lib/shop/store";
+import { syncAccountCart } from "@/lib/shop/cart-sync";
+import { rehydrateShop, useShopStore } from "@/lib/shop/store";
 import { syncGuestWishlist } from "@/lib/shop/wishlist-sync";
 
 function onIdle(callback: () => void): () => void {
@@ -22,14 +23,15 @@ function onIdle(callback: () => void): () => void {
  * 1. Restores the saved wishlist/cart, then (when the browser is idle) asks the API whether
  *    there's already a session.
  * 2. Whenever the session becomes authenticated (login, 2FA, register → login, refresh), pushes
- *    guest wishlist items to `/me/wishlist`.
- * The cart needs no bridge: guests fill it freely, and payment asks for the session (cart page).
+ *    guest wishlist items to `/me/wishlist`, and merges the guest cart into the account cart, which
+ *    the local cart then mirrors (see `cart-sync.ts`).
+ * 3. On sign-out the mirrored cart is cleared: it belongs to the account, not to this browser.
  */
 export function ShopAuthBridge() {
   useEffect(() => {
     const onAuthenticated = async () => {
       await rehydrateShop();
-      await syncGuestWishlist();
+      await Promise.all([syncGuestWishlist(), syncAccountCart()]);
     };
 
     // Signed-in visitors are keyed by their opaque customer id (no PII). In Faro, guests keep the
@@ -45,6 +47,9 @@ export function ShopAuthBridge() {
     const unsubscribe = useAuthStore.subscribe((state, previous) => {
       syncIdentity();
       if (state.status === "authenticated" && previous.status !== "authenticated") void onAuthenticated();
+      if (state.status === "unauthenticated" && previous.status === "authenticated") {
+        useShopStore.getState().clearCart();
+      }
     });
 
     syncIdentity();

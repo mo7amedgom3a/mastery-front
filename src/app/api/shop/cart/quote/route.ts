@@ -4,9 +4,8 @@ import { getQuote, quoteSchema } from "@/features/cart/api/quote";
 import { catalogUnavailable, readBody, shopJson } from "@/features/cart/api/respond";
 
 /**
- * MOCK: prices the cart the browser holds — current (offer) prices, add-ons, the coupon, totals and
- * which payment methods fit the order.
- * TODO(api): replace with the backend's cart/quote endpoint.
+ * Prices a guest's cart for display (current offer prices and totals). Nothing is bought against
+ * this: signing in moves the cart to the account, where the backend prices and charges it.
  */
 export async function POST(request: NextRequest) {
   const body = await readBody(request, quoteSchema);
