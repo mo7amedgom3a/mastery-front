@@ -17,6 +17,15 @@ export type CatalogCategoryResponse = SuccessResponse<CategoryOperation>;
 export type CatalogProductsParams = QueryParams<ProductsOperation>;
 export type CatalogProductsResponse = SuccessResponse<ProductsOperation>;
 export type CatalogProductResponse = SuccessResponse<ProductOperation>;
+/**
+ * A bundle's detail. The backend also returns its copy, outcomes and skills, which `openapi.json`
+ * does not list yet; drop this once the spec catches up.
+ */
+export type CatalogBundleDetail = CatalogProductResponse & {
+  description?: string | null;
+  learning_outcomes?: string[] | null;
+  skills?: { skill_id: string; slug: string; name: string }[] | null;
+};
 export type CatalogResourceResponse = SuccessResponse<ResourceOperation>;
 export type CatalogRelatedResourcesParams = QueryParams<RelatedResourcesOperation>;
 export type CatalogRelatedResourcesResponse = SuccessResponse<RelatedResourcesOperation>;

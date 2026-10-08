@@ -8,7 +8,7 @@ import type { LandingData } from "./model/types";
 import { AboutSection } from "./sections/about-section";
 import { AnnouncementBar } from "./sections/announcement-bar";
 import { BusinessSection } from "./sections/business-section";
-import { ConsultationsSection, CoursesSection, DiplomasSection, PackagesSection } from "./sections/catalog-sections";
+import { BundlesSection, ConsultationsSection, CoursesSection, DiplomasSection, PackagesSection } from "./sections/catalog-sections";
 import { CtaBand } from "./sections/cta-band";
 import { ExpertsSection } from "./sections/experts-section";
 import { ExpertsTicker } from "./sections/experts-ticker";
@@ -43,6 +43,7 @@ export function LandingPage({ data }: { data: LandingData }) {
         <CoursesSection courses={data.courses} total={data.coursesTotal} filters={data.courseFilters} />
         <DiplomasSection diplomas={data.diplomas} filters={data.diplomaFilters} />
         <PackagesSection packages={data.packages} filters={data.packageFilters} />
+        <BundlesSection bundles={data.bundles} filters={data.bundleFilters} />
         <ConsultationsSection consultations={data.consultations} filters={data.consultationFilters} />
         <AboutSection />
         <ExpertsSection instructorCount={instructorCount} />

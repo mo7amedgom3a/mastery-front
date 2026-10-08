@@ -1,5 +1,6 @@
 import type { Route } from "next";
 
+import type { BundleCardVM } from "@/features/bundle-detail/model/types";
 import type { LiveTrainingVM } from "@/features/live-training/model/types";
 import type { Pricing } from "@/lib/pricing";
 
@@ -93,6 +94,9 @@ export type LandingData = {
   diplomaFilters: FilterVM[];
   packages: PackageCardVM[];
   packageFilters: FilterVM[];
+  /** حزم ماستري: catalog bundles of diplomas, courses, consultations… */
+  bundles: BundleCardVM[];
+  bundleFilters: FilterVM[];
   consultations: ConsultationCardVM[];
   consultationFilters: FilterVM[];
   faqs: FaqVM[];

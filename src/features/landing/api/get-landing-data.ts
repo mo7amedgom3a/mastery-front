@@ -10,6 +10,10 @@ import {
   getLegacyPackages,
   type LandingPageResponse,
 } from "@/lib/api/legacy";
+import { getCatalogBundle } from "@/features/bundle-detail/api/get-bundle-detail";
+import { mapBundleLanding } from "@/features/bundle-detail/model/mappers";
+import type { BundleLandingVM } from "@/features/bundle-detail/model/types";
+import { getCatalogProducts, type CatalogBundleDetail } from "@/lib/api/catalog";
 import { getNewestLiveTraining } from "@/features/live-training/api/get-live-trainings";
 import { getInstructorNames } from "@/lib/api/instructor-names";
 import { withResolvedPrices } from "@/lib/api/legacy-pricing";
@@ -45,6 +49,21 @@ async function getCategoryCourses(landing: LandingPageResponse | null): Promise<
 }
 
 /**
+ * The bundle rail: the published bundles, each read in full for what it holds. Bundles number in
+ * the tens; one that fails to load is left off.
+ */
+async function getBundles(): Promise<BundleLandingVM> {
+  const page = await getCatalogProducts({ product_type: "bundle", limit: 50 }, cachedRead);
+  const results = await Promise.allSettled(
+    page.items.map((item) => getCatalogBundle(item.slug, LANDING_REVALIDATE_SECONDS, [LANDING_CACHE_TAG])),
+  );
+  const details = results
+    .map((result, index) => valueOf(result, `bundle ${page.items[index].slug}`))
+    .filter((detail): detail is CatalogBundleDetail => detail !== null);
+  return mapBundleLanding(details);
+}
+
+/**
  * Everything the landing page needs, in parallel requests (category rails follow the landing page,
  * which lists the categories). Each request fails independently: the page always renders, and
  * sections or filters without data simply don't appear.
@@ -57,6 +76,7 @@ export const getLandingData = cache(async (): Promise<LandingData> => {
     diplomas,
     packages,
     consultations,
+    bundles,
     diplomaSearch,
     packageSearch,
     instructors,
@@ -67,6 +87,7 @@ export const getLandingData = cache(async (): Promise<LandingData> => {
     getLegacyDiplomas({ active: true, limit: PAGE_SIZE }, cachedRead),
     getLegacyPackages({ limit: PAGE_SIZE }, cachedRead),
     getLegacyConsultations({ limit: PAGE_SIZE }, cachedRead),
+    getBundles(),
     searchProducts({ product_type: ["diploma"], limit: SEARCH_PAGE_SIZE }, cachedRead),
     searchProducts({ product_type: ["package"], limit: SEARCH_PAGE_SIZE }, cachedRead),
     getInstructorNames(cachedRead),
@@ -103,6 +124,7 @@ export const getLandingData = cache(async (): Promise<LandingData> => {
     activeDiplomas: activeDiplomas && { ...activeDiplomas, items: reprice(activeDiplomas.items) },
     packages: valueOf(packages, "packages"),
     consultations: valueOf(consultations, "consultations"),
+    bundles: valueOf(bundles, "bundles"),
     diplomaIndex: toSearchIndex("diploma", valueOf(diplomaSearch, "diploma search")),
     packageIndex: toSearchIndex("package", valueOf(packageSearch, "package search")),
     instructors: valueOf(instructors, "instructor names") ?? new Map(),

@@ -17,6 +17,7 @@ const columns: { title: string; links: { label: string; href: Route }[] }[] = [
       { label: "الدبلومات", href: routes.diplomas },
       { label: "البث المباشر", href: routes.live },
       { label: "الباقات", href: routes.packages },
+      { label: "حزم ماستري", href: routes.section("bundles") },
       { label: "الاستشارات", href: routes.consultations },
     ],
   },

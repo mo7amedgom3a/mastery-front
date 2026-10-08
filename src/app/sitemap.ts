@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
+import { isPublishedBundle } from "@/features/bundle-detail/model/mappers";
 import { isPublishable, type CourseDto } from "@/features/landing/model/mappers";
 import { getLiveTrainingSlugs } from "@/features/live-training/api/get-live-trainings";
 import { emptySearchState, PRODUCT_TYPES, searchHref } from "@/features/search/model/params";
@@ -12,6 +13,7 @@ import {
   getLegacyExperts,
   getLegacyPackages,
 } from "@/lib/api/legacy";
+import { getCatalogProducts } from "@/lib/api/catalog";
 import { getSearchOptions } from "@/lib/api/search";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
 
@@ -40,13 +42,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const home = `${siteUrl}/`;
 
-  const [courses, diplomas, packages, consultations, experts, searchOptions] = await Promise.allSettled([
+  const [courses, diplomas, packages, consultations, bundles, experts, searchOptions] = await Promise.allSettled([
     allPages((offset) => getLegacyCourses({ limit: PAGE_SIZE, offset }, read)),
     allPages((offset) => getLegacyDiplomas({ active: true, limit: PAGE_SIZE, offset }, read)),
     // Packages number in the tens: one page covers them.
     getLegacyPackages({ limit: PAGE_SIZE }, read).then((page) => page.items),
     // So do consultations.
     getLegacyConsultations({ limit: PAGE_SIZE }, read).then((page) => page.items),
+    // Bundles (حزم ماستري) are catalog products, keyed by slug.
+    getCatalogProducts({ product_type: "bundle", limit: PAGE_SIZE }, read).then((page) => page.items),
     // The API lists only experts with something to offer.
     getLegacyExperts({ limit: PAGE_SIZE }, read).then((page) => page.items),
     getSearchOptions({ limit: 500 }, read),
@@ -94,6 +98,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!isPublishable(dto)) continue;
     const url = `${siteUrl}${routes.consultation(dto.id)}`;
     products.set(url, { url, changeFrequency: "weekly", priority: 0.6 });
+  }
+  for (const dto of valueOf(bundles, "sitemap bundles") ?? []) {
+    if (!isPublishedBundle(dto)) continue;
+    const url = `${siteUrl}${routes.bundle(dto.slug)}`;
+    products.set(url, { url, changeFrequency: "weekly", priority: 0.8 });
   }
   for (const dto of valueOf(experts, "sitemap experts") ?? []) {
     const name = dto.name?.trim();

@@ -7,6 +7,8 @@ import { actionsFor } from "@/components/shop/card-actions-for";
 import { buttonClass } from "@/components/ui/button";
 import type { ProductCardMeta } from "@/components/ui/product-card";
 import { routes } from "@/config/routes";
+import { compositionLabel } from "@/features/bundle-detail/model/mappers";
+import type { BundleCardVM } from "@/features/bundle-detail/model/types";
 import { formatCount, formatNumber } from "@/lib/format";
 
 import { ProductRailSection } from "../components/product-rail-section";
@@ -177,6 +179,36 @@ export function PackagesSection({ packages, filters }: { packages: PackageCardVM
   );
 }
 
+export function BundlesSection({ bundles, filters }: { bundles: BundleCardVM[]; filters: FilterVM[] }) {
+  const { filter, visible, select } = useFilter(bundles, filters);
+  return (
+    <ProductRailSection
+      id="bundles"
+      label="حزم ماستري"
+      title="حزم تجمع الدبلومات والدورات والاستشارات في مسار واحد"
+      lead="مسارات متكاملة صمّمها خبراء ماستري حول هدف مهني واضح: دبلوم ودورات مختارة مع استشارة فردية، باشتراك واحد وسعر أقل."
+      tone="alt"
+      railKey={filter?.key}
+      cards={visible.map((bundle, position) => {
+        const composition = compositionLabel(bundle.composition);
+        return {
+          key: bundle.id,
+          href: bundle.href,
+          title: bundle.title,
+          color: "sky",
+          tag: "حزمة",
+          summary: bundle.summary,
+          meta: composition ? [{ icon: Layers, label: composition }] : [],
+          price: bundle.price,
+          tracking: { surface: "landing-bundles", position },
+        };
+      })}
+    >
+      <FilterChips label="تصفية الحزم حسب المجال" filters={filters} active={filter} onSelect={select} />
+    </ProductRailSection>
+  );
+}
+
 export function ConsultationsSection({
   consultations,
   filters,
@@ -191,7 +223,6 @@ export function ConsultationsSection({
       label="الاستشارات"
       title="استشارات فردية مع الخبراء"
       lead="احجز جلسة مع خبير في مجالك واحصل على إجابات مخصّصة لمشروعك أو مسيرتك المهنية."
-      tone="alt"
       viewAll={{ label: "كل الاستشارات", href: routes.consultations }}
       railKey={filter?.key}
       cards={visible.map((consultation, position) => {

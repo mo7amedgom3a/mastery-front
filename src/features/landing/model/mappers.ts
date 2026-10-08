@@ -1,4 +1,5 @@
 import { routes } from "@/config/routes";
+import type { BundleLandingVM } from "@/features/bundle-detail/model/types";
 import type { LiveTrainingVM } from "@/features/live-training/model/types";
 import type { InstructorNames } from "@/lib/api/instructor-names";
 import type {
@@ -288,6 +289,8 @@ export const emptyLandingData: LandingData = {
   diplomaFilters: [],
   packages: [],
   packageFilters: [],
+  bundles: [],
+  bundleFilters: [],
   consultations: [],
   consultationFilters: [],
   faqs: [],
@@ -302,6 +305,8 @@ export type LandingSources = {
   packages: LegacyPackagesResponse | null;
   /** Every consultation; the landing aggregate only carries the first few. */
   consultations: LegacyConsultationsResponse | null;
+  /** Catalog bundles, already mapped (see features/bundle-detail). */
+  bundles: BundleLandingVM | null;
   diplomaIndex: SearchIndex;
   packageIndex: SearchIndex;
   instructors: InstructorNames;
@@ -314,13 +319,14 @@ export function mapLandingData({
   activeDiplomas,
   packages: allPackages,
   consultations: allConsultations,
+  bundles,
   diplomaIndex,
   packageIndex,
   instructors,
   liveTraining,
 }: LandingSources): LandingData {
   if (!landing && !activeDiplomas && !allPackages && !allConsultations) {
-    return { ...emptyLandingData, liveTraining };
+    return { ...emptyLandingData, bundles: bundles?.bundles ?? [], bundleFilters: bundles?.filters ?? [], liveTraining };
   }
 
   const categories = (landing?.categories ?? [])
@@ -357,6 +363,8 @@ export function mapLandingData({
     diplomaFilters: labelFilters(diplomas),
     packages,
     packageFilters: labelFilters(packages),
+    bundles: bundles?.bundles ?? [],
+    bundleFilters: bundles?.filters ?? [],
     consultations: consultationRail.consultations,
     consultationFilters: consultationRail.filters,
     faqs: (landing?.faqs ?? []).map(mapFaq).filter((faq): faq is FaqVM => faq !== null),

@@ -47,7 +47,7 @@ export function parseExpertSlug(segment: string): string | null {
 const expertRoute = (key: string | number, name?: string | null) =>
   route(`/experts/${encodeURIComponent(expertSlug(key, name))}`);
 
-export type LandingSectionId = "offerings" | "courses" | "diplomas" | "packages" | "consultations" | "business" | "about" | "experts" | "faq";
+export type LandingSectionId = "offerings" | "courses" | "diplomas" | "packages" | "bundles" | "consultations" | "business" | "about" | "experts" | "faq";
 
 export const routes = {
   home: "/" as Route,
@@ -76,6 +76,8 @@ export const routes = {
   liveTraining: (slug: string) => route(`/live/${encodeURIComponent(slug)}`),
   packages: route("/search?type=package"),
   package: (id: number | string) => route(`/packages/${encodeURIComponent(String(id))}`),
+  /** حزم ماستري: catalog bundles (diplomas, courses, consultations…) keyed by their catalog slug. */
+  bundle: (slug: string) => route(`/bundles/${encodeURIComponent(slug)}`),
   consultations: route("/search?type=consultation"),
   consultation: (id: number | string) => route(`/consultations/${encodeURIComponent(String(id))}`),
   business: route("/business"),

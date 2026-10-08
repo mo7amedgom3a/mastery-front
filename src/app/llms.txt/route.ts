@@ -48,6 +48,7 @@ export function GET() {
     `- [الدورات](${siteUrl}${routes.courses})`,
     `- [الدبلومات](${siteUrl}${routes.diplomas})`,
     `- [الباقات](${siteUrl}${routes.packages})`,
+    `- [حزم ماستري](${siteUrl}${routes.section("bundles")})`,
     `- [الاستشارات](${siteUrl}${routes.consultations})`,
     `- [دورات البث المباشر](${siteUrl}${routes.live})`,
     `- [من نحن](${siteUrl}/#about)`,
