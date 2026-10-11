@@ -4,7 +4,6 @@ import type { Route } from "next";
 import { AppLink } from "@/components/ui/app-link";
 import type { BrandColor } from "@/components/ui/brand-colors";
 import { ProductCard, type ProductCardMeta } from "@/components/ui/product-card";
-import { routes } from "@/config/routes";
 import { cn } from "@/lib/cn";
 import { formatCount } from "@/lib/format";
 import { noPricing, toPricing } from "@/lib/pricing";
@@ -25,6 +24,8 @@ const ACTION = "ma-btn ma-btn--sm min-h-10 gap-1.5 px-3 text-[13px]";
 type WishlistCardProps = {
   item: WishlistItemVM;
   inCart: boolean;
+  /** Where «في السلة» leads: the dashboard cart once signed in, else the public one. */
+  cartHref: Route;
   onAddToCart: (item: WishlistItemVM) => void;
   onRemove: (item: WishlistItemVM) => void;
   sizes?: string;
@@ -34,7 +35,7 @@ type WishlistCardProps = {
  * A saved item as a product card. The footer action fits the item: add to cart, book (consultations
  * need a slot), enrol (free items), or nothing when it left the catalog. Remove is always there.
  */
-export function WishlistCard({ item, inCart, onAddToCart, onRemove, sizes }: WishlistCardProps) {
+export function WishlistCard({ item, inCart, cartHref, onAddToCart, onRemove, sizes }: WishlistCardProps) {
   const meta: ProductCardMeta[] = [];
   if (item.instructor) meta.push({ icon: UserRound, label: item.instructor });
   if (item.duration) meta.push({ icon: Clock, label: item.duration });
@@ -60,7 +61,7 @@ export function WishlistCard({ item, inCart, onAddToCart, onRemove, sizes }: Wis
     );
   } else if (item.purchasable && inCart) {
     primary = (
-      <AppLink href={routes.cart} prefetch aria-label={`«${item.title}» في السلة — اذهب إلى السلة`} className={cn(ACTION, "ma-btn--secondary")}>
+      <AppLink href={cartHref} prefetch aria-label={`«${item.title}» في السلة — اذهب إلى السلة`} className={cn(ACTION, "ma-btn--secondary")}>
         <Check aria-hidden="true" className="size-[18px] fill-none" />
         في السلة
       </AppLink>

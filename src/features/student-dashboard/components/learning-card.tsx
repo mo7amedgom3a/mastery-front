@@ -1,4 +1,4 @@
-import { CalendarX, Infinity as Lifetime, PlayCircle } from "lucide-react";
+import { CalendarX, Infinity as Lifetime, PlayCircle, UserRound } from "lucide-react";
 import type { Route } from "next";
 import Image from "next/image";
 
@@ -24,9 +24,10 @@ type LearningCardProps = {
   /** Catalog artwork and name, when the shop knows the product (see `useCatalogArtwork`). */
   image?: string | null;
   fallbackTitle?: string | null;
+  instructor?: string | null;
 };
 
-export function LearningCard({ product, index, image, fallbackTitle }: LearningCardProps) {
+export function LearningCard({ product, index, image, fallbackTitle, instructor }: LearningCardProps) {
   const href = catalogProductHref(product.slug, product.product_type) as Route;
   const title =
     product.title && product.title !== product.slug
@@ -46,6 +47,12 @@ export function LearningCard({ product, index, image, fallbackTitle }: LearningC
       </div>
       <div className="ma-card__body">
         <h3 className="ma-card__title line-clamp-2">{title}</h3>
+        {instructor ? (
+          <p className="m-0 flex items-center gap-2 text-sm text-fg-muted">
+            <UserRound aria-hidden="true" className="size-4 shrink-0 fill-none text-accent" />
+            <bdi className="truncate">{instructor}</bdi>
+          </p>
+        ) : null}
         {product.short_description ? (
           <p className="m-0 line-clamp-2 text-sm leading-6 text-fg-muted">{product.short_description}</p>
         ) : null}

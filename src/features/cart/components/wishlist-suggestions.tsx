@@ -6,10 +6,10 @@ import Image from "next/image";
 
 import { Money } from "@/components/shop/money";
 import { AppLink } from "@/components/ui/app-link";
-import { routes } from "@/config/routes";
 import { kindLabel } from "@/lib/shop/labels";
 import { addToCart } from "@/lib/shop/use-shop-actions";
 import { useShopStore } from "@/lib/shop/store";
+import { useShopRoutes } from "@/lib/shop/use-shop-routes";
 
 /** Rows shown; the rest are one click away on the wishlist page. */
 const LIMIT = 4;
@@ -21,6 +21,7 @@ const LIMIT = 4;
 export function WishlistSuggestions() {
   const wishlist = useShopStore((state) => state.wishlist);
   const cart = useShopStore((state) => state.cart);
+  const wishlistHref = useShopRoutes().wishlist;
 
   const inCart = new Set(cart.map((line) => line.key));
   const candidates = wishlist
@@ -34,7 +35,7 @@ export function WishlistSuggestions() {
         <h2 id="cart-wishlist-title" className="m-0 text-xl font-bold">
           من مفضلتك
         </h2>
-        <AppLink href={routes.wishlist} prefetch className="ma-link text-sm">
+        <AppLink href={wishlistHref} prefetch className="ma-link text-sm">
           عرض المفضلة كلها
         </AppLink>
       </div>

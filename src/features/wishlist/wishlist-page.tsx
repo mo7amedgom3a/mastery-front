@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Heart, Search, ShoppingCart, TriangleAlert } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { UndoNotice } from "@/components/shop/undo-notice";
@@ -18,6 +18,7 @@ import { trackCartBulk } from "@/lib/observability/behavior";
 import { ITEM_FORMS, kindPluralLabel } from "@/lib/shop/labels";
 import { useShopHydrated, useShopStore, type WishlistEntry } from "@/lib/shop/store";
 import { removeFromWishlist, addToCart } from "@/lib/shop/use-shop-actions";
+import { useShopRoutes } from "@/lib/shop/use-shop-routes";
 import { useUndo } from "@/lib/shop/use-undo";
 import { pushWishlistEntry } from "@/lib/shop/wishlist-sync";
 
@@ -58,6 +59,7 @@ export function WishlistPage() {
   const cart = useShopStore((state) => state.cart);
   const signedOut = useAuthStore((state) => state.status === "unauthenticated");
   useAccountWishlist(hydrated);
+  const cartHref = useShopRoutes().cart;
 
   const keys = useMemo(() => entries.map((entry) => entry.key), [entries]);
   const resolved = useQuery({ ...shopQueries.items(keys), enabled: hydrated && keys.length > 0 });
@@ -65,12 +67,13 @@ export function WishlistPage() {
 
   // Filters live in the query string. `history.replaceState` updates it without a server round
   // trip, and `useSearchParams` follows along.
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const filters = useMemo(() => parseFilters(new URLSearchParams(searchParams.toString())), [searchParams]);
   const [queryText, setQueryText] = useState(filters.q);
   const setFilters = (patch: Partial<WishlistFilters>) => {
     const query = filtersQuery({ ...filters, ...patch });
-    window.history.replaceState(null, "", query ? `${routes.wishlist}?${query}` : routes.wishlist);
+    window.history.replaceState(null, "", query ? `${pathname}?${query}` : pathname);
   };
   const clearFilters = () => {
     setQueryText("");
@@ -283,6 +286,7 @@ export function WishlistPage() {
               <WishlistCard
                 item={item}
                 inCart={inCart.has(item.key)}
+                cartHref={cartHref}
                 onAddToCart={addToCart}
                 onRemove={remove}
                 sizes={CARD_SIZES}

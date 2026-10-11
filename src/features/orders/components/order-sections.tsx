@@ -1,8 +1,24 @@
-import { CalendarCheck, CalendarX, Infinity as Lifetime } from "lucide-react";
+import {
+  BookOpen,
+  CalendarCheck,
+  CalendarX,
+  GraduationCap,
+  Infinity as Lifetime,
+  Layers,
+  MessagesSquare,
+  Package,
+  PlayCircle,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import type { Route } from "next";
+import Image from "next/image";
 
 import { Money } from "@/components/shop/money";
 import { AppLink } from "@/components/ui/app-link";
+import { brandBg, brandColorAt } from "@/components/ui/brand-colors";
+import { buttonClass } from "@/components/ui/button";
+import { productTypeLabel } from "@/features/student-dashboard/model/products";
 import type {
   EntitlementResponse,
   OrderDetailResponse,
@@ -13,16 +29,19 @@ import { formatCount, formatDate, formatDateTime, fromMinor } from "@/lib/format
 import { shopItemHref, shopKeyFromSlug } from "@/lib/shop/product-links";
 import { parseShopKey } from "@/lib/shop/contract";
 import { kindLabel } from "@/lib/shop/labels";
+import { cn } from "@/lib/cn";
 
 import { entitlementStatus, fulfillmentStatus, paymentStatus, transactionEvent } from "../model/status";
 import { InvoiceDownloadButton } from "./invoice-download-button";
 import { StatusTag } from "./status-tag";
 
-/** Link and type label of a catalog product by its slug; null for products not sold on this site. */
-function productLink(slug: string | null | undefined): { href: Route; kind: string } | null {
+/** Link, type label and id of a catalog product by its slug; null for products not sold on this site. */
+function productLink(slug: string | null | undefined): { href: Route; kind: string; id: number } | null {
   const key = slug ? shopKeyFromSlug(slug) : null;
   const parsed = key ? parseShopKey(key) : null;
-  return parsed ? { href: shopItemHref(parsed.kind, parsed.id) as Route, kind: kindLabel[parsed.kind] } : null;
+  return parsed
+    ? { href: shopItemHref(parsed.kind, parsed.id) as Route, kind: kindLabel[parsed.kind], id: parsed.id }
+    : null;
 }
 
 export function OrderLines({ order }: { order: OrderDetailResponse }) {
@@ -160,56 +179,118 @@ export function lineTitles(order: OrderDetailResponse | undefined): Map<string, 
 type AccessCardProps = {
   entitlement: EntitlementResponse;
   now: number;
-  /** The product's name when the caller knows it (e.g. from the order line). */
+  /** The product's name when the caller knows it (the catalog's, or the order line's). */
   title?: string;
+  /** Catalog artwork and lead instructor, when the shop knows the product (see `useCatalogArtwork`). */
+  image?: string | null;
+  instructor?: string | null;
+  /** Position in the list, for the media's fallback colour. */
+  index?: number;
 };
 
-export function AccessCard({ entitlement, now, title: knownTitle }: AccessCardProps) {
+const CARD_SIZES = "(min-width: 1200px) 320px, (min-width: 600px) 50vw, 100vw";
+
+const typeIcon: Record<string, LucideIcon> = {
+  course: BookOpen,
+  diploma: GraduationCap,
+  package: Package,
+  consultation: MessagesSquare,
+  bundle: Layers,
+};
+
+/** Share of a time-limited access already used, 0–100; null for lifetime access. */
+function elapsedPercent(startsAt: string | null | undefined, expiresAt: string | null | undefined, now: number): number | null {
+  if (!expiresAt || !startsAt) return null;
+  const start = new Date(startsAt).getTime();
+  const span = new Date(expiresAt).getTime() - start;
+  if (!(span > 0)) return null;
+  return Math.min(100, Math.max(0, Math.round(((now - start) / span) * 100)));
+}
+
+/**
+ * Something the student can open: artwork, type and name, how long access lasts (a bar of the time
+ * used for time-limited access), and the way into it.
+ */
+export function AccessCard({ entitlement, now, title: knownTitle, image, instructor, index = 0 }: AccessCardProps) {
   const link = productLink(entitlement.product_slug);
+  const typeLabel = link?.kind ?? (entitlement.product_type ? productTypeLabel(entitlement.product_type) : null);
   // The API falls back to the catalog slug (`course-4`) for untranslated products; never show it.
   const apiTitle = entitlement.product_title !== entitlement.product_slug ? entitlement.product_title : null;
-  const title = knownTitle ?? apiTitle ?? link?.kind ?? "منتج";
+  // A product that left the catalog has no name anywhere: its type and number still tell them apart.
+  const title = knownTitle ?? apiTitle ?? (link ? `${link.kind} رقم ${link.id}` : (typeLabel ?? "منتج"));
+  const active = entitlement.status === "active";
   const remaining = daysLeft(entitlement.expires_at, now);
+  const used = active ? elapsedPercent(entitlement.starts_at, entitlement.expires_at, now) : null;
+  const TypeIcon = (entitlement.product_type ? typeIcon[entitlement.product_type] : undefined) ?? PlayCircle;
+
   return (
-    <article className="flex flex-col gap-4 rounded-panel border border-line bg-surface p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-col items-start gap-1.5">
-          {link ? <span className="ma-tag ma-tag--soft">{link.kind}</span> : null}
-          <h3 className="m-0 text-lg leading-7 font-bold">
-            {link ? (
-              <AppLink href={link.href} className="text-fg no-underline hover:underline">
-                {title}
-              </AppLink>
-            ) : (
-              title
-            )}
-          </h3>
-        </div>
+    <article className="ma-card relative h-full">
+      <div className={cn("ma-card__media relative grid place-items-center overflow-hidden p-0", brandBg[brandColorAt(index)])}>
+        {image ? (
+          <Image src={image} alt="" fill sizes={CARD_SIZES} className="object-cover" />
+        ) : (
+          <TypeIcon aria-hidden="true" className="size-12 fill-none text-ink" strokeWidth={1.5} />
+        )}
+        <span className="ma-tag ma-tag--cream absolute start-4 top-4 z-10">{typeLabel}</span>
+      </div>
+      <div className="ma-card__body">
         <div className="flex flex-wrap gap-2">
           <StatusTag status={entitlementStatus(entitlement.status)} />
           {entitlement.fulfillment_status ? <StatusTag status={fulfillmentStatus(entitlement.fulfillment_status)} /> : null}
         </div>
+        <h3 className="ma-card__title line-clamp-2">{title}</h3>
+        {instructor ? (
+          <p className="m-0 flex items-center gap-2 text-sm text-fg-muted">
+            <UserRound aria-hidden="true" className="size-4 shrink-0 fill-none text-accent" />
+            <bdi className="truncate">{instructor}</bdi>
+          </p>
+        ) : null}
+        <dl className="m-0 mt-auto grid gap-2 text-sm">
+          <div className="flex items-center gap-2">
+            <CalendarCheck aria-hidden="true" className="size-4 shrink-0 fill-none text-accent" />
+            <dt className="text-fg-muted">يبدأ الوصول</dt>
+            <dd className="m-0 font-bold">{formatDate(entitlement.starts_at)}</dd>
+          </div>
+          <div className="flex items-center gap-2">
+            {entitlement.expires_at ? (
+              <CalendarX aria-hidden="true" className="size-4 shrink-0 fill-none text-accent" />
+            ) : (
+              <Lifetime aria-hidden="true" className="size-4 shrink-0 fill-none text-accent" />
+            )}
+            <dt className="text-fg-muted">ينتهي الوصول</dt>
+            <dd className="m-0 font-bold">{entitlement.expires_at ? formatDate(entitlement.expires_at) : "وصول مدى الحياة"}</dd>
+          </div>
+        </dl>
+        {used !== null && remaining !== null ? (
+          <div className="ma-progress">
+            <div className="ma-progress__row">
+              <span>{remaining === 0 ? "ينتهي وصولك اليوم" : `يتبقّى ${formatCount(remaining, DAY_FORMS)}`}</span>
+              <span>{used}%</span>
+            </div>
+            <div
+              className="ma-progress__track"
+              role="progressbar"
+              aria-label="المدة المستخدمة من الوصول"
+              aria-valuenow={used}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              <div className="ma-progress__bar" style={{ width: `${used}%` }} />
+            </div>
+          </div>
+        ) : null}
       </div>
-      <dl className="m-0 grid gap-3 text-sm sm:grid-cols-2">
-        <div className="flex items-center gap-2">
-          <CalendarCheck aria-hidden="true" className="size-4 shrink-0 fill-none text-accent" />
-          <dt className="text-fg-muted">يبدأ الوصول</dt>
-          <dd className="m-0 font-bold">{formatDate(entitlement.starts_at)}</dd>
+      {link ? (
+        <div className="ma-card__foot">
+          <AppLink
+            href={link.href}
+            aria-label={`${active ? "كمّل التعلّم" : "عرض البرنامج"}: ${title}`}
+            className={cn(buttonClass({ variant: active ? "primary" : "soft", block: true }), "gap-2")}
+          >
+            <PlayCircle aria-hidden="true" className="size-5 fill-none" />
+            {active ? "كمّل التعلّم" : "عرض البرنامج"}
+          </AppLink>
         </div>
-        <div className="flex items-center gap-2">
-          {entitlement.expires_at ? (
-            <CalendarX aria-hidden="true" className="size-4 shrink-0 fill-none text-accent" />
-          ) : (
-            <Lifetime aria-hidden="true" className="size-4 shrink-0 fill-none text-accent" />
-          )}
-          <dt className="text-fg-muted">ينتهي الوصول</dt>
-          <dd className="m-0 font-bold">{entitlement.expires_at ? formatDate(entitlement.expires_at) : "وصول مدى الحياة"}</dd>
-        </div>
-      </dl>
-      {remaining !== null && entitlement.status === "active" ? (
-        <p className="m-0 text-sm text-fg-muted">
-          {remaining === 0 ? "ينتهي وصولك اليوم." : `يتبقّى ${formatCount(remaining, DAY_FORMS)} على انتهاء الوصول.`}
-        </p>
       ) : null}
     </article>
   );

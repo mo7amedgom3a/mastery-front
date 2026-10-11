@@ -16,7 +16,7 @@ type DashboardSectionProps = {
 /** A dashboard block: icon, title and subtitle, an optional "view all", then its content. */
 export function DashboardSection({ id, icon: Icon, title, subtitle, viewAll, children }: DashboardSectionProps) {
   return (
-    <section aria-labelledby={id} className="flex flex-col gap-5">
+    <section aria-labelledby={id} className="@container flex flex-col gap-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-panel bg-surface-alt">

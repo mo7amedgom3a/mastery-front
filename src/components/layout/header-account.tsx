@@ -13,7 +13,7 @@ import { accountLinks, AccountMenu, displayName } from "./account-menu";
 import { UserAvatar } from "./user-avatar";
 
 /**
- * The header's account action: "register" for a guest, the account menu once there is a session. Rendered
+ * The header's account action: a link to the login page for a guest, the account menu once there is a session. Rendered
  * as a guest first (the session is only known after the browser asks), in the bar and in the drawer.
  */
 export function HeaderAccount({ placement }: { placement: "bar" | "drawer" }) {
@@ -24,11 +24,11 @@ export function HeaderAccount({ placement }: { placement: "bar" | "drawer" }) {
 
   if (!user) {
     return bar ? (
-      <ButtonLink href={routes.register} variant="secondary" size="sm" className="min-h-11 max-sm:hidden">
+      <ButtonLink href={routes.login} variant="secondary" size="sm" className="min-h-11 max-sm:hidden">
         سجل الآن
       </ButtonLink>
     ) : (
-      <ButtonLink href={routes.register} variant="primary" block>
+      <ButtonLink href={routes.login} variant="primary" block>
         سجل الآن
       </ButtonLink>
     );

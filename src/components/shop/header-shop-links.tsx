@@ -7,7 +7,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { CartIcon, type AnimatedIconHandle } from "@/components/icons/animated";
 import { HeartFillIcon } from "@/components/icons/heart-fill-icon";
 import { AppLink } from "@/components/ui/app-link";
-import { routes } from "@/config/routes";
+import { useShopRoutes } from "@/lib/shop/use-shop-routes";
 import { useShopHydration, useShopStore } from "@/lib/shop/store";
 
 type CountLinkProps = {
@@ -75,9 +75,10 @@ function WishlistLink() {
   const play = () => icon.current?.startAnimation();
   const stop = () => icon.current?.stopAnimation();
   usePlayOnIncrease(count, readWishlistCount, play);
+  const href = useShopRoutes().wishlist;
 
   return (
-    <CountLink href={routes.wishlist} label="المفضلة" count={count} onPlay={play} onStop={stop}>
+    <CountLink href={href} label="المفضلة" count={count} onPlay={play} onStop={stop}>
       <HeartFillIcon ref={icon} filled={count > 0} size={20} />
     </CountLink>
   );
@@ -89,9 +90,10 @@ function CartLink() {
   const play = () => icon.current?.startAnimation();
   const stop = () => icon.current?.stopAnimation();
   usePlayOnIncrease(count, readCartCount, play);
+  const href = useShopRoutes().cart;
 
   return (
-    <CountLink href={routes.cart} label="السلة" count={count} onPlay={play} onStop={stop}>
+    <CountLink href={href} label="السلة" count={count} onPlay={play} onStop={stop}>
       <CartIcon ref={icon} size={20} />
     </CountLink>
   );

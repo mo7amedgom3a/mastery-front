@@ -2,8 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { BookOpenCheck, Sparkles, UserRoundPen } from "lucide-react";
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,9 +17,14 @@ import { useAuthStore } from "@/lib/auth/store";
 import { DashboardSection } from "./components/dashboard-section";
 import { LearningCard } from "./components/learning-card";
 import { RecommendationGrid } from "./components/recommendation-grid";
+import { TypeFilter } from "./components/type-filter";
+import { countByType } from "./model/products";
 import { useCatalogArtwork } from "./model/use-artwork";
 
 const noSubscription = () => () => undefined;
+
+/** Cards shown under «كمّل التعلّم»; the rest are on the تعلّمي page. */
+const CONTINUE_LIMIT = 6;
 
 /**
  * Sends a customer who neither finished nor skipped onboarding to it. Undecided (still loading, or
@@ -76,8 +82,17 @@ function CompleteProfileCard() {
 export function DashboardHome() {
   const user = useAuthStore((state) => state.user);
   const gate = useOnboardingGate();
-  const owned = useQuery(commerceQueries.ownedProducts({ status: "active", limit: 6 }));
-  const artwork = useCatalogArtwork((owned.data?.items ?? []).map((product) => product.slug));
+  const [type, setType] = useState<string | null>(null);
+  // All of them (the API caps at 100), so the type chips count everything, not just the first page.
+  const owned = useQuery(commerceQueries.ownedProducts({ status: "active", limit: 100 }));
+  const allProducts = owned.data?.items ?? [];
+  const counts = countByType(allProducts, (product) => product.product_type);
+  const selected = type && counts.some((count) => count.type === type) ? type : null;
+  const products = (selected ? allProducts.filter((product) => product.product_type === selected) : allProducts).slice(
+    0,
+    CONTINUE_LIMIT,
+  );
+  const artwork = useCatalogArtwork(products.map((product) => product.slug));
 
   if (!gate.ready) {
     return (
@@ -92,8 +107,7 @@ export function DashboardHome() {
 
   const name = user?.full_name?.trim();
   const named = Boolean(name);
-  const products = owned.data?.items ?? [];
-  const ownsNothing = owned.isSuccess && products.length === 0;
+  const ownsNothing = owned.isSuccess && allProducts.length === 0;
 
   const continueLearning = (
     <DashboardSection
@@ -101,16 +115,23 @@ export function DashboardHome() {
       icon={BookOpenCheck}
       title="كمّل التعلّم"
       subtitle="تابع من حيث توقفت."
-      viewAll={products.length > 0 ? { href: routes.studentAccess } : undefined}
+      viewAll={
+        allProducts.length > 0
+          ? {
+              href: selected ? (`${routes.studentAccess}?type=${encodeURIComponent(selected)}` as Route) : routes.studentAccess,
+            }
+          : undefined
+      }
     >
+      <TypeFilter counts={counts} total={allProducts.length} value={selected} onChange={setType} />
       {owned.isPending ? (
-        <div role="status" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <div role="status" className="grid gap-5 @xl:grid-cols-2 @4xl:grid-cols-3">
           <span className="sr-only">جارٍ التحميل…</span>
           <Skeleton className="h-72" />
           <Skeleton className="h-72" />
         </div>
       ) : products.length > 0 ? (
-        <ul className="m-0 grid list-none gap-5 p-0 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="m-0 grid list-none gap-5 p-0 @xl:grid-cols-2 @4xl:grid-cols-3">
           {products.map((product, index) => (
             <li key={product.product_id}>
               <LearningCard
@@ -118,6 +139,7 @@ export function DashboardHome() {
                 index={index}
                 image={artwork.get(product.slug)?.image}
                 fallbackTitle={artwork.get(product.slug)?.title}
+                instructor={artwork.get(product.slug)?.instructor}
               />
             </li>
           ))}

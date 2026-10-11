@@ -2,11 +2,15 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { KeyRound } from "lucide-react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
+import { TypeFilter } from "@/features/student-dashboard/components/type-filter";
+import { countByType, productTypePluralLabel } from "@/features/student-dashboard/model/products";
+import { useCatalogArtwork } from "@/features/student-dashboard/model/use-artwork";
 import { commerceQueries } from "@/lib/api/commerce";
 import { cn } from "@/lib/cn";
 
@@ -19,35 +23,63 @@ const FILTERS = [
 
 type Filter = (typeof FILTERS)[number]["status"];
 
-/** What the student can open, with when access started and when it ends. */
+/** Sized by the content column, not the window: the sidebar takes a share of wide screens. */
+const GRID = "m-0 grid list-none gap-5 p-0 @xl:grid-cols-2 @4xl:grid-cols-3";
+
+/**
+ * What the student can open, with when access started and when it ends. Filtered by status, and by
+ * product type through `?type=` (so a link from the dashboard home lands already filtered).
+ */
 export function AccessPage() {
   const [filter, setFilter] = useState<Filter>("active");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const type = searchParams.get("type") || null;
+  const setType = (next: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) params.set("type", next);
+    else params.delete("type");
+    const query = params.toString();
+    // `history.replaceState` updates the query string without a server round trip.
+    window.history.replaceState(null, "", query ? `${pathname}?${query}` : pathname);
+  };
+
   const access = useQuery({
     ...commerceQueries.entitlements({ status: filter, limit: 100 }),
     placeholderData: keepPreviousData,
   });
+  const items = access.data?.items ?? [];
+  const artwork = useCatalogArtwork(items.flatMap((item) => (item.product_slug ? [item.product_slug] : [])));
+  const counts = countByType(items, (item) => item.product_type ?? "");
+  // A type that isn't in this list (e.g. after switching status) filters nothing out of sight.
+  const selected = type && counts.some((count) => count.type === type) ? type : null;
+  const visible = selected ? items.filter((item) => item.product_type === selected) : items;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div role="group" aria-label="تصفية حسب الحالة" className="ma-cluster">
-        {FILTERS.map((option) => (
-          <button
-            key={option.status}
-            type="button"
-            aria-pressed={filter === option.status}
-            onClick={() => setFilter(option.status)}
-            className={cn("ma-btn ma-btn--sm min-h-11", filter === option.status ? "ma-btn--secondary" : "ma-btn--soft")}
-          >
-            {option.label}
-          </button>
-        ))}
+    <div className="@container flex flex-col gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <TypeFilter counts={counts} total={items.length} value={selected} onChange={setType} />
+        <div role="group" aria-label="تصفية حسب الحالة" className="ma-cluster">
+          {FILTERS.map((option) => (
+            <button
+              key={option.status}
+              type="button"
+              aria-pressed={filter === option.status}
+              onClick={() => setFilter(option.status)}
+              className={cn("ma-btn ma-btn--sm min-h-11", filter === option.status ? "ma-btn--secondary" : "ma-btn--soft")}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {access.isPending ? (
-        <div role="status" className="grid gap-4 md:grid-cols-2">
+        <div role="status" className={GRID}>
           <span className="sr-only">جارٍ التحميل…</span>
-          <Skeleton className="h-40" />
-          <Skeleton className="h-40" />
+          <Skeleton className="h-96" />
+          <Skeleton className="h-96 @max-xl:hidden" />
+          <Skeleton className="h-96 @max-4xl:hidden" />
         </div>
       ) : access.isError ? (
         <div className="ma-alert ma-alert--warning" role="alert">
@@ -56,7 +88,7 @@ export function AccessPage() {
             <p className="ma-alert__text">تحقّق من اتصالك ثم حدّث الصفحة.</p>
           </div>
         </div>
-      ) : access.data.items.length === 0 ? (
+      ) : visible.length === 0 ? (
         <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10">
           <KeyRound aria-hidden="true" className="size-8 fill-none text-accent" />
           <p className="m-0 text-fg-muted">
@@ -69,11 +101,27 @@ export function AccessPage() {
           ) : null}
         </div>
       ) : (
-        <div aria-busy={access.isFetching} className="grid gap-4 md:grid-cols-2">
-          {access.data.items.map((entitlement) => (
-            <AccessCard key={entitlement.entitlement_id} entitlement={entitlement} now={access.dataUpdatedAt} />
-          ))}
-        </div>
+        <ul
+          aria-label={selected ? productTypePluralLabel(selected) : "كل البرامج"}
+          aria-busy={access.isFetching}
+          className={GRID}
+        >
+          {visible.map((entitlement, index) => {
+            const known = entitlement.product_slug ? artwork.get(entitlement.product_slug) : undefined;
+            return (
+              <li key={entitlement.entitlement_id} className="min-w-0">
+                <AccessCard
+                  entitlement={entitlement}
+                  now={access.dataUpdatedAt}
+                  title={known?.title}
+                  image={known?.image}
+                  instructor={known?.instructor}
+                  index={index}
+                />
+              </li>
+            );
+          })}
+        </ul>
       )}
     </div>
   );

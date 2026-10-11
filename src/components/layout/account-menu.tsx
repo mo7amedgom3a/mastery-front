@@ -20,7 +20,7 @@ export const accountLinks: readonly AccountLink[] = [
   { href: routes.studentProfile, label: "الملف الشخصي", icon: UserRound },
   { href: routes.studentAccess, label: "تعلّمي", icon: GraduationCap },
   { href: routes.studentOrders, label: "طلباتي", icon: Receipt },
-  { href: routes.wishlist, label: "المفضلة", icon: Heart },
+  { href: routes.studentWishlist, label: "المفضلة", icon: Heart },
 ];
 
 /** The name to show: the profile's (it may have been edited since sign-in), else the session's, else the e-mail. */

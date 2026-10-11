@@ -16,6 +16,7 @@ import { commerceKeys, commerceQueries, type CartResponse } from "@/lib/api/comm
 import { useAuthStore } from "@/lib/auth/store";
 import { formatCount } from "@/lib/format";
 import { shopKeyFromSlug } from "@/lib/shop/product-links";
+import { useShopRoutes } from "@/lib/shop/use-shop-routes";
 import { mirrorAccountCart } from "@/lib/shop/cart-sync";
 import type { Quote, QuoteRequest } from "@/lib/shop/contract";
 import { PRODUCT_FORMS } from "@/lib/shop/labels";
@@ -102,6 +103,7 @@ export function CartPage() {
 
   const { quote, stale, failed, refetch } = useCartQuote(hydrated, signedIn, cart);
   const checkout = useStartCheckout();
+  const shopRoutes = useShopRoutes();
 
   const undo = useUndo<Removed>();
   const remove = (line: CartLine) => {
@@ -160,7 +162,7 @@ export function CartPage() {
             </li>
             {wishlist.length > 0 ? (
               <li>
-                <ButtonLink href={routes.wishlist} variant="soft">
+                <ButtonLink href={shopRoutes.wishlist} variant="soft">
                   افتح المفضلة
                 </ButtonLink>
               </li>
