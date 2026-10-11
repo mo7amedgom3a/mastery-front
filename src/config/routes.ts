@@ -101,6 +101,13 @@ export const routes = {
   studentOrders: route("/students/orders"),
   studentOrder: (orderId: string) => route(`/students/orders/${encodeURIComponent(orderId)}`),
   studentAccess: route("/students/access"),
+  /** Booked consultations; Stripe returns here after paying for one. */
+  studentConsultations: route("/students/consultations"),
+  studentConsultation: (bookingId: string) => route(`/students/consultations/${encodeURIComponent(bookingId)}`),
+  /** The live meeting room, full screen (outside the dashboard chrome). */
+  consultationSession: (bookingId: string) => route(`/students/session/${encodeURIComponent(bookingId)}`),
+  /** The expert's area: approvals, upcoming sessions and availability. */
+  studentExpert: route("/students/expert"),
   privacy: route("/privacy"),
   terms: route("/terms"),
 } as const;

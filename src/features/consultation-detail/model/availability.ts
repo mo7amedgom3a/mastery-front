@@ -1,13 +1,15 @@
-import type { AvailabilityVM, SlotVM } from "./types";
+import type { AvailableSlot } from "@/lib/api/consultations";
 
-const MINUTE = 60_000;
-const DAY = 24 * 60 * MINUTE;
-/** Share of slots shown as already booked, until the booking API reports real ones. */
-const TAKEN_RATIO = 0.25;
+import type { SlotVM } from "./types";
 
 /** sessionStorage key where a guest's chosen slot waits while they sign in. */
 export function pendingSlotKey(consultationId: number): string {
   return `consultation-booking:${consultationId}`;
+}
+
+/** The B2C catalog product of a legacy consultation: its slug is `consultation-<legacy id>`. */
+export function consultationProductRef(consultationId: number): string {
+  return `consultation-${consultationId}`;
 }
 
 /** Calendar-day key in the visitor's own timezone, e.g. "2026-10-03". */
@@ -17,55 +19,48 @@ export function dayKey(date: Date): string {
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
-/** Stable 0–1 value for a string (FNV-1a), so the same slot is "taken" on every visit. */
-function hashUnit(value: string): number {
-  let hash = 0x811c9dc5;
-  for (let index = 0; index < value.length; index++) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 0x01000193);
+/** Free slots from the API, grouped by the visitor's local day and sorted by time. */
+export function groupSlotsByDay(slots: readonly AvailableSlot[]): Map<string, SlotVM[]> {
+  const days = new Map<string, SlotVM[]>();
+  for (const slot of slots) {
+    if (!slot.is_available) continue;
+    const start = new Date(slot.starts_at);
+    const key = dayKey(start);
+    const list = days.get(key) ?? [];
+    list.push({ id: slot.slot_id, start: start.toISOString(), end: new Date(slot.ends_at).toISOString() });
+    days.set(key, list);
   }
-  return (hash >>> 0) / 0xffffffff;
+  for (const list of days.values()) list.sort((a, b) => a.start.localeCompare(b.start));
+  return new Map([...days].sort(([a], [b]) => a.localeCompare(b)));
+}
+
+/** Where a slot starting at `start` (ISO) sits: its day key and id, e.g. to restore a guest's pick. */
+export function findSlotByStart(days: ReadonlyMap<string, readonly SlotVM[]>, start: string): { key: string; id: string } | null {
+  for (const [key, slots] of days) {
+    const slot = slots.find((candidate) => candidate.start === start);
+    if (slot) return { key, id: slot.id };
+  }
+  return null;
 }
 
 /**
- * Every slot from now to the horizon, grouped by the visitor's local day and sorted by time.
- * Weekly windows are wall-clock times at the availability's UTC offset; each is cut into
- * `slotMinutes` starts. Runs in the browser: "now" must never be frozen into cached HTML.
- *
- * MOCK: which slots are taken is a stable pseudo-random pick per (consultation, start).
- * TODO(api): take booked starts from the booking API instead.
+ * The slots a booking of `count` back-to-back sessions starting at `startId` would hold, or null
+ * when the expert is not free for all of them (a multi-hour booking needs consecutive slots).
  */
-export function buildSlots(availability: AvailabilityVM, consultationId: number, now: Date): Map<string, SlotVM[]> {
-  const { utcOffsetMinutes, slotMinutes, minNoticeHours, horizonDays, windows } = availability;
-  const days = new Map<string, SlotVM[]>();
-  if (slotMinutes <= 0) {
-    return days;
+export function consecutiveRun(slots: readonly SlotVM[], startId: string, count: number): SlotVM[] | null {
+  const first = slots.findIndex((slot) => slot.id === startId);
+  if (first < 0) return null;
+  const run = [slots[first]];
+  for (let index = first + 1; run.length < count && index < slots.length; index++) {
+    if (Date.parse(slots[index].start) !== Date.parse(run.at(-1)!.end)) break;
+    run.push(slots[index]);
   }
-  const offset = utcOffsetMinutes * MINUTE;
-  const earliest = now.getTime() + minNoticeHours * 60 * MINUTE;
-  const latest = now.getTime() + horizonDays * DAY;
-  // Midnight of "today" on the availability's own clock, as a UTC-based timestamp.
-  const today = Math.floor((now.getTime() + offset) / DAY) * DAY;
+  return run.length === count ? run : null;
+}
 
-  for (let index = 0; index <= horizonDays + 1; index++) {
-    const midnight = today + index * DAY;
-    const weekday = new Date(midnight).getUTCDay();
-    for (const window of windows) {
-      if (window.weekday !== weekday) continue;
-      for (let minute = window.startMinute; minute + slotMinutes <= window.endMinute; minute += slotMinutes) {
-        const start = midnight + minute * MINUTE - offset;
-        if (start < earliest || start > latest) continue;
-        const date = new Date(start);
-        const iso = date.toISOString();
-        const key = dayKey(date);
-        const slots = days.get(key) ?? [];
-        slots.push({ start: iso, taken: hashUnit(`${consultationId}:${iso}`) < TAKEN_RATIO });
-        days.set(key, slots);
-      }
-    }
-  }
-  for (const slots of days.values()) {
-    slots.sort((a, b) => a.start.localeCompare(b.start));
-  }
-  return days;
+/** How many back-to-back sessions can start at `startId` (at least 1, at most `max`). */
+export function maxRunLength(slots: readonly SlotVM[], startId: string, max: number): number {
+  let length = 1;
+  while (length < max && consecutiveRun(slots, startId, length + 1)) length += 1;
+  return length;
 }

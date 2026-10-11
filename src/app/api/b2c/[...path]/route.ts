@@ -32,6 +32,16 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^orders(\/[A-Za-z0-9-]+(\/(invoices|transactions))?)?$/, session: true },
   // Recommendations for the signed-in customer (dashboard, after onboarding).
   { methods: ["GET"], pattern: /^recommendations\/me$/, session: true },
+  // Consultations: public free slots, then booking, the meeting room and its recording.
+  { methods: ["GET"], pattern: /^consultations\/products\/[A-Za-z0-9_-]+\/availability$/, session: false },
+  { methods: ["POST"], pattern: /^consultations\/bookings$/, session: true },
+  { methods: ["GET"], pattern: /^consultations\/bookings\/[A-Za-z0-9-]+(\/recording)?$/, session: true },
+  { methods: ["POST"], pattern: /^consultations\/bookings\/[A-Za-z0-9-]+\/join$/, session: true },
+  // The expert's own area (403 for customers who are not linked to a consultant).
+  { methods: ["GET"], pattern: /^experts\/me(\/(slots|bookings))?$/, session: true },
+  { methods: ["POST"], pattern: /^experts\/me\/slots$/, session: true },
+  { methods: ["DELETE"], pattern: /^experts\/me\/slots\/[A-Za-z0-9-]+$/, session: true },
+  { methods: ["POST"], pattern: /^experts\/me\/bookings\/[A-Za-z0-9-]+\/(approve|reject)$/, session: true },
 ];
 
 /** Same charset the backend accepts; anything else is dropped rather than forwarded. */

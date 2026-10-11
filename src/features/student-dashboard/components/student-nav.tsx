@@ -1,16 +1,37 @@
 "use client";
 
-import { GraduationCap, Heart, House, Receipt, Search, ShoppingCart, UserRound, type LucideIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  BriefcaseBusiness,
+  CalendarClock,
+  GraduationCap,
+  Heart,
+  House,
+  Receipt,
+  Search,
+  ShoppingCart,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
 
 import { AppLink } from "@/components/ui/app-link";
 import { routes } from "@/config/routes";
+import { consultationQueries } from "@/lib/api/consultations";
 import { cn } from "@/lib/cn";
 import { formatNumber } from "@/lib/format";
 import { useShopHydrated, useShopStore } from "@/lib/shop/store";
 
-type StudentNavItem = { href: Route; label: string; icon: LucideIcon; exact?: boolean; count?: "wishlist" | "cart" };
+type StudentNavItem = {
+  href: Route;
+  label: string;
+  icon: LucideIcon;
+  exact?: boolean;
+  count?: "wishlist" | "cart";
+  /** Shown only to customers linked to a consultant. */
+  expertOnly?: boolean;
+};
 type StudentNavGroup = { label: string; items: readonly StudentNavItem[] };
 
 export const studentNavGroups: readonly StudentNavGroup[] = [
@@ -19,6 +40,7 @@ export const studentNavGroups: readonly StudentNavGroup[] = [
     items: [
       { href: routes.studentHome, label: "الرئيسية", icon: House, exact: true },
       { href: routes.studentAccess, label: "تعلّمي", icon: GraduationCap },
+      { href: routes.studentConsultations, label: "استشاراتي", icon: CalendarClock },
       { href: routes.search, label: "البحث", icon: Search },
     ],
   },
@@ -32,7 +54,10 @@ export const studentNavGroups: readonly StudentNavGroup[] = [
   },
   {
     label: "الحساب",
-    items: [{ href: routes.studentProfile, label: "الملف الشخصي", icon: UserRound }],
+    items: [
+      { href: routes.studentProfile, label: "الملف الشخصي", icon: UserRound },
+      { href: routes.studentExpert, label: "لوحة الخبير", icon: BriefcaseBusiness, expertOnly: true },
+    ],
   },
 ];
 
@@ -51,6 +76,7 @@ export function StudentNav() {
   const wishlist = useShopStore((state) => state.wishlist.length);
   const cart = useShopStore((state) => state.cart.length);
   const counts = { wishlist: hydrated ? wishlist : 0, cart: hydrated ? cart : 0 };
+  const isExpert = useQuery(consultationQueries.expert()).isSuccess;
 
   return (
     <nav
@@ -69,7 +95,7 @@ export function StudentNav() {
                 {group.label}
               </p>
               <ul aria-labelledby={headingId} className="m-0 flex list-none gap-2 p-0 lg:flex-col lg:gap-1">
-                {group.items.map((item) => {
+                {group.items.filter((item) => !item.expertOnly || isExpert).map((item) => {
                   const current = isCurrent(pathname, item);
                   const count = item.count ? counts[item.count] : 0;
                   const Icon = item.icon;

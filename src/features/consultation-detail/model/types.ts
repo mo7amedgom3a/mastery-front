@@ -8,32 +8,12 @@ import type { Pricing } from "@/lib/pricing";
 /** The consultant. `href` is null when no instructor profile matches their name. */
 export type ExpertVM = Omit<TrainerVM, "href"> & { href: Route | null };
 
-/** A weekly window the expert takes sessions in, in the availability's own UTC offset. */
-export type AvailabilityWindowVM = {
-  /** 0 = Sunday … 6 = Saturday. */
-  weekday: number;
-  /** Minutes from midnight. */
-  startMinute: number;
-  endMinute: number;
-};
-
-export type AvailabilityVM = {
-  /** Offset of the wall-clock times in `windows` from UTC, in minutes. */
-  utcOffsetMinutes: number;
-  /** Length of one bookable slot. */
-  slotMinutes: number;
-  /** Slots starting sooner than this can't be booked. */
-  minNoticeHours: number;
-  /** How far ahead the calendar offers slots. */
-  horizonDays: number;
-  windows: AvailabilityWindowVM[];
-};
-
-/** One bookable start time, built in the browser from `AvailabilityVM` (see `availability.ts`). */
+/** One bookable slot from the booking API: a free window in the expert's calendar. */
 export type SlotVM = {
-  /** ISO instant the session starts at. */
+  id: string;
+  /** ISO instants (UTC). */
   start: string;
-  taken: boolean;
+  end: string;
 };
 
 export type ConsultationDetailVM = {
@@ -52,7 +32,6 @@ export type ConsultationDetailVM = {
   sessionLength: string | null;
   sections: InfoSectionVM[];
   expert: ExpertVM | null;
-  availability: AvailabilityVM;
   /** Canonical URL path, e.g. `/consultations/2`. */
   href: Route;
   indexable: boolean;
@@ -61,9 +40,11 @@ export type ConsultationDetailVM = {
 /** What the booking dialog needs: a lean, serialisable slice of the consultation. */
 export type BookingVM = Pick<
   ConsultationDetailVM,
-  "id" | "title" | "href" | "price" | "sessions" | "sessionLength" | "availability"
+  "id" | "title" | "href" | "price" | "priceAmount" | "sessionLength"
 > & {
   expertName: string | null;
+  /** The B2C catalog product behind this consultation (`consultation-<id>`), for the booking API. */
+  productRef: string;
 };
 
 export type ConsultationDetailData = {

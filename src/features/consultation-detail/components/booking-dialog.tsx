@@ -1,17 +1,31 @@
 "use client";
 
 import { clsx as cn } from "clsx";
-import { ArrowRight, CalendarX, Info, X } from "lucide-react";
+import { ArrowRight, CalendarX, Info, Minus, Plus, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
-import { formatLongDate, formatTimeOfDay } from "@/lib/format";
+import { ApiError } from "@/lib/api/client";
+import {
+  CONSULTATION_TERMS_VERSION,
+  createBookingCheckout,
+  getAvailability,
+  type AvailabilityResponse,
+} from "@/lib/api/consultations";
+import { formatLongDate, formatMoney, formatTimeOfDay } from "@/lib/format";
 import { ensureAuthStatus } from "@/lib/shop/use-shop-actions";
 
-import { buildSlots, dayKey, pendingSlotKey } from "../model/availability";
-import { sessionsLabel } from "../model/facts";
+import {
+  consecutiveRun,
+  dayKey,
+  findSlotByStart,
+  groupSlotsByDay,
+  maxRunLength,
+  pendingSlotKey,
+} from "../model/availability";
 import type { BookingVM, SlotVM } from "../model/types";
 
 type Step = "pick" | "signin" | "summary";
@@ -23,6 +37,11 @@ type BookingDialogProps = {
   onClose: () => void;
 };
 
+type AvailabilityState =
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "ready"; data: AvailabilityResponse };
+
 function localTimeZone(): string | null {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
@@ -31,37 +50,76 @@ function localTimeZone(): string | null {
   }
 }
 
+function newBookingKey(): string {
+  return `consultation-${crypto.randomUUID()}`;
+}
+
+function errorCode(error: unknown): string | null {
+  if (!(error instanceof ApiError)) return null;
+  const detail = error.details.detail;
+  return typeof detail === "object" && detail !== null && "code" in detail && typeof detail.code === "string"
+    ? detail.code
+    : null;
+}
+
+function bookingErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.status === 409) {
+      return errorCode(error) === "checkout_in_progress"
+        ? "ما زلنا نجهّز صفحة الدفع. حاول مجدداً بعد لحظات."
+        : "لم يعد هذا الموعد متاحاً. اختر موعداً آخر.";
+    }
+    if (error.status === 404) return "هذه الاستشارة غير متاحة للحجز حالياً.";
+    if (error.status === 422) return "تعذّر حجز هذا الموعد. حدّث الصفحة واختر الموعد مجدداً.";
+    if (error.status === 429) return "محاولات كثيرة في وقت قصير. انتظر قليلاً ثم حاول مجدداً.";
+    if (error.status >= 500) return "الحجز غير متاح حالياً. حاول مجدداً بعد قليل.";
+  }
+  return "تعذّر بدء الدفع. تحقّق من اتصالك وحاول مجدداً.";
+}
+
 /**
- * Booking flow in a modal: pick a day on the calendar, then a time, then confirm. Guests are asked
- * to sign in first; signed-in visitors get a summary of the appointment.
- *
- * MOCK: availability is generated (see `mock-availability.ts`) and nothing is saved.
- * TODO(api): create the booking and hand over to payment from the summary step.
+ * Booking flow in a modal: pick a day, a start time and how many back-to-back sessions, accept the
+ * terms, then pay on Stripe. Guests are asked to sign in first. The slots are held for the visitor
+ * while they pay; the expert confirms the booking afterwards.
  */
 export default function BookingDialog({ booking, initialStart, onClose }: BookingDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const timesId = useId();
-  // Mounted when opened, so "now" is the moment the visitor opened the calendar.
-  const [now] = useState(() => new Date());
-  const days = useMemo(() => buildSlots(booking.availability, booking.id, now), [booking, now]);
-  const freeDays = useMemo(
-    () => [...days].filter(([, slots]) => slots.some((slot) => !slot.taken)).map(([key]) => key),
-    [days],
+  const termsId = useId();
+  const [availability, setAvailability] = useState<AvailabilityState>({ status: "loading" });
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getAvailability(booking.productRef, undefined, { signal: controller.signal })
+      .then((data) => setAvailability({ status: "ready", data }))
+      .catch(() => {
+        if (!controller.signal.aborted) setAvailability({ status: "error" });
+      });
+    return () => controller.abort();
+  }, [booking.productRef]);
+
+  const days = useMemo(
+    () => (availability.status === "ready" ? groupSlotsByDay(availability.data.slots) : new Map<string, SlotVM[]>()),
+    [availability],
   );
+  const freeDays = useMemo(() => [...days.keys()], [days]);
   const freeDaySet = useMemo(() => new Set(freeDays), [freeDays]);
+  const maxSlots = availability.status === "ready" ? availability.data.max_slots : 1;
 
-  const restored = useMemo(() => {
-    if (!initialStart) return null;
-    const key = dayKey(new Date(initialStart));
-    return days.get(key)?.some((slot) => slot.start === initialStart && !slot.taken) ? key : null;
-  }, [days, initialStart]);
+  const restored = initialStart ? findSlotByStart(days, initialStart) : null;
 
-  const [selectedDay, setSelectedDay] = useState<string | null>(restored ?? freeDays[0] ?? null);
-  const [start, setStart] = useState<string | null>(restored ? initialStart : null);
+  const [pickedDay, setPickedDay] = useState<string | null>(null);
+  const [pickedSlot, setPickedSlot] = useState<string | null>(null);
+  const [hours, setHours] = useState(1);
   const [step, setStep] = useState<Step>("pick");
   const [checking, setChecking] = useState(false);
   const [returnTo, setReturnTo] = useState<string>(booking.href);
+  const [accepted, setAccepted] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  // One key per selection, so a retry (double click, flaky network) reuses the same booking.
+  const keys = useRef(new Map<string, string>());
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -70,15 +128,21 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
 
   const close = () => dialogRef.current?.close();
 
+  const selectedDay = pickedDay ?? restored?.key ?? freeDays[0] ?? null;
+  const slotId = pickedSlot ?? (pickedDay ? null : (restored?.id ?? null));
   const slots: readonly SlotVM[] = selectedDay ? (days.get(selectedDay) ?? []) : [];
-  const startDate = start ? new Date(start) : null;
+  const longest = slotId ? maxRunLength(slots, slotId, maxSlots) : 1;
+  const count = Math.min(hours, longest);
+  const run = slotId ? consecutiveRun(slots, slotId, count) : null;
+  const startDate = run ? new Date(run[0].start) : null;
+  const endDate = run ? new Date(run.at(-1)!.end) : null;
   const selectedDate = selectedDay ? dateFromKey(selectedDay) : undefined;
   const lastDay = freeDays.at(-1);
   const timeZone = localTimeZone();
-  const sessions = sessionsLabel(booking.sessions);
+  const total = booking.priceAmount ? booking.priceAmount * count : null;
 
   const confirm = async () => {
-    if (!start) return;
+    if (!run) return;
     setChecking(true);
     const signedIn = await ensureAuthStatus();
     setChecking(false);
@@ -87,12 +151,47 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
       return;
     }
     try {
-      window.sessionStorage.setItem(pendingSlotKey(booking.id), start);
+      window.sessionStorage.setItem(pendingSlotKey(booking.id), run[0].start);
     } catch {
       // Storage blocked: the visitor picks the slot again after signing in.
     }
     setReturnTo(`${window.location.pathname}${window.location.search}`);
     setStep("signin");
+  };
+
+  const pay = async () => {
+    if (!run || !accepted || availability.status !== "ready") return;
+    setPaying(true);
+    setPayError(null);
+    const slotIds = run.map((slot) => slot.id);
+    const fingerprint = slotIds.join(",");
+    let key = keys.current.get(fingerprint) ?? newBookingKey();
+    keys.current.set(fingerprint, key);
+    const origin = window.location.origin;
+    const body = {
+      product_id: availability.data.product_id,
+      slot_ids: slotIds,
+      terms_accepted: true,
+      terms_version: availability.data.terms_version || CONSULTATION_TERMS_VERSION,
+      success_url: `${origin}${routes.studentConsultations}`,
+      cancel_url: `${origin}${booking.href}`,
+    };
+    try {
+      let result;
+      try {
+        result = await createBookingCheckout(body, key);
+      } catch (error) {
+        const code = errorCode(error);
+        if (code !== "idempotency_key_reused" && code !== "idempotency_key_expired") throw error;
+        key = newBookingKey();
+        keys.current.set(fingerprint, key);
+        result = await createBookingCheckout(body, key);
+      }
+      window.location.assign(result.checkout.checkout_url);
+    } catch (error) {
+      setPaying(false);
+      setPayError(bookingErrorMessage(error));
+    }
   };
 
   return (
@@ -123,7 +222,24 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
           </button>
         </div>
 
-        {step === "pick" && freeDays.length === 0 ? (
+        {step === "pick" && availability.status === "loading" ? (
+          <div role="status" className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_13.5rem]">
+            <span className="sr-only">جارٍ تحميل المواعيد المتاحة…</span>
+            <Skeleton className="h-72" />
+            <Skeleton className="h-72" />
+          </div>
+        ) : null}
+
+        {step === "pick" && availability.status === "error" ? (
+          <div className="ma-alert ma-alert--warning" role="alert">
+            <div>
+              <p className="ma-alert__title">تعذّر تحميل المواعيد</p>
+              <p className="ma-alert__text">تحقّق من اتصالك ثم أعد فتح نافذة الحجز.</p>
+            </div>
+          </div>
+        ) : null}
+
+        {step === "pick" && availability.status === "ready" && freeDays.length === 0 ? (
           <div className="flex flex-col items-start gap-3 rounded-panel border border-line p-5">
             <CalendarX aria-hidden="true" className="size-6 text-accent" />
             <p className="m-0 font-bold">لا توجد مواعيد متاحة حالياً</p>
@@ -141,8 +257,8 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
                 required
                 selected={selectedDate}
                 onSelect={(date) => {
-                  setSelectedDay(dayKey(date));
-                  setStart(null);
+                  setPickedDay(dayKey(date));
+                  setPickedSlot(null);
                 }}
                 defaultMonth={selectedDate}
                 // Only months that hold a free day can be reached.
@@ -167,24 +283,22 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
                   className="m-0 grid list-none grid-cols-3 gap-2 p-0 sm:max-h-[21rem] sm:grid-cols-1 sm:overflow-y-auto sm:pe-1"
                 >
                   {slots.map((slot) => {
-                    const selected = slot.start === start;
+                    const selected = slot.id === slotId;
                     return (
-                      <li key={slot.start}>
+                      <li key={slot.id}>
                         <button
                           type="button"
-                          disabled={slot.taken}
                           aria-pressed={selected}
-                          onClick={() => setStart(slot.start)}
+                          onClick={() => {
+                            if (!pickedDay && selectedDay) setPickedDay(selectedDay);
+                            setPickedSlot(slot.id);
+                          }}
                           className={cn(
                             "ma-btn ma-btn--sm ma-btn--block tabular-nums",
                             selected ? "ma-btn--secondary" : "ma-btn--soft",
-                            slot.taken && "opacity-50",
                           )}
                         >
-                          <span className={slot.taken ? "line-through" : undefined}>
-                            {formatTimeOfDay(new Date(slot.start))}
-                          </span>
-                          {slot.taken ? <span className="sr-only">محجوز</span> : null}
+                          {formatTimeOfDay(new Date(slot.start))}
                         </button>
                       </li>
                     );
@@ -198,25 +312,54 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
                       (<span dir="ltr">{timeZone}</span>)
                     </>
                   ) : null}
-                  . الأوقات المشطوبة محجوزة.
+                  .
                 </p>
               </div>
             </div>
 
-            {booking.sessions > 1 ? (
-              <p className="m-0 flex items-start gap-2 text-sm leading-6 text-fg-muted">
-                <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-                تحجز الآن موعد الجلسة الأولى، وتُحدَّد مواعيد بقية الجلسات مع الخبير بعدها.
-              </p>
+            {slotId ? (
+              <div className="flex flex-col gap-2 rounded-panel border border-line p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-1">
+                  <p className="m-0 text-sm font-bold">عدد الجلسات المتتالية</p>
+                  <p className="m-0 text-xs leading-5 text-fg-muted">
+                    {longest > 1
+                      ? `يمكنك حجز حتى ${longest} جلسات متتالية من هذا الوقت${booking.sessionLength ? `، مدة كل جلسة ${booking.sessionLength}` : ""}.`
+                      : "الخبير متاح لجلسة واحدة فقط من هذا الوقت."}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3" role="group" aria-label="عدد الجلسات">
+                  <button
+                    type="button"
+                    onClick={() => setHours(Math.max(1, count - 1))}
+                    disabled={count <= 1}
+                    aria-label="جلسة أقل"
+                    className="ma-btn ma-btn--soft ma-btn--icon size-10 min-h-10 disabled:opacity-50"
+                  >
+                    <Minus aria-hidden="true" className="size-4" />
+                  </button>
+                  <output aria-live="polite" className="min-w-6 text-center text-lg font-bold tabular-nums">
+                    {count}
+                  </output>
+                  <button
+                    type="button"
+                    onClick={() => setHours(Math.min(longest, count + 1))}
+                    disabled={count >= longest}
+                    aria-label="جلسة أكثر"
+                    className="ma-btn ma-btn--soft ma-btn--icon size-10 min-h-10 disabled:opacity-50"
+                  >
+                    <Plus aria-hidden="true" className="size-4" />
+                  </button>
+                </div>
+              </div>
             ) : null}
 
             <div className="flex flex-col gap-3 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
               <p role="status" className="m-0 text-sm leading-6">
-                {startDate ? (
+                {startDate && endDate ? (
                   <>
                     <span className="text-fg-muted">الموعد المختار: </span>
                     <strong>
-                      {formatLongDate(startDate)}، {formatTimeOfDay(startDate)}
+                      {formatLongDate(startDate)}، {formatTimeOfDay(startDate)} – {formatTimeOfDay(endDate)}
                     </strong>
                   </>
                 ) : (
@@ -226,7 +369,7 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
               <button
                 type="button"
                 onClick={confirm}
-                disabled={!start || checking}
+                disabled={!run || checking}
                 className="ma-btn ma-btn--primary shrink-0 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {checking ? "لحظة…" : "تأكيد الموعد"}
@@ -256,34 +399,64 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
           </div>
         ) : null}
 
-        {step === "summary" && startDate ? (
+        {step === "summary" && startDate && endDate ? (
           <div className="flex flex-col gap-5">
             <dl className="m-0 grid gap-x-6 gap-y-3 rounded-panel border border-line p-5 text-[15px] sm:grid-cols-[auto_minmax(0,1fr)]">
               <SummaryRow term="الاستشارة">{booking.title}</SummaryRow>
               {booking.expertName ? <SummaryRow term="الخبير">{booking.expertName}</SummaryRow> : null}
               <SummaryRow term="اليوم">{formatLongDate(startDate)}</SummaryRow>
-              <SummaryRow term="الوقت">{formatTimeOfDay(startDate)}</SummaryRow>
-              {booking.sessionLength ? <SummaryRow term="مدة الجلسة">{booking.sessionLength}</SummaryRow> : null}
-              {sessions && booking.sessions > 1 ? <SummaryRow term="عدد الجلسات">{sessions}</SummaryRow> : null}
-              {booking.price.free || booking.price.current ? (
-                <SummaryRow term="السعر">
-                  {booking.price.free ? "مجانية" : <span dir="ltr">{booking.price.current}</span>}
+              <SummaryRow term="الوقت">
+                {formatTimeOfDay(startDate)} – {formatTimeOfDay(endDate)}
+              </SummaryRow>
+              <SummaryRow term="عدد الجلسات">
+                {count}
+                {booking.sessionLength ? ` × ${booking.sessionLength}` : null}
+              </SummaryRow>
+              {total ? (
+                <SummaryRow term="الإجمالي">
+                  <span dir="ltr">{formatMoney(total)}</span>
                 </SummaryRow>
               ) : null}
             </dl>
-            <div className="ma-alert ma-alert--info" role="status">
-              <Info aria-hidden="true" className="fill-none" />
-              <div>
-                <p className="ma-alert__title">الدفع وتأكيد الحجز قريباً</p>
-                <p className="ma-alert__text">
-                  نعمل على إتاحة الدفع الإلكتروني للاستشارات. لم يُحجز هذا الموعد بعد، ولن يُخصم أي مبلغ.
-                </p>
-              </div>
+
+            <div className="flex flex-col gap-3 rounded-panel border border-line p-5 text-sm leading-6">
+              <p className="m-0 font-bold">شروط الاستشارة</p>
+              <ul className="m-0 flex list-disc flex-col gap-1 ps-5 text-fg-muted">
+                <li>يؤكّد الخبير الموعد بعد الدفع. إن لم يؤكّده يُردّ المبلغ كاملاً.</li>
+                <li>تُسجَّل الجلسة صوتاً وصورة للرجوع إليها لاحقاً، ويمكنك مشاهدة التسجيل من حسابك.</li>
+                <li>يُتاح الدخول إلى الجلسة قبل موعدها بخمس دقائق، وتنتهي تلقائياً عند انتهاء المدة المحجوزة.</li>
+                <li>يُردّ المبلغ إذا لم يحضر الخبير الجلسة فقط، ولا يُردّ عند غياب العميل.</li>
+              </ul>
+              <label htmlFor={termsId} className="flex cursor-pointer items-start gap-3 pt-1 font-bold">
+                <input
+                  id={termsId}
+                  type="checkbox"
+                  checked={accepted}
+                  onChange={(event) => setAccepted(event.target.checked)}
+                  className="mt-1 size-4 shrink-0 accent-current"
+                />
+                قرأت الشروط وأوافق عليها، بما في ذلك تسجيل الجلسة.
+              </label>
             </div>
+
+            {payError ? (
+              <div className="ma-alert ma-alert--warning" role="alert">
+                <Info aria-hidden="true" className="fill-none" />
+                <div>
+                  <p className="ma-alert__text">{payError}</p>
+                </div>
+              </div>
+            ) : null}
+
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <BackButton onClick={() => setStep("pick")} label="تغيير الموعد" />
-              <button type="button" onClick={close} className="ma-btn ma-btn--secondary">
-                تم
+              <button
+                type="button"
+                onClick={pay}
+                disabled={!accepted || paying}
+                className="ma-btn ma-btn--primary disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {paying ? "جارٍ تجهيز الدفع…" : "المتابعة إلى الدفع"}
               </button>
             </div>
           </div>

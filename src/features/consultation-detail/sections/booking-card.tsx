@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { actionsFor } from "@/components/shop/card-actions-for";
 
 import { BookingButton } from "../components/booking-button";
+import { consultationProductRef } from "../model/availability";
 import { sessionsLabel } from "../model/facts";
 import type { BookingVM, ConsultationDetailVM } from "../model/types";
 
@@ -16,10 +17,10 @@ export function BookingCard({ consultation, share }: { consultation: Consultatio
     title: consultation.title,
     href: consultation.href,
     price: consultation.price,
-    sessions: consultation.sessions,
+    priceAmount: consultation.priceAmount,
     sessionLength: consultation.sessionLength,
-    availability: consultation.availability,
     expertName: expert?.name ?? null,
+    productRef: consultationProductRef(consultation.id),
   };
   const facts = [
     sessions ? { icon: CalendarClock, label: sessions } : null,

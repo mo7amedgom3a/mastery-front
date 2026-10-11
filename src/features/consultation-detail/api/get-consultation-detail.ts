@@ -20,7 +20,6 @@ import { cachedRead, valueOf } from "@/lib/api/server-cache";
 import { mapConsultationDetailData } from "../model/mappers";
 import type { ConsultationDetailData } from "../model/types";
 import { getConsultationIndex } from "./get-consultation-index";
-import { getConsultationAvailability } from "./mock-availability";
 
 /** Keep in sync with the consultation page's `revalidate`. */
 const CONSULTATION_REVALIDATE_SECONDS = 300;
@@ -75,7 +74,6 @@ export const getConsultationDetail = cache(async (id: number): Promise<Consultat
   return mapConsultationDetailData({
     detail,
     expert: valueOf(expert, `consultation ${id} expert`),
-    availability: getConsultationAvailability(id, detail.consultation.session_duration),
     consultations: valueOf(consultations, "consultation index"),
     related: valueOf(related, `consultation ${id} related`),
     recommendations: valueOf(recommendations, `consultation ${id} recommendations`),

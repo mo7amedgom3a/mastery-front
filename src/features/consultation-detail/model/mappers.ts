@@ -24,7 +24,7 @@ import type {
 import { cleanText, formatMinutes, stripHonorific, toPlainText, toTextBlocks } from "@/lib/format";
 
 import { sessionsLabel } from "./facts";
-import type { AvailabilityVM, ConsultationDetailData, ConsultationDetailVM, ExpertVM } from "./types";
+import type { ConsultationDetailData, ConsultationDetailVM, ExpertVM } from "./types";
 
 type DetailDto = LegacyConsultationResponse;
 /** The consultant's public profile (`/legacy/experts/{expert_key}`): who they are and what else they offer. */
@@ -60,7 +60,6 @@ export function mapExpert(dto: DetailDto["consultation"], expert: ExpertDto | nu
 export function mapConsultationDetail(
   dto: DetailDto,
   expert: ExpertDto | null,
-  availability: AvailabilityVM,
 ): ConsultationDetailVM {
   const { consultation } = dto;
   const card = mapConsultation(consultation);
@@ -81,7 +80,6 @@ export function mapConsultationDetail(
     sessionLength: formatMinutes(consultation.session_duration),
     sections: info.map(mapInfo).filter((section): section is InfoSectionVM => section !== null),
     expert: mapExpert(consultation, expert),
-    availability,
     href: card.href,
     indexable: consultation.active,
   };
@@ -113,7 +111,6 @@ export type ConsultationDetailSources = {
   detail: DetailDto;
   /** The consultant's profile, with their other consultations and what they teach. */
   expert: ExpertDto | null;
-  availability: AvailabilityVM;
   /** Every consultation, for rebuilding recommendation cards and topping up the rail. */
   consultations: ConsultationIndex | null;
   related: LegacyRelatedResponse | null;
@@ -125,14 +122,13 @@ export type ConsultationDetailSources = {
 export function mapConsultationDetailData({
   detail,
   expert,
-  availability,
   consultations,
   related,
   recommendations,
   catalog,
   instructors,
 }: ConsultationDetailSources): ConsultationDetailData {
-  const consultation = mapConsultationDetail(detail, expert, availability);
+  const consultation = mapConsultationDetail(detail, expert);
   const seen = new Set([`consultation:${consultation.id}`]);
   const recommended = recommendations?.items ?? [];
   const all = [...(consultations?.values() ?? [])].filter(isPublishable);

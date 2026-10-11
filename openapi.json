@@ -6293,6 +6293,922 @@
           }
         }
       }
+    },
+    "/api/v1/consultations/products/{product_ref}/availability": {
+      "get": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "Consultation Availability",
+        "operationId": "consultation_availability_api_v1_consultations_products__product_ref__availability_get",
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Product Ref"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailabilityResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consultations/bookings": {
+      "post": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "Create Booking Checkout",
+        "operationId": "create_booking_checkout_api_v1_consultations_bookings_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingCheckoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingCheckoutResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consultations/bookings/me": {
+      "get": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "My Bookings",
+        "operationId": "my_bookings_api_v1_consultations_bookings_me_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BookingResponse"
+                  },
+                  "title": "Response My Bookings Api V1 Consultations Bookings Me Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consultations/bookings/{booking_id}": {
+      "get": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "Booking Detail",
+        "operationId": "booking_detail_api_v1_consultations_bookings__booking_id__get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consultations/bookings/{booking_id}/join": {
+      "post": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "Join Booking",
+        "operationId": "join_booking_api_v1_consultations_bookings__booking_id__join_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consultations/bookings/{booking_id}/recording": {
+      "get": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "Booking Recording",
+        "operationId": "booking_recording_api_v1_consultations_bookings__booking_id__recording_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordingResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me": {
+      "get": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Expert Profile",
+        "operationId": "expert_profile_api_v1_experts_me_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsultantProfileResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me/slots": {
+      "get": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Expert Slots",
+        "operationId": "expert_slots_api_v1_experts_me_slots_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SlotResponse"
+                  },
+                  "title": "Response Expert Slots Api V1 Experts Me Slots Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Create Expert Slots",
+        "operationId": "create_expert_slots_api_v1_experts_me_slots_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSlotsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSlotsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me/slots/{slot_id}": {
+      "delete": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Delete Expert Slot",
+        "operationId": "delete_expert_slot_api_v1_experts_me_slots__slot_id__delete",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Slot Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me/bookings": {
+      "get": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Expert Bookings",
+        "operationId": "expert_bookings_api_v1_experts_me_bookings_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BookingResponse"
+                  },
+                  "title": "Response Expert Bookings Api V1 Experts Me Bookings Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me/bookings/{booking_id}/approve": {
+      "post": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Approve Booking",
+        "operationId": "approve_booking_api_v1_experts_me_bookings__booking_id__approve_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me/bookings/{booking_id}/reject": {
+      "post": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Reject Booking",
+        "operationId": "reject_booking_api_v1_experts_me_bookings__booking_id__reject_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectBookingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consultation/webhook": {
+      "post": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "Livekit Webhook",
+        "operationId": "livekit_webhook_api_v1_consultation_webhook_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveKitWebhookAckResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -14676,6 +15592,651 @@
         },
         "type": "object",
         "title": "RelatedResourcesResponse"
+      },
+      "SlotResponse": {
+        "properties": {
+          "slot_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Slot Id"
+          },
+          "starts_at": {
+            "type": "string",
+            "title": "Starts At"
+          },
+          "ends_at": {
+            "type": "string",
+            "title": "Ends At"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "is_available": {
+            "type": "boolean",
+            "title": "Is Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slot_id",
+          "starts_at",
+          "ends_at",
+          "timezone",
+          "is_available"
+        ],
+        "title": "SlotResponse"
+      },
+      "CreateSlotsRequest": {
+        "properties": {
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/SlotWindow"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Slots"
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Timezone",
+            "default": "UTC"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "slots"
+        ],
+        "title": "CreateSlotsRequest"
+      },
+      "BookingResponse": {
+        "properties": {
+          "booking_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Booking Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "product_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Title"
+          },
+          "expert_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expert Name"
+          },
+          "customer_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Name"
+          },
+          "order_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Id"
+          },
+          "scheduled_start_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled Start At"
+          },
+          "scheduled_end_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled End At"
+          },
+          "duration_minutes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Minutes"
+          },
+          "approval_deadline_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approval Deadline At"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "rejection_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Reason"
+          },
+          "join_opens_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Join Opens At"
+          },
+          "hard_stop_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hard Stop At"
+          },
+          "can_join": {
+            "type": "boolean",
+            "title": "Can Join"
+          },
+          "recording_status": {
+            "type": "string",
+            "title": "Recording Status"
+          },
+          "recording_available": {
+            "type": "boolean",
+            "title": "Recording Available"
+          },
+          "customer_joined_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Joined At"
+          },
+          "expert_joined_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expert Joined At"
+          },
+          "actual_started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Started At"
+          },
+          "actual_ended_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Ended At"
+          },
+          "server_now": {
+            "type": "string",
+            "title": "Server Now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "booking_id",
+          "role",
+          "status",
+          "product_id",
+          "product_title",
+          "expert_name",
+          "customer_name",
+          "order_id",
+          "scheduled_start_at",
+          "scheduled_end_at",
+          "duration_minutes",
+          "approval_deadline_at",
+          "approved_at",
+          "rejection_reason",
+          "join_opens_at",
+          "hard_stop_at",
+          "can_join",
+          "recording_status",
+          "recording_available",
+          "customer_joined_at",
+          "expert_joined_at",
+          "actual_started_at",
+          "actual_ended_at",
+          "server_now"
+        ],
+        "title": "BookingResponse"
+      },
+      "SlotWindow": {
+        "properties": {
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ends At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "SlotWindow"
+      },
+      "LiveKitWebhookAckResponse": {
+        "properties": {
+          "received": {
+            "type": "boolean",
+            "title": "Received",
+            "default": true
+          },
+          "result": {
+            "type": "string",
+            "title": "Result"
+          }
+        },
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "title": "LiveKitWebhookAckResponse"
+      },
+      "RejectBookingRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RejectBookingRequest"
+      },
+      "AvailabilityResponse": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "consultant_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Consultant Id"
+          },
+          "session_minutes": {
+            "type": "integer",
+            "title": "Session Minutes"
+          },
+          "max_slots": {
+            "type": "integer",
+            "title": "Max Slots"
+          },
+          "terms_version": {
+            "type": "string",
+            "title": "Terms Version"
+          },
+          "slots": {
+            "items": {
+              "$ref": "#/components/schemas/SlotResponse"
+            },
+            "type": "array",
+            "title": "Slots"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "consultant_id",
+          "session_minutes",
+          "max_slots",
+          "terms_version",
+          "slots"
+        ],
+        "title": "AvailabilityResponse"
+      },
+      "RecordingResponse": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expires_in_seconds": {
+            "type": "integer",
+            "title": "Expires In Seconds"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "expires_in_seconds",
+          "duration_seconds"
+        ],
+        "title": "RecordingResponse"
+      },
+      "CreateSlotsResponse": {
+        "properties": {
+          "created": {
+            "type": "integer",
+            "title": "Created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "created"
+        ],
+        "title": "CreateSlotsResponse"
+      },
+      "BookingCheckoutRequest": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "slot_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Slot Ids"
+          },
+          "terms_accepted": {
+            "type": "boolean",
+            "title": "Terms Accepted"
+          },
+          "terms_version": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Terms Version"
+          },
+          "success_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Success Url"
+          },
+          "cancel_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancel Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "product_id",
+          "slot_ids",
+          "terms_accepted",
+          "terms_version"
+        ],
+        "title": "BookingCheckoutRequest"
+      },
+      "DecisionResponse": {
+        "properties": {
+          "booking_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Booking Id"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "booking_id",
+          "decision"
+        ],
+        "title": "DecisionResponse"
+      },
+      "JoinResponse": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "server_url": {
+            "type": "string",
+            "title": "Server Url"
+          },
+          "room_name": {
+            "type": "string",
+            "title": "Room Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "identity": {
+            "type": "string",
+            "title": "Identity"
+          },
+          "scheduled_start_at": {
+            "type": "string",
+            "title": "Scheduled Start At"
+          },
+          "scheduled_end_at": {
+            "type": "string",
+            "title": "Scheduled End At"
+          },
+          "hard_stop_at": {
+            "type": "string",
+            "title": "Hard Stop At"
+          },
+          "server_now": {
+            "type": "string",
+            "title": "Server Now"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "server_url",
+          "room_name",
+          "role",
+          "identity",
+          "scheduled_start_at",
+          "scheduled_end_at",
+          "hard_stop_at",
+          "server_now"
+        ],
+        "title": "JoinResponse"
+      },
+      "BookingCheckoutResponse": {
+        "properties": {
+          "booking_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Booking Id"
+          },
+          "checkout": {
+            "$ref": "#/components/schemas/CheckoutSessionResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "booking_id",
+          "checkout"
+        ],
+        "title": "BookingCheckoutResponse"
+      },
+      "ConsultantProfileResponse": {
+        "properties": {
+          "consultant_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Consultant Id"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "session_minutes": {
+            "type": "integer",
+            "title": "Session Minutes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "consultant_id",
+          "display_name",
+          "session_minutes"
+        ],
+        "title": "ConsultantProfileResponse"
       }
     },
     "securitySchemes": {

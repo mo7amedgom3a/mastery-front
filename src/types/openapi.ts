@@ -1543,6 +1543,228 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/consultations/products/{product_ref}/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consultation Availability */
+        get: operations["consultation_availability_api_v1_consultations_products__product_ref__availability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consultations/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Booking Checkout */
+        post: operations["create_booking_checkout_api_v1_consultations_bookings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consultations/bookings/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My Bookings */
+        get: operations["my_bookings_api_v1_consultations_bookings_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consultations/bookings/{booking_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Booking Detail */
+        get: operations["booking_detail_api_v1_consultations_bookings__booking_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consultations/bookings/{booking_id}/join": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Join Booking */
+        post: operations["join_booking_api_v1_consultations_bookings__booking_id__join_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consultations/bookings/{booking_id}/recording": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Booking Recording */
+        get: operations["booking_recording_api_v1_consultations_bookings__booking_id__recording_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/experts/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Expert Profile */
+        get: operations["expert_profile_api_v1_experts_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/experts/me/slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Expert Slots */
+        get: operations["expert_slots_api_v1_experts_me_slots_get"];
+        put?: never;
+        /** Create Expert Slots */
+        post: operations["create_expert_slots_api_v1_experts_me_slots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/experts/me/slots/{slot_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Expert Slot */
+        delete: operations["delete_expert_slot_api_v1_experts_me_slots__slot_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/experts/me/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Expert Bookings */
+        get: operations["expert_bookings_api_v1_experts_me_bookings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/experts/me/bookings/{booking_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Booking */
+        post: operations["approve_booking_api_v1_experts_me_bookings__booking_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/experts/me/bookings/{booking_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject Booking */
+        post: operations["reject_booking_api_v1_experts_me_bookings__booking_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consultation/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Livekit Webhook */
+        post: operations["livekit_webhook_api_v1_consultation_webhook_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4103,6 +4325,224 @@ export interface components {
             consultations?: components["schemas"]["RelatedResourceCardResponse"][];
             /** Instructors */
             instructors?: components["schemas"]["RelatedInstructorCardResponse"][];
+        };
+        /** SlotResponse */
+        SlotResponse: {
+            /**
+             * Slot Id
+             * Format: uuid
+             */
+            slot_id: string;
+            /** Starts At */
+            starts_at: string;
+            /** Ends At */
+            ends_at: string;
+            /** Timezone */
+            timezone: string;
+            /** Is Available */
+            is_available: boolean;
+        };
+        /** CreateSlotsRequest */
+        CreateSlotsRequest: {
+            /** Slots */
+            slots: components["schemas"]["SlotWindow"][];
+            /**
+             * Timezone
+             * @default UTC
+             */
+            timezone: string;
+        };
+        /** BookingResponse */
+        BookingResponse: {
+            /**
+             * Booking Id
+             * Format: uuid
+             */
+            booking_id: string;
+            /** Role */
+            role: string;
+            /** Status */
+            status: string;
+            /** Product Id */
+            product_id: string | null;
+            /** Product Title */
+            product_title: string | null;
+            /** Expert Name */
+            expert_name: string | null;
+            /** Customer Name */
+            customer_name: string | null;
+            /** Order Id */
+            order_id: string | null;
+            /** Scheduled Start At */
+            scheduled_start_at: string | null;
+            /** Scheduled End At */
+            scheduled_end_at: string | null;
+            /** Duration Minutes */
+            duration_minutes: number | null;
+            /** Approval Deadline At */
+            approval_deadline_at: string | null;
+            /** Approved At */
+            approved_at: string | null;
+            /** Rejection Reason */
+            rejection_reason: string | null;
+            /** Join Opens At */
+            join_opens_at: string | null;
+            /** Hard Stop At */
+            hard_stop_at: string | null;
+            /** Can Join */
+            can_join: boolean;
+            /** Recording Status */
+            recording_status: string;
+            /** Recording Available */
+            recording_available: boolean;
+            /** Customer Joined At */
+            customer_joined_at: string | null;
+            /** Expert Joined At */
+            expert_joined_at: string | null;
+            /** Actual Started At */
+            actual_started_at: string | null;
+            /** Actual Ended At */
+            actual_ended_at: string | null;
+            /** Server Now */
+            server_now: string;
+        };
+        /** SlotWindow */
+        SlotWindow: {
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+        };
+        /** LiveKitWebhookAckResponse */
+        LiveKitWebhookAckResponse: {
+            /**
+             * Received
+             * @default true
+             */
+            received: boolean;
+            /** Result */
+            result: string;
+        };
+        /** RejectBookingRequest */
+        RejectBookingRequest: {
+            /** Reason */
+            reason?: string | null;
+        };
+        /** AvailabilityResponse */
+        AvailabilityResponse: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Consultant Id
+             * Format: uuid
+             */
+            consultant_id: string;
+            /** Session Minutes */
+            session_minutes: number;
+            /** Max Slots */
+            max_slots: number;
+            /** Terms Version */
+            terms_version: string;
+            /** Slots */
+            slots: components["schemas"]["SlotResponse"][];
+        };
+        /** RecordingResponse */
+        RecordingResponse: {
+            /** Url */
+            url: string;
+            /** Expires In Seconds */
+            expires_in_seconds: number;
+            /** Duration Seconds */
+            duration_seconds: number | null;
+        };
+        /** CreateSlotsResponse */
+        CreateSlotsResponse: {
+            /** Created */
+            created: number;
+        };
+        /** BookingCheckoutRequest */
+        BookingCheckoutRequest: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Slot Ids */
+            slot_ids: string[];
+            /** Terms Accepted */
+            terms_accepted: boolean;
+            /** Terms Version */
+            terms_version: string;
+            /** Success Url */
+            success_url?: string | null;
+            /** Cancel Url */
+            cancel_url?: string | null;
+        };
+        /** DecisionResponse */
+        DecisionResponse: {
+            /**
+             * Booking Id
+             * Format: uuid
+             */
+            booking_id: string;
+            /** Decision */
+            decision: string;
+            /**
+             * Accepted
+             * @default true
+             */
+            accepted: boolean;
+        };
+        /** JoinResponse */
+        JoinResponse: {
+            /** Token */
+            token: string;
+            /** Server Url */
+            server_url: string;
+            /** Room Name */
+            room_name: string;
+            /** Role */
+            role: string;
+            /** Identity */
+            identity: string;
+            /** Scheduled Start At */
+            scheduled_start_at: string;
+            /** Scheduled End At */
+            scheduled_end_at: string;
+            /** Hard Stop At */
+            hard_stop_at: string;
+            /** Server Now */
+            server_now: string;
+        };
+        /** BookingCheckoutResponse */
+        BookingCheckoutResponse: {
+            /**
+             * Booking Id
+             * Format: uuid
+             */
+            booking_id: string;
+            checkout: components["schemas"]["CheckoutSessionResponse"];
+        };
+        /** ConsultantProfileResponse */
+        ConsultantProfileResponse: {
+            /**
+             * Consultant Id
+             * Format: uuid
+             */
+            consultant_id: string;
+            /** Display Name */
+            display_name: string | null;
+            /** Session Minutes */
+            session_minutes: number;
         };
     };
     responses: never;
@@ -7278,6 +7718,470 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    consultation_availability_api_v1_consultations_products__product_ref__availability_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path: {
+                product_ref: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_booking_checkout_api_v1_consultations_bookings_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingCheckoutRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingCheckoutResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    my_bookings_api_v1_consultations_bookings_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    booking_detail_api_v1_consultations_bookings__booking_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    join_booking_api_v1_consultations_bookings__booking_id__join_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JoinResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    booking_recording_api_v1_consultations_bookings__booking_id__recording_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordingResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    expert_profile_api_v1_experts_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultantProfileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    expert_slots_api_v1_experts_me_slots_get: {
+        parameters: {
+            query?: {
+                from?: string | null;
+                to?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlotResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_expert_slots_api_v1_experts_me_slots_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSlotsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateSlotsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_expert_slot_api_v1_experts_me_slots__slot_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slot_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    expert_bookings_api_v1_experts_me_bookings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_booking_api_v1_experts_me_bookings__booking_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reject_booking_api_v1_experts_me_bookings__booking_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectBookingRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    livekit_webhook_api_v1_consultation_webhook_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveKitWebhookAckResponse"];
                 };
             };
             /** @description Validation Error */
