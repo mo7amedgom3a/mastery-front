@@ -22,8 +22,9 @@ const s3Buckets = ["course", "curriculum", "consultant", "category", "instructor
   hostname: "s3.eu-west-1.amazonaws.com",
   pathname: `/${bucket}.emasteryacademy.com/**`,
 }));
-const disableImageOptimization =
-  process.env.NEXT_DISABLE_IMAGE_OPTIMIZATION === "true";
+// Opt-in while in development: the Vercel image-optimization quota is used up, and past it Vercel
+// stops serving some images. Set NEXT_ENABLE_IMAGE_OPTIMIZATION=true on the production deployment.
+const enableImageOptimization = process.env.NEXT_ENABLE_IMAGE_OPTIMIZATION === "true";
 // Bunny Stream thumbnails for promo-video posters (the library's CDN host, see .env.example).
 const bunnyCdnHostname = process.env.BUNNY_CDN_HOSTNAME?.trim();
 
@@ -82,10 +83,9 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    // Keep the optimizer on: the upstream portraits/covers are 500-800 KB PNGs, and serving them
-    // raw pushed mobile LCP past 20 s. Set NEXT_DISABLE_IMAGE_OPTIMIZATION=true only where the
-    // optimizer cannot run (it then serves the originals).
-    unoptimized: disableImageOptimization,
+    // Production must run the optimizer: the upstream portraits/covers are 500-800 KB PNGs, and
+    // serving them raw pushed mobile LCP past 20 s (see enableImageOptimization above).
+    unoptimized: !enableImageOptimization,
     formats: ["image/avif", "image/webp"],
     // 60 for decorative/background imagery (hero portrait grid), 75 is the default everywhere else.
     qualities: [60, 75],
