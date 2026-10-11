@@ -5,6 +5,7 @@ import { buttonClass } from "@/components/ui/button";
 import { DURATION_FILTER_ENABLED, type SearchState } from "../model/params";
 import type { FacetGroupVM, TrainerOptionVM } from "../model/types";
 import { FacetChip } from "./facet-chip";
+import { FreeFilterChip } from "./free-filter-chip";
 import { RangeFilter } from "./range-filter";
 import { SearchForm } from "./search-nav";
 import { StateInputs } from "./state-inputs";
@@ -23,7 +24,7 @@ type FilterPanelProps = {
 };
 
 /**
- * Every filter in one drawer: the four facets as chips, then trainer, price and duration. A native
+ * Every filter in one drawer: the four facets as chips, then trainer, price (or "free") and duration. A native
  * popover (opens without JavaScript, closes on Escape or a click outside): a side sheet from 600px
  * up, full screen on phones (see `.filter-drawer`). Each change applies at once and the drawer stays
  * open, so filters can be combined while the results update behind it.
@@ -65,6 +66,13 @@ export function FilterPanel({ state, facets, showCounts, trainers }: FilterPanel
           );
         })}
 
+        <div role="group" aria-labelledby="filters-free">
+          <h3 id="filters-free" className="ma-label m-0 mb-3">
+            المحتوى المجاني
+          </h3>
+          <FreeFilterChip state={state} />
+        </div>
+
         <SearchForm className="flex flex-col gap-8">
           <StateInputs state={state} omit={OWN_PARAMS} />
 
@@ -75,15 +83,18 @@ export function FilterPanel({ state, facets, showCounts, trainers }: FilterPanel
             </fieldset>
           ) : null}
 
-          <RangeFilter
-            legend="السعر"
-            unit="دولار"
-            minName="price_min"
-            maxName="price_max"
-            min={state.priceMin}
-            max={state.priceMax}
-            step={1}
-          />
+          {/* "Free" pins the price; a range beside it would only contradict it. */}
+          {state.free ? null : (
+            <RangeFilter
+              legend="السعر"
+              unit="دولار"
+              minName="price_min"
+              maxName="price_max"
+              min={state.priceMin}
+              max={state.priceMax}
+              step={1}
+            />
+          )}
 
           {DURATION_FILTER_ENABLED ? (
             <RangeFilter

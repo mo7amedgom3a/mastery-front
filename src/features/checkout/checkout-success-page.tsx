@@ -79,6 +79,8 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
 
   const status = intent.data?.status;
   const paid = status === "succeeded";
+  // Free enrollments settle at once with a 0.00 total; only the wording differs.
+  const free = intent.data?.amount_minor === 0;
   const failed = status === "failed" || status === "cancelled";
 
   const order = useQuery({ ...commerceQueries.order(orderId), enabled: paid });
@@ -148,11 +150,22 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
     <div className="flex flex-col gap-10">
       <header className="flex flex-col items-start gap-4 rounded-panel border border-line-strong bg-surface p-6 md:p-10">
         <CircleCheck aria-hidden="true" className="size-12 fill-none text-accent" />
-        <h2 className="m-0 text-3xl leading-[1.4] font-bold">شكراً لك! تمّ الدفع بنجاح</h2>
-        <p className="m-0 max-w-[60ch] leading-7 text-fg-muted">
-          أصبح طلبك جاهزاً، وفُتح لك الوصول إلى ما اشتريته. أرسلنا الفاتورة إلى بريدك الإلكتروني، ويمكنك تنزيلها من هنا
-          أيضاً في أي وقت.
-        </p>
+        {free ? (
+          <>
+            <h2 className="m-0 text-3xl leading-[1.4] font-bold">أهلاً بك! تمّ تسجيلك مجاناً</h2>
+            <p className="m-0 max-w-[60ch] leading-7 text-fg-muted">
+              فُتح لك الوصول فوراً ويمكنك البدء الآن. أرسلنا تأكيد التسجيل إلى بريدك الإلكتروني، وتجد فاتورته هنا أيضاً.
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className="m-0 text-3xl leading-[1.4] font-bold">شكراً لك! تمّ الدفع بنجاح</h2>
+            <p className="m-0 max-w-[60ch] leading-7 text-fg-muted">
+              أصبح طلبك جاهزاً، وفُتح لك الوصول إلى ما اشتريته. أرسلنا الفاتورة إلى بريدك الإلكتروني، ويمكنك تنزيلها من
+              هنا أيضاً في أي وقت.
+            </p>
+          </>
+        )}
         {detail ? (
           <dl className="m-0 flex flex-wrap gap-x-8 gap-y-2 text-sm">
             <div className="flex gap-2">

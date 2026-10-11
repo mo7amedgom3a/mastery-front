@@ -448,6 +448,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/checkout/free-enrollments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Free Enrollment
+         * @description Enroll in a zero-priced product: paid order, invoice and access, no payment.
+         */
+        post: operations["create_free_enrollment_api_v1_checkout_free_enrollments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -2458,6 +2478,36 @@ export interface components {
             answer: string | null;
             /** Link */
             link: string | null;
+        };
+        /** FreeEnrollmentRequest */
+        FreeEnrollmentRequest: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+        };
+        /** FreeEnrollmentResponse */
+        FreeEnrollmentResponse: {
+            /** Order Id */
+            order_id: string | null;
+            /** Payment Intent Id */
+            payment_intent_id: string | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Provider */
+            provider: string;
+            /** Amount Minor */
+            amount_minor: number;
+            /** Currency Code */
+            currency_code: string;
+            /** Status */
+            status: string;
+            /** Already Owned */
+            already_owned: boolean;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -4930,6 +4980,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CheckoutSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_free_enrollment_api_v1_checkout_free_enrollments_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FreeEnrollmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FreeEnrollmentResponse"];
                 };
             };
             /** @description Validation Error */

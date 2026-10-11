@@ -52,6 +52,8 @@ export type SearchState = {
   trainers: number[];
   /** Only products taught by an expert trainer. */
   expert: boolean;
+  /** Only free products (checkout price 0). Replaces the price range while on. */
+  free: boolean;
   priceMin: number | null;
   priceMax: number | null;
   hoursMin: number | null;
@@ -70,6 +72,7 @@ export const emptySearchState: SearchState = {
   tags: [],
   trainers: [],
   expert: false,
+  free: false,
   priceMin: null,
   priceMax: null,
   hoursMin: null,
@@ -133,7 +136,9 @@ export function parseSearchParams(raw: RawSearchParams): SearchState {
       .filter((value) => /^[1-9]\d{0,8}$/.test(value))
       .map(Number),
   );
-  const [priceMin, priceMax] = range(amount(raw, "price_min"), amount(raw, "price_max"));
+  const free = first(raw, "free") === "1";
+  // "Free" already pins the price, so a range next to it is dropped instead of contradicting it.
+  const [priceMin, priceMax] = free ? [null, null] : range(amount(raw, "price_min"), amount(raw, "price_max"));
   const [hoursMin, hoursMax] = DURATION_FILTER_ENABLED
     ? range(amount(raw, "hours_min"), amount(raw, "hours_max"))
     : [null, null];
@@ -149,6 +154,7 @@ export function parseSearchParams(raw: RawSearchParams): SearchState {
     tags: slugs(raw, "tag"),
     trainers,
     expert: first(raw, "expert") === "1",
+    free,
     priceMin,
     priceMax,
     hoursMin,
@@ -187,6 +193,7 @@ export function searchEntries(state: SearchState): [string, string][] {
   for (const tag of state.tags) entries.push(["tag", tag]);
   for (const trainer of state.trainers) entries.push(["trainer", String(trainer)]);
   if (state.expert) entries.push(["expert", "1"]);
+  if (state.free) entries.push(["free", "1"]);
   if (state.priceMin !== null) entries.push(["price_min", String(state.priceMin)]);
   if (state.priceMax !== null) entries.push(["price_max", String(state.priceMax)]);
   if (state.hoursMin !== null) entries.push(["hours_min", String(state.hoursMin)]);
@@ -203,6 +210,11 @@ export const SEARCH_PATH = "/search";
 export function searchHref(state: SearchState): Route {
   const query = new URLSearchParams(searchEntries(state)).toString().replaceAll("%2F", "/");
   return (query ? `${SEARCH_PATH}?${query}` : SEARCH_PATH) as Route;
+}
+
+/** The search with "free only" switched; switching it on clears any price range. */
+export function freeToggleHref(state: SearchState): Route {
+  return searchHref(withFilters(state, { free: !state.free, priceMin: null, priceMax: null }));
 }
 
 /** A changed filter always starts again from the first page. */
@@ -223,6 +235,7 @@ export function hasFilters(state: SearchState): boolean {
     state.tags.length > 0 ||
     state.trainers.length > 0 ||
     state.expert ||
+    state.free ||
     state.priceMin !== null ||
     state.priceMax !== null ||
     state.hoursMin !== null ||
@@ -247,6 +260,7 @@ export function isIndexableState(state: SearchState): boolean {
     state.tags.length === 0 &&
     state.trainers.length === 0 &&
     !state.expert &&
+    !state.free &&
     state.priceMin === null &&
     state.priceMax === null &&
     state.hoursMin === null &&
@@ -280,8 +294,8 @@ function filterParams(state: SearchState) {
     tag: state.tags,
     trainer_id: state.trainers,
     expert_instructor_only: state.expert || undefined,
-    min_price: state.priceMin ?? undefined,
-    max_price: state.priceMax ?? undefined,
+    min_price: state.free ? undefined : (state.priceMin ?? undefined),
+    max_price: state.free ? 0 : (state.priceMax ?? undefined),
     min_duration_minutes: state.hoursMin === null ? undefined : Math.round(state.hoursMin * 60),
     max_duration_minutes: state.hoursMax === null ? undefined : Math.round(state.hoursMax * 60),
   } satisfies SearchOptionsParams;

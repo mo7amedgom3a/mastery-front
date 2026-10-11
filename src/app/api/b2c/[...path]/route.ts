@@ -26,7 +26,7 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^cart$/, session: true },
   { methods: ["POST"], pattern: /^cart\/items$/, session: true },
   { methods: ["PATCH", "DELETE"], pattern: /^cart\/items\/[A-Za-z0-9-]+$/, session: true },
-  { methods: ["POST"], pattern: /^checkout\/(quote|sessions)$/, session: true },
+  { methods: ["POST"], pattern: /^checkout\/(quote|sessions|free-enrollments)$/, session: true },
   { methods: ["GET"], pattern: /^payments\/intents\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^payments\/intents\/[A-Za-z0-9-]+\/reconcile$/, session: true },
   { methods: ["GET"], pattern: /^orders(\/[A-Za-z0-9-]+(\/(invoices|transactions))?)?$/, session: true },

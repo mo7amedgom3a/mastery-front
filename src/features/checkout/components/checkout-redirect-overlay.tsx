@@ -4,11 +4,22 @@ import { Lock } from "lucide-react";
 
 import type { CheckoutPhase } from "../api/use-start-checkout";
 
+type CheckoutRedirectOverlayProps = {
+  phase: CheckoutPhase;
+  /** Wording for flows that do not end on the payment page (e.g. free enrollment). */
+  preparingText?: string;
+  redirectingText?: string;
+};
+
 /**
  * Covers the page while the order and the Stripe session are being created, and until the browser
  * has left for Stripe: nothing else can be pressed meanwhile, and the visitor sees why they wait.
  */
-export function CheckoutRedirectOverlay({ phase }: { phase: CheckoutPhase }) {
+export function CheckoutRedirectOverlay({
+  phase,
+  preparingText = "جارٍ تجهيز طلبك…",
+  redirectingText = "جارٍ تحويلك إلى صفحة الدفع الآمنة…",
+}: CheckoutRedirectOverlayProps) {
   if (phase === "idle") return null;
   return (
     <div
@@ -21,7 +32,7 @@ export function CheckoutRedirectOverlay({ phase }: { phase: CheckoutPhase }) {
           <Lock className="size-6 fill-none" />
         </span>
         <p className="m-0 text-lg font-bold">
-          {phase === "redirecting" ? "جارٍ تحويلك إلى صفحة الدفع الآمنة…" : "جارٍ تجهيز طلبك…"}
+          {phase === "redirecting" ? redirectingText : preparingText}
         </p>
         <p className="m-0 text-sm leading-6 text-fg-muted">لا تغلق الصفحة ولا تضغط زر الرجوع.</p>
       </div>

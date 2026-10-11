@@ -14,7 +14,7 @@ import { productCacheTag } from "@/features/product-detail/api/get-product-detai
 import { courseCard, packageCard } from "@/features/product-detail/model/mappers";
 import type { RailCardVM } from "@/features/product-detail/model/types";
 import { getInstructorNames } from "@/lib/api/instructor-names";
-import { getLegacyPackage } from "@/lib/api/legacy";
+import { getLegacyCourse, getLegacyPackage } from "@/lib/api/legacy";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
 import { toPricing, type PriceRow } from "@/lib/pricing";
 import { parseShopKey, type ResolveItemsResponse, type ResolvedItem } from "@/lib/shop/contract";
@@ -96,6 +96,8 @@ export async function resolveItems(keys: readonly string[]): Promise<ResolveItem
   });
 
   const items: ResolvedItem[] = [];
+  /** Courses and diplomas the catalog list doesn't carry: it skips inactive ones (an old cohort). */
+  const offList: { key: string; id: number }[] = [];
   for (const { key, kind, id } of wanted) {
     if (kind === "consultation") {
       const dto = consultations?.get(id);
@@ -117,9 +119,32 @@ export async function resolveItems(keys: readonly string[]): Promise<ResolveItem
         items.push(toResolved(key, courseCard(dto, instructors), isPublishable(dto), priceAmounts(dto)));
         continue;
       }
+      offList.push({ key, id });
+      continue;
     }
     missing.add(key);
   }
+
+  // Their own detail still has the name and artwork (a student who bought one keeps seeing it);
+  // they stay unavailable, so nobody can buy them again.
+  const details = await Promise.allSettled(
+    offList.map(({ id }) =>
+      getLegacyCourse(
+        id,
+        cachedRead(REVALIDATE_SECONDS, [productCacheTag("course", id), productCacheTag("diploma", id)]),
+        { include_inactive: true },
+      ),
+    ),
+  );
+  details.forEach((result, index) => {
+    const { key } = offList[index];
+    if (result.status !== "fulfilled") {
+      missing.add(key);
+      return;
+    }
+    const dto = result.value.course;
+    items.push(toResolved(key, courseCard(dto, instructors), false, priceAmounts(dto)));
+  });
 
   return { items, missing: [...missing] };
 }

@@ -202,7 +202,7 @@ export async function SearchResults({ state, catalog, heading, isRoot }: SearchR
 
       <div className="min-w-0">
         <section aria-label="الفلاتر" className="space-y-4">
-          <FacetBar facets={view.facets} showCounts={showCounts} activeCount={view.activeFilters.length} />
+          <FacetBar state={state} facets={view.facets} showCounts={showCounts} activeCount={view.activeFilters.length} />
           <ActiveFilters state={state} filters={view.activeFilters} />
         </section>
         <FilterPanel state={state} facets={view.facets} showCounts={showCounts} trainers={catalog.trainers} />

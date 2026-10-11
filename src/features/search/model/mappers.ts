@@ -196,6 +196,9 @@ export function mapActiveFilters(state: SearchState, catalog: SearchCatalog): Ac
   if (state.expert) {
     filters.push({ key: "expert", label: "مدرّبون خبراء فقط", href: without({ expert: false }) });
   }
+  if (state.free) {
+    filters.push({ key: "free", label: "مجاني فقط", href: without({ free: false }) });
+  }
   if (state.priceMin !== null || state.priceMax !== null) {
     filters.push({
       key: "price",

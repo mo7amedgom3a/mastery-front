@@ -27,7 +27,7 @@ import type {
 } from "@/lib/api/commerce";
 import { formatCount, formatDate, formatDateTime, fromMinor } from "@/lib/format";
 import { shopItemHref, shopKeyFromSlug } from "@/lib/shop/product-links";
-import { parseShopKey } from "@/lib/shop/contract";
+import { parseShopKey, type ResolvedItem } from "@/lib/shop/contract";
 import { kindLabel } from "@/lib/shop/labels";
 import { cn } from "@/lib/cn";
 
@@ -44,7 +44,10 @@ function productLink(slug: string | null | undefined): { href: Route; kind: stri
     : null;
 }
 
-export function OrderLines({ order }: { order: OrderDetailResponse }) {
+const THUMB_SIZES = "(min-width: 600px) 144px, 96px";
+
+/** What the order bought, each line with its cover when the catalog knows the product. */
+export function OrderLines({ order, artwork }: { order: OrderDetailResponse; artwork?: ReadonlyMap<string, ResolvedItem> }) {
   const lines = order.lines ?? [];
   return (
     <section aria-labelledby="order-lines-title" className="flex flex-col gap-4">
@@ -52,23 +55,38 @@ export function OrderLines({ order }: { order: OrderDetailResponse }) {
         المنتجات
       </h2>
       <ul className="m-0 flex list-none flex-col divide-y divide-line rounded-panel border border-line p-0">
-        {lines.map((line) => {
+        {lines.map((line, index) => {
           const link = productLink(line.slug);
-          const title = line.title ?? line.slug ?? "منتج";
+          const known = line.slug ? artwork?.get(line.slug) : undefined;
+          const title = known?.title ?? line.title ?? line.slug ?? "منتج";
           return (
-            <li key={line.order_item_id} className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 p-4">
-              <div className="flex min-w-0 flex-col items-start gap-1">
-                {link ? <span className="ma-tag ma-tag--soft">{link.kind}</span> : null}
-                {link ? (
-                  <AppLink href={link.href} className="font-bold text-fg no-underline hover:underline">
-                    {title}
-                  </AppLink>
-                ) : (
-                  <span className="font-bold">{title}</span>
+            <li key={line.order_item_id} className="flex items-center gap-4 p-4">
+              <div
+                className={cn(
+                  "relative grid aspect-[16/10] w-24 shrink-0 place-items-center overflow-hidden rounded-photo sm:w-36",
+                  brandBg[brandColorAt(index)],
                 )}
-                {line.quantity > 1 ? <span className="text-sm text-fg-muted">الكمية: {line.quantity}</span> : null}
+              >
+                {known?.image ? (
+                  <Image src={known.image} alt="" fill sizes={THUMB_SIZES} className="object-cover" />
+                ) : (
+                  <PlayCircle aria-hidden="true" className="size-8 fill-none text-ink" strokeWidth={1.5} />
+                )}
               </div>
-              <Money amount={fromMinor(line.total_amount_minor)} className="font-bold" />
+              <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                <div className="flex min-w-0 flex-col items-start gap-1">
+                  {link ? <span className="ma-tag ma-tag--soft">{link.kind}</span> : null}
+                  {link ? (
+                    <AppLink href={link.href} className="font-bold text-fg no-underline hover:underline">
+                      {title}
+                    </AppLink>
+                  ) : (
+                    <span className="font-bold">{title}</span>
+                  )}
+                  {line.quantity > 1 ? <span className="text-sm text-fg-muted">الكمية: {line.quantity}</span> : null}
+                </div>
+                <Money amount={fromMinor(line.total_amount_minor)} className="font-bold" />
+              </div>
             </li>
           );
         })}

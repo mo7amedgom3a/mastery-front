@@ -13,6 +13,7 @@ type AddCartItemOperation = "add_cart_item_api_v1_cart_items_post";
 type UpdateCartItemOperation = "update_cart_item_api_v1_cart_items__cart_item_id__patch";
 type QuoteOperation = "checkout_quote_api_v1_checkout_quote_post";
 type CreateCheckoutOperation = "create_checkout_session_api_v1_checkout_sessions_post";
+type FreeEnrollmentOperation = "create_free_enrollment_api_v1_checkout_free_enrollments_post";
 type PaymentIntentOperation = "payment_intent_status_api_v1_payments_intents__payment_intent_id__get";
 type ReconcileOperation = "reconcile_payment_intent_api_v1_payments_intents__payment_intent_id__reconcile_post";
 type ListOrdersOperation = "list_orders_api_v1_orders_get";
@@ -27,6 +28,7 @@ export type CartItemRequest = RequestBody<AddCartItemOperation>;
 export type CheckoutQuoteResponse = SuccessResponse<QuoteOperation>;
 export type CheckoutSessionRequest = RequestBody<CreateCheckoutOperation>;
 export type CheckoutSessionResponse = SuccessResponse<CreateCheckoutOperation>;
+export type FreeEnrollmentResponse = SuccessResponse<FreeEnrollmentOperation>;
 export type PaymentIntentStatusResponse = SuccessResponse<PaymentIntentOperation>;
 export type OrdersParams = QueryParams<ListOrdersOperation>;
 export type OrderPageResponse = SuccessResponse<ListOrdersOperation>;
@@ -51,6 +53,7 @@ const commercePaths = {
   cartItem: "/api/v1/cart/items/{cart_item_id}",
   quote: "/api/v1/checkout/quote",
   sessions: "/api/v1/checkout/sessions",
+  freeEnrollments: "/api/v1/checkout/free-enrollments",
   paymentIntent: "/api/v1/payments/intents/{payment_intent_id}",
   reconcile: "/api/v1/payments/intents/{payment_intent_id}/reconcile",
   orders: "/api/v1/orders",
@@ -126,6 +129,22 @@ export function createCheckoutSession(
     ...withAuthCookies(options),
     headers: { "Idempotency-Key": idempotencyKey },
     body,
+  });
+}
+
+/**
+ * Enrolls in a zero-priced product: the backend creates a paid 0.00 order, its invoice and the
+ * access right away, with no payment step. Refused with `product_not_free` if the price is not 0.
+ */
+export function enrollFree(
+  productId: RequestBody<FreeEnrollmentOperation>["product_id"],
+  idempotencyKey: string,
+  options?: AuthenticatedRequestOptions,
+): Promise<FreeEnrollmentResponse> {
+  return customerRequest<FreeEnrollmentResponse>("POST", commercePaths.freeEnrollments, {
+    ...withAuthCookies(options),
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: { product_id: productId },
   });
 }
 

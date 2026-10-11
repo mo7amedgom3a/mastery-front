@@ -3,9 +3,11 @@ import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { formatNumber } from "@/lib/format";
 
+import type { SearchState } from "../model/params";
 import type { FacetGroupVM } from "../model/types";
 import { DismissDetails } from "./dismiss-details";
 import { FacetChip } from "./facet-chip";
+import { FreeFilterChip } from "./free-filter-chip";
 import { FILTER_PANEL_ID } from "./filter-panel";
 
 /** One dropdown open at a time: `<details>` elements sharing a name close each other. */
@@ -23,6 +25,7 @@ function Count({ value }: { value: number }) {
 }
 
 type FacetBarProps = {
+  state: SearchState;
   facets: FacetGroupVM[];
   showCounts: boolean;
   /** Filters in force, shown on the "all filters" button. */
@@ -30,12 +33,12 @@ type FacetBarProps = {
 };
 
 /**
- * The quick filters as one line above the results: a dropdown per facet (type, field, skill, tag)
- * and a button for the drawer that holds every filter. Closed, the bar is a single row; an open
+ * The quick filters as one line above the results: a dropdown per facet (type, field, skill, tag),
+ * a "free" toggle, and a button for the drawer that holds every filter. Closed, the bar is a single row; an open
  * dropdown lays its options over the results instead of pushing them down. Every option is a link
  * to the search with it toggled, and the dropdown stays open so several can be picked.
  */
-export function FacetBar({ facets, showCounts, activeCount }: FacetBarProps) {
+export function FacetBar({ state, facets, showCounts, activeCount }: FacetBarProps) {
   return (
     // `relative`: the open dropdown spans the bar's full width, whichever button opened it.
     <div className="relative flex flex-wrap items-center gap-2">
@@ -67,6 +70,8 @@ export function FacetBar({ facets, showCounts, activeCount }: FacetBarProps) {
           </details>
         );
       })}
+
+      <FreeFilterChip state={state} />
 
       <button type="button" popoverTarget={FILTER_PANEL_ID} className={cn(trigger, "ms-auto")}>
         <SlidersHorizontal aria-hidden="true" className="size-4 fill-none" />
