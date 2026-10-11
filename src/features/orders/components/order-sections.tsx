@@ -10,7 +10,7 @@ import type {
   OrderTransactionResponse,
 } from "@/lib/api/commerce";
 import { formatCount, formatDate, formatDateTime, fromMinor } from "@/lib/format";
-import { shopItemHref, shopKeyFromSlug } from "@/lib/shop/catalog-ids";
+import { shopItemHref, shopKeyFromSlug } from "@/lib/shop/product-links";
 import { parseShopKey } from "@/lib/shop/contract";
 import { kindLabel } from "@/lib/shop/labels";
 
@@ -148,9 +148,27 @@ function daysLeft(expiresAt: string | null | undefined, now: number): number | n
   return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - now) / DAY_MS));
 }
 
-export function AccessCard({ entitlement, now }: { entitlement: EntitlementResponse; now: number }) {
+/** Each order line's title by product slug, for naming the access an order opened. */
+export function lineTitles(order: OrderDetailResponse | undefined): Map<string, string> {
+  const titles = new Map<string, string>();
+  for (const line of order?.lines ?? []) {
+    if (line.slug && line.title) titles.set(line.slug, line.title);
+  }
+  return titles;
+}
+
+type AccessCardProps = {
+  entitlement: EntitlementResponse;
+  now: number;
+  /** The product's name when the caller knows it (e.g. from the order line). */
+  title?: string;
+};
+
+export function AccessCard({ entitlement, now, title: knownTitle }: AccessCardProps) {
   const link = productLink(entitlement.product_slug);
-  const title = entitlement.product_title ?? entitlement.product_slug ?? "منتج";
+  // The API falls back to the catalog slug (`course-4`) for untranslated products; never show it.
+  const apiTitle = entitlement.product_title !== entitlement.product_slug ? entitlement.product_title : null;
+  const title = knownTitle ?? apiTitle ?? link?.kind ?? "منتج";
   const remaining = daysLeft(entitlement.expires_at, now);
   return (
     <article className="flex flex-col gap-4 rounded-panel border border-line bg-surface p-5">

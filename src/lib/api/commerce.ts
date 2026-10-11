@@ -19,6 +19,7 @@ type ListOrdersOperation = "list_orders_api_v1_orders_get";
 type GetOrderOperation = "get_order_api_v1_orders__order_id__get";
 type OrderInvoicesOperation = "order_invoices_api_v1_orders__order_id__invoices_get";
 type ListEntitlementsOperation = "list_entitlements_api_v1_me_entitlements_get";
+type ListOwnedProductsOperation = "list_owned_products_api_v1_me_products_get";
 
 export type CartResponse = SuccessResponse<GetCartOperation>;
 export type CartLineResponse = NonNullable<CartResponse["lines"]>[number];
@@ -37,6 +38,9 @@ export type OrderInvoiceResponse = SuccessResponse<OrderInvoicesOperation>[numbe
 export type EntitlementsParams = QueryParams<ListEntitlementsOperation>;
 export type EntitlementPageResponse = SuccessResponse<ListEntitlementsOperation>;
 export type EntitlementResponse = EntitlementPageResponse["items"][number];
+export type OwnedProductsParams = QueryParams<ListOwnedProductsOperation>;
+export type OwnedProductPageResponse = SuccessResponse<ListOwnedProductsOperation>;
+export type OwnedProductResponse = OwnedProductPageResponse["items"][number];
 
 /** Single-product checkout is always charged in USD by the backend; the cart follows suit. */
 export const CHECKOUT_CURRENCY = "USD";
@@ -53,6 +57,7 @@ const commercePaths = {
   order: "/api/v1/orders/{order_id}",
   orderInvoices: "/api/v1/orders/{order_id}/invoices",
   entitlements: "/api/v1/me/entitlements",
+  ownedProducts: "/api/v1/me/products",
 } as const;
 
 export const commerceKeys = {
@@ -63,6 +68,7 @@ export const commerceKeys = {
   orders: (params?: OrdersParams) => [...commerceKeys.all, "orders", params ?? {}] as const,
   order: (id: string) => [...commerceKeys.all, "order", id] as const,
   entitlements: (params?: EntitlementsParams) => [...commerceKeys.all, "entitlements", params ?? {}] as const,
+  ownedProducts: (params?: OwnedProductsParams) => [...commerceKeys.all, "owned-products", params ?? {}] as const,
 };
 
 export function getCart(options?: AuthenticatedRequestOptions): Promise<CartResponse> {
@@ -176,6 +182,17 @@ export function listEntitlements(
   });
 }
 
+/** Products the customer bought, one row per product (its best entitlement). */
+export function listOwnedProducts(
+  params?: OwnedProductsParams,
+  options?: AuthenticatedRequestOptions,
+): Promise<OwnedProductPageResponse> {
+  return customerRequest<OwnedProductPageResponse>("GET", commercePaths.ownedProducts, {
+    ...withAuthCookies(options),
+    query: params,
+  });
+}
+
 export const commerceQueries = {
   cart: (context?: ApiRequestContext) =>
     queryOptions({
@@ -205,6 +222,12 @@ export const commerceQueries = {
     queryOptions({
       queryKey: commerceKeys.entitlements(params),
       queryFn: ({ signal }) => listEntitlements(params, { signal, context }),
+      staleTime: 30_000,
+    }),
+  ownedProducts: (params?: OwnedProductsParams, context?: ApiRequestContext) =>
+    queryOptions({
+      queryKey: commerceKeys.ownedProducts(params),
+      queryFn: ({ signal }) => listOwnedProducts(params, { signal, context }),
       staleTime: 30_000,
     }),
 };

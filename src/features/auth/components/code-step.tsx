@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { routes } from "@/config/routes";
+import { isOnboardingSkipped } from "@/features/onboarding/model/skip";
+import { getLearningProfile } from "@/lib/api/customers";
 import { resendLoginCode } from "@/lib/auth/client";
 import { useAuthStore } from "@/lib/auth/store";
 import { trackAuth } from "@/lib/observability/behavior";
@@ -22,6 +25,21 @@ type CodeStepProps = {
   next: string;
   onBack: () => void;
 };
+
+/**
+ * Where to land after signing in. With no particular destination (`/`), a customer who hasn't set up
+ * their learning profile (and didn't skip it) goes to onboarding. A real `next` (e.g. back to
+ * checkout) always wins, and a failed profile read never blocks signing in.
+ */
+async function landingPath(next: string, customerId: string): Promise<string> {
+  if (next !== "/" || isOnboardingSkipped(customerId)) return next;
+  try {
+    const profile = await getLearningProfile();
+    return profile.onboarding_completed_at ? next : routes.studentOnboarding();
+  } catch {
+    return next;
+  }
+}
 
 /** Step two of signing in: the code that was emailed. Signs in and leaves for `next`. */
 export function CodeStep({ loginName, resendAfter, next, onBack }: CodeStepProps) {
@@ -51,9 +69,11 @@ export function CodeStep({ loginName, resendAfter, next, onBack }: CodeStepProps
     }
     setFieldError(undefined);
     setPending(true);
+    let destination: string;
     try {
-      await useAuthStore.getState().verifyCode(parsed.data.code);
+      const customer = await useAuthStore.getState().verifyCode(parsed.data.code);
       trackAuth("signed_in");
+      destination = await landingPath(next, customer.customer_id);
     } catch (error) {
       setFormError(authErrorMessage(error));
       setPending(false);
@@ -62,7 +82,7 @@ export function CodeStep({ loginName, resendAfter, next, onBack }: CodeStepProps
     // Stays pending while the next page loads. No `router.refresh()` here: fired during the pending
     // navigation it re-fetches /login and briefly renders the auth chrome over the destination. Nothing
     // server-rendered depends on the session, and the destination is fetched fresh anyway.
-    router.replace(next as Route);
+    router.replace(destination as Route);
   };
 
   const resend = async () => {

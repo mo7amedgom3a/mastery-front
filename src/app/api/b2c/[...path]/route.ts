@@ -30,6 +30,8 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^payments\/intents\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^payments\/intents\/[A-Za-z0-9-]+\/reconcile$/, session: true },
   { methods: ["GET"], pattern: /^orders(\/[A-Za-z0-9-]+(\/(invoices|transactions))?)?$/, session: true },
+  // Recommendations for the signed-in customer (dashboard, after onboarding).
+  { methods: ["GET"], pattern: /^recommendations\/me$/, session: true },
 ];
 
 /** Same charset the backend accepts; anything else is dropped rather than forwarded. */

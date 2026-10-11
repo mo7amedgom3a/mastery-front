@@ -12,6 +12,8 @@ type SkillsOperation = "skills_api_v1_me_skills_get";
 type SetTargetSkillsOperation = "set_target_skills_api_v1_me_skills_put";
 type OnboardingQuestionsOperation = "onboarding_questions_api_v1_me_onboarding_questions_get";
 type CompleteOnboardingOperation = "complete_onboarding_api_v1_me_onboarding_answers_post";
+type OnboardingAnswersOperation = "onboarding_answers_api_v1_me_onboarding_answers_get";
+type AvatarUploadUrlOperation = "avatar_upload_url_api_v1_me_avatar_upload_url_post";
 type RecommendationContextOperation = "recommendation_context_api_v1_me_recommendation_context_get";
 type WishlistItemsOperation = "wishlist_items_api_v1_me_wishlist_get";
 type AddWishlistItemOperation = "add_wishlist_item_api_v1_me_wishlist_post";
@@ -27,6 +29,8 @@ export type CustomerTargetSkillsResponse = SuccessResponse<SetTargetSkillsOperat
 export type OnboardingQuestionsResponse = SuccessResponse<OnboardingQuestionsOperation>;
 export type OnboardingAnswersRequest = RequestBody<CompleteOnboardingOperation>;
 export type OnboardingAnswersResponse = SuccessResponse<CompleteOnboardingOperation>;
+export type SavedOnboardingAnswers = SuccessResponse<OnboardingAnswersOperation>;
+export type AvatarUploadUrlResponse = SuccessResponse<AvatarUploadUrlOperation>;
 export type RecommendationContextResponse = SuccessResponse<RecommendationContextOperation>;
 export type WishlistItemsParams = QueryParams<WishlistItemsOperation>;
 export type WishlistPageResponse = SuccessResponse<WishlistItemsOperation>;
@@ -53,6 +57,7 @@ export const customerKeys = {
   learningProfile: () => [...customerKeys.all, "learning-profile"] as const,
   skills: () => [...customerKeys.all, "skills"] as const,
   onboardingQuestions: () => [...customerKeys.all, "onboarding", "questions"] as const,
+  onboardingAnswers: () => [...customerKeys.all, "onboarding", "answers"] as const,
   recommendationContext: () => [...customerKeys.all, "recommendation-context"] as const,
   wishlist: (params?: WishlistItemsParams) => [...customerKeys.all, "wishlist", params ?? {}] as const,
 };
@@ -126,6 +131,28 @@ export function getOnboardingQuestions(options?: AuthenticatedRequestOptions): P
   return customerRequest<OnboardingQuestionsResponse>("GET", customerPaths.onboardingQuestions, withAuthCookies(options));
 }
 
+/** The customer's saved onboarding answers (latest per question), raw answers included. */
+export function getOnboardingAnswers(options?: AuthenticatedRequestOptions): Promise<SavedOnboardingAnswers> {
+  return customerRequest<SavedOnboardingAnswers>("GET", customerPaths.onboardingAnswers, withAuthCookies(options));
+}
+
+/**
+ * Sets the profile picture through this app (`/api/me/avatar`), which uploads it to storage and
+ * records it. Browser only. An expired session is renewed once and the upload repeated.
+ */
+export async function uploadAvatar(file: File): Promise<CustomerProfileResponse> {
+  const send = () => {
+    const body = new FormData();
+    body.append("file", file);
+    return fetch("/api/me/avatar", { method: "POST", body, credentials: "same-origin" });
+  };
+  let response = await send();
+  if (response.status === 401 && (await refreshOnce())) response = await send();
+  if (response.ok) return (await response.json()) as CustomerProfileResponse;
+  const error = (await response.json().catch(() => null)) as { detail?: string } | null;
+  throw new ApiError(response.status, error?.detail ?? "تعذّر رفع الصورة حالياً.", { detail: error?.detail });
+}
+
 export function completeOnboarding(
   body: OnboardingAnswersRequest,
   options?: AuthenticatedRequestOptions,
@@ -188,6 +215,12 @@ export const customerQueries = {
       queryKey: customerKeys.skills(),
       queryFn: ({ signal }) => getSkills({ signal, context }),
       staleTime: 10 * 60_000,
+    }),
+  onboardingAnswers: (context?: ApiRequestContext) =>
+    queryOptions({
+      queryKey: customerKeys.onboardingAnswers(),
+      queryFn: ({ signal }) => getOnboardingAnswers({ signal, context }),
+      staleTime: 60_000,
     }),
   onboardingQuestions: (context?: ApiRequestContext) =>
     queryOptions({

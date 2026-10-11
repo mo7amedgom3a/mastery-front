@@ -7,7 +7,7 @@ import { ApiError } from "@/lib/api/client";
 import { commerceQueries } from "@/lib/api/commerce";
 import { formatDateTime } from "@/lib/format";
 
-import { AccessCard, OrderInvoices, OrderLines, OrderTransactions } from "./components/order-sections";
+import { AccessCard, lineTitles, OrderInvoices, OrderLines, OrderTransactions } from "./components/order-sections";
 import { StatusTag } from "./components/status-tag";
 import { orderNumber, orderStatus, paymentStatus } from "./model/status";
 
@@ -44,6 +44,7 @@ export function OrderDetailPage({ orderId }: { orderId: string }) {
 
   const detail = order.data;
   const placedAt = detail.placed_at ?? detail.created_at;
+  const titles = lineTitles(detail);
   return (
     <div className="flex flex-col gap-10">
       <dl className="m-0 grid gap-4 rounded-panel border border-line-strong bg-surface p-5 text-sm sm:grid-cols-2 lg:grid-cols-4">
@@ -78,7 +79,12 @@ export function OrderDetailPage({ orderId }: { orderId: string }) {
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
             {access.data.map((entitlement) => (
-              <AccessCard key={entitlement.entitlement_id} entitlement={entitlement} now={access.dataUpdatedAt} />
+              <AccessCard
+                key={entitlement.entitlement_id}
+                entitlement={entitlement}
+                now={access.dataUpdatedAt}
+                title={entitlement.product_slug ? titles.get(entitlement.product_slug) : undefined}
+              />
             ))}
           </div>
         </section>

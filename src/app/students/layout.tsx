@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
 import { QueryProvider } from "@/components/providers/query-provider";
 
 export const metadata: Metadata = {
@@ -10,17 +8,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * The signed-in student's own pages (`proxy.ts` sends guests to sign in first). The student
- * dashboard that will frame them comes later; for now they share the site chrome.
+ * The signed-in student's own pages (`proxy.ts` sends guests to sign in first). The dashboard pages
+ * and the onboarding flow each bring their own chrome; both need the data client.
  */
 export default function StudentLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <SiteHeader />
-      <main id="main" tabIndex={-1} className="outline-none">
-        <QueryProvider>{children}</QueryProvider>
-      </main>
-      <SiteFooter />
-    </>
-  );
+  return <QueryProvider>{children}</QueryProvider>;
 }

@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
-import { AccessCard, OrderInvoices, OrderLines, OrderTransactions } from "@/features/orders/components/order-sections";
+import { AccessCard, lineTitles, OrderInvoices, OrderLines } from "@/features/orders/components/order-sections";
 import { StatusTag } from "@/features/orders/components/status-tag";
 import { isPaymentSettled, orderNumber, orderStatus } from "@/features/orders/model/status";
 import { ApiError } from "@/lib/api/client";
@@ -15,6 +15,7 @@ import { commerceKeys, commerceQueries, getPaymentIntent, reconcilePayment } fro
 import { formatDateTime } from "@/lib/format";
 import { trackCheckout } from "@/lib/observability/behavior";
 import { syncAccountCart } from "@/lib/shop/cart-sync";
+import { refreshOwnedProducts } from "@/lib/shop/use-owned-products";
 
 import { claimCelebration, settleCheckout, usePendingCheckout } from "./model/checkout-session";
 
@@ -100,6 +101,8 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
     if (status !== "succeeded") return;
     // The backend emptied the cart it charged; bring this browser's copy in line.
     void syncAccountCart();
+    // Product pages should now offer "continue learning" instead of "buy now".
+    void refreshOwnedProducts();
     if (claimCelebration(orderId)) void celebrate();
   }, [orderId, status]);
 
@@ -140,6 +143,7 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
   }
 
   const detail = order.data;
+  const titles = lineTitles(detail);
   return (
     <div className="flex flex-col gap-10">
       <header className="flex flex-col items-start gap-4 rounded-panel border border-line-strong bg-surface p-6 md:p-10">
@@ -192,7 +196,12 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
         {access.data && access.data.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2">
             {access.data.map((entitlement) => (
-              <AccessCard key={entitlement.entitlement_id} entitlement={entitlement} now={access.dataUpdatedAt} />
+              <AccessCard
+                key={entitlement.entitlement_id}
+                entitlement={entitlement}
+                now={access.dataUpdatedAt}
+                title={entitlement.product_slug ? titles.get(entitlement.product_slug) : undefined}
+              />
             ))}
           </div>
         ) : access.isFetching || access.isPending ? (
@@ -206,7 +215,6 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
         <>
           <OrderLines order={detail} />
           <OrderInvoices orderId={detail.order_id} invoices={detail.invoices ?? []} />
-          <OrderTransactions transactions={detail.transactions ?? []} />
         </>
       ) : order.isError ? (
         <Notice tone="warning" title="تعذّر عرض تفاصيل الطلب" text="الدفع مكتمل. ستجد التفاصيل في صفحة طلباتك." />

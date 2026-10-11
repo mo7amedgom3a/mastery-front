@@ -88,7 +88,16 @@ export const routes = {
   checkoutSuccess: route("/checkout/success"),
   checkoutCancelled: route("/checkout/cancelled"),
   checkoutFailed: route("/checkout/failed"),
-  /** The student's purchases. The dashboard that will frame these pages comes later. */
+  /** The signed-in student's area (`/students/*`, guests are sent to sign in by `proxy.ts`). */
+  studentHome: route("/students"),
+  studentOnboarding: (step?: string) => route(step ? `/students/onboarding/${encodeURIComponent(step)}` : "/students/onboarding"),
+  studentOnboardingStart: route("/students/onboarding/start"),
+  studentLearning: route("/students/learning"),
+  studentProfile: route("/students/profile"),
+  studentTransactions: route("/students/transactions"),
+  studentInvoices: route("/students/invoices"),
+  studentWishlist: route("/students/wishlist"),
+  studentCart: route("/students/cart"),
   studentOrders: route("/students/orders"),
   studentOrder: (orderId: string) => route(`/students/orders/${encodeURIComponent(orderId)}`),
   studentAccess: route("/students/access"),

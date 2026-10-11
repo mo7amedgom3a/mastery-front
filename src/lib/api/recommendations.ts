@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { apiRequest, type ApiRequestContext, type ApiRequestOptions } from "@/lib/api/client";
+import { customerRequest, withAuthCookies, type AuthenticatedRequestOptions } from "@/lib/api/customers";
 import type { PathParams, QueryParams, SuccessResponse } from "@/lib/api/operation-types";
 
 type ProductRecommendationsOperation = "product_recommendations_api_v1_recommendations_products__slug__get";
@@ -16,8 +17,8 @@ export type MyRecommendationsResponse = SuccessResponse<MyRecommendationsOperati
 export type LandingRecommendationsParams = QueryParams<LandingRecommendationsOperation>;
 export type LandingRecommendationsResponse = SuccessResponse<LandingRecommendationsOperation>;
 export type RecommendationJobResponse = SuccessResponse<RebuildRecommendationsOperation>;
+export type RecommendationCard = MyRecommendationsResponse["items"][number];
 
-type AuthenticatedRequestOptions = Omit<ApiRequestOptions, "credentials">;
 type RebuildOptions = Omit<ApiRequestOptions, "context"> & {
   context: ApiRequestContext & { rebuildToken: string };
 };
@@ -55,9 +56,9 @@ export function getMyRecommendations(
   params: MyRecommendationsParams | undefined,
   options?: AuthenticatedRequestOptions,
 ): Promise<MyRecommendationsResponse> {
-  return apiRequest<MyRecommendationsResponse>("GET", recommendationPaths.me, {
-    ...options,
-    credentials: "include",
+  // Through this app in the browser: the session lives in its httpOnly cookies.
+  return customerRequest<MyRecommendationsResponse>("GET", recommendationPaths.me, {
+    ...withAuthCookies(options),
     query: params,
   });
 }

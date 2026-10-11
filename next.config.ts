@@ -22,7 +22,8 @@ const s3Buckets = ["course", "curriculum", "consultant", "category", "instructor
   hostname: "s3.eu-west-1.amazonaws.com",
   pathname: `/${bucket}.emasteryacademy.com/**`,
 }));
-
+const disableImageOptimization =
+  process.env.NEXT_DISABLE_IMAGE_OPTIMIZATION === "true";
 // Bunny Stream thumbnails for promo-video posters (the library's CDN host, see .env.example).
 const bunnyCdnHostname = process.env.BUNNY_CDN_HOSTNAME?.trim();
 
@@ -81,21 +82,28 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    formats: ["image/avif", "image/webp"],
-    // 60 for decorative/background imagery (hero portrait grid), 75 is the default everywhere else.
-    qualities: [60, 75],
-    // A short ladder keeps srcset attributes (and the optimizer cache) small; cards never exceed ~600px.
-    deviceSizes: [640, 828, 1080, 1280, 1920],
-    imageSizes: [160, 256, 384],
-    remotePatterns: [
-      ...s3Buckets,
-      { protocol: "https", hostname: "live.emasteryacademy.com", pathname: "/uploads/**" },
-      // Built assets of the live site, e.g. trainer cutouts for the live-training spotlight.
-      { protocol: "https", hostname: "live.emasteryacademy.com", pathname: "/assets/**" },
-      { protocol: "https", hostname: "public.emasteryacademy.com", pathname: "/**" },
-      ...(bunnyCdnHostname ? [{ protocol: "https" as const, hostname: bunnyCdnHostname, pathname: "/**" }] : []),
-    ],
-  },
+  unoptimized: true,
+
+  formats: ["image/webp"],
+  qualities: [60, 75],
+  deviceSizes: [640, 828, 1080, 1280, 1920],
+  imageSizes: [160, 256, 384],
+
+  remotePatterns: [
+    ...s3Buckets,
+    {
+      protocol: "https",
+      hostname: "live.emasteryacademy.com",
+      pathname: "/**",
+    },
+    {
+      protocol: "https",
+      hostname: "public.emasteryacademy.com",
+      pathname: "/**",
+    },
+  ],
+},
+
   // Only runs under `next build --webpack` (the build script): dev keeps Turbopack, whose plugin
   // API the Faro uploader does not implement. The plugin injects the bundle id into the client
   // bundles and uploads their source maps; with no API key it still injects and skips the upload.

@@ -5,7 +5,9 @@ import type { Route } from "next";
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { AppLink } from "@/components/ui/app-link";
+import { routes } from "@/config/routes";
 import { useShopHydration, useShopStore, type ShopItem } from "@/lib/shop/store";
+import { useIsOwned } from "@/lib/shop/use-owned-products";
 import { useShopActions } from "@/lib/shop/use-shop-actions";
 
 export type CardActionsProps = {
@@ -52,9 +54,11 @@ function observeForUpgrade(node: Element, upgrade: () => void): () => void {
  * - Heart: anyone can save (synced to the account on sign-in).
  * - Cart: anyone can add; signing in is asked for at payment.
  * - Free items: an enrol link to the item instead of the cart.
+ * - Items the customer already has active access to: "continue" to their learning instead of the cart.
  */
 export function CardActions(props: CardActionsProps) {
   useShopHydration();
+  const owned = useIsOwned(props.item);
   const ref = useRef<HTMLDivElement>(null);
   const [live, setLive] = useState(false);
 
@@ -65,17 +69,27 @@ export function CardActions(props: CardActionsProps) {
   }, [live]);
 
   const upgrade = () => setLive(true);
+  // Nothing to add to the cart for an item the customer already owns.
+  const buttons = owned ? { ...props, purchasable: false } : props;
 
   return (
     <div ref={ref} onPointerEnter={upgrade} onFocus={upgrade} className="relative z-10 flex items-center gap-2">
       {live ? (
-        <Suspense fallback={<StaticCardActions {...props} />}>
-          <AnimatedCardActions {...props} />
+        <Suspense fallback={<StaticCardActions {...buttons} />}>
+          <AnimatedCardActions {...buttons} />
         </Suspense>
       ) : (
-        <StaticCardActions {...props} />
+        <StaticCardActions {...buttons} />
       )}
-      {props.free ? (
+      {owned ? (
+        <AppLink
+          href={routes.studentAccess}
+          aria-label={`كمّل رحلتك في «${props.item.title}»`}
+          className="ma-btn ma-btn--sm ma-btn--soft min-h-10 px-3 text-[13px]"
+        >
+          كمّل رحلتك
+        </AppLink>
+      ) : props.free ? (
         <AppLink
           href={props.item.href as Route}
           aria-label={`سجّل مجاناً في «${props.item.title}»`}

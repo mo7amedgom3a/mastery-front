@@ -4,7 +4,8 @@ import { ApiError } from "@/lib/api/client";
 import { addCartItem, getCart, removeCartItem, type CartResponse } from "@/lib/api/commerce";
 import { fromMinor } from "@/lib/format";
 
-import { resolveCatalogProductId, shopItemHref, shopKeyFromSlug } from "./catalog-ids";
+import { resolveCatalogProductId } from "./catalog-ids";
+import { shopItemHref, shopKeyFromSlug } from "./product-links";
 import { parseShopKey } from "./contract";
 import { useShopStore, type CartLine } from "./store";
 

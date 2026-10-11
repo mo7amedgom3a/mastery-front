@@ -15,7 +15,7 @@ import { RecommendationRail } from "@/features/search/components/recommendation-
 import { commerceKeys, commerceQueries, type CartResponse } from "@/lib/api/commerce";
 import { useAuthStore } from "@/lib/auth/store";
 import { formatCount } from "@/lib/format";
-import { shopKeyFromSlug } from "@/lib/shop/catalog-ids";
+import { shopKeyFromSlug } from "@/lib/shop/product-links";
 import { mirrorAccountCart } from "@/lib/shop/cart-sync";
 import type { Quote, QuoteRequest } from "@/lib/shop/contract";
 import { PRODUCT_FORMS } from "@/lib/shop/labels";

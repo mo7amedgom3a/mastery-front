@@ -1,6 +1,6 @@
 import type { CheckoutQuoteResponse } from "@/lib/api/commerce";
 import { fromMinor } from "@/lib/format";
-import { shopItemHref, shopKeyFromSlug } from "@/lib/shop/catalog-ids";
+import { shopItemHref, shopKeyFromSlug } from "@/lib/shop/product-links";
 import { parseShopKey, type Quote, type QuoteLine, type ResolvedItem } from "@/lib/shop/contract";
 
 /**

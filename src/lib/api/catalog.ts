@@ -10,6 +10,7 @@ type ProductsOperation = "products_api_v1_catalog_products_get";
 type ProductOperation = "product_api_v1_catalog_products__slug__get";
 type ResourceOperation = "resource_api_v1_catalog_resources__resource_id__get";
 type RelatedResourcesOperation = "related_resources_api_v1_catalog_resources__resource_id__related_get";
+type OnboardingOptionsOperation = "onboarding_options_api_v1_catalog_onboarding_options_get";
 
 export type CatalogProductTypesResponse = SuccessResponse<ProductTypesOperation>;
 export type CatalogCategoriesResponse = SuccessResponse<CategoriesOperation>;
@@ -29,6 +30,8 @@ export type CatalogBundleDetail = CatalogProductResponse & {
 export type CatalogResourceResponse = SuccessResponse<ResourceOperation>;
 export type CatalogRelatedResourcesParams = QueryParams<RelatedResourcesOperation>;
 export type CatalogRelatedResourcesResponse = SuccessResponse<RelatedResourcesOperation>;
+export type OnboardingOptionsResponse = SuccessResponse<OnboardingOptionsOperation>;
+export type OnboardingSkill = NonNullable<OnboardingOptionsResponse["skills"]>[number];
 
 const catalogPaths = {
   productTypes: "/api/v1/catalog/product-types",
@@ -38,6 +41,7 @@ const catalogPaths = {
   product: "/api/v1/catalog/products/{slug}",
   resource: "/api/v1/catalog/resources/{resource_id}",
   relatedResources: "/api/v1/catalog/resources/{resource_id}/related",
+  onboardingOptions: "/api/v1/catalog/onboarding-options",
 } as const;
 
 export const catalogKeys = {
@@ -50,6 +54,7 @@ export const catalogKeys = {
   resource: (resourceId: string) => [...catalogKeys.all, "resources", resourceId] as const,
   relatedResources: (resourceId: string, params?: CatalogRelatedResourcesParams) =>
     [...catalogKeys.resource(resourceId), "related", params ?? {}] as const,
+  onboardingOptions: () => [...catalogKeys.all, "onboarding-options"] as const,
 };
 
 export function getProductTypes(options?: ApiRequestOptions): Promise<CatalogProductTypesResponse> {
@@ -109,7 +114,18 @@ export function getCatalogRelatedResources(
   });
 }
 
+/** Active skills, product tags and product types a customer can pick from while onboarding. */
+export function getOnboardingOptions(options?: ApiRequestOptions): Promise<OnboardingOptionsResponse> {
+  return apiRequest<OnboardingOptionsResponse>("GET", catalogPaths.onboardingOptions, options);
+}
+
 export const catalogQueries = {
+  onboardingOptions: () =>
+    queryOptions({
+      queryKey: catalogKeys.onboardingOptions(),
+      queryFn: ({ signal }) => getOnboardingOptions({ signal }),
+      staleTime: 10 * 60_000,
+    }),
   productTypes: () =>
     queryOptions({
       queryKey: catalogKeys.productTypes(),

@@ -1,0 +1,89 @@
+1. Global Navigation Bar (Header)
+Left Group:
+
+Primary Navigation Links:
+
+Home (active item with icon pill/container)
+
+Search (icon + label)
+
+My Learning (icon + label)
+
+Explore (icon + label + dropdown arrow indicator)
+
+Right Group (Utility Actions):
+
+Language Switcher: Globe icon with language code (EN).
+
+Cart Action: Shopping cart icon button.
+
+User Profile: Avatar initial circle (L) alongside the user display name (Layla Hassan).
+
+2. Page Welcome Banner
+Page Title: Greeting header (Welcome back, Layla Hassan).
+
+Subtitle: Secondary descriptive text (Pick up where you left off or explore something new.).
+
+3. "Continue Learning" Section
+Section Header:
+
+Left Side: Leading icon container + Section title (Continue learning) + Subtitle (Pick up where you left off or explore something new.).
+
+Right Side: Text link / CTA (View all ->).
+
+Content Container: Multi-column card grid.
+
+In-Progress Course Card Components:
+
+Card Media Header:
+
+Level badge tag in top-left corner (BEGINNER, INTERMEDIATE).
+
+Center play-button icon.
+
+Category label (WEB DEV).
+
+Large course title overlay.
+
+Card Body Content:
+
+Course title text.
+
+Instructor / author name (Omar Farouk).
+
+Linear progress bar indicator.
+
+Progress meta row: Completion percentage on the left (X% complete), total lesson count on the right (XX lessons).
+
+Card Footer / Action:
+
+Full-width button with icon (Resume).
+
+4. "What to Learn Next" Section
+Section Header:
+
+Left Side: Leading icon container + Section title (What to learn next) + Subtitle (Based on your activity).
+
+Right Side: Text link / CTA (View all ->).
+
+Content Container: Multi-column card grid (horizontal course card list).
+
+Recommended Course Card Components:
+
+Card Media Header:
+
+Level badge tag in top-left corner (INTERMEDIATE).
+
+Center content-type icon (book/open reading icon).
+
+Category label (WEB DEV).
+
+Course title overlay (React 19 from Scratch..., TypeScript for App Developers, Node.js & APIs...).
+
+Card Body Content:
+
+Category pill / badge (WEB DEV).
+
+Status / marketing badge (Bestseller).
+
+(Remaining card details cut off below the viewport).

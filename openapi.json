@@ -522,15 +522,49 @@
         ],
         "summary": "Record Behavior Event",
         "operationId": "record_behavior_event_api_v1_analytics_events_post",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/BehaviorEventRequest"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "202": {
@@ -774,6 +808,27 @@
                   },
                   "type": "array",
                   "title": "Response Product Types Api V1 Catalog Product Types Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/onboarding-options": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Onboarding Options",
+        "operationId": "onboarding_options_api_v1_catalog_onboarding_options_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingOptionsResponse"
                 }
               }
             }
@@ -1617,6 +1672,134 @@
         }
       }
     },
+    "/api/v1/me/avatar/upload-url": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Avatar Upload Url",
+        "operationId": "avatar_upload_url_api_v1_me_avatar_upload_url_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvatarUploadUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvatarUploadUrlResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/avatar": {
+      "put": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Confirm Avatar",
+        "operationId": "confirm_avatar_api_v1_me_avatar_put",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvatarConfirmRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerProfileResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/me/learning-goal-profile": {
       "get": {
         "tags": [
@@ -1916,6 +2099,62 @@
       }
     },
     "/api/v1/me/onboarding/answers": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Onboarding Answers",
+        "operationId": "onboarding_answers_api_v1_me_onboarding_answers_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OnboardingAnswerResponse"
+                  },
+                  "title": "Response Onboarding Answers Api V1 Me Onboarding Answers Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Customers"
@@ -2373,6 +2612,225 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EntitlementDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/products": {
+      "get": {
+        "tags": [
+          "Customer Products"
+        ],
+        "summary": "List Owned Products",
+        "operationId": "list_owned_products_api_v1_me_products_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnedProductPageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/products/{slug}/ownership": {
+      "get": {
+        "tags": [
+          "Customer Products"
+        ],
+        "summary": "Product Ownership",
+        "operationId": "product_ownership_api_v1_me_products__slug__ownership_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductOwnershipResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/products/{slug}": {
+      "get": {
+        "tags": [
+          "Customer Products"
+        ],
+        "summary": "Get Owned Product",
+        "operationId": "get_owned_product_api_v1_me_products__slug__get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnedProductResponse"
                 }
               }
             }
@@ -4418,6 +4876,84 @@
         }
       }
     },
+    "/api/v1/payments/failures": {
+      "get": {
+        "tags": [
+          "Payments"
+        ],
+        "summary": "Payment Failures",
+        "description": "The customer's payment-failure history, newest first.\n\nStripe owns retries, but every decline we observe is recorded here -- even\nwhen the checkout stays open for the buyer to try another card.",
+        "operationId": "payment_failures_api_v1_payments_failures_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentFailurePageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/payments/webhooks/stripe": {
       "post": {
         "tags": [
@@ -4882,7 +5418,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0
+                  "minimum": 0.0
                 },
                 {
                   "type": "string",
@@ -4903,7 +5439,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0
+                  "minimum": 0.0
                 },
                 {
                   "type": "string",
@@ -5314,7 +5850,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0
+                  "minimum": 0.0
                 },
                 {
                   "type": "string",
@@ -5335,7 +5871,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0
+                  "minimum": 0.0
                 },
                 {
                   "type": "string",
@@ -5845,6 +6381,102 @@
         ],
         "title": "AuthResponse"
       },
+      "AvatarConfirmRequest": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Key"
+          },
+          "bucket": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bucket"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key"
+        ],
+        "title": "AvatarConfirmRequest"
+      },
+      "AvatarUploadUrlRequest": {
+        "properties": {
+          "filename": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filename"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Type"
+          }
+        },
+        "type": "object",
+        "title": "AvatarUploadUrlRequest"
+      },
+      "AvatarUploadUrlResponse": {
+        "properties": {
+          "upload_url": {
+            "type": "string",
+            "title": "Upload Url"
+          },
+          "bucket": {
+            "type": "string",
+            "title": "Bucket"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "upload_url",
+          "bucket",
+          "key",
+          "expires_in"
+        ],
+        "title": "AvatarUploadUrlResponse"
+      },
       "BannerResponse": {
         "properties": {
           "id": {
@@ -6003,7 +6635,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -6113,6 +6745,43 @@
             },
             "type": "array",
             "title": "Members"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "learning_outcomes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Learning Outcomes"
+          },
+          "skill_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Skill Ids"
           }
         },
         "type": "object",
@@ -6137,14 +6806,14 @@
           },
           "sort_order": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Sort Order",
             "default": 0
           },
           "quantity": {
             "type": "integer",
-            "maximum": 100,
-            "minimum": 1,
+            "maximum": 100.0,
+            "minimum": 1.0,
             "title": "Quantity",
             "default": 1
           }
@@ -6260,7 +6929,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "string",
@@ -6273,7 +6942,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -6301,6 +6970,21 @@
             "type": "array",
             "minItems": 1,
             "title": "Members"
+          },
+          "learning_outcomes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Learning Outcomes"
+          },
+          "skill_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Skill Ids"
           }
         },
         "type": "object",
@@ -6321,8 +7005,8 @@
           },
           "quantity": {
             "type": "integer",
-            "maximum": 10,
-            "minimum": 1,
+            "maximum": 10.0,
+            "minimum": 1.0,
             "title": "Quantity",
             "default": 1
           },
@@ -6344,8 +7028,8 @@
         "properties": {
           "quantity": {
             "type": "integer",
-            "maximum": 10,
-            "minimum": 1,
+            "maximum": 10.0,
+            "minimum": 1.0,
             "title": "Quantity"
           }
         },
@@ -6642,8 +7326,8 @@
           },
           "quantity": {
             "type": "integer",
-            "maximum": 10,
-            "minimum": 1,
+            "maximum": 10.0,
+            "minimum": 1.0,
             "title": "Quantity",
             "default": 1
           },
@@ -7622,6 +8306,28 @@
               }
             ],
             "title": "Preferred Locale"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
           }
         },
         "type": "object",
@@ -8934,8 +9640,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 1440,
-                "minimum": 0
+                "maximum": 1440.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -9801,6 +10507,33 @@
         ],
         "title": "OnboardingAnswersRequest"
       },
+      "OnboardingOptionsResponse": {
+        "properties": {
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/SkillSummaryResponse"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagSummaryResponse"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "product_types": {
+            "items": {
+              "$ref": "#/components/schemas/ProductTypeResponse"
+            },
+            "type": "array",
+            "title": "Product Types"
+          }
+        },
+        "type": "object",
+        "title": "OnboardingOptionsResponse"
+      },
       "OnboardingQuestionResponse": {
         "properties": {
           "question_id": {
@@ -10356,6 +11089,28 @@
               }
             ],
             "title": "Created At"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "failure_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Message"
           }
         },
         "type": "object",
@@ -10369,6 +11124,278 @@
           "currency_code"
         ],
         "title": "OrderTransactionResponse"
+      },
+      "OwnedProductPageResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OwnedProductResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "OwnedProductPageResponse"
+      },
+      "OwnedProductResponse": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "product_type": {
+            "type": "string",
+            "title": "Product Type"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "access_status": {
+            "type": "string",
+            "title": "Access Status"
+          },
+          "entitlement_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Entitlement Id"
+          },
+          "source_type": {
+            "type": "string",
+            "title": "Source Type"
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Id"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "fulfillment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulfillment Status"
+          },
+          "access_duration_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Duration Days"
+          },
+          "cpd_eligible": {
+            "type": "boolean",
+            "title": "Cpd Eligible",
+            "default": false
+          },
+          "entitlement_count": {
+            "type": "integer",
+            "title": "Entitlement Count",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "slug",
+          "product_type",
+          "access_status",
+          "entitlement_id",
+          "source_type",
+          "source_id",
+          "starts_at"
+        ],
+        "title": "OwnedProductResponse"
+      },
+      "PaymentFailurePageResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentFailureResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "PaymentFailurePageResponse"
+      },
+      "PaymentFailureResponse": {
+        "properties": {
+          "payment_event_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Event Id"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "payment_intent_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Intent Id"
+          },
+          "payment_attempt_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Attempt Id"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "failure_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Message"
+          },
+          "amount_minor": {
+            "type": "integer",
+            "title": "Amount Minor"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payment_event_id",
+          "order_id",
+          "payment_intent_id",
+          "provider",
+          "event_type",
+          "amount_minor",
+          "currency_code"
+        ],
+        "title": "PaymentFailureResponse"
       },
       "PaymentIntentStatusResponse": {
         "properties": {
@@ -10442,6 +11469,28 @@
               }
             ],
             "title": "Checkout Url"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "failure_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Message"
           }
         },
         "type": "object",
@@ -10574,6 +11623,31 @@
             },
             "type": "array",
             "title": "Bundle Members"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "learning_outcomes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Learning Outcomes"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSkillResponse"
+            },
+            "type": "array",
+            "title": "Skills"
           }
         },
         "type": "object",
@@ -10586,6 +11660,62 @@
           "bundle_members"
         ],
         "title": "ProductDetailResponse"
+      },
+      "ProductOwnershipResponse": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "product_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Id"
+          },
+          "owned": {
+            "type": "boolean",
+            "title": "Owned"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "access_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Status"
+          },
+          "entitlement": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OwnedProductResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "owned",
+          "reason"
+        ],
+        "title": "ProductOwnershipResponse"
       },
       "ProductPageResponse": {
         "properties": {
@@ -10733,6 +11863,30 @@
           "cpd_eligible"
         ],
         "title": "ProductResponse"
+      },
+      "ProductSkillResponse": {
+        "properties": {
+          "skill_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Skill Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill_id",
+          "slug",
+          "name"
+        ],
+        "title": "ProductSkillResponse"
       },
       "ProductTypeResponse": {
         "properties": {
@@ -11988,7 +13142,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "string",
@@ -12004,7 +13158,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "string",
@@ -12033,8 +13187,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 5,
-                "minimum": 0
+                "maximum": 5.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -12046,8 +13200,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 5,
-                "minimum": 0
+                "maximum": 5.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -12059,7 +13213,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -12071,7 +13225,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -12134,14 +13288,14 @@
           },
           "limit": {
             "type": "integer",
-            "maximum": 100,
-            "minimum": 1,
+            "maximum": 100.0,
+            "minimum": 1.0,
             "title": "Limit",
             "default": 50
           },
           "offset": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Offset",
             "default": 0
           }
@@ -12485,6 +13639,76 @@
           "is_active"
         ],
         "title": "SkillResponse"
+      },
+      "SkillSummaryResponse": {
+        "properties": {
+          "skill_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Skill Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "parent_skill_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Skill Id"
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "skill_id",
+          "slug",
+          "name"
+        ],
+        "title": "SkillSummaryResponse"
+      },
+      "TagSummaryResponse": {
+        "properties": {
+          "tag": {
+            "type": "string",
+            "title": "Tag"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tag",
+          "count"
+        ],
+        "title": "TagSummaryResponse"
       },
       "TargetSkillsUpdateRequest": {
         "properties": {

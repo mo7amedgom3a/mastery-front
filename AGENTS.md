@@ -35,3 +35,40 @@ instead of starting another one; ask if it isn't running.
 Do not delete `.next`, `node_modules` or other caches unless there is evidence the cache is
 corrupted. If `typecheck` fails inside `.next/dev/types` or `.next/types`, regenerate the route
 types with `npx next typegen` rather than wiping `.next`.
+
+
+# Browser Automation Guidelines
+
+## Available Browser Tools
+
+This development environment provides:
+
+- Playwright MCP for browser automation.
+- Chromium for browser execution.
+- Playwright CLI for terminal-based browser testing.
+- Lighthouse CLI for frontend performance audits.
+
+## Frontend Development Workflow
+
+When implementing or modifying frontend functionality:
+
+1. Start the development server if it is not running.
+2. Use Playwright to open the application in Chromium.
+3. Navigate to the modified page and verify its functionality.
+4. Test user interactions such as forms, buttons, navigation, and modals.
+5. Inspect browser console errors and failed network requests.
+6. Test desktop and mobile viewport sizes.
+7. Capture screenshots when investigating visual issues.
+8. Fix discovered problems and rerun the relevant tests.
+
+## Performance and Accessibility
+
+For changes affecting performance, SEO, or accessibility, run Lighthouse against a production build where practical.
+
+## Safety
+
+Use development or staging accounts for browser automation. Do not perform purchases, delete production data, or change live account settings without explicit authorization.
+
+## Reporting
+
+Summarize the browsers tested, tests performed, issues discovered, and remaining limitations. Never claim a browser test passed unless it actually ran successfully.
