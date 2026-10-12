@@ -87,6 +87,7 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
   const titleId = useId();
   const timesId = useId();
   const termsId = useId();
+  const recordingId = useId();
   const [availability, setAvailability] = useState<AvailabilityState>({ status: "loading" });
 
   useEffect(() => {
@@ -116,6 +117,8 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
   const [checking, setChecking] = useState(false);
   const [returnTo, setReturnTo] = useState<string>(booking.href);
   const [accepted, setAccepted] = useState(false);
+  // The session is always recorded; this only decides whether the customer can watch it.
+  const [recordingAccess, setRecordingAccess] = useState(true);
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   // One key per selection, so a retry (double click, flaky network) reuses the same booking.
@@ -164,7 +167,8 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
     setPaying(true);
     setPayError(null);
     const slotIds = run.map((slot) => slot.id);
-    const fingerprint = slotIds.join(",");
+    // A changed recording choice is a different request, so it gets its own idempotency key.
+    const fingerprint = `${slotIds.join(",")}|${recordingAccess ? "rec" : "norec"}`;
     let key = keys.current.get(fingerprint) ?? newBookingKey();
     keys.current.set(fingerprint, key);
     const origin = window.location.origin;
@@ -173,6 +177,7 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
       slot_ids: slotIds,
       terms_accepted: true,
       terms_version: availability.data.terms_version || CONSULTATION_TERMS_VERSION,
+      recording_access: recordingAccess,
       success_url: `${origin}${routes.studentConsultations}`,
       cancel_url: `${origin}${booking.href}`,
     };
@@ -423,7 +428,10 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
               <p className="m-0 font-bold">شروط الاستشارة</p>
               <ul className="m-0 flex list-disc flex-col gap-1 ps-5 text-fg-muted">
                 <li>يؤكّد الخبير الموعد بعد الدفع. إن لم يؤكّده يُردّ المبلغ كاملاً.</li>
-                <li>تُسجَّل الجلسة صوتاً وصورة للرجوع إليها لاحقاً، ويمكنك مشاهدة التسجيل من حسابك.</li>
+                <li>
+                  تُسجَّل كل جلسة صوتاً وصورة لضمان الجودة والرجوع إليها عند أي خلاف، ويحتفظ بالتسجيل الخبير وفريق
+                  ماستري. يمكنك أن تختار أدناه مشاهدة التسجيل من حسابك بعد انتهاء الجلسة.
+                </li>
                 <li>يُتاح الدخول إلى الجلسة قبل موعدها بخمس دقائق، وتنتهي تلقائياً عند انتهاء المدة المحجوزة.</li>
                 <li>يُردّ المبلغ إذا لم يحضر الخبير الجلسة فقط، ولا يُردّ عند غياب العميل.</li>
               </ul>
@@ -435,7 +443,22 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
                   onChange={(event) => setAccepted(event.target.checked)}
                   className="mt-1 size-4 shrink-0 accent-current"
                 />
-                قرأت الشروط وأوافق عليها، بما في ذلك تسجيل الجلسة.
+                قرأت الشروط وأوافق عليها.
+              </label>
+              <label htmlFor={recordingId} className="flex cursor-pointer items-start gap-3">
+                <input
+                  id={recordingId}
+                  type="checkbox"
+                  checked={recordingAccess}
+                  onChange={(event) => setRecordingAccess(event.target.checked)}
+                  className="mt-1 size-4 shrink-0 accent-current"
+                />
+                <span>
+                  أرغب في الوصول إلى تسجيل الجلسة ومشاهدته بعد انتهائها.
+                  <span className="block text-xs text-fg-muted">
+                    إن ألغيت هذا الخيار فلن يظهر لك التسجيل، لكنه يبقى محفوظاً لدى الخبير وفريق ماستري.
+                  </span>
+                </span>
               </label>
             </div>
 

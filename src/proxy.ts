@@ -27,5 +27,6 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/students/:path*", "/login", "/register"],
+  // `/expert` is the expert dashboard; the public profiles live under `/experts`.
+  matcher: ["/students/:path*", "/expert", "/expert/:path*", "/login", "/register"],
 };

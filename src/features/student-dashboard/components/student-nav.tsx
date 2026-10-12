@@ -56,7 +56,7 @@ export const studentNavGroups: readonly StudentNavGroup[] = [
     label: "الحساب",
     items: [
       { href: routes.studentProfile, label: "الملف الشخصي", icon: UserRound },
-      { href: routes.studentExpert, label: "لوحة الخبير", icon: BriefcaseBusiness, expertOnly: true },
+      { href: routes.expertDashboard, label: "لوحة الخبير", icon: BriefcaseBusiness, expertOnly: true },
     ],
   },
 ];

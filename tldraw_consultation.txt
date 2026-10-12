@@ -1,0 +1,325 @@
+Getting started
+
+First, install the tldraw package from npm:
+
+npm install tldraw
+
+Copy
+
+Next, in your React project, import the Tldraw component and tldraw's CSS styles. Then render the Tldraw component inside a full screen container:
+
+import { Tldraw } from 'tldraw'
+import 'tldraw/tldraw.css'
+
+export default function App() {
+	return (
+		<div style={{ position: 'fixed', inset: 0 }}>
+			<Tldraw />
+		</div>
+	)
+}
+
+Copy
+
+That's pretty much it! At this point, you should have a complete working single-user canvas. You can draw, write, add images and video, zoom, pan, copy and paste, undo and redo—everything you'd expect from a canvas.
+
+You'll be starting from our default shapes, tools, and user interface, but you can customize all of these things for your project if you wish. For now, let's show off a few more features.
+Local persistence
+
+Let's add local persistence by passing a persistenceKey prop to the Tldraw component:
+
+export default function App() {
+	return (
+		<div style={{ position: 'fixed', inset: 0 }}>
+			<Tldraw persistenceKey="example" />
+		</div>
+	)
+}
+
+Copy
+
+The persistenceKey prop saves your project to the browser's storage so that it survives a refresh. It also synchronizes the project with other instances that share the same key—even in other browser tabs! Give it a try by opening your app in a second window.
+Real-time collaboration
+
+To add support for multiple users collaborating in real time, you can use the tldraw sync library. Its demo hook connects your app to tldraw's demo server, which hosts temporary rooms.
+
+First, install the @tldraw/sync package:
+
+npm install @tldraw/sync
+
+Copy
+
+Next, import the useSyncDemo hook from the @tldraw/sync package. Call it in your component with a unique ID and pass the store that it returns to the Tldraw component:
+
+import { Tldraw } from 'tldraw'
+import { useSyncDemo } from '@tldraw/sync'
+import 'tldraw/tldraw.css'
+
+export default function App() {
+	const store = useSyncDemo({ roomId: 'insert-any-string-here' })
+
+	return (
+		<div style={{ position: 'fixed', inset: 0 }}>
+			<Tldraw store={store} />
+		</div>
+	)
+}
+
+Copy
+
+Try it out by opening your project in a second incognito window, or else access it from another device. You should see all of tldraw's multiplayer features: live cursors, user names, viewport following, cursor chat, and more.
+
+If you want to go further with real-time collaboration, be sure to check out our guide to the tldraw sync library.
+Controlling the canvas
+
+The tldraw editor has a runtime JavaScript API. Everything that can happen in tldraw can be done programmatically through the Editor instance.
+
+For simplicity's sake, let's roll back our persistence and sync code. We can then use the Tldraw component's onMount callback to get access to the Editor instance. We'll use the editor to create a new shape on the canvas, select it, then slowly zoom to it.
+
+import { Editor, Tldraw, toRichText } from 'tldraw'
+import 'tldraw/tldraw.css'
+
+export default function App() {
+	const handleMount = (editor: Editor) => {
+		editor.createShape({
+			type: 'text',
+			x: 200,
+			y: 200,
+			props: {
+				richText: toRichText('Hello world!'),
+			},
+		})
+
+		editor.selectAll()
+
+		editor.zoomToSelection({
+			animation: { duration: 5000 },
+		})
+	}
+
+	return (
+		<div style={{ position: 'fixed', inset: 0 }}>
+			<Tldraw onMount={handleMount} />
+		</div>
+	)
+}
+
+Copy
+
+The Editor is tldraw's main interface for controlling the canvas. Be sure to check out the Editor API documentation for more information on what you can do with it, as well as our guide on using the editor.
+
+
+
+integrate tldraw directly inside a LiveKit consultation session, you synchronize drawing actions using LiveKit’s low-latency Data Channels (publishData and RoomEvent.DataReceived).
+
+This keeps the whiteboard real-time and peer-to-peer within the WebRTC call without requiring a separate WebSocket infrastructure.
+
+Architecture Overview
+ [ Client Whiteboard ]                             [ Expert Whiteboard ]
+          │                                                  ▲
+          │ 1. Drawing changes (records)                     │ 4. store.mergeRemoteChanges()
+          ▼                                                  │
+┌─────────────────────────┐                        ┌─────────────────────────┐
+│ LiveKit Data Channel    │ ── 2. broadcast JSON ──>│ LiveKit Data Channel    │
+│ (localParticipant)      │        (WebRTC P2P)    │ (on DataReceived)       │
+└─────────────────────────┘                        └─────────────────────────┘
+Each participant renders <Tldraw store="{store}"/>.
+
+Whenever a user draws, modifies, or deletes a shape, the local store.listen() callback fires.
+
+The diff is serialized to JSON and broadcast via room.localParticipant.publishData(payload, { reliable: true }).
+
+The remote participant receives the data and calls store.mergeRemoteChanges() to apply the updates to their canvas.
+
+Step 1: Install Dependencies
+In your Next.js project:
+
+Bash
+npm install tldraw @livekit/components-react livekit-client
+Step 2: Build the Synchronized Whiteboard Component
+Create components/LiveKitWhiteboard.tsx:
+
+TypeScript
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Tldraw, createTLStore, defaultShapeUtils, HistoryEntry } from 'tldraw';
+import { useRoomContext } from '@livekit/components-react';
+import { RoomEvent, DataPacket_Kind } from 'livekit-client';
+import 'tldraw/tldraw.css';
+
+export default function LiveKitWhiteboard() {
+  const room = useRoomContext();
+  // Create an in-memory store for tldraw
+  const [store] = useState(() => createTLStore({ shapeUtils: defaultShapeUtils }));
+
+  useEffect(() => {
+    if (!room) return;
+
+    let isApplyingRemoteChange = false;
+
+    // 1. Listen for local tldraw changes and send them across LiveKit Data Channel
+    const unlisten = store.listen(
+      (entry: HistoryEntry) => {
+        // Prevent feedback loops: don't broadcast changes triggered by incoming remote packets
+        if (isApplyingRemoteChange) return;
+
+        const changes = entry.changes;
+        // Only publish if there are actual record updates
+        if (
+          Object.keys(changes.added).length === 0 &&
+          Object.keys(changes.updated).length === 0 &&
+          Object.keys(changes.removed).length === 0
+        ) {
+          return;
+        }
+
+        const payload = JSON.stringify({
+          type: 'TLDRAW_CHANGES',
+          changes,
+        });
+
+        const encoder = new TextEncoder();
+        const data = encoder.encode(payload);
+
+        // Publish reliably over WebRTC data channel
+        room.localParticipant.publishData(data, {
+          reliable: true,
+          topic: 'whiteboard',
+        });
+      },
+      { scope: 'document', source: 'user' }
+    );
+
+    // 2. Listen for incoming changes from the other participant
+    const handleDataReceived = (
+      payload: Uint8Array,
+      participant?: any,
+      kind?: DataPacket_Kind,
+      topic?: string
+    ) => {
+      if (topic !== 'whiteboard') return;
+
+      try {
+        const text = new TextDecoder().decode(payload);
+        const msg = JSON.parse(text);
+
+        if (msg.type === 'TLDRAW_CHANGES') {
+          isApplyingRemoteChange = true;
+          // Apply changes directly to the local store
+          store.mergeRemoteChanges(() => {
+            const { added, updated, removed } = msg.changes;
+
+            if (added) {
+              Object.values(added).forEach((record: any) => store.put([record]));
+            }
+            if (updated) {
+              Object.values(updated).forEach(([_, to]: any) => store.put([to]));
+            }
+            if (removed) {
+              Object.values(removed).forEach((record: any) => store.remove([record.id]));
+            }
+          });
+          isApplyingRemoteChange = false;
+        }
+      } catch (err) {
+        console.error('Error applying remote tldraw changes:', err);
+      }
+    };
+
+    room.on(RoomEvent.DataReceived, handleDataReceived);
+
+    return () => {
+      unlisten();
+      room.off(RoomEvent.DataReceived, handleDataReceived);
+    };
+  }, [room, store]);
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <Tldraw store={store} autoFocus={false} />
+    </div>
+  );
+}
+Step 3: Embed in the Consultation Layout
+Place the whiteboard side-by-side with your video feed or toggle it with a button:
+
+TypeScript
+'use client';
+
+import React, { useState } from 'react';
+import {
+  LiveKitRoom,
+  VideoConference,
+  ControlBar,
+  RoomAudioRenderer,
+} from '@livekit/components-react';
+import LiveKitWhiteboard from '@/components/LiveKitWhiteboard';
+import '@livekit/components-styles';
+
+export default function ConsultationPage({ token, serverUrl }: { token: string; serverUrl: string }) {
+  const [showWhiteboard, setShowWhiteboard] = useState(true);
+
+  return (
+    <div style={{ height: '100vh', width: '100vw' }}>
+      <LiveKitRoom
+        token={token}
+        serverUrl={serverUrl}
+        video={true}
+        audio={true}
+        data-lk-theme="default"
+      >
+        <div style={{ display: 'flex', height: 'calc(100vh - 60px)', width: '100%' }}>
+          {/* Main Video Area */}
+          <div style={{ flex: showWhiteboard ? 1 : 2, height: '100%' }}>
+            <VideoConference />
+          </div>
+
+          {/* Interactive Whiteboard Panel */}
+          {showWhiteboard && (
+            <div style={{ flex: 1.5, height: '100%', borderLeft: '1px solid #333' }}>
+              <LiveKitWhiteboard />
+            </div>
+          )}
+        </div>
+
+        {/* Global Toolbar */}
+        <div style={{ height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <ControlBar />
+          <button
+            onClick={() => setShowWhiteboard((prev) => !prev)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '6px',
+              background: '#2b2b2b',
+              color: '#fff',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            {showWhiteboard ? 'Hide Whiteboard' : 'Show Whiteboard'}
+          </button>
+        </div>
+
+        <RoomAudioRenderer />
+      </LiveKitRoom>
+    </div>
+  );
+}
+Step 4: Ensure Data Channel Permissions in Backend
+When your Python backend mints the JWT token, verify that can_publish_data is enabled (it defaults to True in VideoGrants):
+
+Python
+grant = api.VideoGrants(
+    room_join=True,
+    room=room_name,
+    can_publish=True,
+    can_subscribe=True,
+    can_publish_data=True, # Allows sending drawings over the data channel
+)
+Important Considerations
+Handling Late Joiners (Initial State Synchronization):
+If the expert draws something before the client joins, the client won't receive those past data packets. When a participant joins (RoomEvent.ParticipantConnected), have the existing participant export a snapshot using getSnapshot(store) and send it once over the data channel so the newcomer receives the existing board state.
+
+Payload Size Limits:
+WebRTC data channel messages have a maximum size (LiveKit enforces a 64 KB packet limit). Standard incremental pen strokes and shape edits are small (1–3 KB) and transmit instantly. If you add heavy images or files into the board, upload them to S3 and pass the image URL rather than raw base64 data. 

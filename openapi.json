@@ -6700,12 +6700,304 @@
         }
       }
     },
+    "/api/v1/consultations/bookings/{booking_id}/assets/upload-url": {
+      "post": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "Session Asset Upload Url",
+        "description": "A presigned S3 PUT for a whiteboard snapshot or board image; only while the room is open.",
+        "operationId": "session_asset_upload_url_api_v1_consultations_bookings__booking_id__assets_upload_url_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetUploadUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetUploadUrlResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consultations/bookings/{booking_id}/assets/{asset_id}/complete": {
+      "post": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "Complete Session Asset",
+        "operationId": "complete_session_asset_api_v1_consultations_bookings__booking_id__assets__asset_id__complete_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Asset Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionAssetResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consultations/bookings/{booking_id}/assets": {
+      "get": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "Session Assets",
+        "operationId": "session_assets_api_v1_consultations_bookings__booking_id__assets_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionAssetResponse"
+                  },
+                  "title": "Response Session Assets Api V1 Consultations Bookings  Booking Id  Assets Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/consultations/bookings/{booking_id}/assets/{asset_id}": {
+      "get": {
+        "tags": [
+          "Consultations"
+        ],
+        "summary": "Session Asset Link",
+        "operationId": "session_asset_link_api_v1_consultations_bookings__booking_id__assets__asset_id__get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Asset Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetLinkResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/experts/me": {
       "get": {
         "tags": [
           "Consultation Experts"
         ],
         "summary": "Expert Profile",
+        "description": "403 when the signed-in customer is not linked to a consultant.",
         "operationId": "expert_profile_api_v1_experts_me_get",
         "security": [
           {
@@ -6737,6 +7029,381 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ConsultantProfileResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Update Expert Profile",
+        "description": "409 when the session length changes while upcoming slots or active bookings exist.",
+        "operationId": "update_expert_profile_api_v1_experts_me_patch",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExpertProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsultantProfileResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me/summary": {
+      "get": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Expert Summary",
+        "operationId": "expert_summary_api_v1_experts_me_summary_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__consultations__presentation__schemas__ExpertSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me/services": {
+      "get": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Expert Services",
+        "operationId": "expert_services_api_v1_experts_me_services_get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExpertServiceResponse"
+                  },
+                  "title": "Response Expert Services Api V1 Experts Me Services Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Create Expert Service",
+        "description": "A new consultation the expert sells; bookable at once with their slots.",
+        "operationId": "create_expert_service_api_v1_experts_me_services_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExpertServiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpertServiceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me/services/{service_id}": {
+      "patch": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Update Expert Service",
+        "operationId": "update_expert_service_api_v1_experts_me_services__service_id__patch",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Service Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExpertServiceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpertServiceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Delete Expert Service",
+        "description": "Deleted when nothing references it; otherwise archived (hidden, not bookable).",
+        "operationId": "delete_expert_service_api_v1_experts_me_services__service_id__delete",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "service_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Service Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteExpertServiceResponse"
                 }
               }
             }
@@ -6826,7 +7493,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/SlotResponse"
+                    "$ref": "#/components/schemas/ExpertSlotResponse"
                   },
                   "title": "Response Expert Slots Api V1 Experts Me Slots Get"
                 }
@@ -6909,6 +7576,72 @@
       }
     },
     "/api/v1/experts/me/slots/{slot_id}": {
+      "patch": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Update Expert Slot",
+        "description": "Move a free slot. 409 when it is held or booked, or the new time overlaps.",
+        "operationId": "update_expert_slot_api_v1_experts_me_slots__slot_id__patch",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "slot_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Slot Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSlotRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "delete": {
         "tags": [
           "Consultation Experts"
@@ -6971,6 +7704,7 @@
           "Consultation Experts"
         ],
         "summary": "Expert Bookings",
+        "description": "Paid bookings, newest first; filter by status (repeatable), service and start time.",
         "operationId": "expert_bookings_api_v1_experts_me_bookings_get",
         "security": [
           {
@@ -6978,6 +7712,99 @@
           }
         ],
         "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "service_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Service Id"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
           {
             "name": "b2c_access_token",
             "in": "cookie",
@@ -7001,11 +7828,72 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/BookingResponse"
-                  },
-                  "title": "Response Expert Bookings Api V1 Experts Me Bookings Get"
+                  "$ref": "#/components/schemas/ExpertBookingPageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me/bookings/{booking_id}": {
+      "get": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Expert Booking Detail",
+        "description": "The booking, the customer's contact details and its event timeline.",
+        "operationId": "expert_booking_detail_api_v1_experts_me_bookings__booking_id__get",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpertBookingDetailResponse"
                 }
               }
             }
@@ -7133,6 +8021,81 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RejectBookingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experts/me/bookings/{booking_id}/cancel": {
+      "post": {
+        "tags": [
+          "Consultation Experts"
+        ],
+        "summary": "Cancel Booking",
+        "description": "Withdraw a paid booking before it starts; the customer is refunded.",
+        "operationId": "cancel_booking_api_v1_experts_me_bookings__booking_id__cancel_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "booking_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Booking Id"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelBookingRequest"
               }
             }
           }
@@ -7344,6 +8307,88 @@
           "eligible"
         ],
         "title": "AccessExtensionOptionResponse"
+      },
+      "AssetLinkResponse": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "expires_in_seconds": {
+            "type": "integer",
+            "title": "Expires In Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "content_type",
+          "expires_in_seconds"
+        ],
+        "title": "AssetLinkResponse"
+      },
+      "AssetUploadUrlRequest": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "snapshot",
+              "board_image"
+            ],
+            "title": "Kind"
+          },
+          "content_type": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Content Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Size Bytes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "content_type",
+          "size_bytes"
+        ],
+        "title": "AssetUploadUrlRequest"
+      },
+      "AssetUploadUrlResponse": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Asset Id"
+          },
+          "upload_url": {
+            "type": "string",
+            "title": "Upload Url"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "expires_in_seconds": {
+            "type": "integer",
+            "title": "Expires In Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id",
+          "upload_url",
+          "content_type",
+          "expires_in_seconds"
+        ],
+        "title": "AssetUploadUrlResponse"
       },
       "AuthResponse": {
         "properties": {
@@ -7992,6 +9037,34 @@
           "members"
         ],
         "title": "BundleUpsertRequest"
+      },
+      "CancelBookingRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "slots": {
+            "type": "string",
+            "enum": [
+              "release",
+              "remove"
+            ],
+            "title": "Slots",
+            "default": "release"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CancelBookingRequest"
       },
       "CartItemRequest": {
         "properties": {
@@ -9166,6 +10239,73 @@
         ],
         "title": "CourseResponse"
       },
+      "CreateExpertServiceRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Title"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "price_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$"
+              }
+            ],
+            "title": "Price Amount"
+          },
+          "currency_code": {
+            "type": "string",
+            "maxLength": 3,
+            "minLength": 3,
+            "title": "Currency Code",
+            "default": "USD"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "price_amount"
+        ],
+        "title": "CreateExpertServiceRequest"
+      },
       "CustomerAuthResponse": {
         "properties": {
           "customer_id": {
@@ -9867,6 +11007,61 @@
         ],
         "title": "EntitlementSummaryResponse"
       },
+      "ExpertBookingDetailResponse": {
+        "properties": {
+          "booking": {
+            "$ref": "#/components/schemas/BookingResponse"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/BookingCustomerResponse"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/BookingEventResponse"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "booking",
+          "customer",
+          "events"
+        ],
+        "title": "ExpertBookingDetailResponse"
+      },
+      "ExpertBookingPageResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BookingResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ExpertBookingPageResponse"
+      },
       "ExpertDetailResponse": {
         "properties": {
           "expert": {
@@ -10177,32 +11372,27 @@
         ],
         "title": "ExpertProfileResponse"
       },
-      "ExpertSummaryResponse": {
+      "ExpertServiceResponse": {
         "properties": {
-          "key": {
+          "service_id": {
             "type": "string",
-            "title": "Key",
-            "description": "Trainer id, or c{consultant id} for consultant-only experts."
+            "format": "uuid",
+            "title": "Service Id"
           },
-          "trainer_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Trainer Id"
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
           },
-          "consultant_ids": {
-            "items": {
-              "type": "integer"
-            },
-            "type": "array",
-            "title": "Consultant Ids"
+          "slug": {
+            "type": "string",
+            "title": "Slug"
           },
-          "name": {
+          "product_status": {
+            "type": "string",
+            "title": "Product Status"
+          },
+          "title": {
             "anyOf": [
               {
                 "type": "string"
@@ -10211,9 +11401,9 @@
                 "type": "null"
               }
             ],
-            "title": "Name"
+            "title": "Title"
           },
-          "profile_image": {
+          "short_description": {
             "anyOf": [
               {
                 "type": "string"
@@ -10222,38 +11412,165 @@
                 "type": "null"
               }
             ],
-            "title": "Profile Image"
+            "title": "Short Description"
           },
-          "course_count": {
-            "type": "integer",
-            "title": "Course Count"
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
           },
-          "diploma_count": {
-            "type": "integer",
-            "title": "Diploma Count"
+          "price_amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Amount"
           },
-          "package_count": {
-            "type": "integer",
-            "title": "Package Count"
+          "currency_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency Code"
           },
-          "consultation_count": {
+          "duration_minutes": {
             "type": "integer",
-            "title": "Consultation Count"
+            "title": "Duration Minutes"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "bookings_count": {
+            "type": "integer",
+            "title": "Bookings Count"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
           }
         },
         "type": "object",
         "required": [
-          "key",
-          "trainer_id",
-          "consultant_ids",
-          "name",
-          "profile_image",
-          "course_count",
-          "diploma_count",
-          "package_count",
-          "consultation_count"
+          "service_id",
+          "product_id",
+          "slug",
+          "product_status",
+          "title",
+          "short_description",
+          "description",
+          "price_amount",
+          "currency_code",
+          "duration_minutes",
+          "is_active",
+          "bookings_count",
+          "created_at"
         ],
-        "title": "ExpertSummaryResponse"
+        "title": "ExpertServiceResponse"
+      },
+      "ExpertSlotResponse": {
+        "properties": {
+          "slot_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Slot Id"
+          },
+          "starts_at": {
+            "type": "string",
+            "title": "Starts At"
+          },
+          "ends_at": {
+            "type": "string",
+            "title": "Ends At"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone"
+          },
+          "is_available": {
+            "type": "boolean",
+            "title": "Is Available"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "free",
+              "held",
+              "booked"
+            ],
+            "title": "State"
+          },
+          "booking_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Booking Id"
+          },
+          "booking_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Booking Status"
+          },
+          "customer_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slot_id",
+          "starts_at",
+          "ends_at",
+          "timezone",
+          "is_available",
+          "state",
+          "booking_id",
+          "booking_status",
+          "customer_name"
+        ],
+        "title": "ExpertSlotResponse",
+        "description": "A slot in the expert's calendar, with whoever holds it."
       },
       "FaqResponse": {
         "properties": {
@@ -10363,8 +11680,15 @@
             "title": "Product Id"
           },
           "provider": {
-            "type": "string",
-            "title": "Provider"
+            "title": "Provider",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "amount_minor": {
             "type": "integer",
@@ -11100,7 +12424,7 @@
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/ExpertSummaryResponse"
+              "$ref": "#/components/schemas/app__modules__legacy__presentation__schemas__ExpertSummaryResponse"
             },
             "type": "array",
             "title": "Items"
@@ -14660,6 +15984,67 @@
         ],
         "title": "SearchResultResponse"
       },
+      "SessionAssetResponse": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Asset Id"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "snapshot",
+              "board_image"
+            ],
+            "title": "Kind"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Bytes"
+          },
+          "uploader_role": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "expert"
+            ],
+            "title": "Uploader Role"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id",
+          "kind",
+          "content_type",
+          "size_bytes",
+          "uploader_role",
+          "created_at"
+        ],
+        "title": "SessionAssetResponse"
+      },
       "SkillResponse": {
         "properties": {
           "skill_id": {
@@ -14988,6 +16373,157 @@
         ],
         "title": "UnitResponse"
       },
+      "UpdateExpertProfileRequest": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "bio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bio"
+          },
+          "session_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 240.0,
+                "minimum": 5.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Minutes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "UpdateExpertProfileRequest"
+      },
+      "UpdateExpertServiceRequest": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "price_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 100000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d{0,2}0*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Amount"
+          },
+          "currency_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 3,
+                "minLength": 3
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency Code"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "UpdateExpertServiceRequest",
+        "description": "Only the fields sent change. An empty string clears a description."
+      },
+      "UpdateSlotRequest": {
+        "properties": {
+          "starts_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Starts At"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ends At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "starts_at",
+          "ends_at"
+        ],
+        "title": "UpdateSlotRequest"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -15281,6 +16817,45 @@
         ],
         "title": "InstructorResponse"
       },
+      "app__modules__consultations__presentation__schemas__ExpertSummaryResponse": {
+        "properties": {
+          "pending_approvals": {
+            "type": "integer",
+            "title": "Pending Approvals"
+          },
+          "upcoming_sessions": {
+            "type": "integer",
+            "title": "Upcoming Sessions"
+          },
+          "completed_this_month": {
+            "type": "integer",
+            "title": "Completed This Month"
+          },
+          "refunds_pending": {
+            "type": "integer",
+            "title": "Refunds Pending"
+          },
+          "next_booking": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BookingResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "pending_approvals",
+          "upcoming_sessions",
+          "completed_this_month",
+          "refunds_pending",
+          "next_booking"
+        ],
+        "title": "ExpertSummaryResponse"
+      },
       "app__modules__legacy__presentation__schemas__CategoryResponse": {
         "properties": {
           "id": {
@@ -15353,6 +16928,84 @@
           "order"
         ],
         "title": "CategoryResponse"
+      },
+      "app__modules__legacy__presentation__schemas__ExpertSummaryResponse": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Trainer id, or c{consultant id} for consultant-only experts."
+          },
+          "trainer_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trainer Id"
+          },
+          "consultant_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Consultant Ids"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "profile_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Image"
+          },
+          "course_count": {
+            "type": "integer",
+            "title": "Course Count"
+          },
+          "diploma_count": {
+            "type": "integer",
+            "title": "Diploma Count"
+          },
+          "package_count": {
+            "type": "integer",
+            "title": "Package Count"
+          },
+          "consultation_count": {
+            "type": "integer",
+            "title": "Consultation Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "trainer_id",
+          "consultant_ids",
+          "name",
+          "profile_image",
+          "course_count",
+          "diploma_count",
+          "package_count",
+          "consultation_count"
+        ],
+        "title": "ExpertSummaryResponse"
       },
       "app__modules__legacy__presentation__schemas__InstructorResponse": {
         "properties": {
@@ -15791,6 +17444,17 @@
             ],
             "title": "Rejection Reason"
           },
+          "ended_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Reason"
+          },
           "join_opens_at": {
             "anyOf": [
               {
@@ -15824,6 +17488,11 @@
           "recording_available": {
             "type": "boolean",
             "title": "Recording Available"
+          },
+          "recording_access": {
+            "type": "boolean",
+            "title": "Recording Access",
+            "default": true
           },
           "customer_joined_at": {
             "anyOf": [
@@ -15890,6 +17559,7 @@
           "approval_deadline_at",
           "approved_at",
           "rejection_reason",
+          "ended_reason",
           "join_opens_at",
           "hard_stop_at",
           "can_join",
@@ -16073,6 +17743,11 @@
             "minLength": 1,
             "title": "Terms Version"
           },
+          "recording_access": {
+            "type": "boolean",
+            "title": "Recording Access",
+            "default": true
+          },
           "success_url": {
             "anyOf": [
               {
@@ -16136,6 +17811,29 @@
         ],
         "title": "DecisionResponse"
       },
+      "DeleteExpertServiceResponse": {
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Service Id"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "deleted",
+              "archived"
+            ],
+            "title": "Outcome"
+          }
+        },
+        "type": "object",
+        "required": [
+          "service_id",
+          "outcome"
+        ],
+        "title": "DeleteExpertServiceResponse"
+      },
       "JoinResponse": {
         "properties": {
           "token": {
@@ -16173,6 +17871,11 @@
           "server_now": {
             "type": "string",
             "title": "Server Now"
+          },
+          "show_recording_notice": {
+            "type": "boolean",
+            "title": "Show Recording Notice",
+            "default": true
           }
         },
         "type": "object",
@@ -16207,6 +17910,91 @@
         ],
         "title": "BookingCheckoutResponse"
       },
+      "BookingCustomerResponse": {
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Customer Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "country_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "customer_id",
+          "name",
+          "email",
+          "phone",
+          "country_code"
+        ],
+        "title": "BookingCustomerResponse"
+      },
+      "BookingEventResponse": {
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_type",
+          "note",
+          "created_at"
+        ],
+        "title": "BookingEventResponse"
+      },
       "ConsultantProfileResponse": {
         "properties": {
           "consultant_id": {
@@ -16228,6 +18016,43 @@
           "session_minutes": {
             "type": "integer",
             "title": "Session Minutes"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "bio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bio"
+          },
+          "services_count": {
+            "type": "integer",
+            "title": "Services Count",
+            "default": 0
+          },
+          "slots_upcoming": {
+            "type": "integer",
+            "title": "Slots Upcoming",
+            "default": 0
+          },
+          "booking_lead_minutes": {
+            "type": "integer",
+            "title": "Booking Lead Minutes",
+            "default": 0
           }
         },
         "type": "object",

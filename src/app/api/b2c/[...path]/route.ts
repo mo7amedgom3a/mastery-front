@@ -36,12 +36,18 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^consultations\/products\/[A-Za-z0-9_-]+\/availability$/, session: false },
   { methods: ["POST"], pattern: /^consultations\/bookings$/, session: true },
   { methods: ["GET"], pattern: /^consultations\/bookings\/[A-Za-z0-9-]+(\/recording)?$/, session: true },
+  // Whiteboard files of a session (uploads go through /api/consultations/[bookingId]/assets).
+  { methods: ["GET"], pattern: /^consultations\/bookings\/[A-Za-z0-9-]+\/assets(\/[A-Za-z0-9-]+)?$/, session: true },
   { methods: ["POST"], pattern: /^consultations\/bookings\/[A-Za-z0-9-]+\/join$/, session: true },
   // The expert's own area (403 for customers who are not linked to a consultant).
-  { methods: ["GET"], pattern: /^experts\/me(\/(slots|bookings))?$/, session: true },
+  { methods: ["GET"], pattern: /^experts\/me(\/(slots|bookings|summary|services))?$/, session: true },
+  { methods: ["PATCH"], pattern: /^experts\/me$/, session: true },
+  { methods: ["POST"], pattern: /^experts\/me\/services$/, session: true },
+  { methods: ["PATCH", "DELETE"], pattern: /^experts\/me\/services\/[A-Za-z0-9-]+$/, session: true },
+  { methods: ["GET"], pattern: /^experts\/me\/bookings\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^experts\/me\/slots$/, session: true },
-  { methods: ["DELETE"], pattern: /^experts\/me\/slots\/[A-Za-z0-9-]+$/, session: true },
-  { methods: ["POST"], pattern: /^experts\/me\/bookings\/[A-Za-z0-9-]+\/(approve|reject)$/, session: true },
+  { methods: ["PATCH", "DELETE"], pattern: /^experts\/me\/slots\/[A-Za-z0-9-]+$/, session: true },
+  { methods: ["POST"], pattern: /^experts\/me\/bookings\/[A-Za-z0-9-]+\/(approve|reject|cancel)$/, session: true },
 ];
 
 /** Same charset the backend accepts; anything else is dropped rather than forwarded. */

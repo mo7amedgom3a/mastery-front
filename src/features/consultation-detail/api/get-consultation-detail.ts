@@ -15,8 +15,10 @@ import {
   getLegacyResourceRecommendations,
 } from "@/lib/api/legacy";
 import { withResolvedPrices } from "@/lib/api/legacy-pricing";
+import { getAvailability } from "@/lib/api/consultations";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
 
+import { consultationProductRef } from "../model/availability";
 import { mapConsultationDetailData } from "../model/mappers";
 import type { ConsultationDetailData } from "../model/types";
 import { getConsultationIndex } from "./get-consultation-index";
@@ -48,7 +50,7 @@ export const getConsultationDetail = cache(async (id: number): Promise<Consultat
   // Ask for a few extra: cards without artwork, duplicates and the consultation itself are dropped.
   const limit = MAX_RAIL_CARDS + 4;
   const expertKey = detail.consultation.expert_key;
-  const [expert, consultations, related, recommendations, catalog, instructors] = await Promise.allSettled([
+  const [expert, consultations, related, recommendations, catalog, instructors, booking] = await Promise.allSettled([
     expertKey
       ? getLegacyExpert(
           expertKey,
@@ -69,7 +71,19 @@ export const getConsultationDetail = cache(async (id: number): Promise<Consultat
     getCatalogIndex(),
     // Shared across every product page, like the catalog index.
     getInstructorNames(cachedRead(CONSULTATION_REVALIDATE_SECONDS, ["catalog-index"])),
+    // The bookable session length lives in the booking backend (the expert sets it there).
+    getAvailability(
+      consultationProductRef(id),
+      undefined,
+      cachedRead(CONSULTATION_REVALIDATE_SECONDS, [productCacheTag("consultation", id)]),
+    ),
   ]);
+
+  // Prefer the backend's session length over the legacy catalog's, which the expert can't change.
+  const sessionMinutes = valueOf(booking, `consultation ${id} availability`)?.session_minutes;
+  if (sessionMinutes && sessionMinutes > 0) {
+    detail = { ...detail, consultation: { ...detail.consultation, session_duration: sessionMinutes } };
+  }
 
   return mapConsultationDetailData({
     detail,

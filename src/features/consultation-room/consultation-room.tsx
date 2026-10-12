@@ -4,7 +4,8 @@ import "@livekit/components-styles";
 
 import { LiveKitRoom, useDataChannel, VideoConference } from "@livekit/components-react";
 import { useMutation } from "@tanstack/react-query";
-import { CircleDot, Clock, Video } from "lucide-react";
+import { CircleDot, Clock, PenLine, Video } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
@@ -13,6 +14,14 @@ import { formatCountdown, useServerNow } from "@/features/consultations/model/cl
 import { ApiError } from "@/lib/api/client";
 import { joinBooking, type JoinResponse } from "@/lib/api/consultations";
 import { formatDateTime } from "@/lib/format";
+
+import { useWhiteboard, WhiteboardProvider } from "./whiteboard/whiteboard-provider";
+
+// Excalidraw only loads once someone opens the board.
+const WhiteboardPanel = dynamic(() => import("./whiteboard/whiteboard-panel"), {
+  ssr: false,
+  loading: () => <div className="flex h-full items-center justify-center bg-white text-sm text-fg-muted">جارٍ تحميل السبورة…</div>,
+});
 
 type Ended = "left" | "time_up" | "error";
 
@@ -52,8 +61,10 @@ export function ConsultationRoom({ bookingId }: { bookingId: string }) {
         title={ended === "time_up" ? "انتهى وقت الجلسة" : ended === "error" ? "انقطع الاتصال" : "غادرت الجلسة"}
         text={
           ended === "time_up"
-            ? "شكراً لك. سيكون تسجيل الجلسة متاحاً في صفحة الحجز خلال دقائق."
-            : "يمكنك العودة إلى الجلسة ما دام وقتها لم ينتهِ."
+            ? join.data?.show_recording_notice === false
+              ? "شكراً لك على حضور الجلسة."
+              : "شكراً لك. سيكون تسجيل الجلسة متاحاً في صفحة الحجز خلال دقائق."
+            : "يمكنك العودة إلى الجلسة ما دام وقتها لم ينتهِ. إذا غادر الطرفان ولم يعُد أحد خلال خمس دقائق تُغلق الجلسة."
         }
         bookingId={bookingId}
         onRejoin={ended === "time_up" ? undefined : () => {
@@ -89,12 +100,52 @@ export function ConsultationRoom({ bookingId }: { bookingId: string }) {
       }}
       onError={() => setEnded("error")}
     >
-      <SessionBar grant={grant} />
-      {/* LiveKit's conference sizes itself to its parent: let it fill the rest of the screen. */}
-      <div className="min-h-0 flex-1 [&_.lk-video-conference]:h-full">
+      <WhiteboardProvider>
+        <SessionBar grant={grant} />
+        <SessionStage bookingId={bookingId} />
+      </WhiteboardProvider>
+    </LiveKitRoom>
+  );
+}
+
+/** The video conference, with the shared whiteboard beside it (below it on small screens) when open. */
+function SessionStage({ bookingId }: { bookingId: string }) {
+  const { isOpen } = useWhiteboard();
+  return (
+    <div className="flex min-h-0 flex-1 flex-col lg:flex-row-reverse">
+      {/* LiveKit's conference sizes itself to its parent: let it fill the rest of the space. */}
+      <div className={isOpen ? "min-h-48 flex-1 lg:min-h-0 [&_.lk-video-conference]:h-full" : "min-h-0 flex-1 [&_.lk-video-conference]:h-full"}>
         <VideoConference />
       </div>
-    </LiveKitRoom>
+      {isOpen ? (
+        <div className="min-h-0 flex-[1.6] border-t border-line-strong lg:flex-[1.4] lg:border-t-0 lg:border-l">
+          <WhiteboardPanel bookingId={bookingId} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** Opens or closes the board; pulses when the other participant has opened it. */
+function WhiteboardToggle() {
+  const { isOpen, open, close, peerOpened } = useWhiteboard();
+  return (
+    <button
+      type="button"
+      onClick={isOpen ? close : open}
+      aria-pressed={isOpen}
+      className={
+        isOpen
+          ? "flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-bold text-ink"
+          : "relative flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold hover:bg-white/20"
+      }
+    >
+      <PenLine aria-hidden="true" className="size-3.5" />
+      {isOpen ? "إخفاء السبورة" : peerOpened ? "الطرف الآخر فتح السبورة · افتحها" : "السبورة"}
+      {peerOpened ? (
+        <span aria-hidden="true" className="absolute -top-0.5 -left-0.5 size-2.5 animate-ping rounded-full bg-yellow-300" />
+      ) : null}
+    </button>
   );
 }
 
@@ -123,10 +174,13 @@ function SessionBar({ grant }: { grant: JoinResponse }) {
       <div className="flex items-center gap-2">
         <Video aria-hidden="true" className="size-4" />
         <span className="font-bold">{grant.role === "expert" ? "جلسة استشارة · الخبير" : "جلسة استشارة"}</span>
-        <span className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs">
-          <CircleDot aria-hidden="true" className="size-3 text-red-400" />
-          يتم تسجيل الجلسة
-        </span>
+        {grant.show_recording_notice ? (
+          <span className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs">
+            <CircleDot aria-hidden="true" className="size-3 text-red-400" />
+            يتم تسجيل الجلسة
+          </span>
+        ) : null}
+        <WhiteboardToggle />
       </div>
       <div
         role="timer"

@@ -106,8 +106,13 @@ export const routes = {
   studentConsultation: (bookingId: string) => route(`/students/consultations/${encodeURIComponent(bookingId)}`),
   /** The live meeting room, full screen (outside the dashboard chrome). */
   consultationSession: (bookingId: string) => route(`/students/session/${encodeURIComponent(bookingId)}`),
-  /** The expert's area: approvals, upcoming sessions and availability. */
-  studentExpert: route("/students/expert"),
+  /** The expert dashboard (`/expert/*`, guests are sent to sign in by `proxy.ts`). */
+  expertDashboard: route("/expert"),
+  expertServices: route("/expert/consultations"),
+  expertBookings: route("/expert/bookings"),
+  expertBooking: (bookingId: string) => route(`/expert/bookings/${encodeURIComponent(bookingId)}`),
+  expertCalendar: route("/expert/calendar"),
+  expertSettings: route("/expert/settings"),
   privacy: route("/privacy"),
   terms: route("/terms"),
 } as const;

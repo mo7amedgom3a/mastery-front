@@ -1645,6 +1645,77 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/consultations/bookings/{booking_id}/assets/upload-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Session Asset Upload Url
+         * @description A presigned S3 PUT for a whiteboard snapshot or board image; only while the room is open.
+         */
+        post: operations["session_asset_upload_url_api_v1_consultations_bookings__booking_id__assets_upload_url_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consultations/bookings/{booking_id}/assets/{asset_id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete Session Asset */
+        post: operations["complete_session_asset_api_v1_consultations_bookings__booking_id__assets__asset_id__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consultations/bookings/{booking_id}/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Session Assets */
+        get: operations["session_assets_api_v1_consultations_bookings__booking_id__assets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/consultations/bookings/{booking_id}/assets/{asset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Session Asset Link */
+        get: operations["session_asset_link_api_v1_consultations_bookings__booking_id__assets__asset_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/experts/me": {
         parameters: {
             query?: never;
@@ -1652,14 +1723,80 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Expert Profile */
+        /**
+         * Expert Profile
+         * @description 403 when the signed-in customer is not linked to a consultant.
+         */
         get: operations["expert_profile_api_v1_experts_me_get"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
+        /**
+         * Update Expert Profile
+         * @description 409 when the session length changes while upcoming slots or active bookings exist.
+         */
+        patch: operations["update_expert_profile_api_v1_experts_me_patch"];
+        trace?: never;
+    };
+    "/api/v1/experts/me/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Expert Summary */
+        get: operations["expert_summary_api_v1_experts_me_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/experts/me/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Expert Services */
+        get: operations["expert_services_api_v1_experts_me_services_get"];
+        put?: never;
+        /**
+         * Create Expert Service
+         * @description A new consultation the expert sells; bookable at once with their slots.
+         */
+        post: operations["create_expert_service_api_v1_experts_me_services_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/experts/me/services/{service_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Expert Service
+         * @description Deleted when nothing references it; otherwise archived (hidden, not bookable).
+         */
+        delete: operations["delete_expert_service_api_v1_experts_me_services__service_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Expert Service */
+        patch: operations["update_expert_service_api_v1_experts_me_services__service_id__patch"];
         trace?: never;
     };
     "/api/v1/experts/me/slots": {
@@ -1694,7 +1831,11 @@ export interface paths {
         delete: operations["delete_expert_slot_api_v1_experts_me_slots__slot_id__delete"];
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update Expert Slot
+         * @description Move a free slot. 409 when it is held or booked, or the new time overlaps.
+         */
+        patch: operations["update_expert_slot_api_v1_experts_me_slots__slot_id__patch"];
         trace?: never;
     };
     "/api/v1/experts/me/bookings": {
@@ -1704,8 +1845,31 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Expert Bookings */
+        /**
+         * Expert Bookings
+         * @description Paid bookings, newest first; filter by status (repeatable), service and start time.
+         */
         get: operations["expert_bookings_api_v1_experts_me_bookings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/experts/me/bookings/{booking_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Expert Booking Detail
+         * @description The booking, the customer's contact details and its event timeline.
+         */
+        get: operations["expert_booking_detail_api_v1_experts_me_bookings__booking_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1742,6 +1906,26 @@ export interface paths {
         put?: never;
         /** Reject Booking */
         post: operations["reject_booking_api_v1_experts_me_bookings__booking_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/experts/me/bookings/{booking_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel Booking
+         * @description Withdraw a paid booking before it starts; the customer is refunded.
+         */
+        post: operations["cancel_booking_api_v1_experts_me_bookings__booking_id__cancel_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1803,6 +1987,41 @@ export interface components {
             amount_minor?: number | null;
             /** Currency Code */
             currency_code?: string | null;
+        };
+        /** AssetLinkResponse */
+        AssetLinkResponse: {
+            /** Url */
+            url: string;
+            /** Content Type */
+            content_type: string;
+            /** Expires In Seconds */
+            expires_in_seconds: number;
+        };
+        /** AssetUploadUrlRequest */
+        AssetUploadUrlRequest: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "snapshot" | "board_image";
+            /** Content Type */
+            content_type: string;
+            /** Size Bytes */
+            size_bytes: number;
+        };
+        /** AssetUploadUrlResponse */
+        AssetUploadUrlResponse: {
+            /**
+             * Asset Id
+             * Format: uuid
+             */
+            asset_id: string;
+            /** Upload Url */
+            upload_url: string;
+            /** Content Type */
+            content_type: string;
+            /** Expires In Seconds */
+            expires_in_seconds: number;
         };
         /** AuthResponse */
         AuthResponse: {
@@ -1996,6 +2215,17 @@ export interface components {
             learning_outcomes?: string[];
             /** Skill Ids */
             skill_ids?: string[];
+        };
+        /** CancelBookingRequest */
+        CancelBookingRequest: {
+            /** Reason */
+            reason?: string | null;
+            /**
+             * Slots
+             * @default release
+             * @enum {string}
+             */
+            slots: "release" | "remove";
         };
         /** CartItemRequest */
         CartItemRequest: {
@@ -2364,6 +2594,27 @@ export interface components {
             /** Original Price */
             original_price?: number | null;
         };
+        /** CreateExpertServiceRequest */
+        CreateExpertServiceRequest: {
+            /** Title */
+            title: string;
+            /** Short Description */
+            short_description?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Price Amount */
+            price_amount: number | string;
+            /**
+             * Currency Code
+             * @default USD
+             */
+            currency_code: string;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
         /** CustomerAuthResponse */
         CustomerAuthResponse: {
             /**
@@ -2585,6 +2836,24 @@ export interface components {
             /** Fulfillment Status */
             fulfillment_status?: string | null;
         };
+        /** ExpertBookingDetailResponse */
+        ExpertBookingDetailResponse: {
+            booking: components["schemas"]["BookingResponse"];
+            customer: components["schemas"]["BookingCustomerResponse"];
+            /** Events */
+            events: components["schemas"]["BookingEventResponse"][];
+        };
+        /** ExpertBookingPageResponse */
+        ExpertBookingPageResponse: {
+            /** Items */
+            items: components["schemas"]["BookingResponse"][];
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+        };
         /** ExpertDetailResponse */
         ExpertDetailResponse: {
             expert: components["schemas"]["ExpertProfileResponse"];
@@ -2664,29 +2933,70 @@ export interface components {
             /** Youtube Url */
             youtube_url: string | null;
         };
-        /** ExpertSummaryResponse */
-        ExpertSummaryResponse: {
+        /** ExpertServiceResponse */
+        ExpertServiceResponse: {
             /**
-             * Key
-             * @description Trainer id, or c{consultant id} for consultant-only experts.
+             * Service Id
+             * Format: uuid
              */
-            key: string;
-            /** Trainer Id */
-            trainer_id: number | null;
-            /** Consultant Ids */
-            consultant_ids: number[];
-            /** Name */
-            name: string | null;
-            /** Profile Image */
-            profile_image: string | null;
-            /** Course Count */
-            course_count: number;
-            /** Diploma Count */
-            diploma_count: number;
-            /** Package Count */
-            package_count: number;
-            /** Consultation Count */
-            consultation_count: number;
+            service_id: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Slug */
+            slug: string;
+            /** Product Status */
+            product_status: string;
+            /** Title */
+            title: string | null;
+            /** Short Description */
+            short_description: string | null;
+            /** Description */
+            description: string | null;
+            /** Price Amount */
+            price_amount: string | null;
+            /** Currency Code */
+            currency_code: string | null;
+            /** Duration Minutes */
+            duration_minutes: number;
+            /** Is Active */
+            is_active: boolean;
+            /** Bookings Count */
+            bookings_count: number;
+            /** Created At */
+            created_at: string | null;
+        };
+        /**
+         * ExpertSlotResponse
+         * @description A slot in the expert's calendar, with whoever holds it.
+         */
+        ExpertSlotResponse: {
+            /**
+             * Slot Id
+             * Format: uuid
+             */
+            slot_id: string;
+            /** Starts At */
+            starts_at: string;
+            /** Ends At */
+            ends_at: string;
+            /** Timezone */
+            timezone: string;
+            /** Is Available */
+            is_available: boolean;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "free" | "held" | "booked";
+            /** Booking Id */
+            booking_id: string | null;
+            /** Booking Status */
+            booking_status: string | null;
+            /** Customer Name */
+            customer_name: string | null;
         };
         /** FaqResponse */
         FaqResponse: {
@@ -2721,7 +3031,7 @@ export interface components {
              */
             product_id: string;
             /** Provider */
-            provider: string;
+            provider: string | null;
             /** Amount Minor */
             amount_minor: number;
             /** Currency Code */
@@ -2943,7 +3253,7 @@ export interface components {
         /** LegacyPageResponse[ExpertSummaryResponse] */
         LegacyPageResponse_ExpertSummaryResponse_: {
             /** Items */
-            items: components["schemas"]["ExpertSummaryResponse"][];
+            items: components["schemas"]["app__modules__legacy__presentation__schemas__ExpertSummaryResponse"][];
             /** Total */
             total: number;
             /** Limit */
@@ -4034,6 +4344,30 @@ export interface components {
             /** @description Legacy consultation record; set for consultation products. */
             consultation?: components["schemas"]["ConsultationResponse"] | null;
         };
+        /** SessionAssetResponse */
+        SessionAssetResponse: {
+            /**
+             * Asset Id
+             * Format: uuid
+             */
+            asset_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "snapshot" | "board_image";
+            /** Content Type */
+            content_type: string;
+            /** Size Bytes */
+            size_bytes: number | null;
+            /**
+             * Uploader Role
+             * @enum {string}
+             */
+            uploader_role: "customer" | "expert";
+            /** Created At */
+            created_at: string | null;
+        };
         /** SkillResponse */
         SkillResponse: {
             /**
@@ -4142,6 +4476,46 @@ export interface components {
              * @default []
              */
             materials: components["schemas"]["MaterialResponse"][];
+        };
+        /** UpdateExpertProfileRequest */
+        UpdateExpertProfileRequest: {
+            /** Display Name */
+            display_name?: string | null;
+            /** Bio */
+            bio?: string | null;
+            /** Session Minutes */
+            session_minutes?: number | null;
+        };
+        /**
+         * UpdateExpertServiceRequest
+         * @description Only the fields sent change. An empty string clears a description.
+         */
+        UpdateExpertServiceRequest: {
+            /** Title */
+            title?: string | null;
+            /** Short Description */
+            short_description?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Price Amount */
+            price_amount?: number | string | null;
+            /** Currency Code */
+            currency_code?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /** UpdateSlotRequest */
+        UpdateSlotRequest: {
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -4256,6 +4630,18 @@ export interface components {
             /** Sort Order */
             sort_order: number;
         };
+        /** ExpertSummaryResponse */
+        app__modules__consultations__presentation__schemas__ExpertSummaryResponse: {
+            /** Pending Approvals */
+            pending_approvals: number;
+            /** Upcoming Sessions */
+            upcoming_sessions: number;
+            /** Completed This Month */
+            completed_this_month: number;
+            /** Refunds Pending */
+            refunds_pending: number;
+            next_booking: components["schemas"]["BookingResponse"] | null;
+        };
         /** CategoryResponse */
         app__modules__legacy__presentation__schemas__CategoryResponse: {
             /** Id */
@@ -4270,6 +4656,30 @@ export interface components {
             description: string | null;
             /** Order */
             order: number | null;
+        };
+        /** ExpertSummaryResponse */
+        app__modules__legacy__presentation__schemas__ExpertSummaryResponse: {
+            /**
+             * Key
+             * @description Trainer id, or c{consultant id} for consultant-only experts.
+             */
+            key: string;
+            /** Trainer Id */
+            trainer_id: number | null;
+            /** Consultant Ids */
+            consultant_ids: number[];
+            /** Name */
+            name: string | null;
+            /** Profile Image */
+            profile_image: string | null;
+            /** Course Count */
+            course_count: number;
+            /** Diploma Count */
+            diploma_count: number;
+            /** Package Count */
+            package_count: number;
+            /** Consultation Count */
+            consultation_count: number;
         };
         /** InstructorResponse */
         app__modules__legacy__presentation__schemas__InstructorResponse: {
@@ -4385,6 +4795,8 @@ export interface components {
             approved_at: string | null;
             /** Rejection Reason */
             rejection_reason: string | null;
+            /** Ended Reason */
+            ended_reason: string | null;
             /** Join Opens At */
             join_opens_at: string | null;
             /** Hard Stop At */
@@ -4395,6 +4807,11 @@ export interface components {
             recording_status: string;
             /** Recording Available */
             recording_available: boolean;
+            /**
+             * Recording Access
+             * @default true
+             */
+            recording_access: boolean;
             /** Customer Joined At */
             customer_joined_at: string | null;
             /** Expert Joined At */
@@ -4482,6 +4899,11 @@ export interface components {
             terms_accepted: boolean;
             /** Terms Version */
             terms_version: string;
+            /**
+             * Recording Access
+             * @default true
+             */
+            recording_access: boolean;
             /** Success Url */
             success_url?: string | null;
             /** Cancel Url */
@@ -4501,6 +4923,19 @@ export interface components {
              * @default true
              */
             accepted: boolean;
+        };
+        /** DeleteExpertServiceResponse */
+        DeleteExpertServiceResponse: {
+            /**
+             * Service Id
+             * Format: uuid
+             */
+            service_id: string;
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "deleted" | "archived";
         };
         /** JoinResponse */
         JoinResponse: {
@@ -4522,6 +4957,11 @@ export interface components {
             hard_stop_at: string;
             /** Server Now */
             server_now: string;
+            /**
+             * Show Recording Notice
+             * @default true
+             */
+            show_recording_notice: boolean;
         };
         /** BookingCheckoutResponse */
         BookingCheckoutResponse: {
@@ -4531,6 +4971,31 @@ export interface components {
              */
             booking_id: string;
             checkout: components["schemas"]["CheckoutSessionResponse"];
+        };
+        /** BookingCustomerResponse */
+        BookingCustomerResponse: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Name */
+            name: string | null;
+            /** Email */
+            email: string;
+            /** Phone */
+            phone: string | null;
+            /** Country Code */
+            country_code: string | null;
+        };
+        /** BookingEventResponse */
+        BookingEventResponse: {
+            /** Event Type */
+            event_type: string;
+            /** Note */
+            note: string | null;
+            /** Created At */
+            created_at: string;
         };
         /** ConsultantProfileResponse */
         ConsultantProfileResponse: {
@@ -4543,6 +5008,25 @@ export interface components {
             display_name: string | null;
             /** Session Minutes */
             session_minutes: number;
+            /** Email */
+            email?: string | null;
+            /** Bio */
+            bio?: string | null;
+            /**
+             * Services Count
+             * @default 0
+             */
+            services_count: number;
+            /**
+             * Slots Upcoming
+             * @default 0
+             */
+            slots_upcoming: number;
+            /**
+             * Booking Lead Minutes
+             * @default 0
+             */
+            booking_lead_minutes: number;
         };
     };
     responses: never;
@@ -7932,6 +8416,144 @@ export interface operations {
             };
         };
     };
+    session_asset_upload_url_api_v1_consultations_bookings__booking_id__assets_upload_url_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssetUploadUrlRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetUploadUrlResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_session_asset_api_v1_consultations_bookings__booking_id__assets__asset_id__complete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+                asset_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionAssetResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    session_assets_api_v1_consultations_bookings__booking_id__assets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionAssetResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    session_asset_link_api_v1_consultations_bookings__booking_id__assets__asset_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+                asset_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetLinkResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     expert_profile_api_v1_experts_me_get: {
         parameters: {
             query?: never;
@@ -7950,6 +8572,208 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConsultantProfileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_expert_profile_api_v1_experts_me_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateExpertProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsultantProfileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    expert_summary_api_v1_experts_me_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__modules__consultations__presentation__schemas__ExpertSummaryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    expert_services_api_v1_experts_me_services_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpertServiceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_expert_service_api_v1_experts_me_services_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateExpertServiceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpertServiceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_expert_service_api_v1_experts_me_services__service_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                service_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteExpertServiceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_expert_service_api_v1_experts_me_services__service_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                service_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateExpertServiceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpertServiceResponse"];
                 };
             };
             /** @description Validation Error */
@@ -7983,7 +8807,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SlotResponse"][];
+                    "application/json": components["schemas"]["ExpertSlotResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -8063,9 +8887,51 @@ export interface operations {
             };
         };
     };
-    expert_bookings_api_v1_experts_me_bookings_get: {
+    update_expert_slot_api_v1_experts_me_slots__slot_id__patch: {
         parameters: {
             query?: never;
+            header?: never;
+            path: {
+                slot_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSlotRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    expert_bookings_api_v1_experts_me_bookings_get: {
+        parameters: {
+            query?: {
+                status?: string[] | null;
+                service_id?: string | null;
+                from?: string | null;
+                to?: string | null;
+                limit?: number;
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: {
@@ -8080,7 +8946,40 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BookingResponse"][];
+                    "application/json": components["schemas"]["ExpertBookingPageResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    expert_booking_detail_api_v1_experts_me_bookings__booking_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpertBookingDetailResponse"];
                 };
             };
             /** @description Validation Error */
@@ -8141,6 +9040,43 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["RejectBookingRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_booking_api_v1_experts_me_bookings__booking_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelBookingRequest"];
             };
         };
         responses: {
