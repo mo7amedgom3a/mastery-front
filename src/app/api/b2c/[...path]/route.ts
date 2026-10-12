@@ -20,6 +20,8 @@ const RULES: readonly Rule[] = [
   { methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], pattern: /^me(\/[A-Za-z0-9_-]+)*$/, session: true },
   // Read by wishlist sync to turn a legacy id into a catalog product id.
   { methods: ["GET"], pattern: /^catalog\/products\/[A-Za-z0-9_-]+$/, session: false },
+  // Onboarding choices (skills, topics, product types), read by the client onboarding steps.
+  { methods: ["GET"], pattern: /^catalog\/onboarding-options$/, session: false },
   // Behavior events from the browser; open to guests too (identified by X-Client-Fingerprint).
   { methods: ["POST"], pattern: /^analytics\/events$/, session: false },
   // The signed-in customer's cart, checkout and purchases.

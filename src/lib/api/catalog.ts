@@ -116,7 +116,10 @@ export function getCatalogRelatedResources(
 
 /** Active skills, product tags and product types a customer can pick from while onboarding. */
 export function getOnboardingOptions(options?: ApiRequestOptions): Promise<OnboardingOptionsResponse> {
-  return apiRequest<OnboardingOptionsResponse>("GET", catalogPaths.onboardingOptions, options);
+  // In the browser read it through this app (`/api/b2c`): `API_BASE_URL` is server-only, so a
+  // direct call would fall back to `localhost:8000` in the client bundle.
+  const viaApp = typeof window !== "undefined" ? { sameOrigin: true as const } : {};
+  return apiRequest<OnboardingOptionsResponse>("GET", catalogPaths.onboardingOptions, { ...options, ...viaApp });
 }
 
 export const catalogQueries = {

@@ -1,8 +1,9 @@
 import type { LiveTrainingDetailDto } from "../model/types";
 
 /**
- * MOCK: live trainings until the backend has an endpoint for them. Transcribed from the Sales
- * Mastery (cohort 7) page on live.emasteryacademy.com; the list endpoint drops `details`.
+ * MOCK: live trainings until the backend has an endpoint for them. Placeholder cohort 8: shifted
+ * forward from the cohort-7 data transcribed from the Sales Mastery page on live.emasteryacademy.com
+ * until the real dates are announced; the list endpoint drops `details`.
  * `get-live-trainings.ts` is the only reader, so this file and that one are all that change when
  * the real API ships.
  *
@@ -12,13 +13,13 @@ import type { LiveTrainingDetailDto } from "../model/types";
 export const LIVE_TRAININGS: readonly LiveTrainingDetailDto[] = [
   {
     id: 1,
-    slug: "sales-mastery-professional-7",
+    slug: "sales-mastery-professional-8",
     title: "إتقان المبيعات",
     title_en: "Sales Mastery Professional",
     subtitle: "البيع ليس جودة الكلام بل فن التأثير والتفاوض والإقناع، لذا في المبيعات لا نتعلم الكلام بل المهارات.",
     summary:
       "دورة احترافية مكثفة على مدار 5 أيام، تحوّل مهاراتك البيعية من العمل العشوائي إلى منظومة احترافية تعتمد على عقلية النجاح، خطوات بيع منظمة، ومهارات إقناع وإغلاق متقدمة.",
-    cohort_label: "الدفعة 7",
+    cohort_label: "الدفعة 8",
     cover_image: "https://live.emasteryacademy.com/uploads/731f8b00-b0d9-4e8a-9526-5c7002b40a1c.png",
     hero_image: "https://live.emasteryacademy.com/assets/smp-hero-trainer-DWJ1gM6M.webp",
     trainer: {
@@ -26,8 +27,8 @@ export const LIVE_TRAININGS: readonly LiveTrainingDetailDto[] = [
       title: "خبير التسويق وتنمية المبيعات",
       image: "https://live.emasteryacademy.com/assets/smp-hero-trainer-DWJ1gM6M.webp",
     },
-    starts_at: "2026-10-05T19:30:00+03:00",
-    ends_at: "2026-10-10T22:00:00+03:00",
+    starts_at: "2026-11-08T19:30:00+03:00",
+    ends_at: "2026-11-12T22:00:00+03:00",
     sessions_count: 5,
     session_start: "19:30",
     session_end: "22:00",
@@ -152,7 +153,7 @@ export const LIVE_TRAININGS: readonly LiveTrainingDetailDto[] = [
         {
           question: "ما هي مدة الدورة؟",
           answer:
-            "الدورة 5 أيام متتالية من 5 إلى 10 أكتوبر 2026، كل جلسة من 7:30 إلى 10:00 مساءً بتوقيت مكة المكرمة. مع ساعة استشارات يومية مجانية بعد كل جلسة.",
+            "الدورة 5 أيام متتالية من 8 إلى 12 نوفمبر 2026، كل جلسة من 7:30 إلى 10:00 مساءً بتوقيت مكة المكرمة. مع ساعة استشارات يومية مجانية بعد كل جلسة.",
         },
         {
           question: "كيف أحصل على الشهادة؟",
