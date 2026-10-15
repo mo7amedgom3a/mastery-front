@@ -11,7 +11,15 @@ const LESSON_FORMS = { one: "درس واحد", two: "درسان", few: "دروس
 const FREE_LESSON_FORMS = { one: "درس مجاني", two: "درسان مجانيان", few: "دروس مجانية", many: "درساً مجانياً" };
 
 /** Price, cart/wishlist controls and what's included. Sticky beside the content on large screens. */
-export function PurchaseCard({ product, share }: { product: ProductDetailVM; share?: ReactNode }) {
+export function PurchaseCard({
+  product,
+  share,
+  preview = false,
+}: {
+  product: ProductDetailVM;
+  share?: ReactNode;
+  preview?: boolean;
+}) {
   const { price } = product;
   const facts = [
     product.duration ? { icon: Clock, label: `${product.duration} من المحتوى` } : null,
@@ -28,9 +36,19 @@ export function PurchaseCard({ product, share }: { product: ProductDetailVM; sha
     // `lg:short:` — beside the content on a short viewport, tighter spacing so the whole card fits.
     <aside
       aria-label={`الاشتراك في ${kindLabel[product.kind]}`}
-      className="rounded-panel border border-line-strong bg-surface p-6 lg:short:p-5"
+      className="overflow-hidden rounded-panel border border-line-strong bg-surface"
     >
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 tabular-nums">
+      {product.image ? (
+        <div className="relative aspect-video w-full overflow-hidden border-b border-line bg-surface-alt">
+          <img
+            src={product.image}
+            alt={product.title}
+            className="size-full object-cover"
+          />
+        </div>
+      ) : null}
+      <div className="p-6 lg:short:p-5">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 tabular-nums">
         {price.free ? (
           <span className="ma-tag ma-tag--green text-base font-bold">مجاني</span>
         ) : price.current ? (
@@ -54,14 +72,20 @@ export function PurchaseCard({ product, share }: { product: ProductDetailVM; sha
       </div>
 
       <div className="mt-5 lg:short:mt-4">
-        {purchaseActionsFor(product.kind, {
-          id: product.id,
-          title: product.title,
-          href: product.href,
-          image: product.image,
-          price: product.price,
-          priceAmount: product.priceAmount,
-        })}
+        {preview ? (
+          <div className="rounded-control border border-line bg-surface-alt py-3 px-4 text-center text-sm font-medium text-fg-muted">
+            معاينة المتجر — أزرار الشراء معطّلة
+          </div>
+        ) : (
+          purchaseActionsFor(product.kind, {
+            id: product.id,
+            title: product.title,
+            href: product.href,
+            image: product.image,
+            price: product.price,
+            priceAmount: product.priceAmount,
+          })
+        )}
       </div>
       {share ? <div className="mt-3">{share}</div> : null}
 
@@ -74,6 +98,7 @@ export function PurchaseCard({ product, share }: { product: ProductDetailVM; sha
           </li>
         ))}
       </ul>
+      </div>
     </aside>
   );
 }

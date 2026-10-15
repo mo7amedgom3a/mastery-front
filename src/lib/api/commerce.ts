@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import type { ApiRequestContext } from "@/lib/api/client";
+import { apiRequest, type ApiRequestContext, type ApiRequestOptions } from "@/lib/api/client";
 import {
   customerRequest,
   withAuthCookies,
@@ -16,6 +16,7 @@ type CreateCheckoutOperation = "create_checkout_session_api_v1_checkout_sessions
 type FreeEnrollmentOperation = "create_free_enrollment_api_v1_checkout_free_enrollments_post";
 type PaymentIntentOperation = "payment_intent_status_api_v1_payments_intents__payment_intent_id__get";
 type ReconcileOperation = "reconcile_payment_intent_api_v1_payments_intents__payment_intent_id__reconcile_post";
+type TamaraOptionsOperation = "tamara_payment_options_api_v1_payments_tamara_options_get";
 type ListOrdersOperation = "list_orders_api_v1_orders_get";
 type GetOrderOperation = "get_order_api_v1_orders__order_id__get";
 type OrderInvoicesOperation = "order_invoices_api_v1_orders__order_id__invoices_get";
@@ -30,6 +31,8 @@ export type CheckoutSessionRequest = RequestBody<CreateCheckoutOperation>;
 export type CheckoutSessionResponse = SuccessResponse<CreateCheckoutOperation>;
 export type FreeEnrollmentResponse = SuccessResponse<FreeEnrollmentOperation>;
 export type PaymentIntentStatusResponse = SuccessResponse<PaymentIntentOperation>;
+export type TamaraOptionsParams = QueryParams<TamaraOptionsOperation>;
+export type TamaraOptionsResponse = SuccessResponse<TamaraOptionsOperation>;
 export type OrdersParams = QueryParams<ListOrdersOperation>;
 export type OrderPageResponse = SuccessResponse<ListOrdersOperation>;
 export type OrderSummaryResponse = OrderPageResponse["items"][number];
@@ -56,6 +59,7 @@ const commercePaths = {
   freeEnrollments: "/api/v1/checkout/free-enrollments",
   paymentIntent: "/api/v1/payments/intents/{payment_intent_id}",
   reconcile: "/api/v1/payments/intents/{payment_intent_id}/reconcile",
+  tamaraOptions: "/api/v1/payments/tamara/options",
   orders: "/api/v1/orders",
   order: "/api/v1/orders/{order_id}",
   orderInvoices: "/api/v1/orders/{order_id}/invoices",
@@ -68,6 +72,7 @@ export const commerceKeys = {
   cart: () => [...commerceKeys.all, "cart"] as const,
   quote: () => [...commerceKeys.all, "quote"] as const,
   paymentIntent: (id: string) => [...commerceKeys.all, "payment-intent", id] as const,
+  tamaraOptions: (amountMinor: number) => [...commerceKeys.all, "tamara-options", amountMinor] as const,
   orders: (params?: OrdersParams) => [...commerceKeys.all, "orders", params ?? {}] as const,
   order: (id: string) => [...commerceKeys.all, "order", id] as const,
   entitlements: (params?: EntitlementsParams) => [...commerceKeys.all, "entitlements", params ?? {}] as const,
@@ -169,6 +174,14 @@ export function reconcilePayment(
   });
 }
 
+/**
+ * Public: whether Tamara accepts this amount (catalog USD cents), the amount in Tamara's currency
+ * (AED), the instalment plans and the widget's public key.
+ */
+export function getTamaraOptions(params: TamaraOptionsParams, options?: ApiRequestOptions): Promise<TamaraOptionsResponse> {
+  return apiRequest<TamaraOptionsResponse>("GET", commercePaths.tamaraOptions, { ...options, query: params });
+}
+
 export function listOrders(params?: OrdersParams, options?: AuthenticatedRequestOptions): Promise<OrderPageResponse> {
   return customerRequest<OrderPageResponse>("GET", commercePaths.orders, {
     ...withAuthCookies(options),
@@ -224,6 +237,13 @@ export const commerceQueries = {
       queryKey: commerceKeys.quote(),
       queryFn: ({ signal }) => quoteCart({ signal, context }),
       staleTime: 0,
+    }),
+  /** Keyed by the amount, so eligibility and the widget follow every cart change. */
+  tamaraOptions: (amountMinor: number) =>
+    queryOptions({
+      queryKey: commerceKeys.tamaraOptions(amountMinor),
+      queryFn: ({ signal }) => getTamaraOptions({ amount_minor: amountMinor, currency_code: CHECKOUT_CURRENCY }, { signal }),
+      staleTime: 5 * 60_000,
     }),
   orders: (params?: OrdersParams, context?: ApiRequestContext) =>
     queryOptions({

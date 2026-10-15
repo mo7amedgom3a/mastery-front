@@ -152,21 +152,16 @@ const tests: [string, () => void][] = [
     },
   ],
   [
-    "pay-later plans follow their limits and split the total",
+    "card and Tamara are offered for any total to pay",
     () => {
       const q = quote(["course:1"]);
-      const tabby = q.paymentMethods.find((method) => method.id === "tabby");
-      assert.deepEqual(tabby?.installments, { count: 4, amount: 25 });
-      const big = quote(["diploma:3", "course:1"], null, {});
-      assert.equal(big.paymentMethods.find((method) => method.id === "card")?.eligible, true);
-      const tiny = buildQuote({
-        lines: [{ key: "course:9", addons: [] }],
-        items: new Map([["course:9", item("course", 9, 5)]]),
-        currency: "USD",
-      });
-      const tamara = tiny.paymentMethods.find((method) => method.id === "tamara");
-      assert.equal(tamara?.eligible, false);
-      assert.ok(tamara?.reason);
+      assert.deepEqual(
+        q.paymentMethods.map((method) => [method.id, method.eligible]),
+        [
+          ["card", true],
+          ["tamara", true],
+        ],
+      );
     },
   ],
 ];

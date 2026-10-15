@@ -12,6 +12,7 @@ import { routes } from "@/config/routes";
 import { commerceQueries } from "@/lib/api/commerce";
 import { formatCount, formatDate, fromMinor } from "@/lib/format";
 
+import { PaymentProvider } from "./components/payment-provider";
 import { StatusTag } from "./components/status-tag";
 import { orderNumber, orderStatus } from "./model/status";
 
@@ -84,8 +85,9 @@ export function OrdersPage() {
                 </span>
               </div>
               <div className="flex items-center gap-4">
+                <PaymentProvider provider={order.payment_provider} />
                 <StatusTag status={orderStatus(order.status)} />
-                <Money amount={fromMinor(order.amount_minor)} className="font-bold" />
+                <Money amount={fromMinor(order.amount_minor)} currency={order.currency_code} className="font-bold" />
                 <ChevronLeft aria-hidden="true" className="size-5 fill-none text-fg-muted" />
               </div>
             </AppLink>

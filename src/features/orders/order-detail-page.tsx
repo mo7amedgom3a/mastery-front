@@ -9,6 +9,7 @@ import { commerceQueries } from "@/lib/api/commerce";
 import { formatDateTime } from "@/lib/format";
 
 import { AccessCard, lineTitles, OrderInvoices, OrderLines, OrderTransactions } from "./components/order-sections";
+import { PaymentProvider } from "./components/payment-provider";
 import { StatusTag } from "./components/status-tag";
 import { orderNumber, orderStatus, paymentStatus } from "./model/status";
 
@@ -53,7 +54,7 @@ export function OrderDetailPage({ orderId }: { orderId: string }) {
   const titles = lineTitles(detail);
   return (
     <div className="flex flex-col gap-10">
-      <dl className="m-0 grid gap-4 rounded-panel border border-line-strong bg-surface p-5 text-sm sm:grid-cols-2 lg:grid-cols-4">
+      <dl className="m-0 grid gap-4 rounded-panel border border-line-strong bg-surface p-5 text-sm sm:grid-cols-2 lg:grid-cols-5">
         <div className="flex flex-col gap-1">
           <dt className="text-fg-muted">رقم الطلب</dt>
           <dd className="m-0 font-bold" dir="ltr">
@@ -74,6 +75,19 @@ export function OrderDetailPage({ orderId }: { orderId: string }) {
           <dt className="text-fg-muted">حالة الدفع</dt>
           <dd className="m-0">
             <StatusTag status={paymentStatus(detail.payment_status)} />
+          </dd>
+        </div>
+        <div className="flex flex-col items-start gap-1">
+          <dt className="text-fg-muted">طريقة الدفع</dt>
+          <dd className="m-0 flex items-center gap-2">
+            {detail.payment_provider ? (
+              <>
+                <PaymentProvider provider={detail.payment_provider} size="md" />
+                {detail.payment_provider === "tamara" ? <span className="text-fg-muted">بالتقسيط</span> : null}
+              </>
+            ) : (
+              "—"
+            )}
           </dd>
         </div>
       </dl>

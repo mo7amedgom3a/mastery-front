@@ -155,22 +155,9 @@ function applyCoupon(
   };
 }
 
-function paymentOptions(total: number, currency: string): PaymentMethodOption[] {
-  return PAYMENT_METHODS.map((method) => {
-    const amount = toMajor(total);
-    const tooLow = method.min !== undefined && amount < method.min;
-    const tooHigh = method.max !== undefined && amount > method.max;
-    const eligible = total > 0 && !tooLow && !tooHigh;
-    const reason =
-      total > 0 && (tooLow || tooHigh) && method.min !== undefined && method.max !== undefined
-        ? `متاح للطلبات من ${money(method.min, currency)} إلى ${money(method.max, currency)}.`
-        : null;
-    const installments =
-      eligible && method.installments
-        ? { count: method.installments, amount: toMajor(Math.ceil(total / method.installments)) }
-        : null;
-    return { id: method.id, eligible, reason, installments };
-  });
+/** Any method can pay a non-zero total; Tamara's own limits are checked live in the cart. */
+function paymentOptions(total: number): PaymentMethodOption[] {
+  return PAYMENT_METHODS.map((method) => ({ id: method.id, eligible: total > 0, reason: null, installments: null }));
 }
 
 export function buildQuote({ lines: requested, items, coupon, currency, now = Date.now() }: QuoteInput): Quote {
@@ -248,6 +235,6 @@ export function buildQuote({ lines: requested, items, coupon, currency, now = Da
       tax: 0,
       total: toMajor(total),
     },
-    paymentMethods: paymentOptions(total, currency),
+    paymentMethods: paymentOptions(total),
   };
 }

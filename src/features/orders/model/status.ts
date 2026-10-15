@@ -46,6 +46,17 @@ const transactionEvents: Record<string, string> = {
   "checkout.session.expired": "انتهت مهلة صفحة الدفع",
   "payment_intent.payment_failed": "رُفضت عملية الدفع",
   "stripe.checkout_session.reconciled": "تأكيد الدفع من Stripe",
+  // Tamara: the backend records `tamara.order.<status>` each time it re-reads the order.
+  "tamara.order.new": "بدء الدفع عبر تمارا",
+  "tamara.order.approved": "وافقت تمارا على الطلب",
+  "tamara.order.authorised": "تأكيد الطلب لدى تمارا",
+  "tamara.order.partially_captured": "تحصيل جزء من المبلغ عبر تمارا",
+  "tamara.order.fully_captured": "اكتمل الدفع عبر تمارا",
+  "tamara.order.declined": "رفضت تمارا الطلب",
+  "tamara.order.expired": "انتهت مهلة صفحة تمارا",
+  "tamara.order.canceled": "أُلغي الطلب لدى تمارا",
+  "tamara.order.partially_refunded": "استرداد جزئي عبر تمارا",
+  "tamara.order.fully_refunded": "استرداد كامل عبر تمارا",
 };
 
 function view(map: Record<string, StatusView>, status: string | null | undefined): StatusView {

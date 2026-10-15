@@ -31,9 +31,32 @@ const centsFormatter = new Intl.NumberFormat("en-US", {
  * Any amount, for totals and discounts: "$129", "$26.10", "$0". Unlike `formatPrice` it never returns
  * null and keeps cents when there are any (a percentage coupon produces them). Render inside dir="ltr".
  */
-export function formatMoney(amount: number): string {
+export function formatMoney(amount: number, currency: string = siteConfig.currency): string {
   const value = Number.isFinite(amount) ? amount : 0;
+  if (currency.toUpperCase() !== siteConfig.currency) return foreignFormatter(currency).format(value);
   return Number.isInteger(value) ? priceFormatter.format(value) : centsFormatter.format(value);
+}
+
+const foreignFormatters = new Map<string, Intl.NumberFormat>();
+
+/**
+ * Orders paid with Tamara are charged in its currency (AED). "AED 143.23": the code, always with
+ * fils, since that is what the customer paid.
+ */
+function foreignFormatter(currency: string): Intl.NumberFormat {
+  const code = currency.toUpperCase();
+  let formatter = foreignFormatters.get(code);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: code,
+      currencyDisplay: "code",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    foreignFormatters.set(code, formatter);
+  }
+  return formatter;
 }
 
 /** API amounts are integers in minor units (cents); the UI works in major units. */
@@ -50,11 +73,14 @@ export function formatDurationFromSeconds(seconds: number | null | undefined): s
   if (!seconds || seconds < 60) {
     return null;
   }
-  const hours = seconds / 3600;
-  if (hours < 1) {
-    return `${Math.round(seconds / 60)} دقيقة`;
+  const total = Math.round(seconds);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  if (h > 0) {
+    const hoursLabel = formatHours(h);
+    return m > 0 ? `${hoursLabel} و ${m} دقيقة` : hoursLabel;
   }
-  return formatHours(Math.round(hours));
+  return `${m} دقيقة`;
 }
 
 /** Lesson length as a clock, e.g. 235 → "3:55", 3725 → "1:02:05". Render inside dir="ltr". */

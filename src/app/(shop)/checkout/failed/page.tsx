@@ -9,13 +9,18 @@ export const metadata: Metadata = {
 };
 
 export default async function Page({ searchParams }: PageProps<"/checkout/failed">) {
-  const orderId = (await searchParams).order_id;
+  const params = await searchParams;
+  const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
   return (
     <>
       <ShopPageHeader id="checkout-failed-title" title="لم يكتمل الدفع" />
       <section aria-labelledby="checkout-failed-title" className="ma-section pt-8 md:pt-10">
         <div className="ma-container">
-          <CheckoutEndedPage outcome="failed" orderId={Array.isArray(orderId) ? orderId[0] : orderId} />
+          <CheckoutEndedPage
+            outcome="failed"
+            orderId={first(params.order_id)}
+            paymentIntentId={first(params.payment_intent_id)}
+          />
         </div>
       </section>
     </>

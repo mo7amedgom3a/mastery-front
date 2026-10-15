@@ -23,7 +23,7 @@ export function parseShopKey(key: string): { kind: ShopItemKind; id: number } | 
 /** Paid extras attached to one cart line. */
 export type AddonCode = "unlimited_access" | "cpd_certificate";
 
-export type PaymentMethodId = "card" | "apple_pay" | "mada" | "tabby" | "tamara";
+export type PaymentMethodId = "card" | "tamara";
 
 /* ---------- Items ---------- */
 

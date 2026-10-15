@@ -33,6 +33,7 @@ import { cn } from "@/lib/cn";
 
 import { entitlementStatus, fulfillmentStatus, paymentStatus, transactionEvent } from "../model/status";
 import { InvoiceDownloadButton } from "./invoice-download-button";
+import { PaymentProvider } from "./payment-provider";
 import { StatusTag } from "./status-tag";
 
 /** Link, type label and id of a catalog product by its slug; null for products not sold on this site. */
@@ -85,7 +86,7 @@ export function OrderLines({ order, artwork }: { order: OrderDetailResponse; art
                   )}
                   {line.quantity > 1 ? <span className="text-sm text-fg-muted">الكمية: {line.quantity}</span> : null}
                 </div>
-                <Money amount={fromMinor(line.total_amount_minor)} className="font-bold" />
+                <Money amount={fromMinor(line.total_amount_minor)} currency={order.currency_code} className="font-bold" />
               </div>
             </li>
           );
@@ -93,7 +94,7 @@ export function OrderLines({ order, artwork }: { order: OrderDetailResponse; art
       </ul>
       <div className="flex items-baseline justify-between gap-4 border-t border-line-strong pt-4">
         <span className="text-lg font-bold">الإجمالي المدفوع</span>
-        <Money amount={fromMinor(order.amount_minor)} className="text-2xl font-bold" />
+        <Money amount={fromMinor(order.amount_minor)} currency={order.currency_code} className="text-2xl font-bold" />
       </div>
     </section>
   );
@@ -144,6 +145,9 @@ export function OrderTransactions({ transactions }: { transactions: OrderTransac
                 العملية
               </th>
               <th scope="col" className="p-3 text-start font-bold">
+                طريقة الدفع
+              </th>
+              <th scope="col" className="p-3 text-start font-bold">
                 الحالة
               </th>
               <th scope="col" className="p-3 text-start font-bold">
@@ -159,10 +163,13 @@ export function OrderTransactions({ transactions }: { transactions: OrderTransac
               <tr key={transaction.transaction_id} className="border-t border-line">
                 <td className="p-3">{transactionEvent(transaction.event_type)}</td>
                 <td className="p-3">
+                  <PaymentProvider provider={transaction.provider} />
+                </td>
+                <td className="p-3">
                   <StatusTag status={paymentStatus(transaction.status)} />
                 </td>
                 <td className="p-3">
-                  <Money amount={fromMinor(transaction.amount_minor)} />
+                  <Money amount={fromMinor(transaction.amount_minor)} currency={transaction.currency_code} />
                 </td>
                 <td className="p-3 text-fg-muted">
                   {transaction.created_at ? formatDateTime(transaction.created_at) : "—"}

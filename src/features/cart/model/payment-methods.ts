@@ -1,71 +1,48 @@
 import type { PaymentMethodId } from "@/lib/shop/contract";
 
+/** A card network or provider logo from `public/icons`. */
+export type PaymentMark = {
+  src: string;
+  name: string;
+  /** Visa and mada are drawn in a band across a square canvas: `cover` crops the empty top and bottom. */
+  fit: "object-cover" | "object-contain";
+};
+
 export type PaymentMethodDef = {
   id: PaymentMethodId;
   label: string;
   description: string;
-  /** Wordmarks shown beside the label. Text stand-ins until the official logo files are added. */
-  marks: readonly string[];
+  /** Card networks beside the label. Tamara shows its own gradient logo instead (see `TamaraLogo`). */
+  marks: readonly PaymentMark[];
   /** The provider the order is handed to. */
-  provider: "stripe" | "tabby" | "tamara";
-  /** Pay-later plans: the order is split into this many equal payments. */
-  installments?: number;
-  /** Order total range the provider accepts, in major units. */
-  min?: number;
-  max?: number;
-  /** Only offered on devices that can use it (checked in the browser). */
-  requires?: "apple_pay";
+  provider: "stripe" | "tamara";
 };
 
+export const PAYMENT_MARKS = {
+  visa: { src: "/icons/visa.svg", name: "Visa", fit: "object-cover" },
+  mastercard: { src: "/icons/mastercard.svg", name: "Mastercard", fit: "object-contain" },
+  mada: { src: "/icons/Mada-01.svg", name: "مدى", fit: "object-cover" },
+} as const satisfies Record<string, PaymentMark>;
+
 /**
- * The payment methods the academy supports. Eligibility limits for the pay-later providers are
- * MOCK values.
- * TODO(api): Tabby and Tamara settle in SAR/AED (and mada is a Saudi network) while the catalog is
- * priced in USD; the real integration needs a currency decision, and the providers' own
- * pre-scoring calls replace the static limits.
+ * The payment methods the academy supports. Tamara's eligibility (amount limits, plans) comes from
+ * `GET /payments/tamara/options`, not from here: it charges in AED, converted from the USD price.
  */
 export const PAYMENT_METHODS: readonly PaymentMethodDef[] = [
   {
     id: "card",
-    label: "بطاقة ائتمانية",
-    description: "ادفع ببطاقة Visa أو Mastercard عبر Stripe.",
-    marks: ["VISA", "Mastercard"],
+    label: "بطاقة ائتمانية أو مدى",
+    description: "ادفع ببطاقة Visa أو Mastercard أو مدى عبر Stripe.",
+    marks: [PAYMENT_MARKS.visa, PAYMENT_MARKS.mastercard, PAYMENT_MARKS.mada],
     provider: "stripe",
-  },
-  {
-    id: "mada",
-    label: "بطاقة مدى",
-    description: "ادفع ببطاقة مدى أو Visa الصادرة من بنك سعودي.",
-    marks: ["mada", "VISA"],
-    provider: "stripe",
-  },
-  {
-    id: "apple_pay",
-    label: "Apple Pay",
-    description: "ادفع بلمسة من جهاز Apple، دون إدخال بيانات البطاقة.",
-    marks: ["Apple Pay"],
-    provider: "stripe",
-    requires: "apple_pay",
-  },
-  {
-    id: "tabby",
-    label: "تابي",
-    description: "قسّم المبلغ على 4 دفعات بلا فوائد.",
-    marks: ["tabby"],
-    provider: "tabby",
-    installments: 4,
-    min: 10,
-    max: 1500,
   },
   {
     id: "tamara",
     label: "تمارا",
-    description: "قسّم المبلغ على 3 دفعات بلا فوائد.",
-    marks: ["tamara"],
+    // Tamara's checkout messaging for the UAE: "Monthly payments. No late fees."
+    description: "دفعات شهرية. بدون رسوم تأخير.",
+    marks: [],
     provider: "tamara",
-    installments: 3,
-    min: 25,
-    max: 2000,
   },
 ];
 

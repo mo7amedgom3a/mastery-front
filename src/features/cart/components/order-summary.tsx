@@ -23,12 +23,33 @@ type OrderSummaryProps = {
   paying: boolean;
   payError: string | null;
   onPay: () => void;
+  /** Where the visitor is sent to pay. */
+  provider: "stripe" | "tamara";
+  /** The selected method can't take this order yet (e.g. Tamara without a valid mobile). */
+  methodIncomplete: boolean;
+  /** The payment method picker, above the pay button. */
+  paymentMethods: ReactNode;
+  /** Tamara's cart widget, under the total; null when Tamara can't take this order. */
+  instalmentsWidget: ReactNode;
 };
 
 /** Totals and the pay button. Sticky beside the cart on large screens. */
-export function OrderSummary({ quote, stale, failed, onRetry, blocked, paying, payError, onPay }: OrderSummaryProps) {
+export function OrderSummary({
+  quote,
+  stale,
+  failed,
+  onRetry,
+  blocked,
+  paying,
+  payError,
+  onPay,
+  provider,
+  methodIncomplete,
+  paymentMethods,
+  instalmentsWidget,
+}: OrderSummaryProps) {
   const totals = quote?.totals;
-  const canPay = !!quote && quote.lines.length > 0 && !stale && !blocked && !paying;
+  const canPay = !!quote && quote.lines.length > 0 && !stale && !blocked && !paying && !methodIncomplete;
 
   return (
     <aside aria-labelledby="order-summary-title" className="flex flex-col gap-6 rounded-panel border border-line-strong bg-surface p-5 sm:p-6">
@@ -66,6 +87,8 @@ export function OrderSummary({ quote, stale, failed, onRetry, blocked, paying, p
               </dd>
             </div>
           ) : null}
+          {/* Guidelines §2.2: under the total, with 16px of clear space around it. */}
+          {instalmentsWidget && !stale ? <div className="py-1">{instalmentsWidget}</div> : null}
         </dl>
       ) : failed ? (
         <div className="ma-alert ma-alert--warning" role="alert">
@@ -88,6 +111,8 @@ export function OrderSummary({ quote, stale, failed, onRetry, blocked, paying, p
         </div>
       )}
 
+      {totals && totals.total > 0 ? paymentMethods : null}
+
       <div className="flex flex-col gap-3">
         {payError ? (
           <p role="alert" className="m-0 border-s-4 border-pink ps-3 text-sm leading-6 font-medium">
@@ -103,8 +128,8 @@ export function OrderSummary({ quote, stale, failed, onRetry, blocked, paying, p
           className={cn("ma-btn ma-btn--primary ma-btn--lg ma-btn--block gap-2", paying && "is-loading")}
         >
           <Lock aria-hidden="true" className="size-5 fill-none" />
-          {paying ? "جارٍ تجهيز الدفع…" : "أتمم الدفع"}
-          {totals && !stale && !paying ? (
+          {paying ? "جارٍ تجهيز الدفع…" : provider === "tamara" ? "ادفع بالتقسيط مع تمارا" : "أتمم الدفع"}
+          {totals && !stale && !paying && provider === "stripe" ? (
             <>
               {" · "}
               <Money amount={totals.total} />
@@ -114,7 +139,9 @@ export function OrderSummary({ quote, stale, failed, onRetry, blocked, paying, p
 
         <p className="m-0 flex items-start gap-2 text-sm leading-6 text-fg-muted">
           <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 fill-none" />
-          تتم عملية الدفع في صفحة Stripe الآمنة. لا نحفظ بيانات بطاقتك.
+          {provider === "tamara"
+            ? "ستنتقل إلى صفحة تمارا الآمنة لاختيار خطتك وإتمام الدفع بالدرهم الإماراتي."
+            : "تتم عملية الدفع في صفحة Stripe الآمنة. لا نحفظ بيانات بطاقتك."}
         </p>
       </div>
     </aside>

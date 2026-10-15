@@ -1,0 +1,977 @@
+
+
+---
+updatedAt: 2026-07-22T10:29:21.000Z
+agentTools:
+  projectIndex: https://docs.tamara.co/llms.txt
+---
+
+# [UAE 🇦🇪] Tamara Widget Implementation Guidelines
+
+<Image src="https://files.readme.io/b2845c5072438643b24ee7a21fe6009682cc3e5356e107acd7ed469baf851cd4-UAE_header_updated.png" align="center" />
+
+# What’s new
+
+## 1. Tamara logo and branding
+
+![](https://files.readme.io/f94c364ad71ad51451e2c953ef151b84078ceae1cfc93625b192f1c260162b46-image.png)
+
+At Tamara, we are constantly evolving to meet the needs of our customers and partners. We are excited to refresh our logo, branding, and colours to present a more modern and unified identity that reflects our growth, values, and vision for the future.
+
+### What you need to do
+
+* Replace older Tamara logos with the new version across your website, including footers, banners, carousels, and any in-line brand placements.
+* Use only the official, approved assets from our [brand kit](https://cdn.tamara.co/merchant_docs/Tamara__Brand__Assets_v2.zip).
+
+## 2. Extended payment options
+
+![](https://files.readme.io/c0e199ff29b122972011b2a0dce25e08c3bae9372e29ed91ec0fbfa6534e0a81-image.png)
+
+Tamara has become a trusted name across the MENA region, known for providing customers with flexible payment solutions of up to 6 payments. As customer needs continue to evolve, we’re expanding our offering; now allowing customers to split their payments into up to 12 payments. This gives your customers even greater purchasing power, helping you drive higher conversions, increase average order value, and build stronger customer loyalty.
+
+### What you need to do
+
+* **Review the updated product plan logic** in the [API documentation](https://docs.tamara.co/docs/introduction-to-tamara).
+* Ensure your integration supports dynamic payment configurations, including 4 and 12 month options where applicable.
+* Double-check that messaging and amounts reflect accurate pricing based on product or cart value.
+
+## 3. Updated widgets messaging
+
+![](https://files.readme.io/6de3dcfa45673a382e50bc775872e22ae9eb9a13897b7107807f06250f2556a6-image.png)
+
+With Tamara’s expanding product offerings, our messaging has been refined to better communicate the value of flexible payments. We are updating our messaging to reflect our long-term 12-month offering. The updated widget copy clearly communicates key benefits such as affordability and ease of use, ensuring consistency across all touchpoints.
+
+### What you need to do
+
+* Replace any legacy or custom Tamara copy with the [new approved messaging](https://docs.tamara.co/docs/tamara-widget-implementation-guidelines-uae#/122-%EF%B8%8F-recommended-messaging).
+* Use the Messaging Pillars section to ensure you're covering all key value points.
+
+## 4. Refreshed checkout experience
+
+![](https://files.readme.io/befcc45db5941d086e32e781d6140a9afc2bd3c63b1fbb42395cd9db3543e122-image.png)
+
+The checkout experience now features our updated design system, reflecting Tamara’s refreshed branding and support for long-term payment plans.
+
+### What you need to do
+
+* Update your configuration to support the new 12-month payment plan alongside the existing 4-plan option.
+* Update your store widgets to reflect this change. Refer to the updated [widget guidelines](https://docs.tamara.co/docs/tamara-widget-implementation-guidelines-uae#10-implementation-essentials) in Section 1.0.
+
+## 5. Updated Guidelines
+
+![](https://files.readme.io/2b372a7e36cc03f149a300d36b9f7c32628bc3b0b65297b0a649eeba5304c1b7-image.png)
+
+With the launch of our refreshed branding and expanded payment options, we've updated our integration guidelines to reflect these exciting changes.
+The updated guidelines are designed to help you present Tamara consistently across your channels, clearly communicate the Tamara’s benefits to your customers, and make the most of our expanded payment flexibility.
+We encourage you to review and adopt the new guidelines to stay aligned and maximize the impact for your business.
+
+### What you need to do
+
+* Review the implementation guidelines below
+* Align your Tamara’s widget implementation with the new guidelines.
+* Reach out to your Tamara account manager if you have any questions or need support.
+
+<br />
+
+# 1.0. Implementation Essentials
+
+We understand that you need to balance multiple priorities in your e-commerce store design. Your brand identity, customer experience, and page real estate are valuable assets that require careful consideration. This flexible integration guide is designed to help you implement Tamara Widgets in a way that complements your existing design while still effectively communicating payment flexibility to your customers.
+
+While we offer flexibility in implementation, these core elements must be present:
+
+* **Clear indication that Tamara is available** as a payment option.
+* **Tamara’s messaging pillars**: customer value and competitive advantage.
+* **Accurate representation** of Tamara’s plan structures.
+* A **call-to-action (CTA)** for customers to learn more about Tamara. e.g.: a link or button.
+* **Pop up**: Triggered when a user clicks the CTA that provides more detail about Tamara’s payment options.
+* **Design and branding**: Adherence to our official guidelines for visual presentation to ensure the widget is clear, trustworthy, and consistent.
+
+<Callout icon="👍" theme="okay">
+  ###
+
+  We recommend using <Anchor target="_blank" href="https://widget-docs.tamara.co/tamara-summary">Tamara’s official Widgets</Anchor> to easily communicate payment flexibility to your customers. Our widgets are designed to integrate seamlessly with your e-commerce store, helping you deliver a smooth experience without compromising your brand identity or design.
+</Callout>
+
+## 1.1. Clear indication that Tamara is available as a payment option
+
+Customers should know that Tamara is available as a payment option, no matter where they land on your site. The easiest way is to ensure that the Tamara logo is included in the widgets. This should be consistently shown across key points in the purchase journey, including the product details page, cart, and checkout.
+
+Requirements:
+
+| Legend | Priority | Requirement    | Description                                                                     |
+| :----- | :------- | :------------- | :------------------------------------------------------------------------------ |
+| 1      | Primary  | Tamara logo    | Always include the Tamara logo in the widget to reinforce brand recognition.    |
+| 2      | Fallback | Tamara as text | If space constraints prevent using the logo, mention “Tamara” in the messaging. |
+
+<br />
+
+![](https://files.readme.io/d78513d3162fed2c0cfd05309b0dfd93a094f1513b23bf02e272762545b1117a-image.png)
+
+<br />
+
+![](https://files.readme.io/9941132e5e37a06f934890bd4dcdb84f90c975390616cd743b0c0fb720bce30f-image.png)
+
+<br />
+
+<Callout icon="👍" theme="okay">
+  ###
+
+  The logo is the preferred primary method. Text-only mentions should only be used in rare edge cases where space or layout constraints apply.
+</Callout>
+
+<br />
+
+## 1.2. Messaging pillars
+
+Clear and consistent messaging about Tamara's payment options and benefits helps customers understand the value. When communicating about Tamara, we recommend using Tamara’s official messaging, which has been carefully crafted to explain our offering clearly and deliver the best possible experience for your customers.
+
+If you need to adapt the messaging, be sure to include the following three core messaging pillars.
+
+### 1.2.1. Minimum Requirements:
+
+<Table align={["left","left","left","left","left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Legend
+      </th>
+
+      <th>
+        Pillars
+      </th>
+
+      <th>
+        Description
+      </th>
+
+      <th>
+        English
+      </th>
+
+      <th>
+        Arabic
+      </th>
+
+      <th>
+        Why it matters
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        1
+      </td>
+
+      <td>
+        **Long term financing**
+      </td>
+
+      <td>
+        Indicates our value in flexibility and affordability
+      </td>
+
+      <td>
+        **Pay AED 208/mo**
+      </td>
+
+      <td>
+        **ادفع AED 208\شهريًا**
+
+
+      </td>
+
+      <td>
+        Communicates lower potential monthly costs and wider accessibility.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        2
+      </td>
+
+      <td>
+        **4 Payment option**
+      </td>
+
+      <td>
+        Highlights Tamara’s well-known 4-split option
+      </td>
+
+      <td>
+        **or in 4 payments**
+      </td>
+
+      <td>
+        **أو على 4 دفعات**
+
+
+      </td>
+
+      <td>
+        Reinforces the familiar payment experience customers recognize and trust.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        3
+      </td>
+
+      <td>
+        **Competitive differentiator**
+      </td>
+
+      <td>
+        Highlights what makes us stand out from our competitors
+      </td>
+
+      <td>
+        **No late fees**
+      </td>
+
+      <td>
+        **بدون رسوم تأخير.**
+
+
+      </td>
+
+      <td>
+        Builds credibility, appeals to local values.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        4
+      </td>
+
+      <td>
+        **Call to Action (CTA)**
+      </td>
+
+      <td>
+        Prompts users to learn more or view their plan options
+      </td>
+
+      <td>
+        **More options**
+      </td>
+
+      <td>
+        **تعرّف على خياراتك**
+
+
+      </td>
+
+      <td>
+        Encourages interaction, and deepens understanding.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        5
+      </td>
+
+      <td>
+        **Logo**
+      </td>
+
+      <td>
+        Always display the official Tamara logo in widgets
+      </td>
+
+      <td>
+        **Tamara gradient logo**
+      </td>
+
+      <td>
+        **Tamara gradient logo**
+      </td>
+
+      <td>
+        Serves as a visual anchor across key touchpoints to drive recognition and trust.
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+![](https://files.readme.io/5638dc5c57ae144e8365ab37d6886584ad18556c841ba311fe20dbbc04b46c14-image.png)
+
+<br />
+
+### 1.2.2. ⭐️ Recommended Messaging
+
+We strongly encourage you to use Tamara’s official messaging, it’s designed and tested to explain our offering clearly and deliver the best possible experience for your customers. Custom messaging may lead to confusion, or outdated information.
+
+| Language | Messaging                                                                  |
+| :------- | :------------------------------------------------------------------------- |
+| English  | Pay **AED 208/mo** or in 4 payments. No late fees. More options            |
+| Arabic   | ادفع **208 AED\شهريًا** أو على 4 دفعات. بدون رسوم تأخير. تعرّف على خياراتك |
+
+<br />
+
+![](https://files.readme.io/f090f12f71c1756c6d9330f8633f3fad2f61d62a5ab1cc32f78d4ff9ddb7cf6c-image.png)
+
+<br />
+
+### 1.2.3. Messaging do’s & don’ts
+
+| ✅ Do’s                                                                                                          | ❌ Don’ts                                                                                     |
+| :-------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| DO include all core pillars: long term financing, 4 plan option, competitive differentiator, CTA & Tamara logo. | DON'T skip any pillars or create messaging that does not align with Tamara’s core messaging. |
+
+<br />
+
+![](https://files.readme.io/b821c27c8924f7884e1f6148f9b7ab91a36a82a434e0df6884c667b7564a7e0c-image.png)
+
+<br />
+
+## 1.3. Accurate representation of Tamara’s plan structures
+
+We recommend displaying the potential payment plan for a product or order, e.g., “Pay AED 208/mo”. To ensure accuracy and transparency, the amounts shown must reflect the actual product or order value divided by the configured number of payments (4 or 12). This ensures the messaging is clear, trustworthy, and aligned with what the customer will actually pay.
+
+### 1.3.1. Requirements
+
+<Table align={["left","left","left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Requirements
+      </th>
+
+      <th>
+        Description
+      </th>
+
+      <th>
+        Example
+      </th>
+
+      <th>
+        Why it matters
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        Dynamic item or cart total calculation
+      </td>
+
+      <td>
+        Divide the product price (PDP) or order/cart total (Cart/Checkout) by the number of payments.
+      </td>
+
+      <td>
+        **Product** **price**: AED 2500
+
+
+
+        **Number** **of payment configured**: 12
+
+
+
+        **Calculation**: AED 200 ÷ 12 = 208.33
+
+
+
+        **Value**: ”Pay **AED 208**/mo”
+      </td>
+
+      <td>
+        Ensures pricing reflects actual product or cart value, and helps customers understand what they will pay.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Accurate Rounding
+      </td>
+
+      <td>
+        Apply standard rounding rules to the monthly payment shown.
+      </td>
+
+      <td>
+        AED 208.33 → AED 208
+      </td>
+
+      <td>
+        Avoids displaying misleading decimal amounts.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Contextual Relevance
+      </td>
+
+      <td>
+        Ensure the message reflects the page context such as Product details page, Cart and Checkout.
+      </td>
+
+      <td>
+        **Product Page**: The widget shows the payment plan for the price (e.g., AED 2500) of a single item being viewed.
+
+
+
+        E.g., "Pay AED 208/month"
+
+
+
+        **Cart or Checkout Page**: The widget updates to show the plan for the entire cart/checkout total (e.g.: AED 3000).
+
+
+
+        E.g., "Pay AED 250/month”
+      </td>
+
+      <td>
+        Maintains consistency with where the customer is in the purchase journey and builds trust down the funnel.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Updated in Real-Time
+      </td>
+
+      <td>
+        Re-calculate the payment plan in real-time to reflect the new cart total any time a user modifies their cart.This includes:
+      </td>
+
+      <td>
+        **Initial Cart**: 1 item @ AED 2500. Widget shows "Pay AED 208/mo".
+
+
+
+        **User Action**: Changes quantity to 2.
+
+
+
+        **Instant Update**: Widget immediately refreshes to show "Pay AED 416/mo".
+      </td>
+
+      <td>
+        Keeps payment info accurate as users modify their cart, reducing confusion.
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+<br />
+
+### 1.3.2. Plans representation do’s & don’ts
+
+| ✅ Do’s                                                                                                       | ❌ Don’ts                                                                           |
+| :----------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| DO calculate the payment amount dynamically based on the current product price or total cart value.          | DON'T hardcode the payment amount. This is the #1 source of customer confusion.    |
+| DO ensure the payment amount updates instantly when the cart is modified (e.g., quantity change, discount).  | DON'T show a stale or cached payment amount after the cart has been changed.       |
+| DO apply standard rounding rules to avoid displaying confusing decimal amounts (e.g., AED 208.33 → AED 208). | DON'T display fractional currency amounts like "AED 208.33" in the widget message. |
+
+![](https://files.readme.io/db79c7bb8af37977b5534c1ab173dcb1ffd76291efb774ea09bf600aff5903e8-image.png)
+
+<br />
+
+## 1.4. A link button for customers to learn more about Tamara
+
+Tamara widgets should provide a subtle way for customers to access additional information about Tamara’s payment plan offerings.
+
+### 1.4.1 Minimum Requirements
+
+| Legend | Requirement         | Description                                        | Example                                                                      | Why It Matters                                                                     |
+| :----- | :------------------ | :------------------------------------------------- | :--------------------------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| 1      | Interactive Element | Provide a clickable element (e.g. link, button).   | “More options”                                                               | Enables users to explore additional information when they choose.                  |
+| 2      | Pop up              | The link button should open Tamara’s official pop. | Popup displaying available payment options and more about Tamara’s offering. | Allows users to view full plan information without disrupting their shopping flow. |
+
+![](https://files.readme.io/80642263afd13a1d44d022ffbcb159c2b2ad192d8b8d4a03f047767560a680c5-image.png)
+
+<br />
+
+<Callout icon="👍" theme="okay">
+  ###
+
+  We recommend a link button with the text “More options”.
+</Callout>
+
+<br />
+
+## 1.5. Design and branding
+
+When implementing Tamara widgets on your e-commerce platform, striking the right balance between Tamara's brand presence and your own design system is essential. Follow these guidelines to create a cohesive, trustworthy experience that enhances your conversion rates while maintaining your brand identity.
+
+### 1.5.1. Design specifications
+
+| Legend | Requirement                     | Description                                                                                                | Notes                                                                                   |
+| :----- | :------------------------------ | :--------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
+| 1      | **Widget Container**            | Place the widget inside a rounded rectangular container with a white background to ensure message clarity. | Container colours, backgrounds, and border radius can match your store’s design system. |
+| 2      | **Typography**                  | Use 14px (mobile) to 16px (desktop) font size for widget text. Font weight 400 for general text.           | You may use your store's font for the widget content.                                   |
+| 3      | **Payment emphasis**            | Bold the payment cost portion using font weight 600 or 700 (e.g. “AED 208/mo”).                            | Emphasizes the key value proposition to the customer.                                   |
+| 4      | **Call-to-action: Link Button** | Include an interactive text link (e.g. “More options”) to open the pop up.                                 | Link styling may adopt your store’s colours and styling.                                |
+| 5      | **Padding**                     | We recommend a 16px internal padding inside the widget container on all sides.                             | Maintains clarity and balance.                                                          |
+| 6      | **Content Margin**              | Maintain 16px margin between text content and Tamara logo.                                                 | Ensures separation between content and logo for clarity.                                |
+| 7      | **Tamara Logo**                 | Use Tamara’s official gradient logo with height 28px (mobile) or 32px (desktop).                           | Logo must not be altered or distorted.                                                  |
+| 8      | **Border and Border Radius**    | Apply 16px border radius on all corners and 1px border around the entire widget.                           | Provides a soft, modern appearance, subtle definition and visual containment.           |
+| 9      | **Safe Space**                  | Maintain 16px clear space around the entire widget from surrounding page elements.                         | Ensures the widget isn’t visually cramped, and stands out.                              |
+
+<br />
+
+![](https://files.readme.io/37bf30617647420b4f5b975affdcd20c47dfbe33baaed0a0c9e89aec41094183-image.png)
+
+<br />
+
+### 1.5.2. Design do’s & don’ts
+
+| ✅ Do’s                                                                                     | ❌ Don’ts                                                               |
+| :----------------------------------------------------------------------------------------- | :--------------------------------------------------------------------- |
+| DO use the official, unaltered Tamara gradient logo to ensure brand recognition and trust. | DON'T distort, recolor, stretch, or alter the Tamara logo in any way.  |
+| DO use a bold font weight to emphasize the key payment amount (e.g., "AED 208/mo").        | DON'T make the entire text bold, which reduces readability and impact. |
+
+<br />
+
+![](https://files.readme.io/2197abd87ba16427bd0391c478c470e78320b69e566934462586dcde84ac2f01-image.png)
+
+<br />
+
+# 2.0. Widgets
+
+Now that you've learned about the essentials of implementing Tamara widgets, let's take a closer look at each of the widgets.
+
+## 2.1. Product Details Page Widget
+
+![](https://files.readme.io/cee650eb95709dd6ac4400d7c7d3d5832b1017ee96de918e606dfa62f993da70-image.png)
+
+The Product Details Page (PDP) widget plays a crucial role in introducing Tamara’s payment options at the moment when customers are considering a purchase. Customers on this page are often evaluating whether a product fits their budget. Clearly displaying flexible payment options on the product details page helps users understand affordability, which can increase conversion rates and average order value.
+
+The PDP widget should be informative, align with our messaging and structural specifications, and be positioned for maximum visibility.
+
+<Callout icon="👍" theme="okay">
+  ###
+
+  Showcasing the PDP widget on the product detail page plays an important role in increasing conversion and helping users discover the available payment plans.
+</Callout>
+
+<br />
+
+### 2.1.1. Purpose of the PDP Widget
+
+The PDP widget is designed to:
+
+* Inform users that **Tamara is available** as a payment method.
+* Display **clear and accurate payment plan** details.
+* Encourage **engagement** through a call to action (e.g. “More options”).
+* **Increases average order value** and **drives conversion** value by making purchases feel more affordable and achievable.
+
+<br />
+
+### 2.1.2 Messaging on PDP Widget
+
+As initially explained in section 1.2, the PDP messaging should include all of Tamara's messaging pillars.
+
+| Legend | Requirement                | Example (English)            | Example (Arabic)                   |
+| :----- | :------------------------- | :--------------------------- | :--------------------------------- |
+| 1      | Long term financing        | *“Pay&#x20;****AED 208/mo*** | *ادفع&#x20;****AED 208****\شهريًا* |
+| 2      | 4 payment option           | *or in 4 payments*           | أو على 4 دفعات                     |
+| 3      | Competitive differentiator | *No late fees*               | *بدون رسوم تأخير.*                 |
+| 4      | CTA                        | *More options”*              | تعرّف على خياراتك                  |
+| 5      | Tamara gradient Logo       | Logo                         | Logo                               |
+
+![](https://files.readme.io/9b45c62cbc9ca24fc5292f0e7e03f521a3464b7411b0d0d4724d7ccd5067682b-image.png)
+
+**We strongly recommend you use Tamara’s official messaging**.
+
+![](https://files.readme.io/03c7f5b761e334bf4f6f0b7fd0d8b46709d326c1c65ce48bfaaf4ad06fa05091-image.png)
+
+<br />
+
+### 2.1.3. PDP Widget Placement & Visibility
+
+Strategic placement is crucial for maximizing the widget's impact and ensuring customers notice payment options during purchase decisions. We recommend positioning the widget directly below the product price, as this helps customers understand affordability and cost at a glance.
+
+![](https://files.readme.io/26d7ddfb7e750eb7fa0db982a546075ae4243a5eb5fd5ae5ed7e7d4820d0219f-image.png)
+
+<Callout icon="👍" theme="okay">
+  ###
+
+  Display the PDP widget directly below the product price, where affordability considerations are made.
+</Callout>
+
+<br />
+
+### 2.1.4.Payment calculation
+
+We highly recommend using **Tamara’s official widget**, which is designed to work out of the box with built-in logic for accurate, compliant, and user-friendly messaging. However, if you choose to build a **custom widget**, it’s essential to implement a **dynamic calculation** that reflects the actual product price.
+
+**Example:**
+
+* Product price = **AED 2500**
+* Maximum plan configured = **12 payments**
+* Display: “Pay AED **208/mo**, or in 4 payments. No late fees. More options”
+
+### 2.1.5. PDP Widget do’s & don’ts
+
+| ✅ Do’s                                                                                  | ❌ Don’ts                                                                            |
+| :-------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| DO place the widget directly below the product price for maximum visibility and impact. | DON'T hide the widget far down the page, below the fold, or in a collapsed section. |
+
+<br />
+
+![](https://files.readme.io/f2594c9bdac0e9802490d1ae9f0c8f1014e29ca4fcecde7c3c598995681c5862-image.png)
+
+<br />
+
+## 2.2. Cart Widget
+
+The cart widget reinforces Tamara’s availability and payment flexibility just before checkout, reminding customers they can still split or finance their payment. It also helps reduce cart abandonment by making the purchase feel more manageable at a critical stage.
+
+### 2.2.1. Messaging
+
+The Cart Widget messaging should be composed of Tamara’s messaging pillars.
+
+| Legend | Requirement                | Example (English)            | Example (Arabic)                |
+| :----- | :------------------------- | :--------------------------- | :------------------------------ |
+| 1      | Long term financing        | *“Pay&#x20;****AED 208/mo*** | *ادفع&#x20;****AED208\شهريًا*** |
+| 2      | 4 payment option           | *or in 4 payments*           | *أو على 4 دفعات*                |
+| 3      | Competitive differentiator | *No late fees.*              | *بدون رسوم تأخير.*              |
+| 4      | CTA                        | *More options”*              | *تعرّف على خياراتك*             |
+| 5      | Tamara gradient Logo       | Logo                         | Logo                            |
+
+<br />
+
+![](https://files.readme.io/5513945a3d91938d5ebf65cd2f81731ca50fdf9bce586a968f8e28ebaabf1bec-image.png)
+
+<br />
+
+### 2.2.2. Placement & Visibility
+
+We recommend placing the Cart Widget below the cart total or near the “Proceed to Checkout” button to maximize visibility without disrupting core purchase actions.
+
+![](https://files.readme.io/4d18b9704da8e4ffbff308d15c1c3dd69aa91f641bb8bb77dd1f304d360442ee-image.png)
+
+<br />
+
+### 2.2.3. Payment Calculation in Cart
+
+We strongly recommend using Tamara’s official widget for the cart, as it’s optimized for accuracy, clarity, and real-time updates. It automatically handles pricing changes, discounts, and quantities across multiple items. However, if you're building a custom cart widget, it’s crucial to dynamically calculate the payment amount based on the entire cart total ensuring users see up-to-date and accurate payment breakdowns.
+
+**Example:**
+Cart total = **AED 3000**
+Configuration = **12 payments**
+Display: “**Pay AED 250/mo, or in 4 payments. No late fees. More options**”
+
+![](https://files.readme.io/980901e70186199810458a0d1bdca6851016a994ead592d0d50b781aef22e207-image.png)
+
+<Callout icon="❗️" theme="error">
+  ###
+
+  Don’t hardcode the message. Dynamic accuracy here builds trust and improves conversion.
+</Callout>
+
+<br />
+
+### 2.2.4. Cart Widget do’s & don’ts
+
+| ✅ Do’s                                                                                              | ❌ Don’ts                                                                                |
+| :-------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
+| DO place the widget near the cart total and the primary checkout button to reduce cart abandonment. | DON'T hide the widget far down the page, below the fold, or in a collapsed section.     |
+| DO ensure the calculation is based on the entire cart's total value and updates in real-time.       | Don’t show static values. Ensure the payment breakdown reflects real-time cart changes. |
+
+<br />
+
+![](https://files.readme.io/d7d9ffba24fe0f1727631b26b9cb201c234f7b6e893dfd022fadf2aa6a8de126-image.png)
+
+<br />
+
+## 2.3. Checkout Widget
+
+At checkout, the widget confirms that Tamara is an available **payment method**, building final trust and confidence. This is often the **last reassurance point** before conversion.
+
+![](https://files.readme.io/f52656ec6d8a3e262314603a2eed7eb844917b27c5e912c6eeacad1dac3fa89a-image.png)
+
+<br />
+
+### 2.3.1. Messaging
+
+The Checkout Widget messaging is designed for reassurance and simplicity at the final payment step. It should display Tamara as the payment provider label, accompanied by a brief reassurance message highlighting our key value proposition and competitive advantage, such as “Monthly payments. No hidden fees.”
+
+| Legend | Requirement                                                           | Example (English)                   | Example (Arabic)              |
+| :----- | :-------------------------------------------------------------------- | :---------------------------------- | :---------------------------- |
+| 1      | Payment provider label                                                | *“Tamara”*                          | *“Tamara”*                    |
+| 2      | Payment reassurance: key value proposition and competitive advantage. | *“Monthly payments. No late fees.”* | دفعات شهرية. بدون رسوم تأخير. |
+| 3      | Tamara gradient Logo                                                  | Logo                                | Logo                          |
+
+<br />
+
+![](https://files.readme.io/bd2c14166d339f6656e857748eb20e82bdedba462db9ffdbda2d7a21f40e4500-image.png)
+
+<br />
+
+### 2.3.2. ⭐️ Recommended Messaging
+
+We strongly encourage you to use Tamara’s official messaging, it’s designed and tested to explain our offering clearly and deliver the best possible experience for your customers. Custom messaging may lead to confusion, or outdated information.
+
+<Table align={["left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Language
+      </th>
+
+      <th>
+        Messaging
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        English
+      </td>
+
+      <td>
+        **Tamara
+        Monthly payments. No late fees.**
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        Arabic
+      </td>
+
+      <td>
+        **Tamara
+        دفعات شهرية. بدون رسوم تأخير.**
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+<br />
+
+![](https://files.readme.io/5188fb7dcc10fe5cdcb59d80aba150ca1a5278c919aeb20ae11e878c75a5bc4e-image.png)
+
+<br />
+
+### 2.3.3. Placement & Visibility
+
+The widget should be placed within the payment method selection options, using styling consistent with other payment methods. It can also be embedded as part of radio button payment options to align with the checkout experience.
+
+![](https://files.readme.io/d176d3c757921f20519f9c3ce546cf07801c68b23e890ba847981c38b4bc9dac-image.png)
+
+<br />
+
+# 3.0. Pop up
+
+![](https://files.readme.io/ccccdc8050afebd806bad2574290a16e59747cf10407ec133c2f4ed2f8675948-image.png)
+
+<br />
+
+The popup serves as a lightweight, informative layer that helps customers understand Tamara’s payment options in a clear and engaging way without leaving the page. It is triggered when the link or buttons within the widget is clicked or tapped.
+
+It's important to note that the popup is to be dynamic—i.e., the payment plans displayed in the popup
+
+## 3.1 Minimum Requirements
+
+<Table align={["left","left","left","left"]}>
+  <thead>
+    <tr>
+      <th>
+        Legend
+      </th>
+
+      <th>
+        Requirement
+      </th>
+
+      <th>
+        Description
+      </th>
+
+      <th>
+        Why it matters
+      </th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>
+        1
+      </td>
+
+      <td>
+        Tamara logo
+      </td>
+
+      <td>
+        Display the official Tamara logo at the top of the popup.
+      </td>
+
+      <td>
+        Builds brand recognition and trust from the start.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        2
+      </td>
+
+      <td>
+        Hero section
+      </td>
+
+      <td>
+        Use our official tagline: “Your Payment ,your Pace” with subtext: “Pay AED \[plan cost per month] or in 4 payments. No-late fees."
+      </td>
+
+      <td>
+        Creates immediate clarity and draws attention to the benefit of flexible payments.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        3
+      </td>
+
+      <td>
+        Plan breakdown
+      </td>
+
+      <td>
+        Dynamic calculation based on total value, and as configured by the merchant.
+      </td>
+
+      <td>
+        Helps customers assess affordability quickly and accurately.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        4
+      </td>
+
+      <td>
+        How it works
+      </td>
+
+      <td>
+        Include  step-by-step how it works:
+        1.Select plan
+        2.Enter card
+        3.Manage in app
+        4.Get reminders
+      </td>
+
+      <td>
+        Makes the process feel simple and transparent.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        5
+      </td>
+
+      <td>
+        Why Tamara?
+      </td>
+
+      <td>
+        Highlight our value propositions:
+        1.No late fees
+        2.Sharia compliant
+        3.100%-buyer protection
+      </td>
+
+      <td>
+        Builds credibility and reinforces Tamara’s key value propositions.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        6
+      </td>
+
+      <td>
+        Legal Information
+      </td>
+
+      <td>
+        Show a short compliance statement with certificate reference.
+      </td>
+
+      <td>
+        Ensures transparency, especially for Sharia compliance, important in MENA markets.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        7
+      </td>
+
+      <td>
+        Accepted Payment Methods
+      </td>
+
+      <td>
+        Display logos for supported cards and wallets (Mada, Visa, Apple Pay, etc.)
+      </td>
+
+      <td>
+        Reassures customers that their preferred payment method is supported.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        8
+      </td>
+
+      <td>
+        Dismissal button
+      </td>
+
+      <td>
+        Provide a clear close (“×”) button in the top-right corner.
+      </td>
+
+      <td>
+        Gives users control and meets UX best practices.
+      </td>
+    </tr>
+  </tbody>
+</Table>
+
+<br />
+
+![](https://files.readme.io/702803b521b6b4b2963165d188aeb9c6145fca1316f266e2426c725efeee82ad-image.png)
+
+<br />
+
+# Relevant resources
+
+| Resources                       | Description                                                                                  | Link                                                               |
+| :------------------------------ | :------------------------------------------------------------------------------------------- | :----------------------------------------------------------------- |
+| Tamara logo and brand assets    | Download official logos, icons, and visual guidelines for use in widgets and communications. | <https://cdn.tamara.co/merchant_docs/Tamara__Brand__Assets_v2.zip> |
+| Tamara Widget API documentation | Technical guide for integrating Tamara widgets via API, including endpoints and parameters.  | <https://docs.tamara.co/docs/direct-widgets>                       |
+| Tamara Widget Tool              | A web-based tool for previewing, customizing, and generating widget embed code.              | <https://widget-docs.tamara.co/tamara-summary>                     |
+
+<br />
+
+<br />
+
+<br />
+
+<br />

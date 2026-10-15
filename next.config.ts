@@ -77,9 +77,19 @@ const nextConfig: NextConfig = {
       ? securityHeaders
       : // Staging / previews: also covers non-HTML responses (images, llms.txt) that meta robots can't.
         [...securityHeaders, { key: "X-Robots-Tag", value: "noindex, nofollow" }];
+    const adminOrigin = process.env.NEXT_PUBLIC_ADMIN_ORIGIN?.trim() || "http://localhost:5173";
+    const previewFraming = [
+      ...securityHeaders,
+      {
+        key: "Content-Security-Policy",
+        value: `frame-ancestors 'self' ${adminOrigin} http://localhost:5173 http://127.0.0.1:5173`,
+      },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+    ];
     return [
       { source: "/:path*", headers },
       ...["/login", "/register", "/api/auth/:path*"].map((source) => ({ source, headers: noFraming })),
+      { source: "/preview/:path*", headers: previewFraming },
     ];
   },
   images: {

@@ -49,13 +49,14 @@ const apps = [
   { href: siteConfig.apps.googlePlay, icon: "/icons/google-play-store.svg", store: "Google Play" },
 ];
 
-// Mada, Tamara and Visa are drawn in a band across a square canvas: `cover` crops the empty top and
-// bottom so the mark fills the chip. Mastercard's artwork is already tight.
+// Mada and Visa are drawn in a band across a square canvas: `cover` crops the empty top and bottom so
+// the mark fills the chip. Mastercard's artwork is already tight, and Tamara's official gradient
+// wordmark must not be cropped or altered.
 const payments: { src: string; name: string; fit: "object-cover" | "object-contain" }[] = [
   { src: "/icons/visa.svg", name: "Visa", fit: "object-cover" },
   { src: "/icons/mastercard.svg", name: "Mastercard", fit: "object-contain" },
   { src: "/icons/Mada-01.svg", name: "مدى", fit: "object-cover" },
-  { src: "/icons/Tamara-02.svg", name: "تمارا", fit: "object-cover" },
+  { src: "/icons/tamara-logo-ar.png", name: "تمارا", fit: "object-contain" },
 ];
 
 /** External link in the footer: new tab, and announced as such. */

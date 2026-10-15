@@ -5,17 +5,32 @@ import { useEffect } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { routes } from "@/config/routes";
+import { reconcilePayment } from "@/lib/api/commerce";
 import { trackCheckout } from "@/lib/observability/behavior";
 
 import { settleCheckout } from "./model/checkout-session";
 
 /**
- * Back from Stripe without paying.
+ * Back from Stripe or Tamara without paying.
  * - `cancelled`: the buyer left the payment page. Nothing was charged; the order and its Stripe
  *   session stay open, so paying again from the cart resumes the same session (same idempotency key).
  * - `failed`: the payment was refused; the next attempt starts a new order.
+ * The redirect is only a hint: the backend re-reads the provider, and a reconcile makes it do so now.
  */
-export function CheckoutEndedPage({ outcome, orderId }: { outcome: "cancelled" | "failed"; orderId?: string }) {
+export function CheckoutEndedPage({
+  outcome,
+  orderId,
+  paymentIntentId,
+}: {
+  outcome: "cancelled" | "failed";
+  orderId?: string;
+  paymentIntentId?: string;
+}) {
+  useEffect(() => {
+    // Fire and forget; a guest or an expired session simply gets a 401.
+    if (paymentIntentId) reconcilePayment(paymentIntentId).catch(() => undefined);
+  }, [paymentIntentId]);
+
   useEffect(() => {
     if (!orderId) return;
     if (outcome === "failed") settleCheckout(orderId);
@@ -29,7 +44,7 @@ export function CheckoutEndedPage({ outcome, orderId }: { outcome: "cancelled" |
       <p className="m-0 max-w-[56ch] leading-7 text-fg-muted">
         {outcome === "cancelled"
           ? "لم يُخصم أي مبلغ، وسلتك محفوظة كما هي. يمكنك إتمام الدفع متى شئت."
-          : "رُفضت عملية الدفع ولم يُخصم أي مبلغ. تحقّق من بيانات البطاقة أو جرّب بطاقة أخرى."}
+          : "رُفضت عملية الدفع ولم يُخصم أي مبلغ. حاول مجدداً أو اختر طريقة دفع أخرى."}
       </p>
       <ul className="ma-cluster m-0 list-none p-0">
         <li>

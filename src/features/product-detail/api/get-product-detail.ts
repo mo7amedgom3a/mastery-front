@@ -9,6 +9,7 @@ import { getInstructorNames } from "@/lib/api/instructor-names";
 import { withResolvedPrices } from "@/lib/api/legacy-pricing";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
 
+import { getLegacyProductContent } from "@/lib/api/product-content";
 import { introVideoSource, kindOf, MAX_RAIL_CARDS, mapProductDetailData } from "../model/mappers";
 import type { IntroVideoSource, IntroVideoVM, ProductDetailData } from "../model/types";
 import { getCatalogIndex } from "./get-catalog-index";
@@ -47,7 +48,12 @@ export const getProductDetail = cache(async (id: number): Promise<ProductDetailD
   const options = cachedRead(PRODUCT_REVALIDATE_SECONDS, [productCacheTag(kind, id)]);
   // Ask for a few extra: cards without artwork, duplicates and the product itself are dropped.
   const limit = MAX_RAIL_CARDS + 4;
-  const [related, recommendations, catalog, instructors, introVideo] = await Promise.allSettled([
+  const legacyKind = kind === "diploma" ? "course" : "course";
+  const [contentResult, related, recommendations, catalog, instructors] = await Promise.allSettled([
+    getLegacyProductContent(legacyKind, id, options).catch((err) => {
+      if (err instanceof ApiError && err.status === 404) return null;
+      return null;
+    }),
     getLegacyRelatedResources(path, { limit }, options).then(async (page) => ({
       ...page,
       courses: await withResolvedPrices(page.courses ?? [], options),
@@ -57,17 +63,20 @@ export const getProductDetail = cache(async (id: number): Promise<ProductDetailD
     getCatalogIndex(),
     // Shared across every product page, like the catalog index.
     getInstructorNames(cachedRead(PRODUCT_REVALIDATE_SECONDS, ["catalog-index"])),
-    verifyIntroVideo(introVideoSource(detail)),
   ]);
+
+  const content = contentResult.status === "fulfilled" ? contentResult.value : null;
+  const introVideo = await verifyIntroVideo(introVideoSource(detail, content));
 
   const data = mapProductDetailData({
     detail,
+    content,
     related: valueOf(related, `${kind} ${id} related`),
     recommendations: valueOf(recommendations, `${kind} ${id} recommendations`),
     catalog: valueOf(catalog, "catalog index"),
     instructors: valueOf(instructors, "instructor names"),
   });
-  data.product.introVideo = valueOf(introVideo, `${kind} ${id} intro video`);
+  data.product.introVideo = introVideo;
   return data;
 });
 

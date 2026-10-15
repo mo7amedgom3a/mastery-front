@@ -19,7 +19,14 @@ import { ensureAuthStatus } from "@/lib/shop/use-shop-actions";
 
 import { checkoutKey, rotateCheckoutKey, savePendingCheckout } from "../model/checkout-session";
 
-export type CheckoutTarget = { mode: "cart" } | { mode: "product"; item: ShopItem };
+/** Who takes the payment. Tamara needs the customer's UAE mobile (9 digits, starting with 5). */
+export type CheckoutPayment = { provider: "stripe" } | { provider: "tamara"; phone: string };
+
+export type CheckoutTarget =
+  | { mode: "cart"; payment?: CheckoutPayment }
+  | { mode: "product"; item: ShopItem; payment?: CheckoutPayment };
+
+const STRIPE: CheckoutPayment = { provider: "stripe" };
 
 export type CheckoutPhase = "idle" | "preparing" | "redirecting";
 
@@ -39,9 +46,9 @@ function errorCode(error: unknown): string | null {
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Opens the Stripe session under a stable idempotency key. "Still being prepared" (another request
- * with this key is mid-flight) is retried with the same key; a key that ended or was used for a
- * different request is replaced once.
+ * Opens the payment session (Stripe or Tamara) under a stable idempotency key. "Still being
+ * prepared" (another request with this key is mid-flight) is retried with the same key; a key that
+ * ended or was used for a different request is replaced once.
  */
 async function openSession(body: CheckoutSessionRequest, fingerprint: string): Promise<CheckoutSessionResponse> {
   let key = checkoutKey(fingerprint);
@@ -66,13 +73,20 @@ async function openSession(body: CheckoutSessionRequest, fingerprint: string): P
   }
 }
 
-function returnUrls() {
+function paymentFields(payment: CheckoutPayment) {
   const origin = window.location.origin;
   // The backend appends order_id and payment_intent_id (and Stripe the session id).
-  return { success_url: `${origin}${routes.checkoutSuccess}`, cancel_url: `${origin}${routes.checkoutCancelled}` };
+  const urls = { success_url: `${origin}${routes.checkoutSuccess}`, cancel_url: `${origin}${routes.checkoutCancelled}` };
+  if (payment.provider === "stripe") return { provider: "stripe" as const, ...urls };
+  return {
+    provider: "tamara" as const,
+    phone_number: `+971${payment.phone}`,
+    failure_url: `${origin}${routes.checkoutFailed}`,
+    ...urls,
+  };
 }
 
-async function prepareCart(): Promise<{ body: CheckoutSessionRequest; fingerprint: string }> {
+async function prepareCart(payment: CheckoutPayment): Promise<{ body: CheckoutSessionRequest; fingerprint: string }> {
   // Lines added as a guest, or on another tab, reach the account cart before it is charged.
   await syncAccountCart();
   const quote = await quoteCart();
@@ -81,25 +95,37 @@ async function prepareCart(): Promise<{ body: CheckoutSessionRequest; fingerprin
   if (quote.unavailable_product_ids.length > 0) {
     throw new CheckoutProblem("بعض المنتجات في سلتك لم تعد متاحة للشراء. أزلها ثم أكمل الدفع.");
   }
+  // The provider is part of what is bought: switching to Tamara is a new order, not a reused key.
   const fingerprint = [
     "cart",
+    payment.provider,
     lines.map((line) => `${line.product_id}x${line.quantity}`).toSorted().join(","),
     quote.total_amount_minor,
     quote.currency_code,
   ].join("|");
-  return { body: { currency_code: quote.currency_code, quantity: 1, ...returnUrls() }, fingerprint };
+  return { body: { currency_code: quote.currency_code, quantity: 1, ...paymentFields(payment) }, fingerprint };
 }
 
-async function prepareProduct(item: ShopItem): Promise<{ body: CheckoutSessionRequest; fingerprint: string }> {
+async function prepareProduct(
+  item: ShopItem,
+  payment: CheckoutPayment,
+): Promise<{ body: CheckoutSessionRequest; fingerprint: string }> {
   const productId = await resolveCatalogProductId(item);
   return {
-    body: { product_id: productId, quantity: 1, currency_code: CHECKOUT_CURRENCY, ...returnUrls() },
-    fingerprint: `product|${productId}|1`,
+    body: { product_id: productId, quantity: 1, currency_code: CHECKOUT_CURRENCY, ...paymentFields(payment) },
+    // As for the cart: another provider is another order, under its own key.
+    fingerprint: `product|${payment.provider}|${productId}|1`,
   };
 }
 
-function messageFor(error: unknown): string {
+function messageFor(error: unknown, provider: CheckoutPayment["provider"]): string {
   if (error instanceof CheckoutProblem) return error.message;
+  if (error instanceof ApiError && provider === "tamara") {
+    if (error.status === 409 && errorCode(error) !== "checkout_in_progress") {
+      return "أدخل رقم جوال إماراتي صالح للدفع عبر تمارا.";
+    }
+    if (error.status === 503) return "تمارا غير متاحة حالياً لهذا الطلب. جرّب الدفع بالبطاقة.";
+  }
   if (error instanceof ApiError) {
     if (error.status === 404) return "هذا المنتج غير متاح للشراء حالياً.";
     if (error.status === 409) {
@@ -116,8 +142,8 @@ function messageFor(error: unknown): string {
 /**
  * The pay / buy-now button. One checkout at a time: while one is being prepared, further presses
  * return the same promise (and the same idempotency key protects against a second tab or a retry).
- * Guests are asked to sign in first. On success the browser leaves for Stripe, so the button stays
- * busy until the page unloads; coming back with the browser's back button resets it.
+ * Guests are asked to sign in first. On success the browser leaves for the provider, so the button
+ * stays busy until the page unloads; coming back with the browser's back button resets it.
  */
 export function useStartCheckout() {
   const inFlight = useRef<Promise<void> | null>(null);
@@ -125,7 +151,7 @@ export function useStartCheckout() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Back from Stripe: the page is restored from the back/forward cache with the button still busy.
+    // Back from the payment page: the page is restored from the back/forward cache with the button still busy.
     const onPageShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
       inFlight.current = null;
@@ -151,7 +177,9 @@ export function useStartCheckout() {
         return;
       }
 
-      const { body, fingerprint } = target.mode === "cart" ? await prepareCart() : await prepareProduct(target.item);
+      const payment = target.payment ?? STRIPE;
+      const { body, fingerprint } =
+        target.mode === "cart" ? await prepareCart(payment) : await prepareProduct(target.item, payment);
       const session = await openSession(body, fingerprint);
       savePendingCheckout({ orderId: session.order_id, paymentIntentId: session.payment_intent_id, fingerprint });
       trackCheckout("order_created", {
@@ -160,6 +188,7 @@ export function useStartCheckout() {
         total: session.amount_minor / 100,
         currency: session.currency_code,
         mode: target.mode,
+        provider: body.provider,
       });
       leaving = true;
       setPhase("redirecting");
@@ -169,7 +198,7 @@ export function useStartCheckout() {
         useShopStore.getState().openAuthGate();
         trackAuth("auth_gate_opened");
       } else {
-        setError(messageFor(cause));
+        setError(messageFor(cause, (target.payment ?? STRIPE).provider));
       }
     } finally {
       if (!leaving) {

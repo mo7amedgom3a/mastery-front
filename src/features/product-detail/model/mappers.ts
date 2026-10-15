@@ -9,6 +9,7 @@ import {
 } from "@/features/landing/model/mappers";
 import type { InstructorNames } from "@/lib/api/instructor-names";
 import type { LegacyCourseResponse, LegacyRecommendationsResponse, LegacyRelatedResponse } from "@/lib/api/legacy";
+import type { ProductContentResponse } from "@/lib/api/product-content";
 import {
   cleanText,
   formatClock,
@@ -19,6 +20,7 @@ import {
   type TextBlock,
 } from "@/lib/format";
 
+import { legacyTrainerId, studioSections, type StudioDocument } from "./studio-content";
 import type {
   CatalogIndex,
   InfoSectionVM,
@@ -119,23 +121,45 @@ export function mapTrainer(dto: TrainerDto): TrainerVM | null {
 
 const VIDEO_GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+function toStudioDocument(
+  content?: ProductContentResponse | StudioDocument | null,
+): StudioDocument | null {
+  if (!content) return null;
+  if ("document" in content && content.document) {
+    return content.document as StudioDocument;
+  }
+  if ("schema_version" in content) {
+    return content as StudioDocument;
+  }
+  return null;
+}
+
 /**
  * The course/diploma promo video (`promo_video_id`: the old site's `courseVideo`, stored in the legacy
  * course's `banner` column). Not `intro_video`, which is the first lesson and lives in another Bunny
  * library. The id is still verified against the promo library before the page shows a player.
  */
-export function introVideoSource(detail: DetailDto): IntroVideoSource | null {
-  const videoId = detail.promo_video_id?.trim();
+export function introVideoSource(
+  detail: DetailDto,
+  content?: ProductContentResponse | StudioDocument | null,
+): IntroVideoSource | null {
+  const doc = toStudioDocument(content);
+  const videoId = doc?.meta?.intro_video_id?.trim() || detail.promo_video_id?.trim();
   if (!videoId || !VIDEO_GUID.test(videoId)) {
     return null;
   }
-  return { videoId, title: `الفيديو التعريفي: ${cleanText(detail.course.name) ?? ""}`, duration: null };
+  const name = doc?.meta?.title ? cleanText(doc.meta.title) : cleanText(detail.course.name);
+  return { videoId, title: `الفيديو التعريفي: ${name ?? ""}`, duration: null };
 }
 
-export function mapProductDetail(dto: DetailDto): ProductDetailVM {
+export function mapProductDetail(
+  dto: DetailDto,
+  content?: ProductContentResponse | StudioDocument | null,
+): ProductDetailVM {
   const { course } = dto;
   const kind = kindOf(dto);
-  const title = cleanText(course.name) ?? "";
+  const doc = toStudioDocument(content);
+  const title = (doc?.meta?.title ? cleanText(doc.meta.title) : null) || cleanText(course.name) || "";
   const curriculum = dto.units
     .toSorted(byOrder)
     .map(mapUnit)
@@ -143,14 +167,49 @@ export function mapProductDetail(dto: DetailDto): ProductDetailVM {
   const lessons = curriculum.flatMap((unit) => unit.lessons);
   const rating = course.rating && course.rating >= MIN_SHOWN_RATING ? Math.round(course.rating * 10) / 10 : null;
 
+  const rawSummary = doc?.meta?.summary || course.description || course.intro;
+  const summary = toPlainText(rawSummary, 240);
+  const description = toPlainText(rawSummary || dto.info[0]?.body, 160);
+
+  const banner = doc?.meta?.banner?.url
+    ? {
+        url: doc.meta.banner.url,
+        alt: doc.meta.banner.alt ?? "",
+        headline: doc.meta.banner.headline ?? "",
+      }
+    : null;
+
+  const contentBlocks = doc?.blocks && doc.blocks.length > 0 ? studioSections(doc.blocks) : null;
+
+  let trainers = dto.trainers.map(mapTrainer).filter((trainer): trainer is TrainerVM => trainer !== null);
+  if (doc?.meta?.instructors && doc.meta.instructors.length > 0) {
+    const metaTrainers = doc.meta.instructors.map((inst, index): TrainerVM => {
+      const legId = legacyTrainerId(inst.ref);
+      const existing = legId ? trainers.find((t) => t.id === legId) : undefined;
+      const name = cleanText(inst.display_name) || existing?.name || "";
+      return {
+        id: existing?.id ?? -(index + 1),
+        name,
+        initial: name.trim().charAt(0) || "م",
+        avatar: inst.avatar_url || existing?.avatar || null,
+        bio: existing?.bio ?? [],
+        summary: existing?.summary ?? null,
+        href: existing?.href ?? routes.home,
+      };
+    });
+    if (metaTrainers.length > 0) {
+      trainers = metaTrainers;
+    }
+  }
+
   return {
     kind,
     id: course.id,
     title,
-    summary: toPlainText(course.description ?? course.intro, 240),
-    description: toPlainText(course.description ?? course.intro ?? dto.info[0]?.body, 160),
+    summary,
+    description,
     category: cleanText(course.category_name),
-    image: course.image || course.square_image || null,
+    image: doc?.meta?.cover?.url || course.image || course.square_image || null,
     duration: formatDurationFromSeconds(course.duration),
     rating,
     ...coursePricing(course, dto.prices),
@@ -161,8 +220,10 @@ export function mapProductDetail(dto: DetailDto): ProductDetailVM {
       .toSorted(byOrder)
       .map(mapInfo)
       .filter((section): section is InfoSectionVM => section !== null),
+    banner,
+    content: contentBlocks,
     curriculum,
-    trainers: dto.trainers.map(mapTrainer).filter((trainer): trainer is TrainerVM => trainer !== null),
+    trainers,
     href: productHref(kind, course.id, course.link_name),
     indexable: course.active,
   };
@@ -249,6 +310,7 @@ export function dedupe(cards: RailCardVM[], seen: Set<string>): RailCardVM[] {
 
 export type ProductDetailSources = {
   detail: DetailDto;
+  content?: ProductContentResponse | StudioDocument | null;
   related: LegacyRelatedResponse | null;
   recommendations: LegacyRecommendationsResponse | null;
   catalog: CatalogIndex | null;
@@ -257,12 +319,13 @@ export type ProductDetailSources = {
 
 export function mapProductDetailData({
   detail,
+  content,
   related,
   recommendations,
   catalog,
   instructors,
 }: ProductDetailSources): ProductDetailData {
-  const product = mapProductDetail(detail);
+  const product = mapProductDetail(detail, content);
   const seen = new Set([`${product.kind}:${product.id}`]);
 
   // Same kind first: a course page leads with courses, a diploma page with diplomas.

@@ -27,6 +27,9 @@ import { useUndo } from "@/lib/shop/use-undo";
 import { shopQueries } from "./api/shop-client";
 import { CartLineRow } from "./components/cart-line";
 import { OrderSummary } from "./components/order-summary";
+import { PaymentMethodPicker } from "./components/payment-method-picker";
+import { TamaraWidget } from "./components/tamara-widget";
+import { usePaymentChoice } from "./components/use-payment-choice";
 import { WishlistSuggestions } from "./components/wishlist-suggestions";
 import { accountQuote } from "./model/account-quote";
 
@@ -103,6 +106,7 @@ export function CartPage() {
 
   const { quote, stale, failed, refetch } = useCartQuote(hydrated, signedIn, cart);
   const checkout = useStartCheckout();
+  const payment = usePaymentChoice(quote && { amount: quote.totals.total, currency: quote.totals.currency });
   const shopRoutes = useShopRoutes();
 
   const undo = useUndo<Removed>();
@@ -214,7 +218,26 @@ export function CartPage() {
             blocked={signedIn && unavailable.size > 0}
             paying={checkout.busy}
             payError={checkout.error}
-            onPay={() => void checkout.start({ mode: "cart" })}
+            onPay={() => void checkout.start({ mode: "cart", payment: payment.payment })}
+            provider={payment.payment.provider}
+            methodIncomplete={payment.incomplete}
+            paymentMethods={
+              <PaymentMethodPicker
+                method={payment.method}
+                onMethodChange={(method) => {
+                  checkout.clearError();
+                  payment.setMethod(method);
+                }}
+                tamara={payment.tamara}
+                phone={payment.phone}
+                onPhoneChange={payment.setPhone}
+                phoneError={payment.phoneError}
+                disabled={checkout.busy}
+              />
+            }
+            instalmentsWidget={
+              payment.widgetOptions ? <TamaraWidget options={payment.widgetOptions} placement="cart" /> : null
+            }
           />
         </div>
       </div>

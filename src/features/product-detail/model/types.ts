@@ -2,6 +2,8 @@ import type { Route } from "next";
 
 import type { CourseDto, PackageDto } from "@/features/landing/model/mappers";
 
+import type { StudioBannerVM, StudioSectionVM } from "./studio-content";
+
 import type { TextBlock } from "@/lib/format";
 import type { Pricing } from "@/lib/pricing";
 import type { ShopItemKind } from "@/lib/shop/store";
@@ -83,6 +85,10 @@ export type ProductDetailVM = {
   /** Set by `get-product-detail` only once the video is confirmed to exist in the Bunny library. */
   introVideo: IntroVideoVM | null;
   sections: InfoSectionVM[];
+  /** Wide banner from the Course Studio, shown above the page content. */
+  banner: StudioBannerVM | null;
+  /** The page written in the Course Studio, by section; replaces `sections` when set. */
+  content: StudioSectionVM[] | null;
   curriculum: UnitVM[];
   trainers: TrainerVM[];
   /** Canonical URL path, e.g. `/courses/4-Instagram_E-Commerce_Strategy`. */
