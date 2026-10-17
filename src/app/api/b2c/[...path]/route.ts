@@ -22,6 +22,11 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^catalog\/products\/[A-Za-z0-9_-]+$/, session: false },
   // Onboarding choices (skills, topics, product types), read by the client onboarding steps.
   { methods: ["GET"], pattern: /^catalog\/onboarding-options$/, session: false },
+  // Live-diploma catalog reads (list, detail, cohorts, one cohort): public discovery.
+  { methods: ["GET"], pattern: /^catalog\/live-diplomas(\/[A-Za-z0-9-]+(\/cohorts(\/[A-Za-z0-9-]+)?)?)?$/, session: false },
+  // Live-diploma waitlist: join, read and leave the signed-in customer's entry.
+  { methods: ["POST"], pattern: /^catalog\/live-diplomas\/[A-Za-z0-9-]+\/waitlist$/, session: true },
+  { methods: ["GET", "DELETE"], pattern: /^catalog\/live-diplomas\/[A-Za-z0-9-]+\/waitlist\/me$/, session: true },
   // Behavior events from the browser; open to guests too (identified by X-Client-Fingerprint).
   { methods: ["POST"], pattern: /^analytics\/events$/, session: false },
   // The signed-in customer's cart, checkout and purchases.

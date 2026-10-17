@@ -13,11 +13,12 @@ export function generateStaticParams(): { slug: string }[] {
 
 export async function generateMetadata({ params }: PageProps<"/diplomas/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  return productMetadata(slug);
+  return productMetadata(slug, "diploma");
 }
 
-export default async function DiplomaPage({ params }: PageProps<"/diplomas/[slug]">) {
+export default async function DiplomaPage({ params, searchParams }: PageProps<"/diplomas/[slug]">) {
   const { slug } = await params;
-  const data = await loadProductPage("diploma", slug);
+  const preview = (await searchParams)?.preview === "1";
+  const data = await loadProductPage("diploma", slug, preview);
   return <ProductDetailPage data={data} />;
 }

@@ -73,7 +73,7 @@ export function LiveTrainingDetailPage({ training }: { training: LiveTrainingDet
           <div className="flex min-w-0 flex-col gap-16">
             {/* Below the hero on phones, beside the content from `lg`. */}
             <div className="lg:hidden">
-              <BookingCard training={training} />
+              <BookingCard training={training} id="booking" />
             </div>
             <AboutBlock about={details.about} summary={training.summary} />
             <ObjectivesBlock objectives={details.objectives} />

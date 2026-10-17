@@ -24,7 +24,9 @@ export type CheckoutPayment = { provider: "stripe" } | { provider: "tamara"; pho
 
 export type CheckoutTarget =
   | { mode: "cart"; payment?: CheckoutPayment }
-  | { mode: "product"; item: ShopItem; payment?: CheckoutPayment };
+  | { mode: "product"; item: ShopItem; payment?: CheckoutPayment }
+  /** A live diploma bought straight from its detail page: known product + cohort, no legacy item. */
+  | { mode: "diploma"; productId: string; cohortId: string; payment?: CheckoutPayment };
 
 const STRIPE: CheckoutPayment = { provider: "stripe" };
 
@@ -118,6 +120,23 @@ async function prepareProduct(
   };
 }
 
+async function prepareDiploma(
+  productId: string,
+  cohortId: string,
+  payment: CheckoutPayment,
+): Promise<{ body: CheckoutSessionRequest; fingerprint: string }> {
+  return {
+    body: {
+      product_id: productId,
+      cohort_id: cohortId,
+      quantity: 1,
+      currency_code: CHECKOUT_CURRENCY,
+      ...paymentFields(payment),
+    },
+    fingerprint: `diploma|${payment.provider}|${productId}|${cohortId}`,
+  };
+}
+
 function messageFor(error: unknown, provider: CheckoutPayment["provider"]): string {
   if (error instanceof CheckoutProblem) return error.message;
   if (error instanceof ApiError && provider === "tamara") {
@@ -129,6 +148,9 @@ function messageFor(error: unknown, provider: CheckoutPayment["provider"]): stri
   if (error instanceof ApiError) {
     if (error.status === 404) return "هذا المنتج غير متاح للشراء حالياً.";
     if (error.status === 409) {
+      if (errorCode(error) === "cohort_waitlisted") {
+        return "اكتملت مقاعد هذه الدفعة. أضفناك إلى قائمة الانتظار وسنخبرك فور توفّر مقعد.";
+      }
       return errorCode(error) === "checkout_in_progress"
         ? "ما زلنا نجهّز صفحة الدفع. حاول مجدداً بعد لحظات."
         : "تغيّرت سلتك أو لم تعد متاحة للدفع. حدّث الصفحة وحاول مجدداً.";
@@ -179,7 +201,11 @@ export function useStartCheckout() {
 
       const payment = target.payment ?? STRIPE;
       const { body, fingerprint } =
-        target.mode === "cart" ? await prepareCart(payment) : await prepareProduct(target.item, payment);
+        target.mode === "cart"
+          ? await prepareCart(payment)
+          : target.mode === "product"
+            ? await prepareProduct(target.item, payment)
+            : await prepareDiploma(target.productId, target.cohortId, payment);
       const session = await openSession(body, fingerprint);
       savePendingCheckout({ orderId: session.order_id, paymentIntentId: session.payment_intent_id, fingerprint });
       trackCheckout("order_created", {

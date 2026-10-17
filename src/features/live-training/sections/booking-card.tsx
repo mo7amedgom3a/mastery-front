@@ -5,14 +5,15 @@ import { formatNumber } from "@/lib/format";
 
 import { detailCopy, spotlightCopy } from "../content/copy";
 import type { LiveTrainingDetailVM } from "../model/types";
+import BookingActions from "./booking-actions";
 
 /**
  * Price, schedule and the booking action. Sticky beside the content on large screens.
  *
- * The seat is still paid for on the live site (`enrollUrl`): live trainings aren't in the shop
- * catalog, so the cart can't hold them yet.
+ * The booking action (`BookingActions`) talks to the live-diploma backend: pick an open cohort and
+ * pay, or join the waitlist when every cohort is full.
  */
-export function BookingCard({ training }: { training: LiveTrainingDetailVM }) {
+export function BookingCard({ training, id }: { training: LiveTrainingDetailVM; id?: string }) {
   const schedule = [
     { icon: CalendarDays, label: training.sessions ? `${training.dateRange} (${training.sessions})` : training.dateRange },
     { icon: Clock, label: training.sessionTime },
@@ -20,7 +21,7 @@ export function BookingCard({ training }: { training: LiveTrainingDetailVM }) {
   ];
 
   return (
-    <aside aria-label={detailCopy.bookingLabel} className="rounded-panel border border-line-strong bg-surface p-6 lg:short:p-5">
+    <aside id={id} aria-label={detailCopy.bookingLabel} className="rounded-panel border border-line-strong bg-surface p-6 lg:short:p-5">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 tabular-nums">
         <span dir="ltr" className="text-4xl font-bold lg:short:text-3xl">
           {training.price.current}
@@ -43,9 +44,7 @@ export function BookingCard({ training }: { training: LiveTrainingDetailVM }) {
       </ul>
 
       <div className="mt-5 flex flex-col gap-3">
-        <a href={training.enrollUrl} className={buttonClass({ variant: "primary", block: true })}>
-          {detailCopy.enroll}
-        </a>
+        <BookingActions catalogSlug={training.catalogSlug} priceLabel={training.price.current ?? ""} />
         {training.brochureUrl ? (
           <a
             href={training.brochureUrl}

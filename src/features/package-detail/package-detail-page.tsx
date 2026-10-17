@@ -3,10 +3,11 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { getSiteUrl } from "@/config/env";
 import { CtaBand } from "@/features/landing/sections/cta-band";
 import { FaqSection } from "@/features/landing/sections/faq-section";
-import { toQrMatrix } from "@/features/product-detail/api/share-qr";
-import { SectionNav, type SectionNavItem } from "@/features/product-detail/components/section-nav";
+import type { QrMatrix } from "@/features/product-detail/model/qr";import { SectionNav, type SectionNavItem } from "@/features/product-detail/components/section-nav";
 import { ShareButton } from "@/features/product-detail/components/share-dialog";
 import { StickySidebar } from "@/features/product-detail/components/sticky-sidebar";
+import { ContentBlocks } from "@/features/product-detail/components/content-blocks";
+import { StudioBanner } from "@/features/product-detail/components/studio-banner";
 import { AboutSection } from "@/features/product-detail/sections/about-section";
 import { CertificateSection } from "@/features/product-detail/sections/certificate-section";
 import { InstructorSection } from "@/features/product-detail/sections/instructor-section";
@@ -25,7 +26,7 @@ import { PackageJsonLd } from "./seo/json-ld";
  * → related → recommended → FAQ. Same frame as the course page; every included course links to its
  * own page. Pure composition over view models; only the section nav and cart buttons hydrate.
  */
-export function PackageDetailPage({ data }: { data: PackageDetailData }) {
+export function PackageDetailPage({ data, qrMatrix }: { data: PackageDetailData; qrMatrix: QrMatrix }) {
   const { product, related, recommended } = data;
   const shareUrl = `${getSiteUrl()}${product.href}`;
   const shareProps = {
@@ -36,7 +37,7 @@ export function PackageDetailPage({ data }: { data: PackageDetailData }) {
     facts: packageFacts(product).map((fact) => fact.label),
     trainers: product.trainers.map(({ name, avatar, initial }) => ({ name, avatar, initial })),
     // Scans are tagged so they can be told apart from other visits in analytics.
-    qr: toQrMatrix(`${shareUrl}?utm_source=qr&utm_medium=share`),
+    qr: qrMatrix,
     fileName: `package-${product.id}`,
   };
   const contentsLead = [itemsLabel(product), product.duration ? `${product.duration} من المحتوى` : null]
@@ -44,7 +45,7 @@ export function PackageDetailPage({ data }: { data: PackageDetailData }) {
     .join(" · ");
 
   const nav: SectionNavItem[] = [
-    product.sections.length > 0 ? { id: "about", label: "عن الباقة" } : null,
+    product.sections.length > 0 || product.readme || product.content?.length ? { id: "about", label: "عن الباقة" } : null,
     product.items.length > 0 ? { id: "contents", label: "محتوى الباقة" } : null,
     product.trainers.length > 0 ? { id: "instructor", label: "المدربون" } : null,
     { id: "certificate", label: "الشهادة" },
@@ -67,7 +68,12 @@ export function PackageDetailPage({ data }: { data: PackageDetailData }) {
             <div className="lg:hidden">
               <PackagePurchaseCard product={product} share={<ShareButton {...shareProps} variant="block" />} />
             </div>
-            <AboutSection sections={product.sections} title="عن الباقة" />
+            {product.banner ? <StudioBanner banner={product.banner} /> : null}
+            {product.content && product.content.length > 0 ? (
+              <ContentBlocks sections={product.content} />
+            ) : (
+              <AboutSection sections={product.sections} readme={product.readme} title="عن الباقة" />
+            )}
             <PackageContentsSection items={product.items} title="محتوى الباقة" lead={contentsLead || null} />
             <InstructorSection trainers={product.trainers} />
           </div>

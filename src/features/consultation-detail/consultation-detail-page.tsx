@@ -41,7 +41,7 @@ export function ConsultationDetailPage({ data }: { data: ConsultationDetailData 
   };
 
   const nav: SectionNavItem[] = [
-    consultation.sections.length > 0 ? { id: "about", label: "عن الاستشارة" } : null,
+    consultation.sections.length > 0 || consultation.readme ? { id: "about", label: "عن الاستشارة" } : null,
     expert ? { id: "instructor", label: "الخبير" } : null,
     relatedConsultations.length > 0 ? { id: "related", label: "استشارات أخرى" } : null,
     { id: "faq", label: "الأسئلة الشائعة" },
@@ -63,7 +63,7 @@ export function ConsultationDetailPage({ data }: { data: ConsultationDetailData 
             <div className="lg:hidden">
               <BookingCard consultation={consultation} share={<ShareButton {...shareProps} variant="block" />} />
             </div>
-            <AboutSection sections={consultation.sections} title="عن الاستشارة" />
+            <AboutSection sections={consultation.sections} readme={consultation.readme} title="عن الاستشارة" />
             <ExpertSection expert={expert} />
           </div>
           <StickySidebar>

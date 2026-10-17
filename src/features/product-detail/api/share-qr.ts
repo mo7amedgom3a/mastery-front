@@ -2,8 +2,9 @@ import "server-only";
 
 import QRCode from "qrcode";
 
-/** A QR code as a square grid of modules: `cells[y * size + x] === "1"` is a dark module. */
-export type QrMatrix = { size: number; cells: string };
+import type { QrMatrix } from "../model/qr";
+
+export type { QrMatrix } from "../model/qr";
 
 /**
  * QR grid for a URL, computed on the server so the browser ships no QR library. Error-correction

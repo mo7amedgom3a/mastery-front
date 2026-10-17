@@ -1,6 +1,6 @@
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { LiveSpotlight } from "@/features/live-training/sections/live-spotlight";
+import { LiveSpotlightCarousel } from "@/features/live-training/sections/live-spotlight-carousel";
 
 import { fallbackFaqs } from "./content/faqs";
 import { MAX_CARDS } from "./model/mappers";
@@ -35,7 +35,7 @@ export function LandingPage({ data }: { data: LandingData }) {
         {/* Opening run: page-colour gaps keep the hero, live banner, stats and ticker apart. */}
         <div className="flex flex-col gap-[clamp(1.5rem,5svh,3.5rem)] pb-[clamp(1.5rem,5svh,3.5rem)]">
           <HeroSection />
-          <LiveSpotlight training={data.liveTraining} />
+          <LiveSpotlightCarousel trainings={data.liveTrainings} />
           <StatsSection stats={data.stats} />
           <ExpertsTicker />
         </div>
@@ -53,7 +53,7 @@ export function LandingPage({ data }: { data: LandingData }) {
         <CtaBand />
       </main>
       <SiteFooter />
-      <LandingJsonLd courses={data.courses.slice(0, MAX_CARDS)} faqs={faqs} liveTraining={data.liveTraining} />
+      <LandingJsonLd courses={data.courses.slice(0, MAX_CARDS)} faqs={faqs} liveTraining={data.liveTrainings[0] ?? null} />
     </>
   );
 }

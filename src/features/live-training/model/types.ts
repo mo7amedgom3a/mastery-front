@@ -4,18 +4,22 @@ import type { BrandColor } from "@/components/ui/brand-colors";
 import type { Pricing } from "@/lib/pricing";
 
 /**
- * A live (streamed) training as the API returns it. There is no backend endpoint yet: this is the
- * contract `GET /api/live-trainings` serves from mock data (see `api/mock-data.ts`).
+ * A live (streamed) training, sourced from the backend `catalog/live-diplomas` API. The page slug is
+ * the backend diploma slug; the storefront-only marketing fields (trainer, hero art, copy, sections)
+ * come from the diploma's `marketing` object.
  */
 export type LiveTrainingDto = {
   id: number;
+  /** Page URL slug, equal to the backend diploma slug. */
   slug: string;
+  /** Backend live-diploma slug (`/api/v1/catalog/live-diplomas/{slug}`) for cohorts, waitlist and purchase. */
+  catalog_slug: string;
   title: string;
   /** English programme name, e.g. "Sales Mastery Professional". */
   title_en: string | null;
   subtitle: string | null;
   summary: string | null;
-  /** Cohort label, e.g. "الدفعة 7". */
+  /** Cohort label, e.g. "الدفعة 21". */
   cohort_label: string | null;
   /** 16:9 promo artwork (cards, social). */
   cover_image: string | null;
@@ -47,15 +51,17 @@ export type LiveTrainingDto = {
   /** YouTube video id of the trailer. */
   intro_video_youtube_id: string | null;
   brochure_url: string | null;
-  /** Where the seat is paid for (the live site's checkout) until live trainings join the cart. */
-  enroll_url: string;
   highlights: string[];
+  /** Storefront brand field behind the trainer cutout and cards. */
+  style: BrandColor;
+  /** Rotate this diploma into the landing spotlight carousel. */
+  featured: boolean;
 };
 
 /** A labelled point, e.g. an objective ("الفهم: …") or a feature. */
 export type LabelledTextDto = { label: string; text: string };
 
-/** Long-form page content: what `GET /api/live-trainings/{slug}` adds to the list item. */
+/** Long-form page content: what the diploma's `marketing.details` adds to the list item. */
 export type LiveTrainingDetailsDto = {
   about: { title: string; paragraphs: string[] };
   objectives: LabelledTextDto[];
@@ -76,16 +82,13 @@ export type LiveTrainingDetailsDto = {
 
 export type LiveTrainingDetailDto = LiveTrainingDto & { details: LiveTrainingDetailsDto };
 
-export type LiveTrainingsResponse = {
-  items: LiveTrainingDto[];
-  total: number;
-};
-
 /** What the spotlight banner and the `/live` cards render. Mapped in `mappers.ts`. */
 export type LiveTrainingVM = {
   id: number;
   title: string;
   titleEn: string | null;
+  /** Backend live-diploma slug for cohorts, waitlist and purchase. */
+  catalogSlug: string;
   subtitle: string | null;
   summary: string | null;
   cohort: string | null;
@@ -110,10 +113,11 @@ export type LiveTrainingVM = {
   endsAt: string;
   trailerEmbedUrl: string | null;
   brochureUrl: string | null;
-  enrollUrl: string;
   highlights: string[];
   /** Solid field behind the trainer cutout. */
   color: BrandColor;
+  /** Rotate this diploma into the landing spotlight carousel. */
+  featured: boolean;
   /** The training's page on this site. */
   href: Route;
 };

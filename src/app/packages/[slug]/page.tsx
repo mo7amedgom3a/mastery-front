@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { getSiteUrl } from "@/config/env";
+import { toQrMatrix } from "@/features/product-detail/api/share-qr";
 import { loadPackagePage, packageMetadata } from "@/features/package-detail/api/load-package-page";
 import { PackageDetailPage } from "@/features/package-detail/package-detail-page";
 
@@ -16,8 +18,11 @@ export async function generateMetadata({ params }: PageProps<"/packages/[slug]">
   return packageMetadata(slug);
 }
 
-export default async function PackagePage({ params }: PageProps<"/packages/[slug]">) {
+export default async function PackagePage({ params, searchParams }: PageProps<"/packages/[slug]">) {
   const { slug } = await params;
-  const data = await loadPackagePage(slug);
-  return <PackageDetailPage data={data} />;
+  const preview = (await searchParams)?.preview === "1";
+  const data = await loadPackagePage(slug, preview);
+  const shareUrl = `${getSiteUrl()}${data.product.href}`;
+  const qrMatrix = toQrMatrix(`${shareUrl}?utm_source=qr&utm_medium=share`);
+  return <PackageDetailPage data={data} qrMatrix={qrMatrix} />;
 }

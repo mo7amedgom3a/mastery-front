@@ -1022,7 +1022,7 @@
           "Admin"
         ],
         "summary": "Audit log",
-        "description": "Admin write history from `b2c.audit_logs`, newest first: who (`actor_id`) did what (`action`) to which entity, with before/after values. Legacy-layer writes use `entity_type` `legacy.\u003CTABLE\u003E`. Requires `*` or `admin:operations:read`.",
+        "description": "Admin write history from `b2c.audit_logs`, newest first: who (`actor_id`) did what (`action`) to which entity, with before/after values. Legacy-layer writes use `entity_type` `legacy.<TABLE>`. Requires `*` or `admin:operations:read`.",
         "operationId": "list_audit_logs_api_v1_admin_audit_logs_get",
         "security": [
           {
@@ -1463,7 +1463,7 @@
           "Admin reports"
         ],
         "summary": "Product sales report",
-        "description": "Paid orders, units, revenue and promotion uses per product, highest revenue first. `ref` is the B2C product when one exists (legacy sales of a migrated course are included in it), else `legacy:\u003Ckind\u003E:\u003Cid\u003E`.\n\n**Sources:** B2C commerce tables and the legacy platform's orders (`source`). A B2C *sale* is an order in `paid`, `partially_refunded` or `refunded` status dated by `COALESCE(placed_at, created_at)`; a legacy sale is a paid `MAS_DEF_Orders` row dated by `addedDate`, in `LEGACY_ORDER_CURRENCY`. Free enrollments are counted apart. *Refunds* are B2C `b2c.refunds` rows (the legacy platform has no refund records). Converted amounts use the daily rate of each sale; `fx` names the rates used and `*_by_currency` keeps the exact original amounts.\n\nRequires `admin:operations:read` or `admin:orders:read`.",
+        "description": "Paid orders, units, revenue and promotion uses per product, highest revenue first. `ref` is the B2C product when one exists (legacy sales of a migrated course are included in it), else `legacy:<kind>:<id>`.\n\n**Sources:** B2C commerce tables and the legacy platform's orders (`source`). A B2C *sale* is an order in `paid`, `partially_refunded` or `refunded` status dated by `COALESCE(placed_at, created_at)`; a legacy sale is a paid `MAS_DEF_Orders` row dated by `addedDate`, in `LEGACY_ORDER_CURRENCY`. Free enrollments are counted apart. *Refunds* are B2C `b2c.refunds` rows (the legacy platform has no refund records). Converted amounts use the daily rate of each sale; `fx` names the rates used and `*_by_currency` keeps the exact original amounts.\n\nRequires `admin:operations:read` or `admin:orders:read`.",
         "operationId": "product_sales_report_api_v1_admin_reports_products_get",
         "security": [
           {
@@ -1705,7 +1705,7 @@
           "Admin reports"
         ],
         "summary": "Promotion sales report",
-        "description": "Uses, discount granted and revenue per promotion: B2C promotions and legacy coupons (`legacy:coupon:\u003Cid\u003E`).\n\n**Sources:** B2C commerce tables and the legacy platform's orders (`source`). A B2C *sale* is an order in `paid`, `partially_refunded` or `refunded` status dated by `COALESCE(placed_at, created_at)`; a legacy sale is a paid `MAS_DEF_Orders` row dated by `addedDate`, in `LEGACY_ORDER_CURRENCY`. Free enrollments are counted apart. *Refunds* are B2C `b2c.refunds` rows (the legacy platform has no refund records). Converted amounts use the daily rate of each sale; `fx` names the rates used and `*_by_currency` keeps the exact original amounts.\n\nRequires `admin:operations:read` or `admin:orders:read`.",
+        "description": "Uses, discount granted and revenue per promotion: B2C promotions and legacy coupons (`legacy:coupon:<id>`).\n\n**Sources:** B2C commerce tables and the legacy platform's orders (`source`). A B2C *sale* is an order in `paid`, `partially_refunded` or `refunded` status dated by `COALESCE(placed_at, created_at)`; a legacy sale is a paid `MAS_DEF_Orders` row dated by `addedDate`, in `LEGACY_ORDER_CURRENCY`. Free enrollments are counted apart. *Refunds* are B2C `b2c.refunds` rows (the legacy platform has no refund records). Converted amounts use the daily rate of each sale; `fx` names the rates used and `*_by_currency` keeps the exact original amounts.\n\nRequires `admin:operations:read` or `admin:orders:read`.",
         "operationId": "promotion_sales_report_api_v1_admin_reports_promotions_get",
         "security": [
           {
@@ -2082,7 +2082,7 @@
           "Admin catalog"
         ],
         "summary": "Products",
-        "description": "Every catalog product, any status: B2C products (`b2c.products`) and the legacy courses/packages that no B2C product represents yet. A migrated legacy course is listed once, as its B2C product (`origin` = `migrated`). Filters only B2C products have (`category`, `tag`, `origin`, `price_min`/`price_max`, `purchased`, `status=archived`) and the sorts `paid_orders`/`rating` list B2C products only. Legacy prices are in `price_currency`.\n\n**Source: B2C and the legacy platform.** Items carry `source` (`b2c` | `legacy`) and an opaque `ref` (`b2c:\u003Cuuid\u003E`, `legacy:\u003Ckind\u003E:\u003Cid\u003E`); filter with `source`. Legacy amounts are in `LEGACY_ORDER_CURRENCY`.\n\nRequires `admin:catalog:read` or `admin:catalog:write`.",
+        "description": "Every catalog product, any status: B2C products (`b2c.products`) and the legacy courses/packages that no B2C product represents yet. A migrated legacy course is listed once, as its B2C product (`origin` = `migrated`). Filters only B2C products have (`category`, `tag`, `origin`, `price_min`/`price_max`, `purchased`, `status=archived`) and the sorts `paid_orders`/`rating` list B2C products only. Legacy prices are in `price_currency`.\n\n**Source: B2C and the legacy platform.** Items carry `source` (`b2c` | `legacy`) and an opaque `ref` (`b2c:<uuid>`, `legacy:<kind>:<id>`); filter with `source`. Legacy amounts are in `LEGACY_ORDER_CURRENCY`.\n\nRequires `admin:catalog:read` or `admin:catalog:write`.",
         "operationId": "list_products_api_v1_admin_catalog_products_get",
         "security": [
           {
@@ -2121,10 +2121,10 @@
                   "type": "null"
                 }
               ],
-              "description": "`course`, `diploma`, `package`, `bundle` or `consultation`; comma-separated for several.",
+              "description": "`course`, `diploma`, `package`, `bundle`, `consultation` or `live_diploma`; comma-separated for several.",
               "title": "Product Type"
             },
-            "description": "`course`, `diploma`, `package`, `bundle` or `consultation`; comma-separated for several."
+            "description": "`course`, `diploma`, `package`, `bundle`, `consultation` or `live_diploma`; comma-separated for several."
           },
           {
             "name": "status",
@@ -2395,7 +2395,7 @@
           "Admin catalog"
         ],
         "summary": "Create a course",
-        "description": "Creates a course (or diploma) on the legacy platform, which still owns course content, and returns it as a catalog product (`legacy:course:\u003Cid\u003E`).\n\nWrites change **only the local `legacy` mirror** (never production), need `LEGACY_ADMIN_LOCAL_WRITES_ENABLED=true` (else 403) and are recorded in `b2c.audit_logs`.\n\nRequires `admin:catalog:write`.",
+        "description": "Creates a course (or diploma) on the legacy platform, which still owns course content, and returns it as a catalog product (`legacy:course:<id>`).\n\nWrites change **only the local `legacy` mirror** (never production), need `LEGACY_ADMIN_LOCAL_WRITES_ENABLED=true` (else 403) and are recorded in `b2c.audit_logs`.\n\nRequires `admin:catalog:write`.",
         "operationId": "create_course_api_v1_admin_catalog_products_post",
         "security": [
           {
@@ -2666,6 +2666,449 @@
         }
       }
     },
+    "/api/v1/admin/catalog/products/{product_ref}/sales": {
+      "get": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Product students & sales series",
+        "description": "All-time and time-series student acquisition and order counts for one product across both B2C and legacy systems. Students are matched by email. Requires `admin:catalog:read`, `admin:catalog:write` or `admin:orders:read`.",
+        "operationId": "product_sales_api_v1_admin_catalog_products__product_ref__sales_get",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Range start (ISO date or date-time, UTC), e.g. `2026-10-01`.",
+              "title": "Start"
+            },
+            "description": "Range start (ISO date or date-time, UTC), e.g. `2026-10-01`."
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Range end, inclusive. A date (or midnight) covers that whole day, e.g. `2026-10-31`.",
+              "title": "End"
+            },
+            "description": "Range end, inclusive. A date (or midnight) covers that whole day, e.g. `2026-10-31`."
+          },
+          {
+            "name": "bucket",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "day",
+                "week",
+                "month"
+              ],
+              "type": "string",
+              "description": "Aggregation bucket: `day`, `week` or `month`.",
+              "default": "month",
+              "title": "Bucket"
+            },
+            "description": "Aggregation bucket: `day`, `week` or `month`."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductSalesSeries"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{product_ref}/behavior": {
+      "get": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Product behaviour stats",
+        "description": "How visitors behave on one product across both B2C and legacy events: page views, distinct viewers, wishlist adds/removes and cart adds/removes, with a per-bucket series. Events are matched by B2C `product_id` and, for legacy-linked products, by `legacy_entity_id`. Counts are subject to the backend's behaviour sampling rate. Requires `admin:catalog:read`, `admin:catalog:write` or `admin:orders:read`.",
+        "operationId": "product_behavior_api_v1_admin_catalog_products__product_ref__behavior_get",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Range start (ISO date or date-time, UTC), e.g. `2026-10-01`.",
+              "title": "Start"
+            },
+            "description": "Range start (ISO date or date-time, UTC), e.g. `2026-10-01`."
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Range end, inclusive. A date (or midnight) covers that whole day, e.g. `2026-10-31`.",
+              "title": "End"
+            },
+            "description": "Range end, inclusive. A date (or midnight) covers that whole day, e.g. `2026-10-31`."
+          },
+          {
+            "name": "bucket",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "day",
+                "week",
+                "month"
+              ],
+              "type": "string",
+              "description": "Aggregation bucket: `day`, `week` or `month`.",
+              "default": "month",
+              "title": "Bucket"
+            },
+            "description": "Aggregation bucket: `day`, `week` or `month`."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductBehaviorStats"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{product_ref}/transactions": {
+      "get": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Product transactions",
+        "description": "Transactions (B2C payment attempts) on orders that contain one product, with a per-bucket series and paged rows. B2C only: legacy orders have no payment attempts. `paid` counts attempts that succeeded (or were refunded); `failed` counts failed/cancelled ones. Requires `admin:catalog:read`, `admin:catalog:write` or `admin:orders:read`.",
+        "operationId": "product_transactions_api_v1_admin_catalog_products__product_ref__transactions_get",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Range start (ISO date or date-time, UTC), e.g. `2026-10-01`.",
+              "title": "Start"
+            },
+            "description": "Range start (ISO date or date-time, UTC), e.g. `2026-10-01`."
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Range end, inclusive. A date (or midnight) covers that whole day, e.g. `2026-10-31`.",
+              "title": "End"
+            },
+            "description": "Range end, inclusive. A date (or midnight) covers that whole day, e.g. `2026-10-31`."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 50
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this attempt status, e.g. `succeeded`.",
+              "title": "Status"
+            },
+            "description": "Only this attempt status, e.g. `succeeded`."
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 80
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only this provider, e.g. `stripe`.",
+              "title": "Provider"
+            },
+            "description": "Only this provider, e.g. `stripe`."
+          },
+          {
+            "name": "bucket",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "day",
+                "week",
+                "month"
+              ],
+              "type": "string",
+              "description": "Aggregation bucket: `day`, `week` or `month`.",
+              "default": "month",
+              "title": "Bucket"
+            },
+            "description": "Aggregation bucket: `day`, `week` or `month`."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Page size (max items returned).",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Page size (max items returned)."
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of items to skip (for paging).",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of items to skip (for paging)."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductTransactions"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/catalog/products/{product_ref}": {
       "get": {
         "tags": [
@@ -2686,13 +3129,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -2757,13 +3200,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -2838,13 +3281,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -2913,13 +3356,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -2986,13 +3429,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -3067,13 +3510,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "unit_id",
@@ -3155,13 +3598,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "unit_id",
@@ -3228,13 +3671,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -3270,9 +3713,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -3309,13 +3750,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "unit_id",
@@ -3399,13 +3840,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "unit_id",
@@ -3496,13 +3937,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "unit_id",
@@ -3578,13 +4019,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "unit_id",
@@ -3629,9 +4070,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -3668,13 +4107,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -3743,13 +4182,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -3818,13 +4257,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -3893,13 +4332,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "limit",
@@ -3991,13 +4430,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -4066,13 +4505,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "limit",
@@ -4137,7 +4576,7 @@
           "Admin catalog"
         ],
         "summary": "Package summary",
-        "description": "Counts, current vs original price and legacy revenue of a package. Works with any ref of a product that has a legacy course/package (404 otherwise). **Source: legacy platform** (the legacy module's internal services over the local `legacy` mirror), mapped to back-office shapes.\n\nRequires `admin:catalog:read` or `admin:catalog:write`.",
+        "description": "Counts, price and sales of a B2C package (`b2c.products` + `b2c.package_items`).",
         "operationId": "package_summary_api_v1_admin_catalog_products__product_ref__summary_get",
         "security": [
           {
@@ -4151,13 +4590,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -4208,7 +4647,7 @@
           "Admin catalog"
         ],
         "summary": "Package courses",
-        "description": "Courses of a package, with their refs and B2C product ids when migrated. Works with any ref of a product that has a legacy course/package (404 otherwise). **Source: legacy platform** (the legacy module's internal services over the local `legacy` mirror), mapped to back-office shapes.\n\nRequires `admin:catalog:read` or `admin:catalog:write`.",
+        "description": "The B2C products a package bundles, in order (source of truth: `b2c.package_items`).",
         "operationId": "package_courses_api_v1_admin_catalog_products__product_ref__courses_get",
         "security": [
           {
@@ -4222,13 +4661,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E` (a bare UUID also works), `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -4263,6 +4702,493 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{product_ref}/package/sections": {
+      "get": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Package detail sections",
+        "description": "Ordered detail sections of a package (المقدمة، المحاور، الأهداف، الفئة المستهدفة) from `b2c.product_sections`.",
+        "operationId": "package_detail_sections_api_v1_admin_catalog_products__product_ref__package_sections_get",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PackageSectionResponse"
+                  },
+                  "title": "Response Package Detail Sections Api V1 Admin Catalog Products  Product Ref  Package Sections Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Update package detail sections",
+        "description": "Replaces a package's ordered detail sections (المقدمة، المحاور، الأهداف، الفئة المستهدفة). Writes `b2c.product_sections`.",
+        "operationId": "update_package_sections_api_v1_admin_catalog_products__product_ref__package_sections_put",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePackageSectionsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PackageSectionResponse"
+                  },
+                  "title": "Response Update Package Sections Api V1 Admin Catalog Products  Product Ref  Package Sections Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{product_ref}/package": {
+      "put": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Update a package",
+        "description": "Renames, describes or publishes a B2C package. Writes `b2c.products` / `b2c.product_translations`.",
+        "operationId": "update_package_api_v1_admin_catalog_products__product_ref__package_put",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePackageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{product_ref}/package/courses": {
+      "post": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Add a course to a package",
+        "description": "Bundles a B2C product into a package (`b2c.package_items`).",
+        "operationId": "add_package_course_api_v1_admin_catalog_products__product_ref__package_courses_post",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddPackageCourseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageCourse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{product_ref}/package/courses/{member_product_id}": {
+      "patch": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Update a package course",
+        "description": "Marks a bundled course required or optional.",
+        "operationId": "update_package_course_api_v1_admin_catalog_products__product_ref__package_courses__member_product_id__patch",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "member_product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "B2C product id of the bundled course.",
+              "title": "Member Product Id"
+            },
+            "description": "B2C product id of the bundled course."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePackageCourseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageCourse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Remove a course from a package",
+        "description": "Unbundles a B2C product from a package (`b2c.package_items`).",
+        "operationId": "remove_package_course_api_v1_admin_catalog_products__product_ref__package_courses__member_product_id__delete",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>` (a bare UUID also works), `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "member_product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "B2C product id of the bundled course.",
+              "title": "Member Product Id"
+            },
+            "description": "B2C product id of the bundled course."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -4716,10 +5642,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Only this course (`legacy:course:\u003Cid\u003E`).",
+              "description": "Only this course (`legacy:course:<id>`).",
               "title": "Product Ref"
             },
-            "description": "Only this course (`legacy:course:\u003Cid\u003E`)."
+            "description": "Only this course (`legacy:course:<id>`)."
           },
           {
             "name": "limit",
@@ -6020,9 +6946,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -6059,13 +6983,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -6130,13 +7054,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -6211,13 +7135,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -6299,13 +7223,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -6374,13 +7298,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "version_id",
@@ -6455,13 +7379,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "version_id",
@@ -6522,7 +7446,7 @@
           "Admin course studio"
         ],
         "summary": "Storefront preview data",
-        "description": "The storefront data of the product's legacy course/diploma (same shape as `GET /legacy/courses/{id}`, inactive courses included), which the live preview renders under the draft. 404 for products with no legacy course. Requires `admin:catalog:read` or `admin:catalog:write`.",
+        "description": "The storefront data behind the product (legacy course/diploma page, package, bundle, consultation or live diploma) that the live preview renders under the draft, tagged with its `kind`. Returns `base: null` for a product with no storefront page of its own (e.g. a B2C-only course). Requires `admin:catalog:read` or `admin:catalog:write`.",
         "operationId": "preview_base_api_v1_admin_catalog_products__product_ref__studio_preview_base_get",
         "security": [
           {
@@ -6536,13 +7460,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -6569,7 +7493,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CourseDetailResponse"
+                  "$ref": "#/components/schemas/PreviewBaseResponse"
                 }
               }
             }
@@ -6607,13 +7531,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "limit",
@@ -6703,13 +7627,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -6784,13 +7708,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -6845,6 +7769,121 @@
         }
       }
     },
+    "/api/v1/admin/catalog/products/{product_ref}/studio/assets/upload": {
+      "post": {
+        "tags": [
+          "Admin course studio"
+        ],
+        "summary": "Upload an asset directly through backend",
+        "description": "Uploads a file directly through the server to S3 (used directly or as fallback when direct S3 PUT is blocked). Audited. Requires `admin:catalog:write`.",
+        "operationId": "direct_asset_upload_api_v1_admin_catalog_products__product_ref__studio_assets_upload_post",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "filename",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 300,
+              "title": "Filename"
+            }
+          },
+          {
+            "name": "content_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Content Type"
+            }
+          },
+          {
+            "name": "alt_text",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Alt Text"
+            }
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudioAsset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/catalog/products/{product_ref}/studio/assets/{asset_id}": {
       "delete": {
         "tags": [
@@ -6865,13 +7904,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`.",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
               "examples": [
                 "legacy:course:402"
               ],
               "title": "Product Ref"
             },
-            "description": "Product ref: `b2c:\u003Cproduct_id\u003E`, `legacy:course:\u003Cid\u003E` or `legacy:package:\u003Cid\u003E`."
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
           },
           {
             "name": "asset_id",
@@ -6905,6 +7944,229 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{product_ref}/studio/assets/{asset_id}/download-url": {
+      "get": {
+        "tags": [
+          "Admin course studio"
+        ],
+        "summary": "Get presigned download URL for an asset",
+        "description": "Generates a short-lived presigned GET URL for viewing or downloading an asset. Requires `admin:catalog:read` or `admin:catalog:write`.",
+        "operationId": "asset_download_url_api_v1_admin_catalog_products__product_ref__studio_assets__asset_id__download_url_get",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`.",
+              "examples": [
+                "legacy:course:402"
+              ],
+              "title": "Product Ref"
+            },
+            "description": "Product ref: `b2c:<product_id>`, `legacy:course:<id>` or `legacy:package:<id>`."
+          },
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Asset Id"
+            }
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetDownloadUrlResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/catalog/products/{product_ref}/readme": {
+      "get": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Product README",
+        "operationId": "get_readme_api_v1_admin_catalog_products__product_ref__readme_get",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "`b2c:<uuid>` or a legacy ref such as `legacy:course:402`.",
+              "title": "Product Ref"
+            },
+            "description": "`b2c:<uuid>` or a legacy ref such as `legacy:course:402`."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadmeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin catalog"
+        ],
+        "summary": "Update product README",
+        "operationId": "put_readme_api_v1_admin_catalog_products__product_ref__readme_put",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "`b2c:<uuid>` or a legacy ref such as `legacy:course:402`.",
+              "title": "Product Ref"
+            },
+            "description": "`b2c:<uuid>` or a legacy ref such as `legacy:course:402`."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateReadmeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadmeResponse"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -7367,7 +8629,9 @@
             "schema": {
               "type": "integer",
               "description": "Consultation service id (`legacy_consultancy_id`).",
-              "examples": [2],
+              "examples": [
+                2
+              ],
               "title": "Legacy Consultancy Id"
             },
             "description": "Consultation service id (`legacy_consultancy_id`)."
@@ -7436,7 +8700,9 @@
             "schema": {
               "type": "integer",
               "description": "Consultation service id (`legacy_consultancy_id`).",
-              "examples": [2],
+              "examples": [
+                2
+              ],
               "title": "Legacy Consultancy Id"
             },
             "description": "Consultation service id (`legacy_consultancy_id`)."
@@ -7509,7 +8775,9 @@
             "schema": {
               "type": "integer",
               "description": "Consultation service id (`legacy_consultancy_id`).",
-              "examples": [2],
+              "examples": [
+                2
+              ],
               "title": "Legacy Consultancy Id"
             },
             "description": "Consultation service id (`legacy_consultancy_id`)."
@@ -7582,7 +8850,9 @@
             "schema": {
               "type": "integer",
               "description": "Consultation service id (`legacy_consultancy_id`).",
-              "examples": [2],
+              "examples": [
+                2
+              ],
               "title": "Legacy Consultancy Id"
             },
             "description": "Consultation service id (`legacy_consultancy_id`)."
@@ -7655,7 +8925,9 @@
             "schema": {
               "type": "integer",
               "description": "Consultation service id (`legacy_consultancy_id`).",
-              "examples": [2],
+              "examples": [
+                2
+              ],
               "title": "Legacy Consultancy Id"
             },
             "description": "Consultation service id (`legacy_consultancy_id`)."
@@ -7728,7 +9000,9 @@
             "schema": {
               "type": "integer",
               "description": "Consultation service id (`legacy_consultancy_id`).",
-              "examples": [2],
+              "examples": [
+                2
+              ],
               "title": "Legacy Consultancy Id"
             },
             "description": "Consultation service id (`legacy_consultancy_id`)."
@@ -7900,7 +9174,9 @@
             "schema": {
               "type": "integer",
               "description": "Consultant id (`legacy_consultant_id`).",
-              "examples": [1],
+              "examples": [
+                1
+              ],
               "title": "Legacy Consultant Id"
             },
             "description": "Consultant id (`legacy_consultant_id`)."
@@ -7969,7 +9245,9 @@
             "schema": {
               "type": "integer",
               "description": "Consultant id (`legacy_consultant_id`).",
-              "examples": [1],
+              "examples": [
+                1
+              ],
               "title": "Legacy Consultant Id"
             },
             "description": "Consultant id (`legacy_consultant_id`)."
@@ -8050,7 +9328,7 @@
           "Admin customers"
         ],
         "summary": "Customers",
-        "description": "B2C customers (`b2c.customers`, with order counts) plus legacy accounts not imported yet, newest first. Imported accounts show once, as B2C customers. `status` filters B2C customers only (legacy accounts have no B2C status).\n\n**Source: B2C and the legacy platform.** Items carry `source` (`b2c` | `legacy`) and an opaque `ref` (`b2c:\u003Cuuid\u003E`, `legacy:\u003Ckind\u003E:\u003Cid\u003E`); filter with `source`. Legacy amounts are in `LEGACY_ORDER_CURRENCY`.\n\nRequires `admin:customers:read` or `admin:customers:write`.",
+        "description": "B2C customers (`b2c.customers`, with order counts) plus legacy accounts not imported yet, newest first. Imported accounts show once, as B2C customers. `status` filters B2C customers only (legacy accounts have no B2C status).\n\n**Source: B2C and the legacy platform.** Items carry `source` (`b2c` | `legacy`) and an opaque `ref` (`b2c:<uuid>`, `legacy:<kind>:<id>`); filter with `source`. Legacy amounts are in `LEGACY_ORDER_CURRENCY`.\n\nRequires `admin:customers:read` or `admin:customers:write`.",
         "operationId": "search_customers_api_v1_admin_customers_get",
         "security": [
           {
@@ -8430,13 +9708,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Customer ref: `b2c:\u003Ccustomer_id\u003E` (a bare UUID also works) or `legacy:user:\u003CAspNetUsers.userId\u003E`.",
+              "description": "Customer ref: `b2c:<customer_id>` (a bare UUID also works) or `legacy:user:<AspNetUsers.userId>`.",
               "examples": [
                 "legacy:user:100605"
               ],
               "title": "Customer Ref"
             },
-            "description": "Customer ref: `b2c:\u003Ccustomer_id\u003E` (a bare UUID also works) or `legacy:user:\u003CAspNetUsers.userId\u003E`."
+            "description": "Customer ref: `b2c:<customer_id>` (a bare UUID also works) or `legacy:user:<AspNetUsers.userId>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -8499,10 +9777,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Customer ref: `b2c:\u003Ccustomer_id\u003E` (a bare UUID also works) or `legacy:user:\u003CAspNetUsers.userId\u003E`.",
+              "description": "Customer ref: `b2c:<customer_id>` (a bare UUID also works) or `legacy:user:<AspNetUsers.userId>`.",
               "title": "Customer Ref"
             },
-            "description": "Customer ref: `b2c:\u003Ccustomer_id\u003E` (a bare UUID also works) or `legacy:user:\u003CAspNetUsers.userId\u003E`."
+            "description": "Customer ref: `b2c:<customer_id>` (a bare UUID also works) or `legacy:user:<AspNetUsers.userId>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -8577,10 +9855,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Customer ref: `b2c:\u003Ccustomer_id\u003E` (a bare UUID also works) or `legacy:user:\u003CAspNetUsers.userId\u003E`.",
+              "description": "Customer ref: `b2c:<customer_id>` (a bare UUID also works) or `legacy:user:<AspNetUsers.userId>`.",
               "title": "Customer Ref"
             },
-            "description": "Customer ref: `b2c:\u003Ccustomer_id\u003E` (a bare UUID also works) or `legacy:user:\u003CAspNetUsers.userId\u003E`."
+            "description": "Customer ref: `b2c:<customer_id>` (a bare UUID also works) or `legacy:user:<AspNetUsers.userId>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -8655,10 +9933,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Customer ref: `b2c:\u003Ccustomer_id\u003E` (a bare UUID also works) or `legacy:user:\u003CAspNetUsers.userId\u003E`.",
+              "description": "Customer ref: `b2c:<customer_id>` (a bare UUID also works) or `legacy:user:<AspNetUsers.userId>`.",
               "title": "Customer Ref"
             },
-            "description": "Customer ref: `b2c:\u003Ccustomer_id\u003E` (a bare UUID also works) or `legacy:user:\u003CAspNetUsers.userId\u003E`."
+            "description": "Customer ref: `b2c:<customer_id>` (a bare UUID also works) or `legacy:user:<AspNetUsers.userId>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -8709,7 +9987,7 @@
           "Admin orders"
         ],
         "summary": "Orders",
-        "description": "Orders of both systems, newest sale date first (`COALESCE(placed_at, created_at)` for B2C, `addedDate` for legacy). Status uses the B2C vocabulary: legacy paid orders are `paid`, incomplete ones `pending_payment`. Payment status: B2C intent status; legacy `succeeded` (paid) or `incomplete` (reached a gateway). Gateway: `stripe`, `tamara`, `free`.\n\n**Source: B2C and the legacy platform.** Items carry `source` (`b2c` | `legacy`) and an opaque `ref` (`b2c:\u003Cuuid\u003E`, `legacy:\u003Ckind\u003E:\u003Cid\u003E`); filter with `source`. Legacy amounts are in `LEGACY_ORDER_CURRENCY`.\n\nRequires `admin:orders:read` or `admin:orders:write`.",
+        "description": "Orders of both systems, newest sale date first (`COALESCE(placed_at, created_at)` for B2C, `addedDate` for legacy). Status uses the B2C vocabulary: legacy paid orders are `paid`, incomplete ones `pending_payment`. Payment status: B2C intent status; legacy `succeeded` (paid) or `incomplete` (reached a gateway). Gateway: `stripe`, `tamara`, `free`.\n\n**Source: B2C and the legacy platform.** Items carry `source` (`b2c` | `legacy`) and an opaque `ref` (`b2c:<uuid>`, `legacy:<kind>:<id>`); filter with `source`. Legacy amounts are in `LEGACY_ORDER_CURRENCY`.\n\nRequires `admin:orders:read` or `admin:orders:write`.",
         "operationId": "search_orders_api_v1_admin_orders_get",
         "security": [
           {
@@ -8805,10 +10083,29 @@
                   "type": "null"
                 }
               ],
-              "description": "Only this customer's rows (`b2c:\u003Ccustomer_id\u003E` or `legacy:user:\u003Cid\u003E`); covers both systems for an imported account.",
+              "description": "Only this customer's rows (`b2c:<customer_id>` or `legacy:user:<id>`); covers both systems for an imported account.",
               "title": "Customer Ref"
             },
-            "description": "Only this customer's rows (`b2c:\u003Ccustomer_id\u003E` or `legacy:user:\u003Cid\u003E`); covers both systems for an imported account."
+            "description": "Only this customer's rows (`b2c:<customer_id>` or `legacy:user:<id>`); covers both systems for an imported account."
+          },
+          {
+            "name": "product_ref",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only orders containing this product (any product ref).",
+              "title": "Product Ref"
+            },
+            "description": "Only orders containing this product (any product ref)."
           },
           {
             "name": "query",
@@ -8957,13 +10254,13 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Order ref: `b2c:\u003Corder_id\u003E` (a bare UUID also works) or `legacy:order:\u003CMAS_DEF_Orders.Id\u003E`.",
+              "description": "Order ref: `b2c:<order_id>` (a bare UUID also works) or `legacy:order:<MAS_DEF_Orders.Id>`.",
               "examples": [
                 "legacy:order:120345"
               ],
               "title": "Order Ref"
             },
-            "description": "Order ref: `b2c:\u003Corder_id\u003E` (a bare UUID also works) or `legacy:order:\u003CMAS_DEF_Orders.Id\u003E`."
+            "description": "Order ref: `b2c:<order_id>` (a bare UUID also works) or `legacy:order:<MAS_DEF_Orders.Id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -9028,10 +10325,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Order ref: `b2c:\u003Corder_id\u003E` (a bare UUID also works) or `legacy:order:\u003CMAS_DEF_Orders.Id\u003E`.",
+              "description": "Order ref: `b2c:<order_id>` (a bare UUID also works) or `legacy:order:<MAS_DEF_Orders.Id>`.",
               "title": "Order Ref"
             },
-            "description": "Order ref: `b2c:\u003Corder_id\u003E` (a bare UUID also works) or `legacy:order:\u003CMAS_DEF_Orders.Id\u003E`."
+            "description": "Order ref: `b2c:<order_id>` (a bare UUID also works) or `legacy:order:<MAS_DEF_Orders.Id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -9082,7 +10379,7 @@
           "Admin payments"
         ],
         "summary": "Payments",
-        "description": "Payments of both systems, newest first: B2C payment intents (status `pending`, `succeeded`, `failed`, `refunded`, ...) and legacy orders that reached a gateway (`succeeded` when paid, else `incomplete`; `provider_reference` is the Stripe intent or Tamara order id). Open one with `GET /admin/payments/{payment_ref}`.\n\n**Source: B2C and the legacy platform.** Items carry `source` (`b2c` | `legacy`) and an opaque `ref` (`b2c:\u003Cuuid\u003E`, `legacy:\u003Ckind\u003E:\u003Cid\u003E`); filter with `source`. Legacy amounts are in `LEGACY_ORDER_CURRENCY`.\n\nRequires `admin:payments:read` or `admin:payments:refund`.",
+        "description": "Payments of both systems, newest first: B2C payment intents (status `pending`, `succeeded`, `failed`, `refunded`, ...) and legacy orders that reached a gateway (`succeeded` when paid, else `incomplete`; `provider_reference` is the Stripe intent or Tamara order id). Open one with `GET /admin/payments/{payment_ref}`.\n\n**Source: B2C and the legacy platform.** Items carry `source` (`b2c` | `legacy`) and an opaque `ref` (`b2c:<uuid>`, `legacy:<kind>:<id>`); filter with `source`. Legacy amounts are in `LEGACY_ORDER_CURRENCY`.\n\nRequires `admin:payments:read` or `admin:payments:refund`.",
         "operationId": "list_payments_api_v1_admin_payments_get",
         "security": [
           {
@@ -9179,10 +10476,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Only this customer's rows (`b2c:\u003Ccustomer_id\u003E` or `legacy:user:\u003Cid\u003E`); covers both systems for an imported account.",
+              "description": "Only this customer's rows (`b2c:<customer_id>` or `legacy:user:<id>`); covers both systems for an imported account.",
               "title": "Customer Ref"
             },
-            "description": "Only this customer's rows (`b2c:\u003Ccustomer_id\u003E` or `legacy:user:\u003Cid\u003E`); covers both systems for an imported account."
+            "description": "Only this customer's rows (`b2c:<customer_id>` or `legacy:user:<id>`); covers both systems for an imported account."
           },
           {
             "name": "query",
@@ -9441,10 +10738,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Only refunds of this B2C order (`b2c:\u003Corder_id\u003E`).",
+              "description": "Only refunds of this B2C order (`b2c:<order_id>`).",
               "title": "Order Ref"
             },
-            "description": "Only refunds of this B2C order (`b2c:\u003Corder_id\u003E`)."
+            "description": "Only refunds of this B2C order (`b2c:<order_id>`)."
           },
           {
             "name": "limit",
@@ -9536,10 +10833,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Order ref: `b2c:\u003Corder_id\u003E` (a bare UUID also works) or `legacy:order:\u003CMAS_DEF_Orders.Id\u003E`.",
+              "description": "Order ref: `b2c:<order_id>` (a bare UUID also works) or `legacy:order:<MAS_DEF_Orders.Id>`.",
               "title": "Order Ref"
             },
-            "description": "Order ref: `b2c:\u003Corder_id\u003E` (a bare UUID also works) or `legacy:order:\u003CMAS_DEF_Orders.Id\u003E`."
+            "description": "Order ref: `b2c:<order_id>` (a bare UUID also works) or `legacy:order:<MAS_DEF_Orders.Id>`."
           },
           {
             "name": "b2c_admin_access_token",
@@ -9604,10 +10901,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Payment ref: `b2c:\u003Cpayment_intent_id\u003E` (a bare UUID also works) or `legacy:order:\u003Cid\u003E` (legacy payments are the orders that reached a gateway).",
+              "description": "Payment ref: `b2c:<payment_intent_id>` (a bare UUID also works) or `legacy:order:<id>` (legacy payments are the orders that reached a gateway).",
               "title": "Payment Ref"
             },
-            "description": "Payment ref: `b2c:\u003Cpayment_intent_id\u003E` (a bare UUID also works) or `legacy:order:\u003Cid\u003E` (legacy payments are the orders that reached a gateway)."
+            "description": "Payment ref: `b2c:<payment_intent_id>` (a bare UUID also works) or `legacy:order:<id>` (legacy payments are the orders that reached a gateway)."
           },
           {
             "name": "b2c_admin_access_token",
@@ -9672,10 +10969,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "description": "Payment ref: `b2c:\u003Cpayment_intent_id\u003E` (a bare UUID also works) or `legacy:order:\u003Cid\u003E` (legacy payments are the orders that reached a gateway).",
+              "description": "Payment ref: `b2c:<payment_intent_id>` (a bare UUID also works) or `legacy:order:<id>` (legacy payments are the orders that reached a gateway).",
               "title": "Payment Ref"
             },
-            "description": "Payment ref: `b2c:\u003Cpayment_intent_id\u003E` (a bare UUID also works) or `legacy:order:\u003Cid\u003E` (legacy payments are the orders that reached a gateway)."
+            "description": "Payment ref: `b2c:<payment_intent_id>` (a bare UUID also works) or `legacy:order:<id>` (legacy payments are the orders that reached a gateway)."
           },
           {
             "name": "b2c_admin_access_token",
@@ -10116,7 +11413,9 @@
             "schema": {
               "type": "integer",
               "description": "Promotion id (`legacy_coupon_id`, legacy `MAS_DEF_Coupons.Id`).",
-              "examples": [1],
+              "examples": [
+                1
+              ],
               "title": "Legacy Coupon Id"
             },
             "description": "Promotion id (`legacy_coupon_id`, legacy `MAS_DEF_Coupons.Id`)."
@@ -10185,7 +11484,9 @@
             "schema": {
               "type": "integer",
               "description": "Promotion id (`legacy_coupon_id`, legacy `MAS_DEF_Coupons.Id`).",
-              "examples": [1],
+              "examples": [
+                1
+              ],
               "title": "Legacy Coupon Id"
             },
             "description": "Promotion id (`legacy_coupon_id`, legacy `MAS_DEF_Coupons.Id`)."
@@ -11211,7 +12512,9 @@
             "schema": {
               "type": "integer",
               "description": "Ticket id (`legacy_ticket_id`).",
-              "examples": [157],
+              "examples": [
+                157
+              ],
               "title": "Legacy Ticket Id"
             },
             "description": "Ticket id (`legacy_ticket_id`)."
@@ -11280,7 +12583,9 @@
             "schema": {
               "type": "integer",
               "description": "Ticket id (`legacy_ticket_id`).",
-              "examples": [157],
+              "examples": [
+                157
+              ],
               "title": "Legacy Ticket Id"
             },
             "description": "Ticket id (`legacy_ticket_id`)."
@@ -11359,7 +12664,9 @@
             "schema": {
               "type": "integer",
               "description": "Ticket id (`legacy_ticket_id`).",
-              "examples": [157],
+              "examples": [
+                157
+              ],
               "title": "Legacy Ticket Id"
             },
             "description": "Ticket id (`legacy_ticket_id`)."
@@ -13314,6 +14621,299 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductContentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/cards": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Slim published product cards",
+        "operationId": "product_cards_api_v1_catalog_cards_get",
+        "parameters": [
+          {
+            "name": "product_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Repeatable; any of course, diploma, package, bundle, consultation, live_diploma",
+              "title": "Product Type"
+            },
+            "description": "Repeatable; any of course, diploma, package, bundle, consultation, live_diploma"
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Repeatable exact slugs (cart / wishlist resolution).",
+              "title": "Slug"
+            },
+            "description": "Repeatable exact slugs (cart / wishlist resolution)."
+          },
+          {
+            "name": "expert",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Expert key.",
+              "title": "Expert"
+            },
+            "description": "Expert key."
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category Id"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(newest|title)$",
+              "default": "newest",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 24,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCardPageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/experts": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Experts with published items",
+        "operationId": "experts_api_v1_catalog_experts_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/app__modules__catalog__presentation__browse_router__ExpertSummaryResponse"
+                  },
+                  "title": "Response Experts Api V1 Catalog Experts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/experts/{key}": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "An expert's profile and items",
+        "operationId": "expert_api_v1_catalog_experts__key__get",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__modules__catalog__presentation__browse_router__ExpertDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/landing": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Home page data: banner, category rails, stats",
+        "operationId": "landing_api_v1_catalog_landing_get",
+        "parameters": [
+          {
+            "name": "per_category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 24,
+              "minimum": 1,
+              "default": 12,
+              "title": "Per Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LandingResponse"
                 }
               }
             }
@@ -18781,7 +20381,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ExpertDetailResponse"
+                  "$ref": "#/components/schemas/app__modules__legacy__presentation__schemas__ExpertDetailResponse"
                 }
               }
             }
@@ -20233,7 +21833,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0
+                  "minimum": 0.0
                 },
                 {
                   "type": "string",
@@ -20254,7 +21854,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0
+                  "minimum": 0.0
                 },
                 {
                   "type": "string",
@@ -20665,7 +22265,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0
+                  "minimum": 0.0
                 },
                 {
                   "type": "string",
@@ -20686,7 +22286,7 @@
               "anyOf": [
                 {
                   "type": "number",
-                  "minimum": 0
+                  "minimum": 0.0
                 },
                 {
                   "type": "string",
@@ -21011,9 +22611,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-
-                }
+                "schema": {}
               }
             }
           },
@@ -21178,6 +22776,27 @@
           "active"
         ],
         "title": "ActiveRequest"
+      },
+      "AddPackageCourseRequest": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id",
+            "description": "B2C product id of the course/diploma to bundle."
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "description": "Whether the course is required to complete the package.",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "title": "AddPackageCourseRequest"
       },
       "AdminAuditLogPageResponse": {
         "properties": {
@@ -23562,6 +25181,30 @@
         ],
         "title": "Announcement"
       },
+      "AssetDownloadUrlResponse": {
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Asset Id"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          }
+        },
+        "type": "object",
+        "required": [
+          "asset_id",
+          "url",
+          "expires_in"
+        ],
+        "title": "AssetDownloadUrlResponse"
+      },
       "AssetLinkResponse": {
         "properties": {
           "url": {
@@ -23603,7 +25246,7 @@
           },
           "size_bytes": {
             "type": "integer",
-            "exclusiveMinimum": 0,
+            "exclusiveMinimum": 0.0,
             "title": "Size Bytes"
           }
         },
@@ -25036,7 +26679,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -25704,14 +27347,14 @@
           },
           "sort_order": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Sort Order",
             "default": 0
           },
           "quantity": {
             "type": "integer",
-            "maximum": 100,
-            "minimum": 1,
+            "maximum": 100.0,
+            "minimum": 1.0,
             "title": "Quantity",
             "default": 1
           }
@@ -25827,7 +27470,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "string",
@@ -25840,7 +27483,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -25943,8 +27586,8 @@
           },
           "quantity": {
             "type": "integer",
-            "maximum": 10,
-            "minimum": 1,
+            "maximum": 10.0,
+            "minimum": 1.0,
             "title": "Quantity",
             "default": 1
           },
@@ -25966,8 +27609,8 @@
         "properties": {
           "quantity": {
             "type": "integer",
-            "maximum": 10,
-            "minimum": 1,
+            "maximum": 10.0,
+            "minimum": 1.0,
             "title": "Quantity"
           }
         },
@@ -26465,7 +28108,7 @@
           "updated_at"
         ],
         "title": "CatalogItem",
-        "description": "A catalog product: a B2C product, or a legacy course/package not represented by one yet.\n\n`ref` is `b2c:\u003Cproduct_id\u003E` or `legacy:\u003Ccourse|package\u003E:\u003Cid\u003E`; `source` is the system of record and\n`origin` (B2C only) tells migrated products from native ones. Legacy prices are in `price_currency`."
+        "description": "A catalog product: a B2C product, or a legacy course/package not represented by one yet.\n\n`ref` is `b2c:<product_id>` or `legacy:<course|package>:<id>`; `source` is the system of record and\n`origin` (B2C only) tells migrated products from native ones. Legacy prices are in `price_currency`."
       },
       "CatalogItemDetail": {
         "properties": {
@@ -27229,8 +28872,8 @@
           },
           "quantity": {
             "type": "integer",
-            "maximum": 10,
-            "minimum": 1,
+            "maximum": 10.0,
+            "minimum": 1.0,
             "title": "Quantity",
             "default": 1
           },
@@ -27439,7 +29082,7 @@
         "properties": {
           "cohort_number": {
             "type": "integer",
-            "exclusiveMinimum": 0,
+            "exclusiveMinimum": 0.0,
             "title": "Cohort Number"
           },
           "title": {
@@ -27496,12 +29139,12 @@
           },
           "weeks_count": {
             "type": "integer",
-            "exclusiveMinimum": 0,
+            "exclusiveMinimum": 0.0,
             "title": "Weeks Count"
           },
           "seat_capacity": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Seat Capacity"
           },
           "cohort_id": {
@@ -27553,7 +29196,7 @@
         "properties": {
           "cohort_number": {
             "type": "integer",
-            "exclusiveMinimum": 0,
+            "exclusiveMinimum": 0.0,
             "title": "Cohort Number"
           },
           "title": {
@@ -27610,12 +29253,12 @@
           },
           "weeks_count": {
             "type": "integer",
-            "exclusiveMinimum": 0,
+            "exclusiveMinimum": 0.0,
             "title": "Weeks Count"
           },
           "seat_capacity": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Seat Capacity"
           }
         },
@@ -28208,6 +29851,81 @@
         ],
         "title": "ConsultationDetailResponse"
       },
+      "ConsultationInfoResponse": {
+        "properties": {
+          "duration_minutes": {
+            "type": "integer",
+            "title": "Duration Minutes"
+          },
+          "expert_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expert Key"
+          },
+          "consultant_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consultant Name"
+          },
+          "consultant_avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consultant Avatar"
+          },
+          "consultant_bio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consultant Bio"
+          },
+          "available_slot_count": {
+            "type": "integer",
+            "title": "Available Slot Count",
+            "default": 0
+          },
+          "next_slot_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Slot At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "duration_minutes"
+        ],
+        "title": "ConsultationInfoResponse",
+        "description": "A consultation product's service and the expert who gives it."
+      },
       "ConsultationMilestone": {
         "properties": {
           "legacy_milestone_id": {
@@ -28799,7 +30517,7 @@
             "type": "string",
             "maxLength": 100,
             "title": "Ref",
-            "description": "`legacy:trainer:\u003Cid\u003E` or `b2c:\u003Cinstructor_id\u003E`."
+            "description": "`legacy:trainer:<id>` or `b2c:<instructor_id>`."
           },
           "display_name": {
             "type": "string",
@@ -29446,7 +31164,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -29523,8 +31241,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 100000,
-                "minimum": 0
+                "maximum": 100000.0,
+                "minimum": 0.0
               },
               {
                 "type": "string",
@@ -29567,7 +31285,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -29580,7 +31298,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -29681,8 +31399,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 100,
-                "minimum": 0
+                "maximum": 100.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -29695,7 +31413,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -29708,7 +31426,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -29833,7 +31551,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -29846,7 +31564,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -30120,8 +31838,8 @@
         "properties": {
           "batch_size": {
             "type": "integer",
-            "maximum": 1000,
-            "minimum": 1,
+            "maximum": 1000.0,
+            "minimum": 1.0,
             "title": "Batch Size",
             "description": "Legacy accounts processed per transaction.",
             "default": 500
@@ -30130,7 +31848,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -30819,7 +32537,7 @@
           "refunds_total": {
             "type": "number",
             "title": "Refunds Total",
-            "default": 0
+            "default": 0.0
           }
         },
         "type": "object",
@@ -31560,316 +33278,6 @@
         ],
         "title": "ExpertBookingPageResponse"
       },
-      "ExpertDetailResponse": {
-        "properties": {
-          "expert": {
-            "$ref": "#/components/schemas/ExpertProfileResponse"
-          },
-          "categories": {
-            "items": {
-              "$ref": "#/components/schemas/app__modules__legacy__presentation__schemas__CategoryResponse"
-            },
-            "type": "array",
-            "title": "Categories"
-          },
-          "courses": {
-            "items": {
-              "$ref": "#/components/schemas/CourseResponse"
-            },
-            "type": "array",
-            "title": "Courses"
-          },
-          "diplomas": {
-            "items": {
-              "$ref": "#/components/schemas/CourseResponse"
-            },
-            "type": "array",
-            "title": "Diplomas"
-          },
-          "packages": {
-            "items": {
-              "$ref": "#/components/schemas/CollectionResponse"
-            },
-            "type": "array",
-            "title": "Packages"
-          },
-          "consultations": {
-            "items": {
-              "$ref": "#/components/schemas/ConsultationResponse"
-            },
-            "type": "array",
-            "title": "Consultations"
-          },
-          "highlights": {
-            "$ref": "#/components/schemas/ExpertHighlightsResponse"
-          },
-          "related": {
-            "$ref": "#/components/schemas/app__modules__legacy__presentation__schemas__RelatedResourcesResponse"
-          }
-        },
-        "type": "object",
-        "required": [
-          "expert",
-          "categories",
-          "courses",
-          "diplomas",
-          "packages",
-          "consultations",
-          "highlights",
-          "related"
-        ],
-        "title": "ExpertDetailResponse"
-      },
-      "ExpertHighlightsResponse": {
-        "properties": {
-          "what_i_do": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "What I Do"
-          },
-          "who_i_help": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Who I Help"
-          },
-          "source": {
-            "type": "string",
-            "title": "Source",
-            "description": "\"extracted\" from the expert's service sections, or \"generated\"."
-          }
-        },
-        "type": "object",
-        "required": [
-          "source"
-        ],
-        "title": "ExpertHighlightsResponse"
-      },
-      "ExpertProfileResponse": {
-        "properties": {
-          "key": {
-            "type": "string",
-            "title": "Key",
-            "description": "Trainer id, or c{consultant id} for consultant-only experts."
-          },
-          "trainer_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Trainer Id"
-          },
-          "consultant_ids": {
-            "items": {
-              "type": "integer"
-            },
-            "type": "array",
-            "title": "Consultant Ids"
-          },
-          "name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          },
-          "profile_image": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Profile Image"
-          },
-          "course_count": {
-            "type": "integer",
-            "title": "Course Count"
-          },
-          "diploma_count": {
-            "type": "integer",
-            "title": "Diploma Count"
-          },
-          "package_count": {
-            "type": "integer",
-            "title": "Package Count"
-          },
-          "consultation_count": {
-            "type": "integer",
-            "title": "Consultation Count"
-          },
-          "cover_image": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cover Image",
-            "description": "Reserved: no legacy column holds a cover yet."
-          },
-          "info": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Info"
-          },
-          "more_info": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "More Info"
-          },
-          "specialized": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Specialized"
-          },
-          "scoped_experience": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scoped Experience"
-          },
-          "languages": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Languages"
-          },
-          "city": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "City"
-          },
-          "educational_level": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Educational Level"
-          },
-          "total_years_of_experience": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Total Years Of Experience"
-          },
-          "facebook_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Facebook Url"
-          },
-          "instagram_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Instagram Url"
-          },
-          "youtube_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Youtube Url"
-          }
-        },
-        "type": "object",
-        "required": [
-          "key",
-          "trainer_id",
-          "consultant_ids",
-          "name",
-          "profile_image",
-          "course_count",
-          "diploma_count",
-          "package_count",
-          "consultation_count",
-          "info",
-          "more_info",
-          "specialized",
-          "scoped_experience",
-          "languages",
-          "city",
-          "educational_level",
-          "total_years_of_experience",
-          "facebook_url",
-          "instagram_url",
-          "youtube_url"
-        ],
-        "title": "ExpertProfileResponse"
-      },
       "ExpertServiceResponse": {
         "properties": {
           "service_id": {
@@ -32216,6 +33624,18 @@
             "type": "string",
             "format": "uuid",
             "title": "Product Id"
+          },
+          "cohort_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cohort Id"
           }
         },
         "additionalProperties": false,
@@ -32890,6 +34310,92 @@
         ],
         "title": "JoinResponse"
       },
+      "LandingBannerResponse": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "href": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Href"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "LandingBannerResponse"
+      },
+      "LandingCategoryResponse": {
+        "properties": {
+          "category_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Category Id"
+          },
+          "legacy_category_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Category Id",
+            "description": "Id used in storefront category URLs."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "product_count": {
+            "type": "integer",
+            "title": "Product Count",
+            "default": 0
+          },
+          "courses": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCardResponse"
+            },
+            "type": "array",
+            "title": "Courses",
+            "description": "Newest published courses in the category."
+          }
+        },
+        "type": "object",
+        "required": [
+          "category_id",
+          "name"
+        ],
+        "title": "LandingCategoryResponse"
+      },
+      "LandingFaqResponse": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "answer"
+        ],
+        "title": "LandingFaqResponse"
+      },
       "LandingInsightsResponse": {
         "properties": {
           "visitor_count": {
@@ -33017,6 +34523,65 @@
           "faqs"
         ],
         "title": "LandingPageResponse"
+      },
+      "LandingResponse": {
+        "properties": {
+          "banner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LandingBannerResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "faqs": {
+            "items": {
+              "$ref": "#/components/schemas/LandingFaqResponse"
+            },
+            "type": "array",
+            "title": "Faqs"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/LandingCategoryResponse"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/LandingStatsResponse"
+          }
+        },
+        "type": "object",
+        "title": "LandingResponse"
+      },
+      "LandingStatsResponse": {
+        "properties": {
+          "courses": {
+            "type": "integer",
+            "title": "Courses",
+            "default": 0
+          },
+          "diplomas": {
+            "type": "integer",
+            "title": "Diplomas",
+            "default": 0
+          },
+          "packages": {
+            "type": "integer",
+            "title": "Packages",
+            "default": 0
+          },
+          "instructors": {
+            "type": "integer",
+            "title": "Instructors",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "LandingStatsResponse"
       },
       "Learner": {
         "properties": {
@@ -33218,8 +34783,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 1440,
-                "minimum": 0
+                "maximum": 1440.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -33714,7 +35279,7 @@
           },
           "seat_capacity": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Seat Capacity",
             "description": "Compatibility field; cohort seat_capacity controls sales.",
             "default": 0,
@@ -33743,7 +35308,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "exclusiveMinimum": 0
+                "exclusiveMinimum": 0.0
               },
               {
                 "type": "null"
@@ -33821,6 +35386,11 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Seo Meta"
+          },
+          "marketing": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Marketing"
           },
           "product_id": {
             "type": "string",
@@ -33895,7 +35465,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "exclusiveMinimum": 0
+                "exclusiveMinimum": 0.0
               },
               {
                 "type": "string",
@@ -33917,7 +35487,7 @@
           },
           "seat_capacity": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Seat Capacity",
             "description": "Compatibility field; cohort seat_capacity controls sales.",
             "default": 0,
@@ -33946,7 +35516,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "exclusiveMinimum": 0
+                "exclusiveMinimum": 0.0
               },
               {
                 "type": "null"
@@ -34024,6 +35594,11 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Seo Meta"
+          },
+          "marketing": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Marketing"
           }
         },
         "type": "object",
@@ -34517,9 +36092,7 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Raw Answer",
-            "default": {
-
-            }
+            "default": {}
           }
         },
         "type": "object",
@@ -34575,9 +36148,7 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Raw Answer",
-            "default": {
-
-            }
+            "default": {}
           },
           "answered_at": {
             "anyOf": [
@@ -35137,9 +36708,7 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Product Snapshot",
-            "default": {
-
-            }
+            "default": {}
           },
           "cohort_id": {
             "anyOf": [
@@ -35641,7 +37210,14 @@
       "PackageCourse": {
         "properties": {
           "legacy_link_id": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Legacy Link Id"
           },
           "course_ref": {
@@ -35649,7 +37225,14 @@
             "title": "Course Ref"
           },
           "legacy_course_id": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Legacy Course Id"
           },
           "title": {
@@ -35685,6 +37268,28 @@
               }
             ],
             "title": "Product Id"
+          },
+          "duration": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image"
           }
         },
         "type": "object",
@@ -35696,6 +37301,246 @@
           "required"
         ],
         "title": "PackageCourse"
+      },
+      "PackageMemberResponse": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "product_type": {
+            "type": "string",
+            "title": "Product Type"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image"
+          },
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "default": true
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order",
+            "default": 0
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "price_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price Amount"
+          },
+          "currency_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency Code"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "instructor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructor Name"
+          },
+          "instructor_avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructor Avatar"
+          },
+          "lesson_count": {
+            "type": "integer",
+            "title": "Lesson Count",
+            "default": 0
+          },
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/PackageMemberUnitResponse"
+            },
+            "type": "array",
+            "title": "Units"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "slug",
+          "product_type"
+        ],
+        "title": "PackageMemberResponse",
+        "description": "A bundled course/diploma of a B2C package (`b2c.package_items`), for the public package page."
+      },
+      "PackageMemberUnitResponse": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "lesson_count": {
+            "type": "integer",
+            "title": "Lesson Count",
+            "default": 0
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "PackageMemberUnitResponse",
+        "description": "A unit (section) of a bundled course, for the package page's per-course outline."
+      },
+      "PackageSectionInput": {
+        "properties": {
+          "heading": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Heading",
+            "description": "Section heading, e.g. المقدمة."
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body",
+            "description": "Section body (HTML allowed)."
+          },
+          "variant": {
+            "type": "string",
+            "pattern": "^(prose|goals|audience)$",
+            "title": "Variant",
+            "default": "prose"
+          }
+        },
+        "type": "object",
+        "required": [
+          "heading"
+        ],
+        "title": "PackageSectionInput"
+      },
+      "PackageSectionResponse": {
+        "properties": {
+          "heading": {
+            "type": "string",
+            "title": "Heading"
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body"
+          },
+          "variant": {
+            "type": "string",
+            "title": "Variant",
+            "default": "prose"
+          }
+        },
+        "type": "object",
+        "required": [
+          "heading"
+        ],
+        "title": "PackageSectionResponse",
+        "description": "An ordered \"about\" section of a package (المقدمة، المحاور، الأهداف، الفئة المستهدفة)."
       },
       "PackageSummary": {
         "properties": {
@@ -36180,7 +38025,9 @@
             "type": "integer",
             "title": "Status",
             "description": "Legacy payout status (`1` requested, `3` paid, ...).",
-            "examples": [3]
+            "examples": [
+              3
+            ]
           },
           "notes": {
             "anyOf": [
@@ -36238,6 +38085,31 @@
           "parent_legacy_module_id"
         ],
         "title": "PermissionModule"
+      },
+      "PreviewBaseResponse": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "description": "Product kind: course, diploma, package, bundle, consultation or live_diploma."
+          },
+          "base": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base",
+            "description": "Kind-specific storefront data, or null when there is none."
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "PreviewBaseResponse",
+        "description": "Storefront data the live preview renders under the draft, tagged with the product kind.\n\n`kind` is one of `course`, `diploma`, `package`, `bundle`, `consultation` or `live_diploma`; `base` is the\nkind-specific storefront payload (or `null` when the kind has none, e.g. a B2C-only course with no legacy page)."
       },
       "PriceList": {
         "properties": {
@@ -36443,6 +38315,296 @@
         ],
         "title": "PriceResponse"
       },
+      "ProductBehaviorPoint": {
+        "properties": {
+          "period": {
+            "type": "string",
+            "format": "date",
+            "title": "Period"
+          },
+          "views": {
+            "type": "integer",
+            "title": "Views"
+          },
+          "wishlist_adds": {
+            "type": "integer",
+            "title": "Wishlist Adds"
+          },
+          "wishlist_removes": {
+            "type": "integer",
+            "title": "Wishlist Removes"
+          },
+          "cart_adds": {
+            "type": "integer",
+            "title": "Cart Adds"
+          },
+          "cart_removes": {
+            "type": "integer",
+            "title": "Cart Removes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "views",
+          "wishlist_adds",
+          "wishlist_removes",
+          "cart_adds",
+          "cart_removes"
+        ],
+        "title": "ProductBehaviorPoint",
+        "description": "One bucket of product behaviour events (page views, wishlist and cart actions)."
+      },
+      "ProductBehaviorStats": {
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "enum": [
+              "day",
+              "week",
+              "month"
+            ],
+            "title": "Bucket"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "views": {
+            "type": "integer",
+            "title": "Views"
+          },
+          "unique_viewers": {
+            "type": "integer",
+            "title": "Unique Viewers"
+          },
+          "wishlist_adds": {
+            "type": "integer",
+            "title": "Wishlist Adds"
+          },
+          "wishlist_removes": {
+            "type": "integer",
+            "title": "Wishlist Removes"
+          },
+          "cart_adds": {
+            "type": "integer",
+            "title": "Cart Adds"
+          },
+          "cart_removes": {
+            "type": "integer",
+            "title": "Cart Removes"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/ProductBehaviorPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bucket",
+          "start",
+          "end",
+          "views",
+          "unique_viewers",
+          "wishlist_adds",
+          "wishlist_removes",
+          "cart_adds",
+          "cart_removes"
+        ],
+        "title": "ProductBehaviorStats",
+        "description": "How visitors behave on one product (`GET /admin/catalog/products/{ref}/behavior`).\n\nCounts come from `b2c.behavior_events`: server page views (`catalog.*.viewed` / `product_view`),\nwishlist adds/removes and cart adds/removes. `unique_viewers` is distinct over the whole window;\nper-point counts are per bucket. Storefront events are matched by B2C `product_id` and, for\nlegacy-linked products, by `legacy_entity_id` with the kind's entity types."
+      },
+      "ProductCardPageResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCardResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "ProductCardPageResponse"
+      },
+      "ProductCardResponse": {
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Product Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "product_type": {
+            "type": "string",
+            "title": "Product Type"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductPriceResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "instructor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructor Name"
+          },
+          "instructor_avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructor Avatar"
+          },
+          "instructor_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructor Key"
+          },
+          "lesson_count": {
+            "type": "integer",
+            "title": "Lesson Count",
+            "default": 0
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "slug",
+          "product_type",
+          "title",
+          "short_description",
+          "image",
+          "price",
+          "category",
+          "instructor_name",
+          "instructor_avatar",
+          "instructor_key"
+        ],
+        "title": "ProductCardResponse"
+      },
       "ProductCategory": {
         "properties": {
           "legacy_category_id": {
@@ -36570,7 +38732,7 @@
           "canonical_ref": {
             "type": "string",
             "title": "Canonical Ref",
-            "description": "The product's ref (`b2c:\u003Cuuid\u003E` or `legacy:course:\u003Cid\u003E`)."
+            "description": "The product's ref (`b2c:<uuid>` or `legacy:course:<id>`)."
           },
           "locale_code": {
             "type": "string",
@@ -36641,6 +38803,120 @@
             },
             "type": "array",
             "title": "Bundle Members"
+          },
+          "package_members": {
+            "items": {
+              "$ref": "#/components/schemas/PackageMemberResponse"
+            },
+            "type": "array",
+            "title": "Package Members"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/PackageSectionResponse"
+            },
+            "type": "array",
+            "title": "Sections"
+          },
+          "consultation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConsultationInfoResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "intro_video_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intro Video Id",
+            "description": "Bunny Stream GUID of the course/diploma intro video."
+          },
+          "readme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Readme",
+            "description": "Product README (markdown); replaces `sections` when set."
+          },
+          "units": {
+            "items": {
+              "$ref": "#/components/schemas/ProductUnitResponse"
+            },
+            "type": "array",
+            "title": "Units"
+          },
+          "lesson_count": {
+            "type": "integer",
+            "title": "Lesson Count",
+            "default": 0
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "instructor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructor Name"
+          },
+          "instructor_avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructor Avatar"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductPriceResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image"
           },
           "description": {
             "anyOf": [
@@ -36718,6 +38994,41 @@
           "currency"
         ],
         "title": "ProductLearners"
+      },
+      "ProductLessonResponse": {
+        "properties": {
+          "lesson_id": {
+            "type": "integer",
+            "title": "Lesson Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "is_free": {
+            "type": "boolean",
+            "title": "Is Free",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "lesson_id",
+          "title"
+        ],
+        "title": "ProductLessonResponse",
+        "description": "A lesson of a B2C course unit."
       },
       "ProductLinks": {
         "properties": {
@@ -36927,6 +39238,36 @@
         ],
         "title": "ProductPrice"
       },
+      "ProductPriceResponse": {
+        "properties": {
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "compare_at_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compare At Amount"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount",
+          "currency_code"
+        ],
+        "title": "ProductPriceResponse",
+        "description": "The product's current price (B2C source of truth)."
+      },
       "ProductRating": {
         "properties": {
           "legacy_rating_id": {
@@ -37116,6 +39457,47 @@
         ],
         "title": "ProductResponse"
       },
+      "ProductSalesPoint": {
+        "properties": {
+          "period": {
+            "type": "string",
+            "format": "date",
+            "title": "Period"
+          },
+          "new_students": {
+            "type": "integer",
+            "title": "New Students"
+          },
+          "orders": {
+            "type": "integer",
+            "title": "Orders"
+          },
+          "paid_orders": {
+            "type": "integer",
+            "title": "Paid Orders"
+          },
+          "free_orders": {
+            "type": "integer",
+            "title": "Free Orders"
+          },
+          "revenue": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Revenue"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "new_students",
+          "orders",
+          "paid_orders",
+          "free_orders"
+        ],
+        "title": "ProductSalesPoint"
+      },
       "ProductSalesReport": {
         "properties": {
           "start": {
@@ -37269,6 +39651,85 @@
         ],
         "title": "ProductSalesRow"
       },
+      "ProductSalesSeries": {
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "enum": [
+              "day",
+              "week",
+              "month"
+            ],
+            "title": "Bucket"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "total_students": {
+            "type": "integer",
+            "title": "Total Students"
+          },
+          "total_orders": {
+            "type": "integer",
+            "title": "Total Orders"
+          },
+          "total_paid_orders": {
+            "type": "integer",
+            "title": "Total Paid Orders"
+          },
+          "revenue": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Revenue"
+          },
+          "students_before_start": {
+            "type": "integer",
+            "title": "Students Before Start"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSalesPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "bucket",
+          "start",
+          "end",
+          "total_students",
+          "total_orders",
+          "total_paid_orders",
+          "revenue",
+          "students_before_start"
+        ],
+        "title": "ProductSalesSeries"
+      },
       "ProductSkillResponse": {
         "properties": {
           "skill_id": {
@@ -37313,6 +39774,240 @@
         ],
         "title": "ProductStatusRequest"
       },
+      "ProductTransactionPoint": {
+        "properties": {
+          "period": {
+            "type": "string",
+            "format": "date",
+            "title": "Period"
+          },
+          "transactions": {
+            "type": "integer",
+            "title": "Transactions"
+          },
+          "paid": {
+            "type": "integer",
+            "title": "Paid"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "amount": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period",
+          "transactions",
+          "paid",
+          "failed"
+        ],
+        "title": "ProductTransactionPoint"
+      },
+      "ProductTransactionRow": {
+        "properties": {
+          "payment_attempt_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Attempt Id"
+          },
+          "payment_intent_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Payment Intent Id"
+          },
+          "order_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Order Id"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Method"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "amount_minor": {
+            "type": "integer",
+            "title": "Amount Minor"
+          },
+          "currency_code": {
+            "type": "string",
+            "title": "Currency Code"
+          },
+          "customer_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Email"
+          },
+          "order_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Status"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payment_attempt_id",
+          "payment_intent_id",
+          "order_id",
+          "provider",
+          "method",
+          "status",
+          "amount_minor",
+          "currency_code",
+          "customer_email",
+          "order_status",
+          "failure_code",
+          "created_at"
+        ],
+        "title": "ProductTransactionRow",
+        "description": "One payment attempt (a transaction) on an order that contains the product."
+      },
+      "ProductTransactions": {
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "enum": [
+              "day",
+              "week",
+              "month"
+            ],
+            "title": "Bucket"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "transactions": {
+            "type": "integer",
+            "title": "Transactions"
+          },
+          "paid": {
+            "type": "integer",
+            "title": "Paid"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "amount": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Amount"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/ProductTransactionPoint"
+            },
+            "type": "array",
+            "title": "Points"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductTransactionRow"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "default": 0
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "default": 20
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "bucket",
+          "start",
+          "end",
+          "transactions",
+          "paid",
+          "failed",
+          "amount"
+        ],
+        "title": "ProductTransactions",
+        "description": "Transactions for one product (`GET /admin/catalog/products/{ref}/transactions`).\n\nB2C only: legacy orders have no `b2c.payment_attempts`. `paid` counts attempts whose status is\n`succeeded`/`partially_refunded`/`refunded`; `failed` counts `failed`/`cancelled`. `amount` is money\nactually collected (paid attempts), by currency."
+      },
       "ProductTypeResponse": {
         "properties": {
           "code": {
@@ -37335,6 +40030,43 @@
           "count"
         ],
         "title": "ProductTypeResponse"
+      },
+      "ProductUnitResponse": {
+        "properties": {
+          "unit_id": {
+            "type": "integer",
+            "title": "Unit Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "lessons": {
+            "items": {
+              "$ref": "#/components/schemas/ProductLessonResponse"
+            },
+            "type": "array",
+            "title": "Lessons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "unit_id",
+          "title"
+        ],
+        "title": "ProductUnitResponse",
+        "description": "A unit (section) of a B2C course, with its lessons."
       },
       "Promotion": {
         "properties": {
@@ -37668,7 +40400,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -37680,6 +40412,32 @@
         },
         "type": "object",
         "title": "PublishRequest"
+      },
+      "ReadmeResponse": {
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "title": "Markdown",
+            "description": "The product README (markdown)."
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "`readme` when saved, `sections` when generated from legacy HTML sections, `empty`."
+          },
+          "revalidated": {
+            "type": "boolean",
+            "title": "Revalidated",
+            "description": "The storefront page cache was refreshed after this save.",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "markdown",
+          "source"
+        ],
+        "title": "ReadmeResponse"
       },
       "RecommendationCardResponse": {
         "properties": {
@@ -38835,7 +41593,7 @@
           "refunds": {
             "type": "number",
             "title": "Refunds",
-            "default": 0
+            "default": 0.0
           },
           "net": {
             "anyOf": [
@@ -38986,7 +41744,7 @@
           },
           "base_revision": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Base Revision",
             "description": "`draft_revision` the edit started from (0 for a page never saved)."
           }
@@ -39402,7 +42160,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "string",
@@ -39418,7 +42176,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "string",
@@ -39447,8 +42205,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 5,
-                "minimum": 0
+                "maximum": 5.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -39460,8 +42218,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 5,
-                "minimum": 0
+                "maximum": 5.0,
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -39473,7 +42231,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -39485,7 +42243,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -39548,14 +42306,14 @@
           },
           "limit": {
             "type": "integer",
-            "maximum": 100,
-            "minimum": 1,
+            "maximum": 100.0,
+            "minimum": 1.0,
             "title": "Limit",
             "default": 50
           },
           "offset": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 0.0,
             "title": "Offset",
             "default": 0
           }
@@ -39908,7 +42666,7 @@
         "properties": {
           "slot_number": {
             "type": "integer",
-            "exclusiveMinimum": 0,
+            "exclusiveMinimum": 0.0,
             "title": "Slot Number"
           },
           "title": {
@@ -39959,7 +42717,7 @@
         "properties": {
           "slot_number": {
             "type": "integer",
-            "exclusiveMinimum": 0,
+            "exclusiveMinimum": 0.0,
             "title": "Slot Number"
           },
           "title": {
@@ -41553,8 +44311,8 @@
             "anyOf": [
               {
                 "type": "integer",
-                "maximum": 240,
-                "minimum": 5
+                "maximum": 240.0,
+                "minimum": 5.0
               },
               {
                 "type": "null"
@@ -41610,8 +44368,8 @@
             "anyOf": [
               {
                 "type": "number",
-                "maximum": 100000,
-                "minimum": 0
+                "maximum": 100000.0,
+                "minimum": 0.0
               },
               {
                 "type": "string",
@@ -41672,7 +44430,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -41684,7 +44442,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -41764,6 +44522,93 @@
         "type": "object",
         "title": "UpdateLessonRequest"
       },
+      "UpdatePackageCourseRequest": {
+        "properties": {
+          "required": {
+            "type": "boolean",
+            "title": "Required",
+            "description": "Required (`true`) or optional (`false`) course in the package."
+          }
+        },
+        "type": "object",
+        "required": [
+          "required"
+        ],
+        "title": "UpdatePackageCourseRequest"
+      },
+      "UpdatePackageRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Package title."
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Package description (HTML allowed)."
+          },
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active",
+            "description": "Publish (`true`) or unpublish (`false`) the package."
+          }
+        },
+        "type": "object",
+        "title": "UpdatePackageRequest"
+      },
+      "UpdatePackageSectionsRequest": {
+        "properties": {
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/PackageSectionInput"
+            },
+            "type": "array",
+            "title": "Sections",
+            "description": "Ordered detail sections."
+          }
+        },
+        "type": "object",
+        "title": "UpdatePackageSectionsRequest"
+      },
+      "UpdateReadmeRequest": {
+        "properties": {
+          "markdown": {
+            "type": "string",
+            "maxLength": 250000,
+            "title": "Markdown",
+            "description": "README markdown. Raw HTML is stripped."
+          }
+        },
+        "type": "object",
+        "required": [
+          "markdown"
+        ],
+        "title": "UpdateReadmeRequest"
+      },
       "UpdateSlotRequest": {
         "properties": {
           "starts_at": {
@@ -41815,7 +44660,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 1
+                "minimum": 1.0
               },
               {
                 "type": "null"
@@ -41827,7 +44672,7 @@
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -41870,7 +44715,7 @@
             "anyOf": [
               {
                 "type": "integer",
-                "minimum": 0
+                "minimum": 0.0
               },
               {
                 "type": "null"
@@ -42189,6 +45034,335 @@
         ],
         "title": "WishlistPageResponse"
       },
+      "app__modules__catalog__presentation__browse_router__ExpertDetailResponse": {
+        "properties": {
+          "expert": {
+            "$ref": "#/components/schemas/app__modules__catalog__presentation__browse_router__ExpertProfileResponse"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "courses": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCardResponse"
+            },
+            "type": "array",
+            "title": "Courses"
+          },
+          "diplomas": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCardResponse"
+            },
+            "type": "array",
+            "title": "Diplomas"
+          },
+          "packages": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCardResponse"
+            },
+            "type": "array",
+            "title": "Packages"
+          },
+          "consultations": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCardResponse"
+            },
+            "type": "array",
+            "title": "Consultations"
+          },
+          "highlights": {
+            "$ref": "#/components/schemas/app__modules__catalog__presentation__browse_router__ExpertHighlightsResponse"
+          },
+          "related": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCardResponse"
+            },
+            "type": "array",
+            "title": "Related",
+            "description": "Other experts' items in the same categories."
+          }
+        },
+        "type": "object",
+        "required": [
+          "expert"
+        ],
+        "title": "ExpertDetailResponse"
+      },
+      "app__modules__catalog__presentation__browse_router__ExpertHighlightsResponse": {
+        "properties": {
+          "what_i_do": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "What I Do"
+          },
+          "who_i_help": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Who I Help"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "extracted"
+          }
+        },
+        "type": "object",
+        "title": "ExpertHighlightsResponse"
+      },
+      "app__modules__catalog__presentation__browse_router__ExpertProfileResponse": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar"
+          },
+          "specialized": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialized"
+          },
+          "course_count": {
+            "type": "integer",
+            "title": "Course Count",
+            "default": 0
+          },
+          "diploma_count": {
+            "type": "integer",
+            "title": "Diploma Count",
+            "default": 0
+          },
+          "package_count": {
+            "type": "integer",
+            "title": "Package Count",
+            "default": 0
+          },
+          "consultation_count": {
+            "type": "integer",
+            "title": "Consultation Count",
+            "default": 0
+          },
+          "cover_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover Image"
+          },
+          "info": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Info",
+            "description": "Bio (HTML carried over from the legacy platform, or plain text)."
+          },
+          "more_info": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "More Info"
+          },
+          "scoped_experience": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scoped Experience"
+          },
+          "languages": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Languages"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "educational_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Educational Level"
+          },
+          "years_of_experience": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Years Of Experience"
+          },
+          "facebook_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facebook Url"
+          },
+          "instagram_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instagram Url"
+          },
+          "youtube_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Youtube Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "avatar",
+          "specialized"
+        ],
+        "title": "ExpertProfileResponse"
+      },
+      "app__modules__catalog__presentation__browse_router__ExpertSummaryResponse": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar"
+          },
+          "specialized": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialized"
+          },
+          "course_count": {
+            "type": "integer",
+            "title": "Course Count",
+            "default": 0
+          },
+          "diploma_count": {
+            "type": "integer",
+            "title": "Diploma Count",
+            "default": 0
+          },
+          "package_count": {
+            "type": "integer",
+            "title": "Package Count",
+            "default": 0
+          },
+          "consultation_count": {
+            "type": "integer",
+            "title": "Consultation Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "name",
+          "avatar",
+          "specialized"
+        ],
+        "title": "ExpertSummaryResponse"
+      },
       "app__modules__catalog__presentation__schemas__CategoryResponse": {
         "properties": {
           "category_id": {
@@ -42407,6 +45581,316 @@
           "order"
         ],
         "title": "CategoryResponse"
+      },
+      "app__modules__legacy__presentation__schemas__ExpertDetailResponse": {
+        "properties": {
+          "expert": {
+            "$ref": "#/components/schemas/app__modules__legacy__presentation__schemas__ExpertProfileResponse"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/app__modules__legacy__presentation__schemas__CategoryResponse"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "courses": {
+            "items": {
+              "$ref": "#/components/schemas/CourseResponse"
+            },
+            "type": "array",
+            "title": "Courses"
+          },
+          "diplomas": {
+            "items": {
+              "$ref": "#/components/schemas/CourseResponse"
+            },
+            "type": "array",
+            "title": "Diplomas"
+          },
+          "packages": {
+            "items": {
+              "$ref": "#/components/schemas/CollectionResponse"
+            },
+            "type": "array",
+            "title": "Packages"
+          },
+          "consultations": {
+            "items": {
+              "$ref": "#/components/schemas/ConsultationResponse"
+            },
+            "type": "array",
+            "title": "Consultations"
+          },
+          "highlights": {
+            "$ref": "#/components/schemas/app__modules__legacy__presentation__schemas__ExpertHighlightsResponse"
+          },
+          "related": {
+            "$ref": "#/components/schemas/app__modules__legacy__presentation__schemas__RelatedResourcesResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expert",
+          "categories",
+          "courses",
+          "diplomas",
+          "packages",
+          "consultations",
+          "highlights",
+          "related"
+        ],
+        "title": "ExpertDetailResponse"
+      },
+      "app__modules__legacy__presentation__schemas__ExpertHighlightsResponse": {
+        "properties": {
+          "what_i_do": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "What I Do"
+          },
+          "who_i_help": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Who I Help"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "\"extracted\" from the expert's service sections, or \"generated\"."
+          }
+        },
+        "type": "object",
+        "required": [
+          "source"
+        ],
+        "title": "ExpertHighlightsResponse"
+      },
+      "app__modules__legacy__presentation__schemas__ExpertProfileResponse": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "Trainer id, or c{consultant id} for consultant-only experts."
+          },
+          "trainer_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trainer Id"
+          },
+          "consultant_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Consultant Ids"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "profile_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Image"
+          },
+          "course_count": {
+            "type": "integer",
+            "title": "Course Count"
+          },
+          "diploma_count": {
+            "type": "integer",
+            "title": "Diploma Count"
+          },
+          "package_count": {
+            "type": "integer",
+            "title": "Package Count"
+          },
+          "consultation_count": {
+            "type": "integer",
+            "title": "Consultation Count"
+          },
+          "cover_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover Image",
+            "description": "Reserved: no legacy column holds a cover yet."
+          },
+          "info": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Info"
+          },
+          "more_info": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "More Info"
+          },
+          "specialized": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialized"
+          },
+          "scoped_experience": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scoped Experience"
+          },
+          "languages": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Languages"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "educational_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Educational Level"
+          },
+          "total_years_of_experience": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Years Of Experience"
+          },
+          "facebook_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Facebook Url"
+          },
+          "instagram_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instagram Url"
+          },
+          "youtube_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Youtube Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "trainer_id",
+          "consultant_ids",
+          "name",
+          "profile_image",
+          "course_count",
+          "diploma_count",
+          "package_count",
+          "consultation_count",
+          "info",
+          "more_info",
+          "specialized",
+          "scoped_experience",
+          "languages",
+          "city",
+          "educational_level",
+          "total_years_of_experience",
+          "facebook_url",
+          "instagram_url",
+          "youtube_url"
+        ],
+        "title": "ExpertProfileResponse"
       },
       "app__modules__legacy__presentation__schemas__ExpertSummaryResponse": {
         "properties": {

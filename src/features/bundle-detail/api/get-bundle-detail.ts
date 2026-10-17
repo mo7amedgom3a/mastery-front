@@ -2,11 +2,9 @@ import "server-only";
 
 import { cache } from "react";
 
-import { productCacheTag } from "@/features/product-detail/api/get-product-detail";
 import { getCatalogProduct, type CatalogBundleDetail } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/client";
-import { getLegacyConsultation, getLegacyCourse } from "@/lib/api/legacy";
-import { cachedRead, valueOf } from "@/lib/api/server-cache";
+import { cachedRead, productCacheTag, valueOf } from "@/lib/api/server-cache";
 
 import { isPublishedBundle, mapBundleDetail, parseMember, type MemberSource } from "../model/mappers";
 import type { BundleDetailVM } from "../model/types";
@@ -31,7 +29,7 @@ export async function getCatalogBundle(slug: string, revalidate: number, tags: s
   }
 }
 
-/** The legacy detail behind one member, for its artwork, trainers, outline and own price. */
+/** The B2C product behind one member, for its artwork, trainers, outline and own price. */
 function memberSource(member: CatalogBundleDetail["bundle_members"][number]): Promise<MemberSource> {
   const { kind, id } = parseMember(member);
   if (id === null) {
@@ -40,17 +38,17 @@ function memberSource(member: CatalogBundleDetail["bundle_members"][number]): Pr
   if (kind === "course" || kind === "diploma") {
     // Courses and diplomas share one id space: tag both, like the course page does.
     const options = cachedRead(BUNDLE_REVALIDATE_SECONDS, [productCacheTag("course", id), productCacheTag("diploma", id)]);
-    return getLegacyCourse(id, options, { include_inactive: true }).then((detail) => ({ type: "course", detail }));
+    return getCatalogProduct(member.slug, options).then((detail) => ({ type: "course", id, detail }));
   }
   if (kind === "consultation") {
     const options = cachedRead(BUNDLE_REVALIDATE_SECONDS, [productCacheTag("consultation", id)]);
-    return getLegacyConsultation(id, options).then((detail) => ({ type: "consultation", detail }));
+    return getCatalogProduct(member.slug, options).then((detail) => ({ type: "consultation", detail }));
   }
   return Promise.resolve(null);
 }
 
 /**
- * The bundle with this slug and its members, each enriched from its own legacy detail. A member
+ * The bundle with this slug and its members, each enriched from its own B2C product. A member
  * whose detail fails keeps its catalog title and type. A failed bundle request throws, so ISR keeps
  * serving the last good page.
  */

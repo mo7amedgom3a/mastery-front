@@ -39,7 +39,7 @@ export function BundleDetailPage({ bundle }: { bundle: BundleDetailVM }) {
   };
 
   const nav: SectionNavItem[] = [
-    bundle.sections.length > 0 ? { id: "about", label: "عن الحزمة" } : null,
+    bundle.sections.length > 0 || bundle.readme ? { id: "about", label: "عن الحزمة" } : null,
     bundle.members.length > 0 ? { id: "contents", label: "محتوى الحزمة" } : null,
     bundle.trainers.length > 0 ? { id: "instructor", label: "المدربون" } : null,
     { id: "certificate", label: "الشهادة" },
@@ -62,7 +62,7 @@ export function BundleDetailPage({ bundle }: { bundle: BundleDetailVM }) {
             <div className="lg:hidden">
               <BundlePurchaseCard bundle={bundle} share={<ShareButton {...shareProps} variant="block" />} />
             </div>
-            <AboutSection sections={bundle.sections} title="عن الحزمة" />
+            <AboutSection sections={bundle.sections} readme={bundle.readme} title="عن الحزمة" />
             {bundle.skills.length > 0 ? (
               <section aria-labelledby="skills-title">
                 <h2 id="skills-title" className="m-0 text-2xl font-bold">

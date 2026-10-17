@@ -5,10 +5,9 @@ import { notFound, permanentRedirect } from "next/navigation";
 
 import { parseProductSlug } from "@/config/routes";
 import { baseOpenGraph, siteConfig } from "@/config/site";
-import { isPublishable } from "@/features/landing/model/mappers";
 
 import type { PackageDetailData } from "../model/types";
-import { getPackageDetail } from "./get-package-detail";
+import { getB2CPackageDetail } from "./get-package-detail-b2c";
 
 /** Names that already say what they are ("باقة …", "دبلوم …", "برنامج …") get no "باقة" prefix. */
 const SELF_DESCRIBING = /^(?:باقة|دبلوم|برنامج)/;
@@ -21,11 +20,11 @@ function safeDecode(value: string): string {
   }
 }
 
-async function packageForSlug(slug: string): Promise<PackageDetailData | null> {
+async function packageForSlug(slug: string, preview: boolean): Promise<PackageDetailData | null> {
   const id = parseProductSlug(safeDecode(slug));
-  const data = id === null ? null : await getPackageDetail(id);
-  // Inactive and admin-test packages are kept off the storefront, like their cards.
-  if (!data || !isPublishable({ active: data.product.indexable, name: data.product.title, image: data.product.image })) {
+  const data = id === null ? null : await getB2CPackageDetail(id, preview);
+  // Unpublished packages are kept off the storefront; the admin Studio preview (`?preview=1`) shows them.
+  if (!preview && (!data || !data.product.indexable)) {
     return null;
   }
   return data;
@@ -33,10 +32,11 @@ async function packageForSlug(slug: string): Promise<PackageDetailData | null> {
 
 /**
  * Data for `/packages/[slug]`. 404s unknown or unpublished ids; packages have no link name, so any
- * `/packages/{id}-…` permanently redirects to the canonical `/packages/{id}`.
+ * `/packages/{id}-…` permanently redirects to the canonical `/packages/{id}`. `preview` (the admin
+ * Studio's `?preview=1`) reads fresh, uncached data and allows unpublished packages so edits show at once.
  */
-export async function loadPackagePage(slug: string): Promise<PackageDetailData> {
-  const data = await packageForSlug(slug);
+export async function loadPackagePage(slug: string, preview = false): Promise<PackageDetailData> {
+  const data = await packageForSlug(slug, preview);
   if (!data) {
     notFound();
   }
@@ -48,7 +48,7 @@ export async function loadPackagePage(slug: string): Promise<PackageDetailData> 
 
 /** Metadata from the same cached request the page makes; unknown ids get the 404 page's defaults. */
 export async function packageMetadata(slug: string): Promise<Metadata> {
-  const data = await packageForSlug(slug);
+  const data = await packageForSlug(slug, false);
   if (!data) {
     return {};
   }

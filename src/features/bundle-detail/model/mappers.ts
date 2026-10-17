@@ -1,12 +1,10 @@
 import { routes } from "@/config/routes";
-import { mapConsultation } from "@/features/landing/model/mappers";
 import type { FilterVM } from "@/features/landing/model/types";
-import { mapProductDetail } from "@/features/product-detail/model/mappers";
+import { mapB2CProductDetail } from "@/features/product-detail/model/mappers-b2c";
 import type { InfoSectionVM, TrainerVM } from "@/features/product-detail/model/types";
 import type { CatalogBundleDetail, CatalogProductResponse } from "@/lib/api/catalog";
-import type { LegacyConsultationResponse, LegacyCourseResponse } from "@/lib/api/legacy";
-import { cleanText, formatCount, toPlainText, toTextBlocks } from "@/lib/format";
-import { noPricing } from "@/lib/pricing";
+import { cleanText, formatCount, formatMinutes, toPlainText, toTextBlocks } from "@/lib/format";
+import { noPricing, toPricing } from "@/lib/pricing";
 
 import { bundlePricing } from "../content/mock-pricing";
 import type {
@@ -126,8 +124,8 @@ export function mapBundleLanding(details: readonly CatalogBundleDetail[]): Bundl
 
 /** What is known about one member beyond its catalog summary. */
 export type MemberSource =
-  | { type: "course"; detail: LegacyCourseResponse }
-  | { type: "consultation"; detail: LegacyConsultationResponse }
+  | { type: "course"; id: number; detail: CatalogProductResponse }
+  | { type: "consultation"; detail: CatalogProductResponse }
   | null;
 
 type MappedMember = { member: BundleMemberVM; trainers: TrainerVM[] };
@@ -151,15 +149,15 @@ function mapMember(dto: MemberDto, source: MemberSource, position: number): Mapp
   };
 
   if (source?.type === "course") {
-    const vm = mapProductDetail(source.detail);
+    const vm = mapB2CProductDetail(source.detail, source.id, null).product;
     return {
       member: {
         ...base,
         title: vm.title || base.title,
         summary: base.summary ?? vm.summary,
         image: vm.image,
-        // Inactive diplomas keep their page; inactive courses don't.
-        href: source.detail.course.active || source.detail.course.is_diploma ? vm.href : null,
+        // Only published members have a page.
+        href: source.detail.product.status === "published" ? vm.href : null,
         category: vm.category,
         people: vm.trainers.map((trainer) => trainer.name),
         duration: vm.duration,
@@ -177,18 +175,17 @@ function mapMember(dto: MemberDto, source: MemberSource, position: number): Mapp
   }
 
   if (source?.type === "consultation") {
-    const card = mapConsultation(source.detail.consultation);
-    const sessions = card.sessions > 0 ? formatCount(card.sessions, SESSION_FORMS) : null;
+    const { product, consultation, price, image } = source.detail;
+    const length = consultation?.duration_minutes ? formatMinutes(consultation.duration_minutes) : null;
     return {
       member: {
         ...base,
-        title: card.title || base.title,
-        summary: base.summary ?? card.summary,
-        image: card.image,
-        href: source.detail.consultation.active ? card.href : null,
-        people: card.consultant ? [card.consultant] : [],
-        duration: [sessions, card.sessionLength].filter(Boolean).join(" · ") || null,
-        price: card.price,
+        title: cleanText(product.title) || base.title,
+        image: image ?? consultation?.consultant_avatar ?? null,
+        href: product.status === "published" ? memberHref("consultation", id) : null,
+        people: consultation?.consultant_name ? [consultation.consultant_name] : [],
+        duration: [formatCount(1, SESSION_FORMS), length].filter(Boolean).join(" · ") || null,
+        price: toPricing(price?.amount ?? null, price?.compare_at_amount ?? null),
       },
       trainers: [],
     };
@@ -240,6 +237,7 @@ export function mapBundleDetail(detail: CatalogBundleDetail, sources: readonly M
     summary,
     description: toPlainText(detail.description ?? product.short_description, 160),
     sections: aboutSections(detail),
+    readme: detail.readme?.trim() || null,
     skills: (detail.skills ?? []).map((skill) => cleanText(skill.name)).filter((name) => name !== null),
     categories: detail.categories.map((category) => cleanText(category.name)).filter((name) => name !== null),
     members,

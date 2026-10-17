@@ -85,6 +85,8 @@ export type ProductDetailVM = {
   /** Set by `get-product-detail` only once the video is confirmed to exist in the Bunny library. */
   introVideo: IntroVideoVM | null;
   sections: InfoSectionVM[];
+  /** Product README (markdown); replaces `sections` when set. */
+  readme?: string | null;
   /** Wide banner from the Course Studio, shown above the page content. */
   banner: StudioBannerVM | null;
   /** The page written in the Course Studio, by section; replaces `sections` when set. */

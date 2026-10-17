@@ -2,21 +2,22 @@ import "server-only";
 
 import { cache } from "react";
 
-import {
-  getLegacyCategoryCourses,
-  getLegacyConsultations,
-  getLegacyDiplomas,
-  getLegacyLandingPage,
-  getLegacyPackages,
-  type LandingPageResponse,
-} from "@/lib/api/legacy";
 import { getCatalogBundle } from "@/features/bundle-detail/api/get-bundle-detail";
 import { mapBundleLanding } from "@/features/bundle-detail/model/mappers";
 import type { BundleLandingVM } from "@/features/bundle-detail/model/types";
 import { getCatalogProducts, type CatalogBundleDetail } from "@/lib/api/catalog";
-import { getNewestLiveTraining } from "@/features/live-training/api/get-live-trainings";
+import { getFeaturedLiveTrainings } from "@/features/live-training/api/get-live-trainings";
+import {
+  cardToConsultationDto,
+  cardToCourseDto,
+  cardToPackageDto,
+  getAllCatalogCards,
+  getCatalogCards,
+  getCatalogLanding,
+  type CatalogLanding,
+} from "@/lib/api/browse";
 import { getInstructorNames } from "@/lib/api/instructor-names";
-import { withResolvedPrices } from "@/lib/api/legacy-pricing";
+import type { LandingPageResponse } from "@/lib/api/legacy";
 import { searchProducts } from "@/lib/api/search";
 import { cachedRead as cachedReadOptions, valueOf } from "@/lib/api/server-cache";
 
@@ -26,26 +27,79 @@ import type { LandingData } from "../model/types";
 /** Cache tag for on-demand refresh (see app/api/revalidate). Keep in sync with page `revalidate`. */
 export const LANDING_CACHE_TAG = "landing";
 const LANDING_REVALIDATE_SECONDS = 300;
-/** API maximum page size for legacy lists. Active diplomas and packages number in the tens. */
-const PAGE_SIZE = 200;
 /** API maximum page size for search. Diplomas and packages number in the tens. */
 const SEARCH_PAGE_SIZE = 100;
 
 const cachedRead = cachedReadOptions(LANDING_REVALIDATE_SECONDS, [LANDING_CACHE_TAG]);
 
+const isDto = <T,>(dto: T | null): dto is T => dto !== null;
+
+type Landing = {
+  banner: CatalogLanding["banner"];
+  faqs: NonNullable<CatalogLanding["faqs"]>;
+  categories: (Omit<NonNullable<CatalogLanding["categories"]>[number], "courses"> & {
+    courses: NonNullable<NonNullable<CatalogLanding["categories"]>[number]["courses"]>;
+  })[];
+  stats: NonNullable<CatalogLanding["stats"]>;
+};
+
+/** Fills the fields the API omits when empty. */
+function normalise(landing: CatalogLanding): Landing {
+  return {
+    banner: landing.banner,
+    faqs: landing.faqs ?? [],
+    categories: (landing.categories ?? []).map((category) => ({ ...category, courses: category.courses ?? [] })),
+    stats: landing.stats ?? { courses: 0, diplomas: 0, packages: 0, instructors: 0 },
+  };
+}
+
 /**
- * One rail's worth of courses per top-level category, so each category chip can fill its rail.
- * Membership comes from the category link table, which the course's own `category_id` often lacks.
+ * The landing aggregate the mappers read, built from B2C: `/catalog/landing` (banner, FAQs, category
+ * rails, counters) and the card lists. Category ids are the legacy ids the storefront URLs use.
  */
-async function getCategoryCourses(landing: LandingPageResponse | null): Promise<CategoryCourses[]> {
-  const categories = (landing?.categories ?? []).filter((category) => category.parent_id === null);
-  const results = await Promise.allSettled(
-    categories.map((category) => getLegacyCategoryCourses(category.id, { limit: MAX_CARDS }, cachedRead)),
+function toLandingPage(
+  landing: Landing,
+  featured: Awaited<ReturnType<typeof getCatalogCards>>,
+  diplomas: LandingPageResponse["diplomas"]["items"],
+  packages: LandingPageResponse["packages"]["items"],
+  consultations: LandingPageResponse["consultations"]["items"],
+): LandingPageResponse {
+  const page = <T,>(items: T[], total = items.length) => ({ items, total, limit: items.length, offset: 0 });
+  return {
+    banners: landing.banner
+      ? [
+          {
+            id: 1, order: 0, header: landing.banner.text, subtitle: null, body: null, image_url: null, video_url: null,
+            link_url: landing.banner.href ?? null, course_id: null, package_id: null, consultancy_id: null, type: 0,
+          },
+        ]
+      : [],
+    categories: landing.categories.flatMap((category, index) =>
+      category.legacy_category_id === null || category.legacy_category_id === undefined
+        ? []
+        : [{ id: category.legacy_category_id, name: category.name, parent_id: null, order: index } as LandingPageResponse["categories"][number]],
+    ),
+    courses: page(featured.items.map(cardToCourseDto).filter(isDto), landing.stats.courses),
+    diplomas: page(diplomas),
+    packages: page(packages),
+    consultations: page(consultations),
+    faqs: landing.faqs.map((faq, index) => ({ id: index + 1, section_id: null, question: faq.question, answer: faq.answer, link: null })),
+    insights: {
+      visitor_count: null, visitor_count_available: false,
+      active_courses: landing.stats.courses, active_diplomas: landing.stats.diplomas, active_packages: landing.stats.packages,
+      active_instructors: landing.stats.instructors, certificate_templates: 0, certificates_issued: 0,
+      completed_course_enrollments: 0, students_with_completed_courses: 0, completed_course_count: 0,
+    },
+  };
+}
+
+/** One rail's worth of courses per top-level category, so each category chip can fill its rail. */
+function getCategoryCourses(landing: Landing): CategoryCourses[] {
+  return landing.categories.flatMap((category) =>
+    category.legacy_category_id === null || category.legacy_category_id === undefined
+      ? []
+      : [{ categoryId: category.legacy_category_id, items: category.courses.map(cardToCourseDto).filter(isDto) }],
   );
-  return results.flatMap((result, index) => {
-    const page = valueOf(result, `category ${categories[index].id} courses`);
-    return page ? [{ categoryId: categories[index].id, items: page.items }] : [];
-  });
 }
 
 /**
@@ -69,65 +123,38 @@ async function getBundles(): Promise<BundleLandingVM> {
  * sections or filters without data simply don't appear.
  */
 export const getLandingData = cache(async (): Promise<LandingData> => {
-  const landingRequest = getLegacyLandingPage(cachedRead);
-  const [
-    landing,
-    categoryCourses,
-    diplomas,
-    packages,
-    consultations,
-    bundles,
-    diplomaSearch,
-    packageSearch,
-    instructors,
-    liveTraining,
-  ] = await Promise.allSettled([
-    landingRequest,
-    landingRequest.catch(() => null).then(getCategoryCourses),
-    getLegacyDiplomas({ active: true, limit: PAGE_SIZE }, cachedRead),
-    getLegacyPackages({ limit: PAGE_SIZE }, cachedRead),
-    getLegacyConsultations({ limit: PAGE_SIZE }, cachedRead),
-    getBundles(),
-    searchProducts({ product_type: ["diploma"], limit: SEARCH_PAGE_SIZE }, cachedRead),
-    searchProducts({ product_type: ["package"], limit: SEARCH_PAGE_SIZE }, cachedRead),
-    getInstructorNames(cachedRead),
-    getNewestLiveTraining(),
-  ]);
+  const [landingResult, featuredResult, diplomasResult, packagesResult, consultationsResult, bundles, diplomaSearch, packageSearch, instructors, liveTrainings] =
+    await Promise.allSettled([
+      getCatalogLanding(cachedRead),
+      getCatalogCards({ product_type: ["course"], limit: MAX_CARDS }, cachedRead),
+      getAllCatalogCards({ product_type: ["diploma"] }, cachedRead),
+      getAllCatalogCards({ product_type: ["package"] }, cachedRead),
+      getAllCatalogCards({ product_type: ["consultation"] }, cachedRead),
+      getBundles(),
+      searchProducts({ product_type: ["diploma"], limit: SEARCH_PAGE_SIZE }, cachedRead),
+      searchProducts({ product_type: ["package"], limit: SEARCH_PAGE_SIZE }, cachedRead),
+      getInstructorNames(cachedRead),
+      getFeaturedLiveTrainings(),
+    ]);
 
-  const landingPage = valueOf(landing, "landing-page");
-  const categoryPages = valueOf(categoryCourses, "category courses") ?? [];
-  const activeDiplomas = valueOf(diplomas, "active diplomas");
-
-  // Fill in prices the API's `current_price` misses, once per course across every list.
-  const priced = new Map(
-    (
-      await withResolvedPrices(
-        [
-          ...(landingPage?.courses.items ?? []),
-          ...(landingPage?.diplomas.items ?? []),
-          ...categoryPages.flatMap((page) => page.items),
-          ...(activeDiplomas?.items ?? []),
-        ],
-        cachedRead,
-      )
-    ).map((dto) => [dto.id, dto]),
-  );
-  const reprice = (items: CourseDto[]): CourseDto[] => items.map((dto) => priced.get(dto.id) ?? dto);
+  const rawLanding = valueOf(landingResult, "landing");
+  const landing = rawLanding && normalise(rawLanding);
+  const featured = valueOf(featuredResult, "featured courses") ?? { items: [], total: 0 };
+  const diplomas = (valueOf(diplomasResult, "diplomas") ?? []).map(cardToCourseDto).filter(isDto);
+  const packages = (valueOf(packagesResult, "packages") ?? []).map(cardToPackageDto).filter(isDto);
+  const consultations = (valueOf(consultationsResult, "consultations") ?? []).map(cardToConsultationDto).filter(isDto);
+  const page = <T,>(items: T[]) => ({ items, total: items.length, limit: items.length, offset: 0 });
 
   return mapLandingData({
-    landing: landingPage && {
-      ...landingPage,
-      courses: { ...landingPage.courses, items: reprice(landingPage.courses.items) },
-      diplomas: { ...landingPage.diplomas, items: reprice(landingPage.diplomas.items) },
-    },
-    categoryCourses: categoryPages.map((page) => ({ ...page, items: reprice(page.items) })),
-    activeDiplomas: activeDiplomas && { ...activeDiplomas, items: reprice(activeDiplomas.items) },
-    packages: valueOf(packages, "packages"),
-    consultations: valueOf(consultations, "consultations"),
+    landing: landing && toLandingPage(landing, featured, diplomas, packages, consultations),
+    categoryCourses: landing ? getCategoryCourses(landing) : [],
+    activeDiplomas: page(diplomas),
+    packages: page(packages),
+    consultations: page(consultations),
     bundles: valueOf(bundles, "bundles"),
     diplomaIndex: toSearchIndex("diploma", valueOf(diplomaSearch, "diploma search")),
     packageIndex: toSearchIndex("package", valueOf(packageSearch, "package search")),
     instructors: valueOf(instructors, "instructor names") ?? new Map(),
-    liveTraining: valueOf(liveTraining, "live trainings"),
+    liveTrainings: valueOf(liveTrainings, "live trainings") ?? [],
   });
 });

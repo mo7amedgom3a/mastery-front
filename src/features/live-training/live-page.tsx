@@ -23,7 +23,7 @@ export function LivePage({ trainings }: { trainings: LiveTrainingVM[] }) {
 
         <Section aria-label={livePageCopy.title}>
           {trainings.length > 0 ? (
-            <ul className="m-0 grid list-none gap-6 p-0 sm:grid-cols-2">
+            <ul className="m-0 grid list-none gap-6 p-0">
               {trainings.map((training, index) => (
                 <li key={training.id}>
                   <LiveTrainingCard training={training} priority={index === 0} />

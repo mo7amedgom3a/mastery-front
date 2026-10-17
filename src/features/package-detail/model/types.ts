@@ -1,6 +1,6 @@
 import type { Route } from "next";
 
-import type { InfoSectionVM, ProductKind, RailCardVM, TrainerVM } from "@/features/product-detail/model/types";
+import type { InfoSectionVM, ProductDetailVM, ProductKind, RailCardVM, TrainerVM } from "@/features/product-detail/model/types";
 import type { Pricing } from "@/lib/pricing";
 
 /** View models for the package page. Mapped from API DTOs in `mappers.ts`, never used raw. */
@@ -59,6 +59,11 @@ export type PackageDetailVM = {
   duration: string | null;
   lessonCount: number;
   sections: InfoSectionVM[];
+  readme?: string | null;
+  /** Wide banner from the Course Studio, shown above the page content. */
+  banner?: ProductDetailVM["banner"];
+  /** The page written in the Studio, by section; replaces `sections` when set. */
+  content?: ProductDetailVM["content"];
   items: PackageItemVM[];
   /** Every item's trainers, once each, in order of first appearance. */
   trainers: TrainerVM[];

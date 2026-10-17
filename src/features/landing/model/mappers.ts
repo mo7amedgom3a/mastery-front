@@ -295,7 +295,7 @@ export const emptyLandingData: LandingData = {
   consultationFilters: [],
   faqs: [],
   stats: [],
-  liveTraining: null,
+  liveTrainings: [],
 };
 
 export type LandingSources = {
@@ -310,7 +310,7 @@ export type LandingSources = {
   diplomaIndex: SearchIndex;
   packageIndex: SearchIndex;
   instructors: InstructorNames;
-  liveTraining: LiveTrainingVM | null;
+  liveTrainings: LiveTrainingVM[];
 };
 
 export function mapLandingData({
@@ -323,10 +323,10 @@ export function mapLandingData({
   diplomaIndex,
   packageIndex,
   instructors,
-  liveTraining,
+  liveTrainings,
 }: LandingSources): LandingData {
   if (!landing && !activeDiplomas && !allPackages && !allConsultations) {
-    return { ...emptyLandingData, bundles: bundles?.bundles ?? [], bundleFilters: bundles?.filters ?? [], liveTraining };
+    return { ...emptyLandingData, bundles: bundles?.bundles ?? [], bundleFilters: bundles?.filters ?? [], liveTrainings };
   }
 
   const categories = (landing?.categories ?? [])
@@ -369,6 +369,6 @@ export function mapLandingData({
     consultationFilters: consultationRail.filters,
     faqs: (landing?.faqs ?? []).map(mapFaq).filter((faq): faq is FaqVM => faq !== null),
     stats: mapStats(landing?.insights),
-    liveTraining,
+    liveTrainings,
   };
 }

@@ -18,29 +18,6 @@ import {
   getCatalogResource,
   getDatabaseHealth,
   getHealth,
-  getLegacyCategories,
-  getLegacyCategory,
-  getLegacyCategoryCourses,
-  getLegacyCategoryInstructors,
-  getLegacyConsultation,
-  getLegacyConsultations,
-  getLegacyCourse,
-  getLegacyCoursePrices,
-  getLegacyCourses,
-  getLegacyDiploma,
-  getLegacyDiplomas,
-  getLegacyInsights,
-  getLegacyInstructor,
-  getLegacyInstructorCategories,
-  getLegacyInstructorCourses,
-  getLegacyInstructorDiplomas,
-  getLegacyInstructorPackages,
-  getLegacyInstructors,
-  getLegacyLandingPage,
-  getLegacyPackage,
-  getLegacyPackages,
-  getLegacyRelatedResources,
-  getLegacyResourceRecommendations,
   getLandingRecommendations,
   getLearningProfile,
   getMe,
@@ -70,6 +47,10 @@ import {
   removeWishlistItem,
   rebuildRecommendations,
   verifyTwoFactor,
+  getCatalogCards,
+  getCatalogExpert,
+  getCatalogExperts,
+  getCatalogLanding,
 } from "../src/lib/api";
 
 const DEFAULT_CUSTOMER_ID = "F6A8D4F2-FC4F-4126-B4DD-C520F4289107";
@@ -118,6 +99,7 @@ type TestContext = {
   legacyPackageId?: number;
   legacyConsultationId?: number;
   legacyInstructorId?: number;
+  expertKey?: string;
   searchProductSlug?: string;
   searchTrainerId?: number;
   recommendationJobId?: string;
@@ -471,53 +453,18 @@ function liveEndpointTests(): LiveTest[] {
       const productId = requireValue(ctx.wishlistProductId, "No product_id from /catalog/products");
       await removeWishlistItem(productId, customerOptions());
     } },
-    { name: "GET /api/v1/legacy/landing-page", run: async () => assertObject(await getLegacyLandingPage()) },
-    { name: "GET /api/v1/legacy/insights", run: async () => assertObject(await getLegacyInsights()) },
-    { name: "GET /api/v1/legacy/categories", run: async (ctx) => {
-      const page = await getLegacyCategories({ limit: 5, offset: 0 });
+    { name: "GET /api/v1/catalog/landing", run: async () => assertObject(await getCatalogLanding()) },
+    { name: "GET /api/v1/catalog/cards", run: async () => {
+      const page = await getCatalogCards({ product_type: ["course"], limit: 5, offset: 0 });
       assertPage(page);
-      ctx.legacyCategoryId = firstId(page.items);
     } },
-    { name: "GET /api/v1/legacy/categories/{category_id}", run: async (ctx) => assertObject(await getLegacyCategory(requireValue(ctx.legacyCategoryId, "No legacy category id"))) },
-    { name: "GET /api/v1/legacy/categories/{category_id}/courses", run: async (ctx) => assertPage(await getLegacyCategoryCourses(requireValue(ctx.legacyCategoryId, "No legacy category id"), { limit: 5, offset: 0 })) },
-    { name: "GET /api/v1/legacy/categories/{category_id}/instructors", run: async (ctx) => assertPage(await getLegacyCategoryInstructors(requireValue(ctx.legacyCategoryId, "No legacy category id"), { limit: 5, offset: 0 })) },
-    { name: "GET /api/v1/legacy/instructors", run: async (ctx) => {
-      const page = await getLegacyInstructors({ limit: 5, offset: 0 });
-      assertPage(page);
-      ctx.legacyInstructorId = firstId(page.items);
+    { name: "GET /api/v1/catalog/cards (diploma, package, consultation)", run: async () => assertPage(await getCatalogCards({ product_type: ["diploma", "package", "consultation"], limit: 5 })) },
+    { name: "GET /api/v1/catalog/experts", run: async (ctx) => {
+      const experts = await getCatalogExperts({ limit: 5 });
+      assertArray(experts);
+      ctx.expertKey = experts[0]?.key;
     } },
-    { name: "GET /api/v1/legacy/instructors/{instructor_id}", run: async (ctx) => assertObject(await getLegacyInstructor(requireValue(ctx.legacyInstructorId, "No legacy instructor id"))) },
-    { name: "GET /api/v1/legacy/instructors/{instructor_id}/courses", run: async (ctx) => assertPage(await getLegacyInstructorCourses(requireValue(ctx.legacyInstructorId, "No legacy instructor id"), { limit: 5, offset: 0 })) },
-    { name: "GET /api/v1/legacy/instructors/{instructor_id}/diplomas", run: async (ctx) => assertPage(await getLegacyInstructorDiplomas(requireValue(ctx.legacyInstructorId, "No legacy instructor id"), { limit: 5, offset: 0 })) },
-    { name: "GET /api/v1/legacy/instructors/{instructor_id}/packages", run: async (ctx) => assertPage(await getLegacyInstructorPackages(requireValue(ctx.legacyInstructorId, "No legacy instructor id"), { limit: 5, offset: 0 })) },
-    { name: "GET /api/v1/legacy/instructors/{instructor_id}/categories", run: async (ctx) => assertPage(await getLegacyInstructorCategories(requireValue(ctx.legacyInstructorId, "No legacy instructor id"), { limit: 5, offset: 0 })) },
-    { name: "GET /api/v1/legacy/courses", run: async (ctx) => {
-      const page = await getLegacyCourses({ limit: 5, offset: 0 });
-      assertPage(page);
-      ctx.legacyCourseId = firstId(page.items);
-    } },
-    { name: "GET /api/v1/legacy/courses/{course_id}", run: async (ctx) => assertObject(await getLegacyCourse(requireValue(ctx.legacyCourseId, "No legacy course id"))) },
-    { name: "GET /api/v1/legacy/courses/{course_id}/prices", run: async (ctx) => assertArray(await getLegacyCoursePrices(requireValue(ctx.legacyCourseId, "No legacy course id"))) },
-    { name: "GET /api/v1/legacy/diplomas", run: async (ctx) => {
-      const page = await getLegacyDiplomas({ limit: 5, offset: 0 });
-      assertPage(page);
-      ctx.legacyDiplomaId = firstId(page.items);
-    } },
-    { name: "GET /api/v1/legacy/diplomas/{diploma_id}", run: async (ctx) => assertObject(await getLegacyDiploma(requireValue(ctx.legacyDiplomaId, "No legacy diploma id"))) },
-    { name: "GET /api/v1/legacy/packages", run: async (ctx) => {
-      const page = await getLegacyPackages({ limit: 5, offset: 0 });
-      assertPage(page);
-      ctx.legacyPackageId = firstId(page.items);
-    } },
-    { name: "GET /api/v1/legacy/packages/{package_id}", run: async (ctx) => assertObject(await getLegacyPackage(requireValue(ctx.legacyPackageId, "No legacy package id"))) },
-    { name: "GET /api/v1/legacy/consultations", run: async (ctx) => {
-      const page = await getLegacyConsultations({ limit: 5, offset: 0 });
-      assertPage(page);
-      ctx.legacyConsultationId = firstId(page.items);
-    } },
-    { name: "GET /api/v1/legacy/consultations/{consultation_id}", run: async (ctx) => assertObject(await getLegacyConsultation(requireValue(ctx.legacyConsultationId, "No legacy consultation id"))) },
-    { name: "GET /api/v1/legacy/resources/{resource_type}/{legacy_id}/related", run: async (ctx) => assertObject(await getLegacyRelatedResources({ resource_type: "course", legacy_id: requireValue(ctx.legacyCourseId, "No legacy course id") }, { limit: 5 })) },
-    { name: "GET /api/v1/legacy/resources/{resource_type}/{legacy_id}/recommendations", run: async (ctx) => assertObject(await getLegacyResourceRecommendations({ resource_type: "course", legacy_id: requireValue(ctx.legacyCourseId, "No legacy course id") }, { limit: 5 })) },
+    { name: "GET /api/v1/catalog/experts/{key}", run: async (ctx) => assertObject(await getCatalogExpert(requireValue(ctx.expertKey, "No expert key"))) },
     { name: "GET /api/v1/recommendations/products/{slug}", run: async (ctx) => assertObject(await getProductRecommendations(requireValue(ctx.searchProductSlug, "No product slug"), { limit: 5 })) },
     { name: "GET /api/v1/recommendations/me", auth: true, run: async () => assertObject(await getMyRecommendations({ limit: 5 }, customerOptions())) },
     { name: "GET /api/v1/recommendations/landing", run: async () => assertObject(await getLandingRecommendations({ limit: 5 })) },

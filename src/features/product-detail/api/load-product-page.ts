@@ -8,7 +8,7 @@ import { baseOpenGraph, siteConfig } from "@/config/site";
 
 import { kindLabel } from "../content/copy";
 import type { ProductDetailData, ProductKind } from "../model/types";
-import { getProductDetail } from "./get-product-detail";
+import { getB2CProductDetail } from "./get-product-detail-b2c";
 
 function safeDecode(value: string): string {
   try {
@@ -19,16 +19,19 @@ function safeDecode(value: string): string {
 }
 
 /**
- * Data for `/courses/[slug]` and `/diplomas/[slug]`. 404s unknown ids; permanently redirects to the
- * canonical `/{kind}s/{id}-{link_name}` when the kind or the name part is off (e.g. `/courses/213`
- * from a recommendation card, or a renamed course).
+ * Data for `/courses/[slug]` and `/diplomas/[slug]` from B2C. 404s unknown ids; permanently redirects
+ * to the canonical `/{kind}s/{id}` when the kind or a legacy name part is off.
  */
-export async function loadProductPage(routeKind: ProductKind, slug: string): Promise<ProductDetailData> {
+export async function loadProductPage(
+  routeKind: ProductKind,
+  slug: string,
+  preview = false,
+): Promise<ProductDetailData> {
   const id = parseProductSlug(safeDecode(slug));
   if (id === null) {
     notFound();
   }
-  const data = await getProductDetail(id);
+  const data = await getB2CProductDetail(id, routeKind, preview);
   if (!data) {
     notFound();
   }
@@ -41,9 +44,9 @@ export async function loadProductPage(routeKind: ProductKind, slug: string): Pro
 }
 
 /** Metadata from the same cached request the page makes; unknown ids get the 404 page's defaults. */
-export async function productMetadata(slug: string): Promise<Metadata> {
+export async function productMetadata(slug: string, routeKind: ProductKind): Promise<Metadata> {
   const id = parseProductSlug(safeDecode(slug));
-  const data = id === null ? null : await getProductDetail(id);
+  const data = id === null ? null : await getB2CProductDetail(id, routeKind);
   if (!data) {
     return {};
   }

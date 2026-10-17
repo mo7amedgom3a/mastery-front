@@ -2,6 +2,7 @@ import { UserRound } from "lucide-react";
 
 import type { TextBlock } from "@/lib/format";
 
+import { Markdown } from "@/components/content/markdown";
 import { TextBlocks } from "../components/text-blocks";
 import type { InfoSectionVM } from "../model/types";
 
@@ -30,8 +31,17 @@ function AudienceList({ blocks }: { blocks: readonly TextBlock[] }) {
 }
 
 /** The product's own info blocks (intro, goals, audience…), in the order the CMS lists them. */
-export function AboutSection({ sections, title }: { sections: readonly InfoSectionVM[]; title: string }) {
-  if (sections.length === 0) {
+export function AboutSection({
+  sections,
+  title,
+  readme,
+}: {
+  sections: readonly InfoSectionVM[];
+  title: string;
+  /** Product README (markdown); replaces `sections` when set. */
+  readme?: string | null;
+}) {
+  if (!readme && sections.length === 0) {
     return null;
   }
   return (
@@ -39,6 +49,9 @@ export function AboutSection({ sections, title }: { sections: readonly InfoSecti
       <h2 id="about-title" className="sr-only">
         {title}
       </h2>
+      {readme ? (
+        <Markdown source={readme} />
+      ) : (
       <div className="flex flex-col gap-12">
         {sections.map((section, index) => (
           <div key={`${section.heading}-${index}`} className="flex flex-col gap-5">
@@ -51,6 +64,7 @@ export function AboutSection({ sections, title }: { sections: readonly InfoSecti
           </div>
         ))}
       </div>
+      )}
     </section>
   );
 }

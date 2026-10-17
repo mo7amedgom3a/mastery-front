@@ -13,11 +13,12 @@ export function generateStaticParams(): { slug: string }[] {
 
 export async function generateMetadata({ params }: PageProps<"/courses/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  return productMetadata(slug);
+  return productMetadata(slug, "course");
 }
 
-export default async function CoursePage({ params }: PageProps<"/courses/[slug]">) {
+export default async function CoursePage({ params, searchParams }: PageProps<"/courses/[slug]">) {
   const { slug } = await params;
-  const data = await loadProductPage("course", slug);
+  const preview = (await searchParams)?.preview === "1";
+  const data = await loadProductPage("course", slug, preview);
   return <ProductDetailPage data={data} />;
 }

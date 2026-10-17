@@ -83,7 +83,7 @@ export function ProductDetailView({
   const nav: SectionNavItem[] = [
     ...(contentNavItems.length > 0
       ? contentNavItems
-      : product.sections.length > 0
+      : (product.sections.length > 0 || product.readme)
         ? [{ id: "about", label: `عن ال${noun}` }]
         : []),
     product.curriculum.length > 0 ? { id: "curriculum", label: `محتوى ال${noun}` } : null,
@@ -134,7 +134,7 @@ export function ProductDetailView({
             {hasStudioContent && product.content ? (
               <ContentBlocks sections={product.content} />
             ) : (
-              <AboutSection sections={product.sections} title={`عن ال${noun}`} />
+              <AboutSection sections={product.sections} readme={product.readme} title={`عن ال${noun}`} />
             )}
 
             <CurriculumSection units={product.curriculum} title={`محتوى ال${noun}`} />

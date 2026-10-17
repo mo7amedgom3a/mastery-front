@@ -10,11 +10,9 @@ import {
   type PackageDto,
 } from "@/features/landing/model/mappers";
 import { getCatalogIndex } from "@/features/product-detail/api/get-catalog-index";
-import { productCacheTag } from "@/features/product-detail/api/get-product-detail";
 import { courseCard, packageCard } from "@/features/product-detail/model/mappers";
 import type { RailCardVM } from "@/features/product-detail/model/types";
 import { getInstructorNames } from "@/lib/api/instructor-names";
-import { getLegacyCourse, getLegacyPackage } from "@/lib/api/legacy";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
 import { toPricing, type PriceRow } from "@/lib/pricing";
 import { parseShopKey, type ResolveItemsResponse, type ResolvedItem } from "@/lib/shop/contract";
@@ -56,8 +54,7 @@ function toResolved(
 /**
  * The catalog's current view of saved or carted items: title, artwork, link, and above all the
  * price that applies now (the offer price while an offer runs). Courses, diplomas and consultations
- * come from the cached catalog indexes every page already shares; a package's price list lives on
- * its detail, so each package is read from there (cached too).
+ * come from the cached catalog indexes every page already shares; * its card, which carries the current B2C price.
  *
  * Throws when the catalog can't be read: an unreachable API must not look like "these items no
  * longer exist" (the pages would tell the visitor their cart is gone).
@@ -72,16 +69,12 @@ export async function resolveItems(keys: readonly string[]): Promise<ResolveItem
   const missing = new Set(keys.filter((key) => !wanted.some((entry) => entry.key === key)));
 
   const needs = (...kinds: string[]) => wanted.some((entry) => kinds.includes(entry.kind));
-  const packageIds = wanted.filter((entry) => entry.kind === "package").map((entry) => entry.id);
   const read = cachedRead(REVALIDATE_SECONDS, ["catalog-index"]);
 
-  const [catalogResult, consultationsResult, instructorsResult, packagesResult] = await Promise.allSettled([
+  const [catalogResult, consultationsResult, instructorsResult] = await Promise.allSettled([
     needs("course", "diploma", "package") ? getCatalogIndex() : null,
     needs("consultation") ? getConsultationIndex() : null,
     needs("course", "diploma") ? getInstructorNames(read) : null,
-    Promise.allSettled(
-      packageIds.map((id) => getLegacyPackage(id, cachedRead(REVALIDATE_SECONDS, [productCacheTag("package", id)]))),
-    ),
   ]);
   const catalog = valueOf(catalogResult, "catalog index");
   const consultations = valueOf(consultationsResult, "consultation index");
@@ -89,15 +82,7 @@ export async function resolveItems(keys: readonly string[]): Promise<ResolveItem
     throw new Error("catalog unavailable");
   }
   const instructors = valueOf(instructorsResult, "instructor names") ?? undefined;
-  const packageDetails = new Map<number, { collection: PackageDto; prices?: readonly PriceRow[] | null }>();
-  (valueOf(packagesResult, "package details") ?? []).forEach((result, index) => {
-    // A failed or 404 detail falls back to the catalog row below.
-    if (result.status === "fulfilled") packageDetails.set(packageIds[index], result.value);
-  });
-
   const items: ResolvedItem[] = [];
-  /** Courses and diplomas the catalog list doesn't carry: it skips inactive ones (an old cohort). */
-  const offList: { key: string; id: number }[] = [];
   for (const { key, kind, id } of wanted) {
     if (kind === "consultation") {
       const dto = consultations?.get(id);
@@ -106,10 +91,9 @@ export async function resolveItems(keys: readonly string[]): Promise<ResolveItem
         continue;
       }
     } else if (kind === "package") {
-      const detail = packageDetails.get(id);
-      const dto: PackageDto | undefined = detail?.collection ?? catalog?.packages.get(`package:${id}`);
+      const dto: PackageDto | undefined = catalog?.packages.get(`package:${id}`);
       if (dto) {
-        items.push(toResolved(key, packageCard(dto), isPublishable(dto), priceAmounts(dto, detail?.prices ?? undefined)));
+        items.push(toResolved(key, packageCard(dto), isPublishable(dto), priceAmounts(dto)));
         continue;
       }
     } else {
@@ -119,32 +103,12 @@ export async function resolveItems(keys: readonly string[]): Promise<ResolveItem
         items.push(toResolved(key, courseCard(dto, instructors), isPublishable(dto), priceAmounts(dto)));
         continue;
       }
-      offList.push({ key, id });
+      // Not published (an old cohort or an archived course): not purchasable, reported as gone.
+      missing.add(key);
       continue;
     }
     missing.add(key);
   }
-
-  // Their own detail still has the name and artwork (a student who bought one keeps seeing it);
-  // they stay unavailable, so nobody can buy them again.
-  const details = await Promise.allSettled(
-    offList.map(({ id }) =>
-      getLegacyCourse(
-        id,
-        cachedRead(REVALIDATE_SECONDS, [productCacheTag("course", id), productCacheTag("diploma", id)]),
-        { include_inactive: true },
-      ),
-    ),
-  );
-  details.forEach((result, index) => {
-    const { key } = offList[index];
-    if (result.status !== "fulfilled") {
-      missing.add(key);
-      return;
-    }
-    const dto = result.value.course;
-    items.push(toResolved(key, courseCard(dto, instructors), false, priceAmounts(dto)));
-  });
 
   return { items, missing: [...missing] };
 }

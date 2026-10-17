@@ -31,6 +31,8 @@ export type ConsultationDetailVM = {
   /** "60 دقيقة" · "ساعة واحدة". */
   sessionLength: string | null;
   sections: InfoSectionVM[];
+  /** Product README (markdown); replaces `sections` when set. */
+  readme?: string | null;
   expert: ExpertVM | null;
   /** Canonical URL path, e.g. `/consultations/2`. */
   href: Route;

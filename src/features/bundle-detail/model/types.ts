@@ -62,6 +62,7 @@ export type BundleDetailVM = {
   /** Plain-text description for metadata. */
   description: string | null;
   sections: InfoSectionVM[];
+  readme?: string | null;
   skills: string[];
   categories: string[];
   members: BundleMemberVM[];

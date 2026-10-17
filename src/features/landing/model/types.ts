@@ -101,6 +101,6 @@ export type LandingData = {
   consultationFilters: FilterVM[];
   faqs: FaqVM[];
   stats: StatVM[];
-  /** Spotlight banner: the next live training; null when none is open. */
-  liveTraining: LiveTrainingVM | null;
+  /** Spotlight banner: the featured live trainings, rotated client-side. Empty when none is open. */
+  liveTrainings: LiveTrainingVM[];
 };

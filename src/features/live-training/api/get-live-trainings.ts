@@ -2,46 +2,48 @@ import "server-only";
 
 import { cache } from "react";
 
-import { byStartDate, isOpen, toLiveTrainingDetailVM, toLiveTrainingVM } from "../model/mappers";
-import type { LiveTrainingDetailDto, LiveTrainingDto, LiveTrainingDetailVM, LiveTrainingVM } from "../model/types";
-import { LIVE_TRAININGS } from "./mock-data";
+import { getLiveDiploma, listLiveDiplomas } from "@/lib/api/live-diplomas";
 
-/** The list item: everything but the long-form page content. */
-function toListItem(dto: LiveTrainingDetailDto): LiveTrainingDto {
-  const item: Partial<LiveTrainingDetailDto> = { ...dto };
-  delete item.details;
-  return item as LiveTrainingDto;
-}
+import { byStartDate, fromLiveDiploma, isOpen, toListItem, toLiveTrainingDetailVM, toLiveTrainingVM } from "../model/mappers";
+import type { LiveTrainingDetailDto, LiveTrainingDetailVM, LiveTrainingDto, LiveTrainingVM } from "../model/types";
 
-/**
- * Open live trainings (not yet finished), soonest first, in the API's shape. Pages and the landing
- * banner call this directly; `GET /api/live-trainings` serves the same list to the browser.
- *
- * TODO(api): fetch the backend list here (`apiFetch` + `cachedRead`) instead of the mock.
- */
-export const getLiveTrainingDtos = cache(async (): Promise<LiveTrainingDto[]> => {
-  const now = Date.now();
-  return LIVE_TRAININGS.filter((dto) => isOpen(dto, now)).toSorted(byStartDate).map(toListItem);
+/** Matches the `/live` pages' `revalidate`; refreshed on demand via the `live-trainings` tag. */
+const REVALIDATE_SECONDS = 300;
+const TAGS = ["live-trainings"];
+const read = { next: { revalidate: REVALIDATE_SECONDS, tags: TAGS } } as const;
+
+/** Every published live diploma as a storefront DTO (list fields + `details`). */
+const getLiveTrainingDetailDtos = cache(async (): Promise<LiveTrainingDetailDto[]> => {
+  const diplomas = await listLiveDiplomas(read);
+  return diplomas.map(fromLiveDiploma);
 });
 
-/**
- * One training with its page content, by slug; null when unknown. Finished trainings still resolve,
- * so links shared during a cohort keep working after it ends.
- *
- * TODO(api): fetch `/live-trainings/{slug}` from the backend instead of the mock.
- */
+/** Every published live diploma, soonest first, as list items. */
+export const getLiveTrainingDtos = cache(async (): Promise<LiveTrainingDto[]> => {
+  const all = await getLiveTrainingDetailDtos();
+  return all.toSorted(byStartDate).map(toListItem);
+});
+
+/** One training with its page content, by slug; null when unknown or unpublished. */
 export const getLiveTrainingDetailDto = cache(async (slug: string): Promise<LiveTrainingDetailDto | null> => {
-  return LIVE_TRAININGS.find((dto) => dto.slug === slug) ?? null;
+  try {
+    const diploma = await getLiveDiploma(slug, read);
+    return fromLiveDiploma(diploma);
+  } catch {
+    return null;
+  }
 });
 
 export async function getLiveTrainings(): Promise<LiveTrainingVM[]> {
   return (await getLiveTrainingDtos()).map(toLiveTrainingVM);
 }
 
-/** The next training to start (the landing spotlight); null when none is open. */
-export async function getNewestLiveTraining(): Promise<LiveTrainingVM | null> {
-  const [next] = await getLiveTrainingDtos();
-  return next ? toLiveTrainingVM(next) : null;
+/** Featured diplomas (the landing spotlight carousel); falls back to all open when none flagged. */
+export async function getFeaturedLiveTrainings(): Promise<LiveTrainingVM[]> {
+  const all = await getLiveTrainingDetailDtos();
+  const featured = all.filter((dto) => dto.featured);
+  const chosen = featured.length > 0 ? featured : all.filter((dto) => isOpen(dto, Date.now()));
+  return chosen.toSorted(byStartDate).map(toListItem).map(toLiveTrainingVM);
 }
 
 export async function getLiveTrainingDetail(slug: string): Promise<LiveTrainingDetailVM | null> {
@@ -49,7 +51,7 @@ export async function getLiveTrainingDetail(slug: string): Promise<LiveTrainingD
   return dto ? toLiveTrainingDetailVM(dto) : null;
 }
 
-/** Every slug with a page, open or finished (static params, sitemap). */
+/** Every published diploma slug (static params, sitemap). */
 export async function getLiveTrainingSlugs(): Promise<string[]> {
-  return LIVE_TRAININGS.map((dto) => dto.slug);
+  return (await getLiveTrainingDetailDtos()).map((dto) => dto.slug);
 }

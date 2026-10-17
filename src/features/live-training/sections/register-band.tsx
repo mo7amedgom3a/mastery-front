@@ -21,7 +21,7 @@ export function RegisterBand({ training }: { training: LiveTrainingDetailVM }) {
           {training.whatsappHref ? <p className="m-0 text-[15px]">{detailCopy.register.whatsappLead}</p> : null}
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <a href={training.enrollUrl} className={buttonClass({ variant: "on-color", size: "lg" })}>
+          <a href="#booking" className={buttonClass({ variant: "on-color", size: "lg" })}>
             {detailCopy.enroll} — <span dir="ltr">{training.price.current}</span>
           </a>
           {training.whatsappHref ? (
