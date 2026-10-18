@@ -10,7 +10,12 @@ import { toPlainText } from "@/lib/format";
 export const revalidate = 300;
 
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  return (await getLiveTrainingSlugs()).map((slug) => ({ slug }));
+  // An unreachable backend must not fail the build; unknown slugs still render on demand.
+  const slugs = await getLiveTrainingSlugs().catch((error: unknown) => {
+    console.error("[api] live training static params request failed", error);
+    return [];
+  });
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/live/[slug]">): Promise<Metadata> {

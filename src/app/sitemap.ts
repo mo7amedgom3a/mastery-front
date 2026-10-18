@@ -18,12 +18,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const home = `${siteUrl}/`;
 
-  const [cards, experts, searchOptions] = await Promise.allSettled([
+  const [cards, experts, searchOptions, liveSlugs] = await Promise.allSettled([
     // Every published course, diploma, package, consultation and bundle, with its slug and update time.
     getAllCatalogCards({ product_type: ["course", "diploma", "package", "consultation", "bundle"] }, read),
     // Only experts with something to offer.
     getCatalogExperts({ limit: 500 }, read),
     getSearchOptions({ limit: 500 }, read),
+    getLiveTrainingSlugs(),
   ]);
 
   // The listings: the search page as a whole, per product type and per category that has products.
@@ -88,7 +89,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...listings,
     ...products.values(),
-    ...(await getLiveTrainingSlugs()).map((slug): MetadataRoute.Sitemap[number] => ({
+    ...(valueOf(liveSlugs, "sitemap live trainings") ?? []).map((slug): MetadataRoute.Sitemap[number] => ({
       url: `${siteUrl}${routes.liveTraining(slug)}`,
       changeFrequency: "weekly",
       priority: 0.8,
