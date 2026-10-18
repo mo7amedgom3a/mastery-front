@@ -4,7 +4,7 @@ import { cache } from "react";
 
 import { getCatalogProduct } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/client";
-import { getLegacyProductContent } from "@/lib/api/product-content";
+import { getProductContent } from "@/lib/api/product-content";
 import { cachedRead, freshRead } from "@/lib/api/server-cache";
 
 import { introVideoSource, mapB2CProductDetail } from "../model/mappers-b2c";
@@ -17,7 +17,7 @@ const PRODUCT_REVALIDATE_SECONDS = 300;
 /**
  * The B2C course/diploma with this numeric id, mapped for the storefront page; null when it doesn't
  * exist. B2C is the source of truth (units/lessons, trainer, price); the published Course Studio page
- * is read by the legacy content endpoint. `preview` (the admin Studio) reads fresh, uncached data.
+ * is read by B2C product ID. `preview` (the admin Studio) reads fresh, uncached data.
  */
 export const getB2CProductDetail = cache(
   async (id: number, kind: "course" | "diploma", preview = false): Promise<ProductDetailData | null> => {
@@ -34,7 +34,7 @@ export const getB2CProductDetail = cache(
       throw error;
     }
 
-    const content = await getLegacyProductContent("course", id, options).catch(() => null);
+    const content = await getProductContent(dto.product.product_id, options).catch(() => null);
     const data = mapB2CProductDetail(dto, id, content);
     data.product.introVideo = await verifyIntroVideo(introVideoSource(dto, content), preview);
     return data;

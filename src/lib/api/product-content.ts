@@ -1,23 +1,22 @@
 import { apiRequest, type ApiRequestOptions } from "@/lib/api/client";
 import type { PathParams, SuccessResponse } from "@/lib/api/operation-types";
 
-type LegacyContentOperation = "legacy_product_content_api_v1_catalog_product_content_legacy__kind___legacy_id__get";
+type ProductContentOperation = "product_content_api_v1_catalog_product_content__product_id__get";
 
 /** A product page published from the admin's Course Studio: `meta` + BlockNote `blocks` (404 when none). */
-export type ProductContentResponse = SuccessResponse<LegacyContentOperation>;
+export type ProductContentResponse = SuccessResponse<ProductContentOperation>;
 
 const productContentPaths = {
-  legacy: "/api/v1/catalog/product-content/legacy/{kind}/{legacy_id}",
+  product: "/api/v1/catalog/product-content/{product_id}",
 } as const;
 
-/** The published studio page of a legacy course/diploma (`course`) or package; 404 when there is none. */
-export function getLegacyProductContent(
-  kind: PathParams<LegacyContentOperation>["kind"],
-  legacyId: number,
+/** The published Studio page of a B2C product; 404 when there is none. */
+export function getProductContent(
+  productId: PathParams<ProductContentOperation>["product_id"],
   options?: ApiRequestOptions,
 ): Promise<ProductContentResponse> {
-  return apiRequest<ProductContentResponse>("GET", productContentPaths.legacy, {
+  return apiRequest<ProductContentResponse>("GET", productContentPaths.product, {
     ...options,
-    path: { kind, legacy_id: legacyId },
+    path: { product_id: productId },
   });
 }

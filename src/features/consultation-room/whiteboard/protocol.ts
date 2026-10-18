@@ -31,6 +31,8 @@ export const whiteboardMessage = z.discriminatedUnion("t", [
   z.object({ t: z.literal("opened") }),
   // The sender saved a snapshot to the session files.
   z.object({ t: z.literal("snapshot-saved") }),
+  // The sender's board is now open or closed. The session recorder follows this to lay out its video.
+  z.object({ t: z.literal("visibility"), open: z.boolean() }),
 ]);
 
 export type WhiteboardMessage = z.infer<typeof whiteboardMessage>;

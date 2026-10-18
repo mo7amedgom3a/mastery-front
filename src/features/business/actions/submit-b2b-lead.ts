@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 
-import { subscribeB2B } from "@/lib/api/legacy-forms";
+import { submitCompanyTrainingRequest } from "@/lib/api/public-requests";
 
 import { b2bFormCopy, companyRanges } from "../content/b2b";
 
@@ -56,7 +56,7 @@ function readValues(formData: FormData): B2BLeadValues {
   return values;
 }
 
-/** Company training request: validated here, then posted to the legacy B2B endpoint. */
+/** Company training request: validated here, then stored by the B2C API. */
 export async function submitB2BLead(_previous: B2BLeadState, formData: FormData): Promise<B2BLeadState> {
   const values = readValues(formData);
   const parsed = leadSchema.safeParse(values);
@@ -71,18 +71,13 @@ export async function submitB2BLead(_previous: B2BLeadState, formData: FormData)
   }
 
   const lead = parsed.data;
-  const range = companyRanges.find((item) => item.value === lead.companyRange) ?? companyRanges[0];
-  const accepted = await subscribeB2B({
-    id: null,
-    status: 1,
-    type: range.type,
-    appliedOn: new Date().toISOString(),
+  const accepted = await submitCompanyTrainingRequest({
     companyName: lead.companyName,
     contactName: lead.contactName,
     companyEmail: lead.companyEmail,
     contactPhone: lead.contactPhone.replace(/[\s-]/g, ""),
     jobTitle: lead.jobTitle,
-    companyRange: range.value,
+    companyRange: lead.companyRange,
     country: lead.country,
     city: lead.city,
   });

@@ -6,6 +6,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { parseWhiteboardMessage, WHITEBOARD_TOPIC, type WhiteboardMessage } from "./protocol";
 
+const VISIBILITY_BEACON_MS = 10_000;
+
 type Notice = "peer-snapshot" | null;
 
 type WhiteboardMessageHandler = (message: WhiteboardMessage, from: string) => void;
@@ -63,6 +65,7 @@ export function WhiteboardProvider({ children }: { children: ReactNode }) {
   const [peerOpened, setPeerOpened] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
   const handlersRef = useRef(new Set<WhiteboardMessageHandler>());
+  const isOpenRef = useRef(false);
 
   const send = useMemo(() => createSender(room), [room]);
 
@@ -76,12 +79,22 @@ export function WhiteboardProvider({ children }: { children: ReactNode }) {
           if (!message) return;
           if (message.t === "opened") setPeerOpened(true);
           else if (message.t === "snapshot-saved") setNotice("peer-snapshot");
+          // A joiner (e.g. the session recorder) asks what is on screen: say whether this board is open.
+          else if (message.t === "sync-request" && isOpenRef.current) send({ t: "visibility", open: true });
           for (const handler of handlersRef.current) handler(message, identity);
         })
         .catch((error: unknown) => console.warn("[whiteboard] receive failed", error));
     });
     return () => room.unregisterTextStreamHandler(WHITEBOARD_TOPIC);
-  }, [room]);
+  }, [room, send]);
+
+  // Hidden listeners (the session recorder) are never announced to this side, so an open board keeps
+  // saying so; the recorder lays out its video from it.
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setInterval(() => send({ t: "visibility", open: true }), VISIBILITY_BEACON_MS);
+    return () => clearInterval(timer);
+  }, [isOpen, send]);
 
   const subscribe = useCallback((handler: WhiteboardMessageHandler) => {
     handlersRef.current.add(handler);
@@ -91,11 +104,17 @@ export function WhiteboardProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const open = useCallback(() => {
+    isOpenRef.current = true;
     setIsOpen(true);
     setPeerOpened(false);
     send({ t: "opened" });
+    send({ t: "visibility", open: true });
   }, [send]);
-  const close = useCallback(() => setIsOpen(false), []);
+  const close = useCallback(() => {
+    isOpenRef.current = false;
+    setIsOpen(false);
+    send({ t: "visibility", open: false });
+  }, [send]);
   const dismissNotice = useCallback(() => setNotice(null), []);
   const announceSnapshot = useCallback(() => send({ t: "snapshot-saved" }), [send]);
 

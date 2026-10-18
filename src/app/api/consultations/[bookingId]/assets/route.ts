@@ -79,7 +79,11 @@ export async function POST(request: NextRequest, context: Context) {
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     if (!confirmed.ok) return upstreamError(confirmed.status);
-    return authJson({ asset_id: upload.asset_id, src: sessionAssetSrc(bookingId, upload.asset_id) });
+    // The signed proof for the session recorder rides in the URL: participants ignore it (their cookie is
+    // enough), the recorder has nothing else to authenticate with.
+    const { recorder_token: recorderToken } = (await confirmed.json().catch(() => ({}))) as { recorder_token?: string };
+    const src = sessionAssetSrc(bookingId, upload.asset_id);
+    return authJson({ asset_id: upload.asset_id, src: recorderToken ? `${src}?rt=${encodeURIComponent(recorderToken)}` : src });
   } catch (error) {
     console.error("[session-assets] upload failed", error);
     return upstreamError(502);

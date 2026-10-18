@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 
-import { submitTrainerApplication as postTrainerApplication } from "@/lib/api/legacy-forms";
+import { submitTrainerApplication as postTrainerApplication } from "@/lib/api/public-requests";
 
 import { trainerFormCopy, trainerFormOptions } from "../content/copy";
 
@@ -82,9 +82,8 @@ function readValues(formData: FormData): TrainerValues {
 }
 
 const link = (enabled: boolean | undefined, value: string) => (enabled && value ? value : null);
-const flag = (value: boolean | undefined) => (value ? "true" : "false");
 
-/** Trainer application: validated here, then posted to the legacy trainer-application endpoint. */
+/** Trainer application: validated here, then stored by the B2C API. */
 export async function submitTrainerApplication(
   _previous: TrainerApplicationState,
   formData: FormData,
@@ -108,7 +107,6 @@ export async function submitTrainerApplication(
   const form = parsed.data;
   const { checks } = values;
   const accepted = await postTrainerApplication({
-    id: null,
     specialized: form.specialized,
     programs: form.programs,
     title: form.title,
@@ -116,9 +114,9 @@ export async function submitTrainerApplication(
     email: form.email,
     mobile: form.mobile.replace(/[\s-]/g, ""),
     nationality: form.nationality,
-    youtube: flag(checks.youtube),
-    instagram: flag(checks.instagram),
-    facebook: flag(checks.facebook),
+    youtube: Boolean(checks.youtube),
+    instagram: Boolean(checks.instagram),
+    facebook: Boolean(checks.facebook),
     youtubechannel: link(checks.youtube, form.youtubechannel),
     instagramprofile: link(checks.instagram, form.instagramprofile),
     facebookpage: link(checks.facebook, form.facebookpage),
@@ -134,7 +132,6 @@ export async function submitTrainerApplication(
     personalProgram: form.personalProgram,
     consultancy: Boolean(checks.consultancy),
     cvUrl: form.cvUrl,
-    countryCode: 0,
     recorded: Boolean(checks.recorded),
   });
 

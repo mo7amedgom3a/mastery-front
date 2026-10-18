@@ -4,8 +4,7 @@ import "@excalidraw/excalidraw/index.css";
 
 import { Camera, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CaptureUpdateAction, Excalidraw, exportToBlob, reconcileElements, restoreElements } from "@excalidraw/excalidraw";
-import type { RemoteExcalidrawElement } from "@excalidraw/excalidraw/data/reconcile";
+import { CaptureUpdateAction, Excalidraw, exportToBlob } from "@excalidraw/excalidraw";
 import type { OrderedExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type {
   AppState,
@@ -20,6 +19,7 @@ import { ConnectionState, RoomEvent, type RemoteParticipant } from "livekit-clie
 import { SESSION_ASSET_MAX_BYTES, uploadSessionAsset } from "@/lib/api/consultations";
 
 import { PRESENCE_TOPIC, presencePacket, type PresencePacket, type WhiteboardMessage } from "./protocol";
+import { mergeRemoteElements } from "./scene";
 import { useWhiteboard } from "./whiteboard-provider";
 
 type BoardElement = OrderedExcalidrawElement;
@@ -29,6 +29,8 @@ type SaveState = "idle" | "saving" | "saved" | "failed";
 
 const FLUSH_MS = 50;
 const PRESENCE_MS = 100;
+// How often an open board re-broadcasts its whole scene for listeners that missed earlier changes.
+const SNAPSHOT_BEACON_MS = 30_000;
 // Lossy packets above this are dropped by LiveKit; a cursor update is far smaller.
 const PRESENCE_MAX_BYTES = 12_000;
 const STORAGE_PREFIX = "consultation-whiteboard";
@@ -181,16 +183,8 @@ export default function WhiteboardPanel({ bookingId }: { bookingId: string }) {
   // ------------------------------------------------------------ incoming scenes
   const applyRemote = useCallback((remote: BoardElement[]) => {
     const local = sceneRef.current;
-    let next: BoardElement[];
-    try {
-      const restored = restoreElements(remote, local) as unknown as RemoteExcalidrawElement[];
-      const appState = (apiRef.current?.getAppState() ?? {}) as AppState;
-      next = reconcileElements(local, restored, appState);
-    } catch (error) {
-      // An element the scene doesn't accept: skip the batch rather than break the board.
-      console.error("[whiteboard] could not apply remote changes", error);
-      return;
-    }
+    const next = mergeRemoteElements(local, remote, (apiRef.current?.getAppState() ?? {}) as AppState);
+    if (!next) return;
     for (const element of next) lastSentRef.current.set(element.id, element.version);
     sceneRef.current = next;
     apiRef.current?.updateScene({ elements: next, captureUpdate: CaptureUpdateAction.NEVER });
@@ -318,6 +312,17 @@ export default function WhiteboardPanel({ bookingId }: { bookingId: string }) {
       room.off(RoomEvent.ParticipantDisconnected, onParticipantDisconnected);
     };
   }, [room, send, handleData]);
+
+  // A hidden listener (the session recorder) is never announced to this side and may not be allowed to
+  // ask for the board, so an open board re-sends its whole scene now and then; reconciling is idempotent.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (!sceneRef.current.length) return;
+      send({ t: "snapshot", elements: [...sceneRef.current] });
+      for (const [fileId, src] of Object.entries(filesRef.current)) send({ t: "file", fileId, src });
+    }, SNAPSHOT_BEACON_MS);
+    return () => clearInterval(timer);
+  }, [send]);
 
   // ------------------------------------------------------- persistence and status
   useEffect(() => {

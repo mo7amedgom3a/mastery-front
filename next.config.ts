@@ -43,6 +43,9 @@ const noFraming = [
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
+  // Dev only: LiveKit egress opens /egress/recorder through a cloudflared quick tunnel when a consultation
+  // recording is tested locally. Without this the dev server refuses to hydrate pages from that host.
+  allowedDevOrigins: ["*.trycloudflare.com"],
   typedRoutes: true,
   poweredByHeader: false,
   // Emit browser source maps so the Faro webpack plugin below can upload them; it deletes the files

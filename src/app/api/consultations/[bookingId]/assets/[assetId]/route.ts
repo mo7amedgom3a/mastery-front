@@ -13,21 +13,27 @@ type Context = RouteContext<"/api/consultations/[bookingId]/assets/[assetId]">;
 /**
  * One session file (whiteboard snapshot or board image), streamed from S3 by this app. A stable
  * same-origin URL: the board keeps working after a presigned link would have expired, and exporting
- * the board to an image never hits S3's CORS. Only the booking's participants get the bytes.
+ * the board to an image never hits S3's CORS. Only the booking's participants get the bytes: by their session
+ * cookie, or, for the session recorder (a hidden room participant with no cookie), by the signed `rt` link the
+ * backend issued when the image was uploaded (it works for this one image and expires).
  */
 export async function GET(request: NextRequest, context: Context) {
   const accessToken = request.cookies.get(ACCESS_COOKIE)?.value;
-  if (!accessToken) return authError(401, "unauthenticated", "سجّل الدخول للمتابعة.");
+  const recorderToken = request.nextUrl.searchParams.get("rt");
+  if (!accessToken && !recorderToken) return authError(401, "unauthenticated", "سجّل الدخول للمتابعة.");
   const { bookingId, assetId } = await context.params;
   if (!ID_PATTERN.test(bookingId) || !ID_PATTERN.test(assetId)) {
     return authError(404, "invalid_request", "المورد غير موجود.");
   }
 
   try {
+    const path = `${encodeURIComponent(bookingId)}/assets/${encodeURIComponent(assetId)}`;
     const link = await fetch(
-      `${getApiBaseUrl()}/consultations/bookings/${encodeURIComponent(bookingId)}/assets/${encodeURIComponent(assetId)}`,
+      accessToken
+        ? `${getApiBaseUrl()}/consultations/bookings/${path}`
+        : `${getApiBaseUrl()}/consultations/recorder/bookings/${path}?token=${encodeURIComponent(recorderToken ?? "")}`,
       {
-        headers: backendHeaders(request, accessToken),
+        headers: accessToken ? backendHeaders(request, accessToken) : {},
         cache: "no-store",
         signal: AbortSignal.timeout(TIMEOUT_MS),
       },

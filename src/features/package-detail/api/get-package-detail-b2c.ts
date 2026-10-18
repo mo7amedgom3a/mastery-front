@@ -6,7 +6,7 @@ import { getCatalogProduct } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/client";
 import { cachedRead, freshRead } from "@/lib/api/server-cache";
 
-import { getLegacyProductContent } from "@/lib/api/product-content";
+import { getProductContent } from "@/lib/api/product-content";
 
 import { mapB2CPackageDetail } from "../model/mappers-b2c";
 import type { PackageDetailData } from "../model/types";
@@ -42,6 +42,6 @@ export async function getB2CPackageDetailBySlug(
     throw error;
   }
   // The page published from the Course Studio (404 when there is none).
-  const content = await getLegacyProductContent("package", id, options).catch(() => null);
+  const content = await getProductContent(dto.product.product_id, options).catch(() => null);
   return mapB2CPackageDetail(dto, id, content);
 }
