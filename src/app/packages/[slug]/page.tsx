@@ -18,10 +18,11 @@ export async function generateMetadata({ params }: PageProps<"/packages/[slug]">
   return packageMetadata(slug);
 }
 
-export default async function PackagePage({ params, searchParams }: PageProps<"/packages/[slug]">) {
+export default async function PackagePage({ params }: PageProps<"/packages/[slug]">) {
   const { slug } = await params;
-  const preview = (await searchParams)?.preview === "1";
-  const data = await loadPackagePage(slug, preview);
+  // No searchParams here: reading them makes this ISR page dynamic, and on-demand renders then fail
+  // (DYNAMIC_SERVER_USAGE). The admin Studio previews through /preview/product and /api/preview/*.
+  const data = await loadPackagePage(slug);
   const shareUrl = `${getSiteUrl()}${data.product.href}`;
   const qrMatrix = toQrMatrix(`${shareUrl}?utm_source=qr&utm_medium=share`);
   return <PackageDetailPage data={data} qrMatrix={qrMatrix} />;

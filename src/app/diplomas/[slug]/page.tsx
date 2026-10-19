@@ -16,9 +16,10 @@ export async function generateMetadata({ params }: PageProps<"/diplomas/[slug]">
   return productMetadata(slug, "diploma");
 }
 
-export default async function DiplomaPage({ params, searchParams }: PageProps<"/diplomas/[slug]">) {
+export default async function DiplomaPage({ params }: PageProps<"/diplomas/[slug]">) {
   const { slug } = await params;
-  const preview = (await searchParams)?.preview === "1";
-  const data = await loadProductPage("diploma", slug, preview);
+  // No searchParams here: reading them makes this ISR page dynamic, and on-demand renders then fail
+  // (DYNAMIC_SERVER_USAGE). The admin Studio previews through /preview/product and /api/preview/*.
+  const data = await loadProductPage("diploma", slug);
   return <ProductDetailPage data={data} />;
 }

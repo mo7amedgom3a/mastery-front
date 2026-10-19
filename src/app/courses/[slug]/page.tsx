@@ -16,9 +16,10 @@ export async function generateMetadata({ params }: PageProps<"/courses/[slug]">)
   return productMetadata(slug, "course");
 }
 
-export default async function CoursePage({ params, searchParams }: PageProps<"/courses/[slug]">) {
+export default async function CoursePage({ params }: PageProps<"/courses/[slug]">) {
   const { slug } = await params;
-  const preview = (await searchParams)?.preview === "1";
-  const data = await loadProductPage("course", slug, preview);
+  // No searchParams here: reading them makes this ISR page dynamic, and on-demand renders then fail
+  // (DYNAMIC_SERVER_USAGE). The admin Studio previews through /preview/product and /api/preview/*.
+  const data = await loadProductPage("course", slug);
   return <ProductDetailPage data={data} />;
 }
