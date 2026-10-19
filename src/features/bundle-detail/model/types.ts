@@ -2,6 +2,7 @@ import type { Route } from "next";
 
 import type { FilterVM } from "@/features/landing/model/types";
 import type { InfoSectionVM, TrainerVM } from "@/features/product-detail/model/types";
+import type { StudioBannerVM, StudioSectionVM } from "@/features/product-detail/model/studio-content";
 import type { Pricing } from "@/lib/pricing";
 
 import type { BundleSavings } from "../content/mock-pricing";
@@ -63,6 +64,10 @@ export type BundleDetailVM = {
   description: string | null;
   sections: InfoSectionVM[];
   readme?: string | null;
+  /** The page published from the admin Studio (blocks); replaces `sections`/`readme` when set. */
+  content?: StudioSectionVM[] | null;
+  /** The studio page's `meta.banner`. */
+  banner?: StudioBannerVM | null;
   skills: string[];
   categories: string[];
   members: BundleMemberVM[];

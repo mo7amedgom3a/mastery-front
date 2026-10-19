@@ -37,6 +37,11 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^payments\/intents\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^payments\/intents\/[A-Za-z0-9-]+\/reconcile$/, session: true },
   { methods: ["GET"], pattern: /^orders(\/[A-Za-z0-9-]+(\/(invoices|transactions))?)?$/, session: true },
+  // Subscriptions: public plans and feature catalog, then the customer's checkout and plan.
+  { methods: ["GET"], pattern: /^subscriptions\/(plans(\/[A-Za-z0-9_-]+)?|features)$/, session: false },
+  { methods: ["POST"], pattern: /^subscriptions\/checkout$/, session: true },
+  { methods: ["GET"], pattern: /^subscriptions\/me(\/[A-Za-z0-9-]+(\/selections)?)?$/, session: true },
+  { methods: ["POST"], pattern: /^subscriptions\/me\/[A-Za-z0-9-]+\/(cancel|selections|selections\/replace)$/, session: true },
   // Recommendations for the signed-in customer (dashboard, after onboarding).
   { methods: ["GET"], pattern: /^recommendations\/me$/, session: true },
   // Consultations: public free slots, then booking, the meeting room and its recording.

@@ -1,8 +1,10 @@
 import { routes } from "@/config/routes";
 import type { FilterVM } from "@/features/landing/model/types";
-import { mapB2CProductDetail } from "@/features/product-detail/model/mappers-b2c";
+import { mapB2CProductDetail, studioDocument } from "@/features/product-detail/model/mappers-b2c";
+import { studioSections } from "@/features/product-detail/model/studio-content";
 import type { InfoSectionVM, TrainerVM } from "@/features/product-detail/model/types";
 import type { CatalogBundleDetail, CatalogProductResponse } from "@/lib/api/catalog";
+import type { ProductContentResponse } from "@/lib/api/product-content";
 import { cleanText, formatCount, formatMinutes, toPlainText, toTextBlocks } from "@/lib/format";
 import { noPricing, toPricing } from "@/lib/pricing";
 
@@ -211,7 +213,11 @@ function aboutSections(detail: CatalogBundleDetail): InfoSectionVM[] {
   return sections;
 }
 
-export function mapBundleDetail(detail: CatalogBundleDetail, sources: readonly MemberSource[]): BundleDetailVM {
+export function mapBundleDetail(
+  detail: CatalogBundleDetail,
+  sources: readonly MemberSource[],
+  content: ProductContentResponse | null = null,
+): BundleDetailVM {
   const { product } = detail;
   const title = cleanText(product.title) ?? product.slug;
   const mapped = detail.bundle_members.map((member, index) => mapMember(member, sources[index] ?? null, index + 1));
@@ -229,15 +235,25 @@ export function mapBundleDetail(detail: CatalogBundleDetail, sources: readonly M
     if (!trainers.has(trainer.id)) trainers.set(trainer.id, trainer);
   }
 
+  // The page published from the admin Studio: `meta` (banner, title) + BlockNote blocks.
+  const doc = studioDocument(content);
+  const blocks = doc?.blocks ?? [];
+  const studioContent = blocks.length > 0 ? studioSections(blocks) : null;
+  const banner = doc?.meta?.banner?.url
+    ? { url: doc.meta.banner.url, alt: doc.meta.banner.alt ?? "", headline: doc.meta.banner.headline ?? "" }
+    : null;
+
   const summary = toPlainText(product.short_description ?? detail.description, 240);
   return {
     slug: product.slug,
     productId: product.product_id,
-    title,
+    title: (doc?.meta?.title ? cleanText(doc.meta.title) : null) || title,
     summary,
     description: toPlainText(detail.description ?? product.short_description, 160),
     sections: aboutSections(detail),
     readme: detail.readme?.trim() || null,
+    content: studioContent,
+    banner,
     skills: (detail.skills ?? []).map((skill) => cleanText(skill.name)).filter((name) => name !== null),
     categories: detail.categories.map((category) => cleanText(category.name)).filter((name) => name !== null),
     members,

@@ -7,6 +7,8 @@ import { toQrMatrix } from "@/features/product-detail/api/share-qr";
 import { SectionNav, type SectionNavItem } from "@/features/product-detail/components/section-nav";
 import { ShareButton } from "@/features/product-detail/components/share-dialog";
 import { StickySidebar } from "@/features/product-detail/components/sticky-sidebar";
+import { ContentBlocks } from "@/features/product-detail/components/content-blocks";
+import { StudioBanner } from "@/features/product-detail/components/studio-banner";
 import { AboutSection } from "@/features/product-detail/sections/about-section";
 
 import { consultationFaqs } from "./content/faqs";
@@ -40,8 +42,18 @@ export function ConsultationDetailPage({ data }: { data: ConsultationDetailData 
     fileName: `consultation-${consultation.id}`,
   };
 
+  const hasStudioContent = Boolean(consultation.content && consultation.content.length > 0);
+  // A studio page's headings become the nav, exactly like the course page.
+  const contentNavItems: SectionNavItem[] = (consultation.content ?? [])
+    .filter((section) => section.heading)
+    .map((section) => ({ id: section.id, label: section.heading as string }));
+
   const nav: SectionNavItem[] = [
-    consultation.sections.length > 0 || consultation.readme ? { id: "about", label: "عن الاستشارة" } : null,
+    ...(contentNavItems.length > 0
+      ? contentNavItems
+      : (consultation.sections.length > 0 || consultation.readme)
+        ? [{ id: "about", label: "عن الاستشارة" }]
+        : []),
     expert ? { id: "instructor", label: "الخبير" } : null,
     relatedConsultations.length > 0 ? { id: "related", label: "استشارات أخرى" } : null,
     { id: "faq", label: "الأسئلة الشائعة" },
@@ -63,7 +75,12 @@ export function ConsultationDetailPage({ data }: { data: ConsultationDetailData 
             <div className="lg:hidden">
               <BookingCard consultation={consultation} share={<ShareButton {...shareProps} variant="block" />} />
             </div>
-            <AboutSection sections={consultation.sections} readme={consultation.readme} title="عن الاستشارة" />
+            {consultation.banner ? <StudioBanner banner={consultation.banner} /> : null}
+            {hasStudioContent && consultation.content ? (
+              <ContentBlocks sections={consultation.content} />
+            ) : (
+              <AboutSection sections={consultation.sections} readme={consultation.readme} title="عن الاستشارة" />
+            )}
             <ExpertSection expert={expert} />
           </div>
           <StickySidebar>

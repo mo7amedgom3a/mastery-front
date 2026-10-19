@@ -4,6 +4,7 @@ import { cache } from "react";
 
 import { getCatalogProduct, type CatalogBundleDetail } from "@/lib/api/catalog";
 import { ApiError } from "@/lib/api/client";
+import { getProductContent } from "@/lib/api/product-content";
 import { cachedRead, productCacheTag, valueOf } from "@/lib/api/server-cache";
 
 import { isPublishedBundle, mapBundleDetail, parseMember, type MemberSource } from "../model/mappers";
@@ -59,5 +60,10 @@ export const getBundleDetail = cache(async (slug: string): Promise<BundleDetailV
   }
   const results = await Promise.allSettled(detail.bundle_members.map(memberSource));
   const sources = results.map((result, index) => valueOf(result, `bundle ${slug} member ${detail.bundle_members[index].slug}`));
-  return mapBundleDetail(detail, sources);
+  // The page published from the admin Studio (404 when there is none).
+  const content = await getProductContent(
+    detail.product.product_id,
+    cachedRead(BUNDLE_REVALIDATE_SECONDS, [bundleCacheTag(slug)]),
+  ).catch(() => null);
+  return mapBundleDetail(detail, sources, content);
 });

@@ -81,6 +81,10 @@ export const routes = {
   consultations: route("/search?type=consultation"),
   consultation: (id: number | string) => route(`/consultations/${encodeURIComponent(String(id))}`),
   business: route("/business"),
+  /** Subscription plans (pricing) and one plan's page, keyed by its catalog slug. */
+  subscriptions: route("/subscriptions"),
+  subscriptionsFor: (audience: "individual" | "company") => route(`/subscriptions?audience=${audience}`),
+  subscription: (slug: string) => route(`/subscriptions/${encodeURIComponent(slug)}`),
   trainers: route("/trainers"),
   cart: route("/cart"),
   wishlist: route("/wishlist"),
@@ -101,6 +105,8 @@ export const routes = {
   studentOrders: route("/students/orders"),
   studentOrder: (orderId: string) => route(`/students/orders/${encodeURIComponent(orderId)}`),
   studentAccess: route("/students/access"),
+  /** The customer's subscription: plan, renewal, included programs and Choose-X picks. */
+  studentSubscription: route("/students/subscription"),
   /** Booked consultations; Stripe returns here after paying for one. */
   studentConsultations: route("/students/consultations"),
   studentConsultation: (bookingId: string) => route(`/students/consultations/${encodeURIComponent(bookingId)}`),

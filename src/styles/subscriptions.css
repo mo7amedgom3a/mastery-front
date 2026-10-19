@@ -1,0 +1,155 @@
+/*
+ * Subscriptions pricing. Tokens only.
+ *
+ * DELIBERATE KIT EXCEPTION (product decision, Oct 2026): the spotlight plan — the yearly plan
+ * with a live offer, or a plan the admin featured — gets an animated coral glow. The kit forbids
+ * glows and gradients (golden rule 2); this is the one place they are allowed. The glow sits on
+ * a wrapper so the card itself stays a flat kit card, and it stops under reduced motion.
+ */
+
+@property --plan-glow-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.ma-plan-glow {
+  position: relative;
+  /* Keeps the blurred halo (::after, z-index -1) inside this card's stacking context. */
+  isolation: isolate;
+  display: flex;
+  padding: 2px;
+  border-radius: calc(var(--radius-card) + 2px);
+  background: conic-gradient(from var(--plan-glow-angle), var(--coral), var(--yellow), var(--pink), var(--coral));
+  animation: ma-plan-glow-spin 5s linear infinite;
+}
+
+.ma-plan-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: inherit;
+  filter: blur(22px);
+  opacity: 0.45;
+}
+
+.ma-plan-glow > .ma-plan {
+  flex: 1;
+  border-color: transparent;
+}
+
+@keyframes ma-plan-glow-spin {
+  to {
+    --plan-glow-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ma-plan-glow {
+    animation: none;
+  }
+  .ma-plan-glow::after {
+    opacity: 0.25;
+  }
+}
+
+.ma-plan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.ma-plan__ribbon {
+  align-self: flex-start;
+}
+
+.ma-plan__price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.ma-plan__amount {
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 700;
+}
+
+.ma-plan__was {
+  font-size: 18px;
+  color: var(--text-muted);
+  text-decoration-thickness: 2px;
+  text-decoration-color: var(--coral);
+}
+
+.ma-plan__features {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.ma-plan__features li {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.ma-plan__icon {
+  display: inline-grid;
+  place-content: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-tag);
+  background: var(--fill-soft);
+  color: var(--accent);
+}
+
+.ma-plan__icon svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+}
+
+.ma-plan__cta {
+  margin-block-start: auto;
+}
+
+.ma-compare {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.ma-compare th,
+.ma-compare td {
+  padding: var(--space-3) var(--space-4);
+  border-block-end: 1px solid var(--line);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ma-compare th:first-child,
+.ma-compare td:first-child {
+  text-align: start;
+}
+
+.ma-compare thead th {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}

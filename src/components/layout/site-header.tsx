@@ -4,6 +4,7 @@ import { Logo } from "@/components/brand/logo";
 import { HeaderShopLinks } from "@/components/shop/header-shop-links";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { AppLink } from "@/components/ui/app-link";
+import { ButtonLink } from "@/components/ui/button";
 import { routes } from "@/config/routes";
 
 import { HeaderAccount } from "./header-account";
@@ -32,7 +33,7 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        {/* Three groups: the icon tools, the sign-up action, the drawer toggle. */}
+        {/* Four groups: the icon tools, the subscribe call to action, the account action, the drawer toggle. */}
         <div className="ma-nav__actions items-center">
           <div role="group" aria-label="أدوات الموقع" className="flex items-center gap-1">
             {/* From 1200px only: below that the bar has no room, and the nav links lead to search anyway. */}
@@ -46,6 +47,9 @@ export function SiteHeader() {
             <HeaderShopLinks />
             <ThemeToggle className="max-md:hidden" />
           </div>
+          <ButtonLink href={routes.subscriptions} variant="primary" size="sm" className="min-h-11 max-md:hidden">
+            اشترك الآن
+          </ButtonLink>
           <HeaderAccount placement="bar" />
           <MobileNavButton
             popoverId={MOBILE_NAV_ID}
@@ -67,6 +71,9 @@ export function SiteHeader() {
           <span className="text-fg-muted">المظهر</span>
           <ThemeToggle />
         </div>
+        <ButtonLink href={routes.subscriptions} variant="primary" block className="mb-3">
+          اشترك الآن
+        </ButtonLink>
         <HeaderAccount placement="drawer" />
       </div>
     </header>

@@ -1,6 +1,11 @@
 import type { Route } from "next";
 
-import type { InfoSectionVM, RailCardVM, TrainerVM } from "@/features/product-detail/model/types";
+import type {
+  InfoSectionVM,
+  RailCardVM,
+  TrainerVM,
+} from "@/features/product-detail/model/types";
+import type { StudioBannerVM, StudioSectionVM } from "@/features/product-detail/model/studio-content";
 import type { Pricing } from "@/lib/pricing";
 
 /** View models for the consultation page. Mapped from API DTOs in `mappers.ts`, never used raw. */
@@ -33,6 +38,10 @@ export type ConsultationDetailVM = {
   sections: InfoSectionVM[];
   /** Product README (markdown); replaces `sections` when set. */
   readme?: string | null;
+  /** The page published from the admin Studio (blocks); replaces both when set. */
+  content?: StudioSectionVM[] | null;
+  /** The studio page's `meta.banner`. */
+  banner?: StudioBannerVM | null;
   expert: ExpertVM | null;
   /** Canonical URL path, e.g. `/consultations/2`. */
   href: Route;

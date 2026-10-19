@@ -15,6 +15,7 @@ import {
   getAvailability,
   type AvailabilityResponse,
 } from "@/lib/api/consultations";
+import { getConsultationPerks, type ConsultationPerks } from "@/lib/api/subscriptions";
 import { formatLongDate, formatMoney, formatTimeOfDay } from "@/lib/format";
 import { ensureAuthStatus } from "@/lib/shop/use-shop-actions";
 
@@ -123,6 +124,19 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
   const [payError, setPayError] = useState<string | null>(null);
   // One key per selection, so a retry (double click, flaky network) reuses the same booking.
   const keys = useRef(new Map<string, string>());
+  // Subscriber perks (free sessions or a discount), read once the customer reaches the summary.
+  const [perks, setPerks] = useState<ConsultationPerks | null>(null);
+
+  useEffect(() => {
+    if (step !== "summary") return;
+    let live = true;
+    getConsultationPerks()
+      .then((value) => live && setPerks(value))
+      .catch(() => live && setPerks(null));
+    return () => {
+      live = false;
+    };
+  }, [step]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -143,6 +157,9 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
   const lastDay = freeDays.at(-1);
   const timeZone = localTimeZone();
   const total = booking.priceAmount ? booking.priceAmount * count : null;
+  const coveredBySubscription = Boolean(perks?.has_perks && perks.credits_remaining >= count);
+  const discountPercent = !coveredBySubscription && perks?.discount_percent ? Number(perks.discount_percent) : null;
+  const discountedTotal = total && discountPercent ? Math.round(total * (100 - discountPercent)) / 100 : null;
 
   const confirm = async () => {
     if (!run) return;
@@ -191,6 +208,11 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
         key = newBookingKey();
         keys.current.set(fingerprint, key);
         result = await createBookingCheckout(body, key);
+      }
+      // Paid by subscription credits: already booked, nothing to pay.
+      if (result.covered_by_subscription || !result.checkout) {
+        window.location.assign(routes.studentConsultation(result.booking_id));
+        return;
       }
       window.location.assign(result.checkout.checkout_url);
     } catch (error) {
@@ -419,10 +441,43 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
               </SummaryRow>
               {total ? (
                 <SummaryRow term="الإجمالي">
-                  <span dir="ltr">{formatMoney(total)}</span>
+                  {coveredBySubscription ? (
+                    <span>
+                      <del className="text-fg-muted" dir="ltr">{formatMoney(total)}</del>{" "}
+                      <strong>مشمولة في اشتراكك</strong>
+                    </span>
+                  ) : discountedTotal ? (
+                    <span>
+                      <del className="text-fg-muted" dir="ltr">{formatMoney(total)}</del>{" "}
+                      <strong dir="ltr">{formatMoney(discountedTotal)}</strong>
+                    </span>
+                  ) : (
+                    <span dir="ltr">{formatMoney(total)}</span>
+                  )}
                 </SummaryRow>
               ) : null}
             </dl>
+
+            {coveredBySubscription && perks ? (
+              <div className="ma-alert ma-alert--success" role="status">
+                <Info aria-hidden="true" className="fill-none" />
+                <div>
+                  <p className="ma-alert__title">الجلسة مشمولة في اشتراكك</p>
+                  <p className="ma-alert__text">
+                    يتبقّى لك {perks.credits_remaining} من {perks.credits_per_period} جلسات مجانية في هذه الفترة، وستُخصم
+                    {count > 1 ? ` ${count} جلسات` : " جلسة واحدة"} عند التأكيد. لا حاجة للدفع.
+                  </p>
+                </div>
+              </div>
+            ) : discountPercent ? (
+              <div className="ma-alert ma-alert--info" role="status">
+                <Info aria-hidden="true" className="fill-none" />
+                <div>
+                  <p className="ma-alert__title">خصم المشتركين {discountPercent}٪</p>
+                  <p className="ma-alert__text">يُطبَّق خصم اشتراكك تلقائياً على سعر الجلسة عند الدفع.</p>
+                </div>
+              </div>
+            ) : null}
 
             <div className="flex flex-col gap-3 rounded-panel border border-line p-5 text-sm leading-6">
               <p className="m-0 font-bold">شروط الاستشارة</p>
@@ -479,7 +534,13 @@ export default function BookingDialog({ booking, initialStart, onClose }: Bookin
                 disabled={!accepted || paying}
                 className="ma-btn ma-btn--primary disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {paying ? "جارٍ تجهيز الدفع…" : "المتابعة إلى الدفع"}
+                {coveredBySubscription
+                  ? paying
+                    ? "جارٍ تأكيد الحجز…"
+                    : "تأكيد الحجز من اشتراكي"
+                  : paying
+                    ? "جارٍ تجهيز الدفع…"
+                    : "المتابعة إلى الدفع"}
               </button>
             </div>
           </div>

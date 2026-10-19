@@ -4,6 +4,8 @@
 @import "../styles/components.css" layer(components);
 /* Loading placeholders (components/ui/skeleton.tsx). In the components layer so utilities size them. */
 @import "react-loading-skeleton/dist/skeleton.css" layer(components);
+/* Subscriptions pricing (plan cards, spotlight glow, comparison table). */
+@import "../styles/subscriptions.css" layer(components);
 
 /* Kit breakpoints (docs/04-layout.md): mobile-first 600 · 900 · 1200. */
 @theme {

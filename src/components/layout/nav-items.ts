@@ -10,6 +10,7 @@ export const primaryNav: readonly NavItem[] = [
   { label: "الدبلومات", href: routes.diplomas },
   { label: "الباقات", href: routes.packages },
   { label: "الاستشارات", href: routes.consultations },
+  { label: "الاشتراكات", href: routes.subscriptions },
   { label: "للشركات", href: routes.business },
   { label: "للمدربين", href: routes.trainers },
 ];

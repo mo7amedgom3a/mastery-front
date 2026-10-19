@@ -1,4 +1,14 @@
-import { AlertTriangle, Check, CheckCircle2, Info, MessageCircleQuestion, Plus, UserRound } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  Download,
+  FileText,
+  Info,
+  MessageCircleQuestion,
+  Plus,
+  UserRound,
+} from "lucide-react";
 import React, { type ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
@@ -11,6 +21,39 @@ import {
   type StudioTableContent,
   type StudioText,
 } from "../model/studio-content";
+
+/** The palette the studio's text-colour picker offers; anything else is ignored. */
+const TEXT_COLORS: Record<string, string> = {
+  default: "",
+  gray: "text-fg-muted",
+  brown: "text-amber-800",
+  orange: "text-orange-600",
+  yellow: "text-yellow-600",
+  green: "text-green",
+  blue: "text-blue-600",
+  purple: "text-purple-600",
+  red: "text-coral",
+  pink: "text-pink-600",
+};
+
+const BACKGROUND_COLORS: Record<string, string> = {
+  default: "",
+  gray: "bg-surface-alt",
+  brown: "bg-amber-100",
+  orange: "bg-orange-100",
+  yellow: "bg-yellow-100",
+  green: "bg-green/10",
+  blue: "bg-blue-100",
+  purple: "bg-purple-100",
+  red: "bg-coral/10",
+  pink: "bg-pink-100",
+};
+
+function colorClass(styles: StudioText["styles"], key: "textColor" | "backgroundColor") {
+  const value = styles?.[key];
+  if (typeof value !== "string" || value === "default") return "";
+  return (key === "textColor" ? TEXT_COLORS : BACKGROUND_COLORS)[value] ?? "";
+}
 
 function RenderText({ text, styles }: StudioText) {
   let node: ReactNode = text;
@@ -28,6 +71,11 @@ function RenderText({ text, styles }: StudioText) {
   }
   if (styles?.strike) {
     node = <s>{node}</s>;
+  }
+  const textColor = colorClass(styles, "textColor");
+  const backgroundColor = colorClass(styles, "backgroundColor");
+  if (textColor || backgroundColor) {
+    node = <span className={cn(textColor, backgroundColor)}>{node}</span>;
   }
   return <>{node}</>;
 }
@@ -198,6 +246,89 @@ function AssetGalleryBlock({ block }: { block: StudioBlock }) {
   );
 }
 
+/** A Bunny Stream GUID plays inline; any other URL is a direct video file. */
+const BUNNY_GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function VideoBlock({ block }: { block: StudioBlock }) {
+  const raw = String(block.props?.url ?? block.props?.previewUrl ?? "").trim();
+  if (!raw) return null;
+  const caption = String(block.props?.caption ?? "").trim();
+
+  // `url` is the video itself; `previewUrl` is its poster in BlockNote's video block.
+  const source = safeUrl(raw);
+  const poster = safeUrl(block.props?.previewUrl);
+
+  let player: ReactNode = null;
+  if (source && BUNNY_GUID.test(source)) {
+    player = (
+      <iframe
+        src={`https://iframe.mediadelivery.net/embed/${source}?autoplay=false`}
+        title={caption || "فيديو"}
+        loading="lazy"
+        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
+        allowFullScreen
+        className="aspect-video size-full border-0"
+      />
+    );
+  } else if (source) {
+    player = (
+      <video
+        src={source}
+        poster={poster ?? undefined}
+        controls
+        preload="metadata"
+        className="aspect-video size-full bg-black"
+      />
+    );
+  } else if (poster) {
+    player = <img src={poster} alt={caption} loading="lazy" className="aspect-video size-full object-cover" />;
+  }
+  if (!player) return null;
+
+  return (
+    <figure data-block-id={block.id} className="m-0 flex flex-col gap-2">
+      <div className="overflow-hidden rounded-panel border border-line bg-black">{player}</div>
+      {caption ? <figcaption className="text-center text-sm text-fg-muted">{caption}</figcaption> : null}
+    </figure>
+  );
+}
+
+function FileBlock({ block }: { block: StudioBlock }) {
+  const url = safeUrl(block.props?.url);
+  if (!url) return null;
+  const name = String(block.props?.name ?? block.props?.filename ?? "").trim() || "تحميل الملف";
+  const caption = String(block.props?.caption ?? "").trim();
+
+  return (
+    <a
+      data-block-id={block.id}
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-3 rounded-panel border border-line bg-surface p-4 no-underline transition-colors hover:border-accent/50"
+    >
+      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent/10 text-accent">
+        <FileText className="size-5" aria-hidden="true" />
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="truncate font-medium text-fg">{name}</span>
+        {caption ? <span className="truncate text-sm text-fg-muted">{caption}</span> : null}
+      </span>
+      <Download className="ms-auto size-5 shrink-0 text-fg-muted" aria-hidden="true" />
+    </a>
+  );
+}
+
+/** Blocks nested under a list item (BlockNote allows children); indented one level. */
+function NestedBlocks({ blocks }: { blocks?: StudioBlock[] }) {
+  if (!blocks || blocks.length === 0) return null;
+  return (
+    <div className="mt-2 flex flex-col gap-3 border-s-2 border-line ps-4">
+      {renderBlockGroup(blocks)}
+    </div>
+  );
+}
+
 function SingleBlock({ block }: { block: StudioBlock }) {
   switch (block.type) {
     case "banner":
@@ -210,6 +341,10 @@ function SingleBlock({ block }: { block: StudioBlock }) {
       return <InstructorCardBlock block={block} />;
     case "assetGallery":
       return <AssetGalleryBlock block={block} />;
+    case "video":
+      return <VideoBlock block={block} />;
+    case "file":
+      return <FileBlock block={block} />;
 
     case "heading": {
       const level = Number(block.props?.level ?? 2);
@@ -236,18 +371,24 @@ function SingleBlock({ block }: { block: StudioBlock }) {
 
     case "paragraph":
       return (
-        <p data-block-id={block.id} className="m-0 text-pretty leading-8 text-fg">
-          <InlineContent content={block.content} />
-        </p>
+        <div data-block-id={block.id} className="flex flex-col gap-0">
+          <p className="m-0 text-pretty leading-8 text-fg">
+            <InlineContent content={block.content} />
+          </p>
+          <NestedBlocks blocks={block.children} />
+        </div>
       );
 
     case "bulletListItem":
       return (
-        <li data-block-id={block.id} className="flex items-start gap-3 leading-8">
-          <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
-          <span className="text-pretty">
-            <InlineContent content={block.content} />
+        <li data-block-id={block.id} className="flex flex-col gap-0">
+          <span className="flex items-start gap-3 leading-8">
+            <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
+            <span className="text-pretty">
+              <InlineContent content={block.content} />
+            </span>
           </span>
+          <NestedBlocks blocks={block.children} />
         </li>
       );
 
@@ -255,22 +396,26 @@ function SingleBlock({ block }: { block: StudioBlock }) {
       return (
         <li data-block-id={block.id} className="ps-1 leading-8 text-pretty">
           <InlineContent content={block.content} />
+          <NestedBlocks blocks={block.children} />
         </li>
       );
 
     case "checkListItem":
     case "goals":
       return (
-        <li data-block-id={block.id} className="flex items-start gap-3 leading-8">
-          <span
-            className="mt-1 grid size-5 shrink-0 place-items-center rounded bg-accent/10 text-accent"
-            aria-hidden="true"
-          >
-            <Check className="size-3.5" strokeWidth={2.5} />
+        <li data-block-id={block.id} className="flex flex-col gap-0">
+          <span className="flex items-start gap-3 leading-8">
+            <span
+              className="mt-1 grid size-5 shrink-0 place-items-center rounded bg-accent/10 text-accent"
+              aria-hidden="true"
+            >
+              <Check className="size-3.5" strokeWidth={2.5} />
+            </span>
+            <span className="text-pretty">
+              <InlineContent content={block.content} />
+            </span>
           </span>
-          <span className="text-pretty">
-            <InlineContent content={block.content} />
-          </span>
+          <NestedBlocks blocks={block.children} />
         </li>
       );
 

@@ -12,7 +12,8 @@ import { StatusTag } from "@/features/orders/components/status-tag";
 import { isPaymentSettled, orderNumber, orderStatus } from "@/features/orders/model/status";
 import { ApiError } from "@/lib/api/client";
 import { commerceKeys, commerceQueries, getPaymentIntent, reconcilePayment } from "@/lib/api/commerce";
-import { formatDateTime } from "@/lib/format";
+import { subscriptionQueries } from "@/lib/api/subscriptions";
+import { formatDate, formatDateTime } from "@/lib/format";
 import { trackCheckout } from "@/lib/observability/behavior";
 import { syncAccountCart } from "@/lib/shop/cart-sync";
 import { refreshOwnedProducts } from "@/lib/shop/use-owned-products";
@@ -84,17 +85,31 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
   const failed = status === "failed" || status === "cancelled";
 
   const order = useQuery({ ...commerceQueries.order(orderId), enabled: paid });
+  // A subscription order grants access under the subscription, not the order.
+  const subscriptionsStartedAt = useRef<number | null>(null);
+  const subscriptions = useQuery({
+    ...subscriptionQueries.mine(),
+    enabled: paid,
+    refetchInterval: (query) => {
+      subscriptionsStartedAt.current ??= Date.now();
+      const found = query.state.data?.some((sub) => sub.order_id === orderId);
+      const isSubscriptionOrder = order.data?.lines?.some((line) => line.product_type === "subscription");
+      return found || !isSubscriptionOrder || Date.now() - subscriptionsStartedAt.current > ACCESS_WAIT_MS ? false : ACCESS_POLL_MS;
+    },
+  });
+  const subscription = subscriptions.data?.find((sub) => sub.order_id === orderId) ?? null;
+  const sources = new Set([orderId, subscription?.subscription_id].filter(Boolean));
   const accessStartedAt = useRef<number | null>(null);
   const access = useQuery({
     ...commerceQueries.entitlements({ limit: 100 }),
     enabled: paid,
-    select: (page) => page.items.filter((entitlement) => entitlement.source_id === orderId),
     refetchInterval: (query) => {
       accessStartedAt.current ??= Date.now();
-      const found = query.state.data?.items.some((entitlement) => entitlement.source_id === orderId);
+      const found = query.state.data?.items.some((entitlement) => sources.has(entitlement.source_id));
       return found || Date.now() - accessStartedAt.current > ACCESS_WAIT_MS ? false : ACCESS_POLL_MS;
     },
   });
+  const accessItems = access.data?.items.filter((entitlement) => sources.has(entitlement.source_id));
 
   useEffect(() => {
     if (!status || !isPaymentSettled(status)) return;
@@ -154,7 +169,15 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
     <div className="flex flex-col gap-10">
       <header className="flex flex-col items-start gap-4 rounded-panel border border-line-strong bg-surface p-6 md:p-10">
         <CircleCheck aria-hidden="true" className="size-12 fill-none text-accent" />
-        {free ? (
+        {subscription ? (
+          <>
+            <h2 className="m-0 text-3xl leading-[1.4] font-bold">مبروك! اشتراكك في {subscription.plan_title} فعّال الآن</h2>
+            <p className="m-0 max-w-[60ch] leading-7 text-fg-muted">
+              فُتح لك الوصول إلى كل ما تشمله باقتك حتى {formatDate(subscription.current_period_end)}، ويتجدد الاشتراك
+              تلقائياً. أرسلنا الفاتورة إلى بريدك الإلكتروني.
+            </p>
+          </>
+        ) : free ? (
           <>
             <h2 className="m-0 text-3xl leading-[1.4] font-bold">أهلاً بك! تمّ تسجيلك مجاناً</h2>
             <p className="m-0 max-w-[60ch] leading-7 text-fg-muted">
@@ -198,6 +221,13 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
               ابدأ التعلّم الآن
             </ButtonLink>
           </li>
+          {subscription ? (
+            <li>
+              <ButtonLink href={routes.studentSubscription} variant="secondary">
+                إدارة اشتراكي
+              </ButtonLink>
+            </li>
+          ) : null}
           <li>
             <ButtonLink href={routes.studentOrders} variant="soft">
               عرض طلباتي
@@ -210,9 +240,9 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
         <h2 id="order-access-title" className="m-0 text-xl font-bold">
           وصولك
         </h2>
-        {access.data && access.data.length > 0 ? (
+        {accessItems && accessItems.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2">
-            {access.data.map((entitlement) => (
+            {accessItems.map((entitlement) => (
               <AccessCard
                 key={entitlement.entitlement_id}
                 entitlement={entitlement}

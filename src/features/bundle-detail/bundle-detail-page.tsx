@@ -7,6 +7,8 @@ import { toQrMatrix } from "@/features/product-detail/api/share-qr";
 import { SectionNav, type SectionNavItem } from "@/features/product-detail/components/section-nav";
 import { ShareButton } from "@/features/product-detail/components/share-dialog";
 import { StickySidebar } from "@/features/product-detail/components/sticky-sidebar";
+import { ContentBlocks } from "@/features/product-detail/components/content-blocks";
+import { StudioBanner } from "@/features/product-detail/components/studio-banner";
 import { AboutSection } from "@/features/product-detail/sections/about-section";
 import { CertificateSection } from "@/features/product-detail/sections/certificate-section";
 import { InstructorSection } from "@/features/product-detail/sections/instructor-section";
@@ -38,8 +40,18 @@ export function BundleDetailPage({ bundle }: { bundle: BundleDetailVM }) {
     fileName: `bundle-${bundle.slug}`,
   };
 
+  const hasStudioContent = Boolean(bundle.content && bundle.content.length > 0);
+  // A studio page's headings become the nav, exactly like the course page.
+  const contentNavItems: SectionNavItem[] = (bundle.content ?? [])
+    .filter((section) => section.heading)
+    .map((section) => ({ id: section.id, label: section.heading as string }));
+
   const nav: SectionNavItem[] = [
-    bundle.sections.length > 0 || bundle.readme ? { id: "about", label: "عن الحزمة" } : null,
+    ...(contentNavItems.length > 0
+      ? contentNavItems
+      : (bundle.sections.length > 0 || bundle.readme)
+        ? [{ id: "about", label: "عن الحزمة" }]
+        : []),
     bundle.members.length > 0 ? { id: "contents", label: "محتوى الحزمة" } : null,
     bundle.trainers.length > 0 ? { id: "instructor", label: "المدربون" } : null,
     { id: "certificate", label: "الشهادة" },
@@ -62,7 +74,12 @@ export function BundleDetailPage({ bundle }: { bundle: BundleDetailVM }) {
             <div className="lg:hidden">
               <BundlePurchaseCard bundle={bundle} share={<ShareButton {...shareProps} variant="block" />} />
             </div>
-            <AboutSection sections={bundle.sections} readme={bundle.readme} title="عن الحزمة" />
+            {bundle.banner ? <StudioBanner banner={bundle.banner} /> : null}
+            {hasStudioContent && bundle.content ? (
+              <ContentBlocks sections={bundle.content} />
+            ) : (
+              <AboutSection sections={bundle.sections} readme={bundle.readme} title="عن الحزمة" />
+            )}
             {bundle.skills.length > 0 ? (
               <section aria-labelledby="skills-title">
                 <h2 id="skills-title" className="m-0 text-2xl font-bold">

@@ -11,6 +11,7 @@ import {
   type CheckoutSessionRequest,
   type CheckoutSessionResponse,
 } from "@/lib/api/commerce";
+import { createSubscriptionCheckout, type SubscriptionCheckoutResponse } from "@/lib/api/subscriptions";
 import { trackAuth, trackCheckout } from "@/lib/observability/behavior";
 import { resolveCatalogProductId } from "@/lib/shop/catalog-ids";
 import { syncAccountCart } from "@/lib/shop/cart-sync";
@@ -26,7 +27,9 @@ export type CheckoutTarget =
   | { mode: "cart"; payment?: CheckoutPayment }
   | { mode: "product"; item: ShopItem; payment?: CheckoutPayment }
   /** A live diploma bought straight from its detail page: known product + cohort, no legacy item. */
-  | { mode: "diploma"; productId: string; cohortId: string; payment?: CheckoutPayment };
+  | { mode: "diploma"; productId: string; cohortId: string; payment?: CheckoutPayment }
+  /** A subscription plan: recurring Stripe billing only; company plans carry their seats. */
+  | { mode: "subscription"; planId: string; seatCount?: number; companyName?: string; payment?: undefined };
 
 const STRIPE: CheckoutPayment = { provider: "stripe" };
 
@@ -52,12 +55,15 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * prepared" (another request with this key is mid-flight) is retried with the same key; a key that
  * ended or was used for a different request is replaced once.
  */
-async function openSession(body: CheckoutSessionRequest, fingerprint: string): Promise<CheckoutSessionResponse> {
+async function openSession(
+  create: (key: string) => Promise<CheckoutSessionResponse | SubscriptionCheckoutResponse>,
+  fingerprint: string,
+): Promise<CheckoutSessionResponse | SubscriptionCheckoutResponse> {
   let key = checkoutKey(fingerprint);
   let rotated = false;
   for (let attempt = 0; ; attempt += 1) {
     try {
-      return await createCheckoutSession(body, key);
+      return await create(key);
     } catch (error) {
       const code = errorCode(error);
       if (code === "checkout_in_progress" && attempt < MAX_IN_PROGRESS_RETRIES) {
@@ -200,13 +206,30 @@ export function useStartCheckout() {
       }
 
       const payment = target.payment ?? STRIPE;
-      const { body, fingerprint } =
-        target.mode === "cart"
-          ? await prepareCart(payment)
-          : target.mode === "product"
-            ? await prepareProduct(target.item, payment)
-            : await prepareDiploma(target.productId, target.cohortId, payment);
-      const session = await openSession(body, fingerprint);
+      let session: CheckoutSessionResponse | SubscriptionCheckoutResponse;
+      let fingerprint: string;
+      if (target.mode === "subscription") {
+        const origin = window.location.origin;
+        // Seats are part of what is bought: another seat count is another order, under its own key.
+        fingerprint = `subscription|stripe|${target.planId}|${target.seatCount ?? 1}`;
+        const body = {
+          plan_id: target.planId,
+          seat_count: target.seatCount ?? null,
+          company_name: target.companyName?.trim() || null,
+          success_url: `${origin}${routes.checkoutSuccess}`,
+          cancel_url: window.location.href,
+        };
+        session = await openSession((key) => createSubscriptionCheckout(body, key), fingerprint);
+      } else {
+        const prepared =
+          target.mode === "cart"
+            ? await prepareCart(payment)
+            : target.mode === "product"
+              ? await prepareProduct(target.item, payment)
+              : await prepareDiploma(target.productId, target.cohortId, payment);
+        fingerprint = prepared.fingerprint;
+        session = await openSession((key) => createCheckoutSession(prepared.body, key), fingerprint);
+      }
       savePendingCheckout({ orderId: session.order_id, paymentIntentId: session.payment_intent_id, fingerprint });
       trackCheckout("order_created", {
         order_id: session.order_id,
@@ -214,7 +237,7 @@ export function useStartCheckout() {
         total: session.amount_minor / 100,
         currency: session.currency_code,
         mode: target.mode,
-        provider: body.provider,
+        provider: session.provider,
       });
       leaving = true;
       setPhase("redirecting");

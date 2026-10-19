@@ -44,8 +44,18 @@ export function PackageDetailPage({ data, qrMatrix }: { data: PackageDetailData;
     .filter(Boolean)
     .join(" · ");
 
+  const hasStudioContent = Boolean(product.content && product.content.length > 0);
+  // A studio page's headings become the nav, exactly like the course page.
+  const contentNavItems: SectionNavItem[] = (product.content ?? [])
+    .filter((section) => section.heading)
+    .map((section) => ({ id: section.id, label: section.heading as string }));
+
   const nav: SectionNavItem[] = [
-    product.sections.length > 0 || product.readme || product.content?.length ? { id: "about", label: "عن الباقة" } : null,
+    ...(contentNavItems.length > 0
+      ? contentNavItems
+      : (product.sections.length > 0 || product.readme)
+        ? [{ id: "about", label: "عن الباقة" }]
+        : []),
     product.items.length > 0 ? { id: "contents", label: "محتوى الباقة" } : null,
     product.trainers.length > 0 ? { id: "instructor", label: "المدربون" } : null,
     { id: "certificate", label: "الشهادة" },
@@ -69,7 +79,7 @@ export function PackageDetailPage({ data, qrMatrix }: { data: PackageDetailData;
               <PackagePurchaseCard product={product} share={<ShareButton {...shareProps} variant="block" />} />
             </div>
             {product.banner ? <StudioBanner banner={product.banner} /> : null}
-            {product.content && product.content.length > 0 ? (
+            {hasStudioContent && product.content ? (
               <ContentBlocks sections={product.content} />
             ) : (
               <AboutSection sections={product.sections} readme={product.readme} title="عن الباقة" />

@@ -10,7 +10,11 @@ import { getCatalogProduct, type CatalogProductResponse } from "@/lib/api/catalo
 import { ApiError } from "@/lib/api/client";
 import { getInstructorNames } from "@/lib/api/instructor-names";
 import type { LegacyConsultationResponse } from "@/lib/api/legacy";
+import { getProductContent } from "@/lib/api/product-content";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
+
+import { studioSections, type StudioDocument } from "@/features/product-detail/model/studio-content";
+import { studioDocument } from "@/features/product-detail/model/mappers-b2c";
 
 import { consultationProductRef } from "../model/availability";
 import { mapConsultationDetailData } from "../model/mappers";
@@ -73,7 +77,7 @@ export const getConsultationDetail = cache(async (id: number): Promise<Consultat
 
   let detail = toLegacyConsultation(id, product);
   const expertKey = detail.consultation.expert_key;
-  const [expert, consultations, catalog, instructors, booking] = await Promise.allSettled([
+  const [expert, consultations, catalog, instructors, booking, content] = await Promise.allSettled([
     expertKey ? getCatalogExpert(expertKey, cachedRead(CONSULTATION_REVALIDATE_SECONDS, [tagOf(id), expertCacheTag(expertKey)])) : null,
     getConsultationIndex(),
     getCatalogIndex(),
@@ -81,6 +85,8 @@ export const getConsultationDetail = cache(async (id: number): Promise<Consultat
     getInstructorNames(cachedRead(CONSULTATION_REVALIDATE_SECONDS, ["catalog-index"])),
     // The bookable session length lives in the booking backend (the expert sets it there).
     getAvailability(consultationProductRef(id), undefined, options),
+    // The page published from the admin Studio (404 when there is none).
+    getProductContent(product.product.product_id, options).catch(() => null),
   ]);
 
   // Prefer the booking backend's session length: the expert can change it there.
@@ -100,5 +106,19 @@ export const getConsultationDetail = cache(async (id: number): Promise<Consultat
     catalog: valueOf(catalog, "catalog index"),
     instructors: valueOf(instructors, "instructor names"),
   });
-  return { ...data, consultation: { ...data.consultation, readme: product.readme?.trim() || null } };
+  const doc: StudioDocument | null = studioDocument(valueOf(content, `consultation ${id} page`));
+  const blocks = doc?.blocks ?? [];
+  const studioContent = blocks.length > 0 ? studioSections(blocks) : null;
+  const banner = doc?.meta?.banner?.url
+    ? { url: doc.meta.banner.url, alt: doc.meta.banner.alt ?? "", headline: doc.meta.banner.headline ?? "" }
+    : null;
+  return {
+    ...data,
+    consultation: {
+      ...data.consultation,
+      readme: product.readme?.trim() || null,
+      content: studioContent,
+      banner,
+    },
+  };
 });
