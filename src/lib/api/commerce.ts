@@ -179,7 +179,10 @@ export function reconcilePayment(
  * (AED), the instalment plans and the widget's public key.
  */
 export function getTamaraOptions(params: TamaraOptionsParams, options?: ApiRequestOptions): Promise<TamaraOptionsResponse> {
-  return apiRequest<TamaraOptionsResponse>("GET", commercePaths.tamaraOptions, { ...options, query: params });
+  // In the browser read it through this app (`/api/b2c`): `API_BASE_URL` is server-only, so a
+  // direct call would fall back to `localhost:8000` in the client bundle.
+  const viaApp = typeof window !== "undefined" ? { sameOrigin: true as const } : {};
+  return apiRequest<TamaraOptionsResponse>("GET", commercePaths.tamaraOptions, { ...options, ...viaApp, query: params });
 }
 
 export function listOrders(params?: OrdersParams, options?: AuthenticatedRequestOptions): Promise<OrderPageResponse> {

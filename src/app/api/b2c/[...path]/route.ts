@@ -41,6 +41,8 @@ const RULES: readonly Rule[] = [
   { methods: ["POST"], pattern: /^checkout\/(quote|sessions|free-enrollments)$/, session: true },
   { methods: ["GET"], pattern: /^payments\/intents\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^payments\/intents\/[A-Za-z0-9-]+\/reconcile$/, session: true },
+  // Tamara eligibility, instalment plans and widget key for the cart total: public.
+  { methods: ["GET"], pattern: /^payments\/tamara\/options$/, session: false },
   { methods: ["GET"], pattern: /^orders(\/[A-Za-z0-9-]+(\/(invoices|transactions))?)?$/, session: true },
   // Subscriptions: public plans and feature catalog, then the customer's checkout and plan.
   { methods: ["GET"], pattern: /^subscriptions\/(plans(\/[A-Za-z0-9_-]+)?|features)$/, session: false },
