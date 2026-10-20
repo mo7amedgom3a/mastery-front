@@ -80,7 +80,11 @@ export type LiveTrainingDetailsDto = {
   whatsapp: string | null;
 };
 
-export type LiveTrainingDetailDto = LiveTrainingDto & { details: LiveTrainingDetailsDto };
+export type LiveTrainingDetailDto = LiveTrainingDto & {
+  details: LiveTrainingDetailsDto;
+  /** Saved page README (markdown with `:::` card elements); replaces `details` when set. */
+  readme: string | null;
+};
 
 /** What the spotlight banner and the `/live` cards render. Mapped in `mappers.ts`. */
 export type LiveTrainingVM = {
@@ -124,6 +128,8 @@ export type LiveTrainingVM = {
 
 export type LiveTrainingDetailVM = LiveTrainingVM & {
   details: LiveTrainingDetailsDto;
+  /** Page README; when set the body sections are rendered from it instead of `details`. */
+  readme: string | null;
   /** `https://wa.me/…` link, or null. */
   whatsappHref: string | null;
   /** The number as people read it, e.g. "+971506116685". */

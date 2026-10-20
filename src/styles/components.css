@@ -201,3 +201,12 @@
 
 /* ---------- Logo (inline SVG via <use href="#ma-logo"> / "#ma-mark") ---------- */
 .ma-logo { display: inline-block; vertical-align: middle; color: var(--text); --logo-mark: var(--coral); }
+/* eMastery Business: the logo with a "Business" word, separated by a hairline (company pages). */
+.ma-logo-business { display: inline-flex; align-items: center; gap: calc(var(--logo-h, 24px) * 0.45); direction: ltr; }
+.ma-logo-business__word {
+  padding-inline-start: calc(var(--logo-h, 24px) * 0.45);
+  border-inline-start: 1.5px solid var(--line-strong, currentColor);
+  font-size: calc(var(--logo-h, 24px) * 0.9); line-height: 1; font-weight: 700; letter-spacing: 0.01em;
+  color: var(--coral); white-space: nowrap;
+}
+.ma-logo-business__word.is-on-dark { border-color: rgba(255, 255, 255, 0.35); }

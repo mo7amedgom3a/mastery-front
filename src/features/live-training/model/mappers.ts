@@ -164,6 +164,7 @@ export function fromLiveDiploma(diploma: LiveDiploma): LiveTrainingDetailDto {
     style: marketing.style ?? "coral",
     featured: marketing.featured ?? false,
     details: marketing.details ?? EMPTY_DETAILS,
+    readme: diploma.readme?.trim() ? diploma.readme : null,
   };
 }
 
@@ -171,6 +172,7 @@ export function fromLiveDiploma(diploma: LiveDiploma): LiveTrainingDetailDto {
 export function toListItem(dto: LiveTrainingDetailDto): LiveTrainingDto {
   const item: Partial<LiveTrainingDetailDto> = { ...dto };
   delete item.details;
+  delete item.readme;
   return item as LiveTrainingDto;
 }
 
@@ -213,6 +215,7 @@ export function toLiveTrainingDetailVM(dto: LiveTrainingDetailDto): LiveTraining
   return {
     ...toLiveTrainingVM(dto),
     details: dto.details,
+    readme: dto.readme,
     whatsappHref: digits ? `https://wa.me/${digits}` : null,
     whatsappLabel: digits ? `+${digits}` : null,
   };

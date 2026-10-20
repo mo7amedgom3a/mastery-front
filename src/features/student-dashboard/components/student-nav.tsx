@@ -5,6 +5,7 @@ import {
   BriefcaseBusiness,
   CalendarClock,
   GraduationCap,
+  Headset,
   Heart,
   House,
   Receipt,
@@ -58,6 +59,7 @@ export const studentNavGroups: readonly StudentNavGroup[] = [
     label: "الحساب",
     items: [
       { href: routes.studentProfile, label: "الملف الشخصي", icon: UserRound },
+      { href: routes.studentSupport, label: "الدعم الفني", icon: Headset },
       { href: routes.expertDashboard, label: "لوحة الخبير", icon: BriefcaseBusiness, expertOnly: true },
     ],
   },

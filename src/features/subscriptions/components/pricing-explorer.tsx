@@ -4,9 +4,11 @@ import { Building2, User } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
+import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/cn";
 
 import type { Audience, CatalogFeatureVM, Interval, PlanVM } from "../model/plans";
+import { ContactSalesCard } from "./contact-sales-card";
 import { FeatureComparison } from "./feature-comparison";
 import { PlanCard } from "./plan-card";
 
@@ -42,6 +44,10 @@ export function PricingExplorer({ plans, catalog }: { plans: PlanVM[]; catalog: 
   const interval: Interval = picked && intervals.has(picked) ? picked : intervals.has("year") ? "year" : "month";
   const visible = forAudience.filter((p) => p.interval === interval).toSorted((a, b) => a.amount - b.amount);
   const saving = bestYearlySaving(forAudience);
+  const company = audience === "company";
+  // Teams above the largest self-serve plan talk to the business team instead of paying online.
+  const largestTeam = Math.max(0, ...forAudience.filter((p) => p.perSeat).map((p) => p.maxSeats));
+  const contactFrom = largestTeam > 0 ? largestTeam + 1 : 50;
 
   return (
     <div className="flex flex-col gap-10">
@@ -77,7 +83,13 @@ export function PricingExplorer({ plans, catalog }: { plans: PlanVM[]; catalog: 
         ) : null}
       </div>
 
-      {visible.length === 0 ? (
+      {company ? (
+        <div className="flex justify-center">
+          <Logo variant="business" height={20} />
+        </div>
+      ) : null}
+
+      {visible.length === 0 && !company ? (
         <p className="m-0 rounded-panel border border-line p-6 text-center text-fg-muted">
           لا توجد باقات متاحة هنا حالياً. تواصل معنا وسنقترح عليك ما يناسبك.
         </p>
@@ -86,6 +98,7 @@ export function PricingExplorer({ plans, catalog }: { plans: PlanVM[]; catalog: 
           {visible.map((plan) => (
             <PlanCard key={plan.id} plan={plan} />
           ))}
+          {company ? <ContactSalesCard fromSeats={contactFrom} /> : null}
         </div>
       )}
 

@@ -6,7 +6,6 @@ import { fallbackFaqs } from "./content/faqs";
 import { MAX_CARDS } from "./model/mappers";
 import type { LandingData } from "./model/types";
 import { AboutSection } from "./sections/about-section";
-import { AnnouncementBar } from "./sections/announcement-bar";
 import { BusinessSection } from "./sections/business-section";
 import { BundlesSection, ConsultationsSection, CoursesSection, DiplomasSection, PackagesSection } from "./sections/catalog-sections";
 import { CtaBand } from "./sections/cta-band";
@@ -29,7 +28,6 @@ export function LandingPage({ data }: { data: LandingData }) {
 
   return (
     <>
-      <AnnouncementBar banner={data.banner} />
       <SiteHeader />
       <main id="main" tabIndex={-1} className="outline-none">
         {/* Opening run: page-colour gaps keep the hero, live banner, stats and ticker apart. */}

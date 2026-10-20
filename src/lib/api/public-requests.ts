@@ -29,6 +29,10 @@ export type TrainerApplicationDto = {
   consultancy: boolean;
   cvUrl: string;
   recorded: boolean;
+  categoryIds: string[];
+  skillIds: string[];
+  cvAttachmentId: string | null;
+  portfolioAttachmentIds: string[];
 };
 
 export type CompanyTrainingRequestDto = {
@@ -40,6 +44,21 @@ export type CompanyTrainingRequestDto = {
   companyRange: string;
   country: string;
   city: string;
+  /** An industry code, or the company's own wording when it picked "other". */
+  industry: string;
+  websiteUrl: string;
+  teamSize: number;
+  trainingTypes: Array<"recorded" | "live" | "in_person">;
+  trainingGoals: Array<"solve_problem" | "employee_performance" | "increase_sales" | "knowledge_skills" | "disclosure_compliance">;
+  departments: Array<"sales" | "finance" | "it" | "quality_control" | "top_management" | "warehouses" | "ohs" | "all" | "other">;
+  otherDepartment: string | null;
+  hasTrainingBudget: boolean | null;
+  usedPlatformBefore: boolean;
+  previousPlatforms: Array<"coursera" | "udemy" | "linkedin_learning" | "edraak" | "rwaq" | "doroob" | "internal_lms" | "other">;
+  otherPlatform: string | null;
+  categoryIds: string[];
+  skillIds: string[];
+  summary: string;
 };
 
 async function submit(path: string, body: unknown): Promise<boolean> {

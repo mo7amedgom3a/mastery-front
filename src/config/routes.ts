@@ -65,6 +65,9 @@ export const routes = {
   /** Courses of one legacy category; search category slugs are `legacy-category-{id}`. */
   category: (id: number | string) =>
     route(`/search?type=course&category=legacy-category-${encodeURIComponent(String(id))}`),
+  /** One product type inside a catalog category slug (`legacy-category-27`, `marketing/sales`). */
+  categoryOf: (type: "course" | "diploma" | "package" | "consultation", slug: string) =>
+    route(`/search?type=${type}&category=${encodeURIComponent(slug)}`),
   diplomas: route("/search?type=diploma"),
   diploma: (id: number, linkName?: string | null) =>
     route(`/diplomas/${encodeURIComponent(productSlug(id, linkName))}`),
@@ -81,10 +84,16 @@ export const routes = {
   consultations: route("/search?type=consultation"),
   consultation: (id: number | string) => route(`/consultations/${encodeURIComponent(String(id))}`),
   business: route("/business"),
+  /** The company training request, one page per step (`/business/request/company`, …). */
+  businessRequest: (step?: string) => route(step ? `/business/request/${encodeURIComponent(step)}` : "/business/request"),
+  businessRequestDone: route("/business/request/done"),
   /** Subscription plans (pricing) and one plan's page, keyed by its catalog slug. */
   subscriptions: route("/subscriptions"),
   subscriptionsFor: (audience: "individual" | "company") => route(`/subscriptions?audience=${audience}`),
   subscription: (slug: string) => route(`/subscriptions/${encodeURIComponent(slug)}`),
+  /** A company plan's checkout flow: team details, then review with the live price (`/subscriptions/{slug}/team/details`). */
+  subscriptionTeam: (slug: string, step: "details" | "review") =>
+    route(`/subscriptions/${encodeURIComponent(slug)}/team/${step}`),
   trainers: route("/trainers"),
   cart: route("/cart"),
   wishlist: route("/wishlist"),
@@ -112,6 +121,10 @@ export const routes = {
   studentConsultation: (bookingId: string) => route(`/students/consultations/${encodeURIComponent(bookingId)}`),
   /** The live meeting room, full screen (outside the dashboard chrome). */
   consultationSession: (bookingId: string) => route(`/students/session/${encodeURIComponent(bookingId)}`),
+  /** Student customer support & ticket management. */
+  studentSupport: route("/students/support"),
+  studentSupportNew: route("/students/support/new"),
+  studentSupportTicket: (ticketId: string) => route(`/students/support/${encodeURIComponent(ticketId)}`),
   /** The expert dashboard (`/expert/*`, guests are sent to sign in by `proxy.ts`). */
   expertDashboard: route("/expert"),
   expertServices: route("/expert/consultations"),

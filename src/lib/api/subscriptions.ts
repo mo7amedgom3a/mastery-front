@@ -17,6 +17,7 @@ type SelectionsOperation = "get_my_choose_x_selections_api_v1_subscriptions_me__
 type SelectOperation = "select_choose_x_course_api_v1_subscriptions_me__subscription_id__selections_post";
 type ReplaceOperation = "replace_choose_x_course_api_v1_subscriptions_me__subscription_id__selections_replace_post";
 type CancelOperation = "cancel_my_subscription_api_v1_subscriptions_me__subscription_id__cancel_post";
+type TeamLeadOperation = "save_team_lead_api_v1_subscriptions_team_leads_post";
 
 export type SubscriptionPlan = SuccessResponse<PlanOperation>;
 export type SubscriptionPlansParams = QueryParams<PlansOperation>;
@@ -29,6 +30,8 @@ export type MySubscription = SuccessResponse<MySubscriptionsOperation>[number];
 export type MySubscriptionDetail = SuccessResponse<MySubscriptionOperation>;
 export type ConsultationPerks = SuccessResponse<PerksOperation>;
 export type ChooseXState = SuccessResponse<SelectionsOperation>;
+export type TeamLeadRequest = RequestBody<TeamLeadOperation>;
+export type TeamLead = SuccessResponse<TeamLeadOperation>;
 type SubscriptionId = PathParams<MySubscriptionOperation>["subscription_id"];
 
 const subscriptionPaths = {
@@ -36,6 +39,7 @@ const subscriptionPaths = {
   plan: "/api/v1/subscriptions/plans/{slug_or_id}",
   features: "/api/v1/subscriptions/features",
   checkout: "/api/v1/subscriptions/checkout",
+  teamLeads: "/api/v1/subscriptions/team-leads",
   mine: "/api/v1/subscriptions/me",
   one: "/api/v1/subscriptions/me/{subscription_id}",
   perks: "/api/v1/subscriptions/me/perks",
@@ -78,6 +82,11 @@ export function createSubscriptionCheckout(
     headers: { "Idempotency-Key": idempotencyKey },
     body,
   });
+}
+
+/** Saves a company's details from step 1 of the team checkout (kept for follow-up even if it never pays). */
+export function saveTeamLead(body: TeamLeadRequest, options?: AuthenticatedRequestOptions): Promise<TeamLead> {
+  return customerRequest("POST", subscriptionPaths.teamLeads, { ...withAuthCookies(options), body });
 }
 
 export function listMySubscriptions(options?: AuthenticatedRequestOptions): Promise<MySubscription[]> {

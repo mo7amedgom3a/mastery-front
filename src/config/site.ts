@@ -32,6 +32,8 @@ export const siteConfig = {
     googlePlay: "https://play.google.com/store/apps/details?id=co.emastery.emasteryacademy",
   },
   introVideoUrl: "https://public.emasteryacademy.com/intronosound.mp4",
+  /** eMastery Business dashboard, where a company adds its employees after subscribing. Unset: the seat page. */
+  b2bDashboardUrl: process.env.NEXT_PUBLIC_B2B_DASHBOARD_URL?.trim() || null,
 } as const;
 
 /**

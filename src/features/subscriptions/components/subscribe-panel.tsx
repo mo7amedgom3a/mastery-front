@@ -1,77 +1,47 @@
 "use client";
 
-import { Info, Lock } from "lucide-react";
-import { useId, useState } from "react";
+import { ArrowLeft, Info, Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { routes } from "@/config/routes";
 import { useStartCheckout } from "@/features/checkout/api/use-start-checkout";
 import { CheckoutRedirectOverlay } from "@/features/checkout/components/checkout-redirect-overlay";
 
 import type { PlanVM } from "../model/plans";
+import { clampSeats } from "../model/quote";
+import { useTeamCheckoutStore } from "../model/team-checkout-store";
+import { PreviewNotice, teamRangeLabel } from "./plan-card";
 
 /**
- * Subscribe call to action on a plan page. Company plans ask for the number of seats (up to the
- * plan's limit; the plan price covers them all) and the company name. Guests sign in first.
+ * Subscribe call to action on a plan page. Individuals go straight to Stripe; company plans pick a team
+ * size here (with the live total) and continue to the team checkout: details, then review, then Stripe.
+ * `preview` (admin live preview) shows a notice instead of starting checkout.
  */
-export function SubscribePanel({ plan }: { plan: PlanVM }) {
+export function SubscribePanel({ plan, preview = false }: { plan: PlanVM; preview?: boolean }) {
+  if (plan.perSeat) return <TeamStart plan={plan} preview={preview} />;
+  return <IndividualSubscribe plan={plan} preview={preview} />;
+}
+
+function IndividualSubscribe({ plan, preview }: { plan: PlanVM; preview: boolean }) {
   const checkout = useStartCheckout();
-  const seatsId = useId();
-  const companyId = useId();
-  const company = plan.audience === "company";
-  const [seats, setSeats] = useState(Math.min(5, plan.maxSeats));
-  const [companyName, setCompanyName] = useState("");
-  const validSeats = Number.isInteger(seats) && seats >= 1 && seats <= plan.maxSeats;
-
-  const subscribe = () => {
-    if (company && (!validSeats || !companyName.trim())) return;
-    void checkout.start({
-      mode: "subscription",
-      planId: plan.id,
-      ...(company ? { seatCount: seats, companyName } : {}),
-    });
-  };
-
   return (
     <div className="flex flex-col gap-4">
-      {company ? (
-        <div className="grid gap-3">
-          <div className="ma-field">
-            <label htmlFor={companyId} className="ma-label">
-              اسم الشركة
-            </label>
-            <input id={companyId} className="ma-input" value={companyName} maxLength={255} onChange={(e) => setCompanyName(e.target.value)} />
-          </div>
-          <div className="ma-field">
-            <label htmlFor={seatsId} className="ma-label">
-              عدد المقاعد (حتى {plan.maxSeats})
-            </label>
-            <input
-              id={seatsId}
-              className="ma-input"
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={plan.maxSeats}
-              value={seats}
-              onChange={(e) => setSeats(Number(e.target.value))}
-              aria-invalid={!validSeats || undefined}
-            />
-            <span className="ma-help">توزّع المقاعد على فريقك من حسابك بعد الاشتراك.</span>
-          </div>
-        </div>
-      ) : null}
-
-      <Button
-        variant="primary"
-        size="lg"
-        block
-        onClick={subscribe}
-        disabled={checkout.busy || (company && (!validSeats || !companyName.trim()))}
-        className={checkout.busy ? "is-loading" : undefined}
-      >
-        {company ? "اشترك لفريقك" : "اشترك الآن"}
-        {plan.offer ? <span dir="ltr">&nbsp;{plan.price}</span> : null}
-      </Button>
+      {preview ? (
+        <PreviewNotice />
+      ) : (
+        <Button
+          variant="primary"
+          size="lg"
+          block
+          onClick={() => void checkout.start({ mode: "subscription", planId: plan.id })}
+          disabled={checkout.busy}
+          className={checkout.busy ? "is-loading" : undefined}
+        >
+          اشترك الآن
+          {plan.offer ? <span dir="ltr">&nbsp;{plan.price}</span> : null}
+        </Button>
+      )}
 
       {checkout.error ? (
         <div className="ma-alert ma-alert--warning" role="alert">
@@ -87,6 +57,41 @@ export function SubscribePanel({ plan }: { plan: PlanVM }) {
         دفع آمن عبر Stripe. يتجدد الاشتراك تلقائياً {plan.interval === "year" ? "كل سنة" : "كل شهر"} ويمكنك إلغاؤه متى شئت.
       </p>
       <CheckoutRedirectOverlay phase={checkout.phase} preparingText="جارٍ تجهيز اشتراكك…" />
+    </div>
+  );
+}
+
+function TeamStart({ plan, preview }: { plan: PlanVM; preview: boolean }) {
+  const router = useRouter();
+
+  const start = () => {
+    const store = useTeamCheckoutStore.getState();
+    store.start(plan.slug, clampSeats(plan, Math.max(plan.minSeats, 10)));
+    store.setDirection(1);
+    router.push(routes.subscriptionTeam(plan.slug, "details"));
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="m-0 text-sm leading-6 text-fg-muted">
+        {teamRangeLabel(plan)}. تختار عدد الموظفين وترى الإجمالي قبل الدفع.
+      </p>
+      {preview ? (
+        <PreviewNotice />
+      ) : (
+        <Button variant="primary" size="lg" block className="gap-2" onClick={start}>
+          اشترك الآن
+          <ArrowLeft aria-hidden="true" className="size-5 fill-none" />
+        </Button>
+      )}
+      <ol className="m-0 flex list-none flex-col gap-2 p-0 text-sm leading-6 text-fg-muted">
+        <li>١. بيانات الشركة والمسؤول عن الاشتراك</li>
+        <li>٢. عدد الموظفين ومراجعة السعر النهائي</li>
+        <li className="flex items-start gap-2">
+          <Lock aria-hidden="true" className="mt-1 size-4 shrink-0 fill-none" />
+          ٣. الدفع الآمن عبر Stripe. لا رسوم مخفية.
+        </li>
+      </ol>
     </div>
   );
 }

@@ -85,6 +85,14 @@
   font-weight: 700;
 }
 
+/* The small "per employee / month + VAT" line under a big per-employee price. */
+.ma-plan__unit {
+  margin: calc(var(--space-2) * -0.5) 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-muted);
+}
+
 .ma-plan__was {
   font-size: 18px;
   color: var(--text-muted);

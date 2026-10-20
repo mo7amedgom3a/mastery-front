@@ -6,17 +6,20 @@ import { brandBg, brandColorAt } from "@/components/ui/brand-colors";
 import { AppLink } from "@/components/ui/app-link";
 import { buttonClass } from "@/components/ui/button";
 import type { OwnedProductResponse } from "@/lib/api/commerce";
+import { LMS_PRODUCT_TYPES } from "@/lib/api/lms";
 import { formatDate } from "@/lib/format";
 import { catalogProductHref } from "@/lib/shop/product-links";
 import { cn } from "@/lib/cn";
 
 import { productTypeLabel } from "../model/products";
+import { ContinueLearningButton } from "./continue-learning-button";
 
 const CARD_SIZES = "(min-width: 1200px) 320px, (min-width: 600px) 50vw, 100vw";
 
 /**
  * A product the customer has access to. The LMS doesn't report progress to this site yet, so the
- * card shows how long access lasts instead of a progress bar.
+ * card shows how long access lasts instead of a progress bar. "Continue learning" opens the LMS
+ * itself for LMS-delivered products; anything else opens its catalog page.
  */
 type LearningCardProps = {
   product: OwnedProductResponse;
@@ -71,10 +74,18 @@ export function LearningCard({ product, index, image, fallbackTitle, instructor 
         </p>
       </div>
       <div className="ma-card__foot">
-        <AppLink href={href} className={cn(buttonClass({ variant: active ? "primary" : "soft", block: true }), "gap-2")}>
-          <PlayCircle aria-hidden="true" className="size-5 fill-none" />
-          {active ? "كمّل التعلّم" : "عرض البرنامج"}
-        </AppLink>
+        {active && product.entitlement_id && LMS_PRODUCT_TYPES.has(product.product_type ?? "") ? (
+          <ContinueLearningButton
+            entitlementId={product.entitlement_id}
+            fulfillmentStatus={product.fulfillment_status}
+            title={title}
+          />
+        ) : (
+          <AppLink href={href} className={cn(buttonClass({ variant: active ? "primary" : "soft", block: true }), "gap-2")}>
+            <PlayCircle aria-hidden="true" className="size-5 fill-none" />
+            {active ? "كمّل التعلّم" : "عرض البرنامج"}
+          </AppLink>
+        )}
       </div>
     </article>
   );

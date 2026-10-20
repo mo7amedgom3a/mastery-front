@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { CoursePreview } from "@/features/product-detail/components/course-preview";
 import { StudioPreviewKind, type PreviewKind } from "@/features/product-detail/components/studio-preview-kind";
 import { PackagePreview } from "@/features/package-detail/components/package-preview";
 import type { StudioDocument } from "@/features/product-detail/model/studio-content";
+import { useStudioChannel } from "@/features/preview/use-studio-channel";
 
 type StudioRenderMessage = {
   source: "mastery-studio";
@@ -36,55 +37,29 @@ export default function ProductPreviewPage() {
   const lastBase = useRef<string | null>(null);
   const [readme, setReadme] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Notify parent frame (Admin Studio) that preview iframe is ready
-    // The admin that frames this page: Chrome lists its origin, otherwise the referrer names it.
-    const referrer = document.referrer ? new URL(document.referrer).origin : null;
-    const parentOrigin = window.location.ancestorOrigins?.[0] ?? referrer ?? "*";
-    const sendReady = () => {
-      window.parent?.postMessage({ source: "mastery-preview", type: "ready" }, parentOrigin);
-    };
+  useStudioChannel((message) => {
+    if (message.type === "render") {
+      const msg = message as unknown as StudioRenderMessage;
+      if (!msg.document) return;
 
-    sendReady();
-    const interval = setInterval(sendReady, 600);
-    const timeout = setTimeout(() => clearInterval(interval), 6000);
-
-    const onMessage = (event: MessageEvent) => {
-      // Only the framing admin may drive the preview.
-      if (event.source !== window.parent || event.data?.source !== "mastery-studio") return;
-      if (parentOrigin !== "*" && event.origin !== parentOrigin) return;
-
-      if (event.data.type === "render") {
-        clearInterval(interval);
-        const msg = event.data as StudioRenderMessage;
-        if (!msg.document) return;
-
-        const baseKey = JSON.stringify(msg.base ?? null);
-        if (baseKey !== lastBase.current) {
-          lastBase.current = baseKey;
-          setRevision((value) => value + 1);
-        }
-        setReadme(typeof msg.readme === "string" ? msg.readme : null);
-
-        setKindData({ kind: msg.kind, base: msg.base, document: msg.document, readme: msg.readme ?? null });
+      const baseKey = JSON.stringify(msg.base ?? null);
+      if (baseKey !== lastBase.current) {
+        lastBase.current = baseKey;
+        setRevision((value) => value + 1);
       }
+      setReadme(typeof msg.readme === "string" ? msg.readme : null);
 
-      if (event.data.type === "scroll") {
-        const id = event.data.blockId || event.data.targetId;
-        if (id) {
-          const el = document.getElementById(id) || document.querySelector(`[data-id="${id}"]`);
-          el?.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+      setKindData({ kind: msg.kind, base: msg.base, document: msg.document, readme: msg.readme ?? null });
+    }
+
+    if (message.type === "scroll") {
+      const id = message.blockId || message.targetId;
+      if (typeof id === "string" && id) {
+        const el = document.getElementById(id) || document.querySelector(`[data-id="${id}"]`);
+        el?.scrollIntoView({ behavior: "smooth", block: "start" });
       }
-    };
-
-    window.addEventListener("message", onMessage);
-    return () => {
-      window.removeEventListener("message", onMessage);
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, []);
+    }
+  });
 
   if (kindData) {
     const base = kindData.base as Record<string, unknown> | null;

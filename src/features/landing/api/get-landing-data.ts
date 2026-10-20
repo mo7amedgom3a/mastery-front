@@ -21,7 +21,7 @@ import type { LandingPageResponse } from "@/lib/api/legacy";
 import { searchProducts } from "@/lib/api/search";
 import { cachedRead as cachedReadOptions, valueOf } from "@/lib/api/server-cache";
 
-import { type CategoryCourses, type CourseDto, MAX_CARDS, mapLandingData, toSearchIndex } from "../model/mappers";
+import { type CategoryCourses, MAX_CARDS, mapLandingData, toSearchIndex } from "../model/mappers";
 import type { LandingData } from "../model/types";
 
 /** Cache tag for on-demand refresh (see app/api/revalidate). Keep in sync with page `revalidate`. */
@@ -35,7 +35,6 @@ const cachedRead = cachedReadOptions(LANDING_REVALIDATE_SECONDS, [LANDING_CACHE_
 const isDto = <T,>(dto: T | null): dto is T => dto !== null;
 
 type Landing = {
-  banner: CatalogLanding["banner"];
   faqs: NonNullable<CatalogLanding["faqs"]>;
   categories: (Omit<NonNullable<CatalogLanding["categories"]>[number], "courses"> & {
     courses: NonNullable<NonNullable<CatalogLanding["categories"]>[number]["courses"]>;
@@ -46,7 +45,6 @@ type Landing = {
 /** Fills the fields the API omits when empty. */
 function normalise(landing: CatalogLanding): Landing {
   return {
-    banner: landing.banner,
     faqs: landing.faqs ?? [],
     categories: (landing.categories ?? []).map((category) => ({ ...category, courses: category.courses ?? [] })),
     stats: landing.stats ?? { courses: 0, diplomas: 0, packages: 0, instructors: 0 },
@@ -66,14 +64,7 @@ function toLandingPage(
 ): LandingPageResponse {
   const page = <T,>(items: T[], total = items.length) => ({ items, total, limit: items.length, offset: 0 });
   return {
-    banners: landing.banner
-      ? [
-          {
-            id: 1, order: 0, header: landing.banner.text, subtitle: null, body: null, image_url: null, video_url: null,
-            link_url: landing.banner.href ?? null, course_id: null, package_id: null, consultancy_id: null, type: 0,
-          },
-        ]
-      : [],
+    banners: [],
     categories: landing.categories.flatMap((category, index) =>
       category.legacy_category_id === null || category.legacy_category_id === undefined
         ? []

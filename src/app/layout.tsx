@@ -7,6 +7,8 @@ import { ShopAuthBridge } from "@/components/shop/shop-auth-bridge";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { getSiteUrl, isIndexable } from "@/config/env";
 import { baseOpenGraph, siteConfig } from "@/config/site";
+import { getExploreMenu } from "@/features/navigation/api/get-menu-data";
+import { ExploreMenuProvider } from "@/features/navigation/components/menu-context";
 
 import "./globals.css";
 
@@ -80,7 +82,10 @@ type RootLayoutProps = Readonly<{
   children: ReactNode;
 }>;
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  // One cached read for the whole app: the header's explore menu uses it from a client context so
+  // SiteHeader stays importable from client components (admin previews).
+  const menu = await getExploreMenu();
   return (
     // Dark is the default look; ThemeScript swaps in a saved "light" choice before first paint,
     // hence suppressHydrationWarning on this one attribute.
@@ -99,8 +104,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
           تخطَّ إلى المحتوى
         </a>
         <MotionProvider>
-          {children}
-          <ShopAuthBridge />
+          <ExploreMenuProvider menu={menu}>
+            {children}
+            <ShopAuthBridge />
+          </ExploreMenuProvider>
         </MotionProvider>
       </body>
     </html>

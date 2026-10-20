@@ -5,6 +5,7 @@ import { baseOpenGraph } from "@/config/site";
 import { getBusinessCatalog } from "@/features/business/api/get-business-catalog";
 import { BusinessPage } from "@/features/business/business-page";
 import { businessPageCopy } from "@/features/business/content/b2b";
+import { loadPricingPage } from "@/features/subscriptions/api/load-plans";
 
 // ISR: the copy is static; the category and topic chips follow the search catalog.
 export const revalidate = 600;
@@ -25,6 +26,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BusinessRoute() {
-  const catalog = await getBusinessCatalog();
-  return <BusinessPage catalog={catalog} />;
+  const [catalog, pricing] = await Promise.all([getBusinessCatalog(), loadPricingPage()]);
+  const plans = pricing.plans.filter((plan) => plan.audience === "company");
+  return <BusinessPage catalog={catalog} plans={plans} />;
 }

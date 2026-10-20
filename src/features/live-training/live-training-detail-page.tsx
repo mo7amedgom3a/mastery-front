@@ -8,6 +8,8 @@ import { StickySidebar } from "@/features/product-detail/components/sticky-sideb
 
 import { detailCopy } from "./content/copy";
 import type { LiveTrainingDetailVM } from "./model/types";
+import { LiveReadmeBands, LiveReadmeMain, liveReadmeNav } from "./readme/live-readme-sections";
+import { parseLiveReadme } from "./readme/parse-live-readme";
 import { BookingCard } from "./sections/booking-card";
 import {
   AboutBlock,
@@ -26,11 +28,13 @@ import { LiveTrainingJsonLd } from "./seo/json-ld";
 /**
  * `/live/{slug}`: cinematic hero → (about, objectives, audience, axes, activities, method, trainer |
  * sticky booking card) → certificates → FAQ → register band. Same frame as the course page, so the
- * section nav and sticky card behave identically.
+ * section nav and sticky card behave identically. When the training has a README (edited in the admin
+ * studio), its sections replace the structured `details` between the hero and the register band.
  */
 export function LiveTrainingDetailPage({ training }: { training: LiveTrainingDetailVM }) {
   const { details } = training;
-  const nav: SectionNavItem[] = [
+  const readme = training.readme ? parseLiveReadme(training.readme) : null;
+  const nav: SectionNavItem[] = readme ? liveReadmeNav(readme) : [
     { id: "about", label: detailCopy.nav.about },
     details.objectives.length > 0 ? { id: "objectives", label: detailCopy.nav.objectives } : null,
     details.audience.items.length > 0 ? { id: "audience", label: detailCopy.nav.audience } : null,
@@ -75,21 +79,33 @@ export function LiveTrainingDetailPage({ training }: { training: LiveTrainingDet
             <div className="lg:hidden">
               <BookingCard training={training} id="booking" />
             </div>
-            <AboutBlock about={details.about} summary={training.summary} />
-            <ObjectivesBlock objectives={details.objectives} />
-            <AudienceBlock audience={details.audience} />
-            <AxesBlock axes={details.axes} />
-            <ActivitiesBlock activities={details.activities} />
-            <MethodBlock method={details.method} />
-            <InstructorBlock training={training} />
+            {readme ? (
+              <LiveReadmeMain sections={readme} training={training} />
+            ) : (
+              <>
+                <AboutBlock about={details.about} summary={training.summary} />
+                <ObjectivesBlock objectives={details.objectives} />
+                <AudienceBlock audience={details.audience} />
+                <AxesBlock axes={details.axes} />
+                <ActivitiesBlock activities={details.activities} />
+                <MethodBlock method={details.method} />
+                <InstructorBlock training={training} />
+              </>
+            )}
           </div>
           <StickySidebar>
             <BookingCard training={training} />
           </StickySidebar>
         </div>
 
-        <CertificatesSection details={details} />
-        <FaqSection faqs={details.faqs} title={detailCopy.faqTitle} />
+        {readme ? (
+          <LiveReadmeBands sections={readme} />
+        ) : (
+          <>
+            <CertificatesSection details={details} />
+            <FaqSection faqs={details.faqs} title={detailCopy.faqTitle} />
+          </>
+        )}
         <RegisterBand training={training} />
       </main>
       <SiteFooter />

@@ -5,6 +5,7 @@ import { baseOpenGraph } from "@/config/site";
 import { getSearchCatalog } from "@/features/search/api/get-search-page";
 import { trainersPageCopy } from "@/features/trainers/content/copy";
 import { TrainersPage } from "@/features/trainers/trainers-page";
+import { getCatalogCategories, getOnboardingOptions } from "@/lib/api/catalog";
 
 // ISR: the copy is static; the speciality list follows the catalog's categories.
 export const revalidate = 600;
@@ -26,5 +27,10 @@ export const metadata: Metadata = {
 
 export default async function TrainersRoute() {
   const catalog = await getSearchCatalog();
-  return <TrainersPage specialities={[...catalog.categoryNames.values()].map((name) => name.trim())} />;
+  const [categories, onboarding] = await Promise.all([
+    getCatalogCategories().catch(() => []),
+    getOnboardingOptions().catch(() => ({ skills: [], tags: [], product_types: [] })),
+  ]);
+  return <TrainersPage specialities={[...catalog.categoryNames.values()].map((name) => name.trim())}
+    categories={categories} skills={onboarding.skills ?? []} />;
 }

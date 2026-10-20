@@ -107,6 +107,11 @@ body {
 
   /* ---------- Header nav: the hover/current line is a bottom border; a bit more room above it
      keeps it clear of Arabic descenders ---------- */
+  .ma-nav__links a,
+  .ma-nav__links button {
+    display: inline-flex;
+    align-items: center;
+  }
   .ma-nav__links a {
     padding-block-end: var(--space-3);
   }

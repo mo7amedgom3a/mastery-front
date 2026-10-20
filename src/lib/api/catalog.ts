@@ -11,6 +11,7 @@ type ProductOperation = "product_api_v1_catalog_products__slug__get";
 type ResourceOperation = "resource_api_v1_catalog_resources__resource_id__get";
 type RelatedResourcesOperation = "related_resources_api_v1_catalog_resources__resource_id__related_get";
 type OnboardingOptionsOperation = "onboarding_options_api_v1_catalog_onboarding_options_get";
+type MenuOperation = "menu_api_v1_catalog_menu_get";
 
 export type CatalogProductTypesResponse = SuccessResponse<ProductTypesOperation>;
 export type CatalogCategoriesResponse = SuccessResponse<CategoriesOperation>;
@@ -32,6 +33,8 @@ export type CatalogRelatedResourcesParams = QueryParams<RelatedResourcesOperatio
 export type CatalogRelatedResourcesResponse = SuccessResponse<RelatedResourcesOperation>;
 export type OnboardingOptionsResponse = SuccessResponse<OnboardingOptionsOperation>;
 export type OnboardingSkill = NonNullable<OnboardingOptionsResponse["skills"]>[number];
+export type CatalogMenuParams = QueryParams<MenuOperation>;
+export type CatalogMenuResponse = SuccessResponse<MenuOperation>;
 
 const catalogPaths = {
   productTypes: "/api/v1/catalog/product-types",
@@ -42,6 +45,7 @@ const catalogPaths = {
   resource: "/api/v1/catalog/resources/{resource_id}",
   relatedResources: "/api/v1/catalog/resources/{resource_id}/related",
   onboardingOptions: "/api/v1/catalog/onboarding-options",
+  menu: "/api/v1/catalog/menu",
 } as const;
 
 export const catalogKeys = {
@@ -120,6 +124,11 @@ export function getOnboardingOptions(options?: ApiRequestOptions): Promise<Onboa
   // direct call would fall back to `localhost:8000` in the client bundle.
   const viaApp = typeof window !== "undefined" ? { sameOrigin: true as const } : {};
   return apiRequest<OnboardingOptionsResponse>("GET", catalogPaths.onboardingOptions, { ...options, ...viaApp });
+}
+
+/** The header's explore menu: product groups, their categories and a few top items per category. */
+export function getCatalogMenu(params?: CatalogMenuParams, options?: ApiRequestOptions): Promise<CatalogMenuResponse> {
+  return apiRequest<CatalogMenuResponse>("GET", catalogPaths.menu, { ...options, query: params });
 }
 
 export const catalogQueries = {

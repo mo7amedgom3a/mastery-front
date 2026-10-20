@@ -46,19 +46,23 @@ const textSchema = z.object({
   youtubechannel: optional(300),
   instagramprofile: optional(300),
   facebookpage: optional(300),
-  cvUrl: z.union([z.literal(""), z.url("اكتب رابطاً صحيحاً يبدأ بـ https://").max(500)]),
+  cvUrl: z.union([z.literal(""), z.url("اكتب رابطاً صحيحاً يبدأ بـ https://").max(500).refine((url) => url.startsWith("https://"), "استخدم رابط https")]),
 });
 
 export type TrainerTextField = keyof z.infer<typeof textSchema>;
 const CHECK_FIELDS = ["youtube", "instagram", "facebook", "recorded", "consultancy"] as const;
 export type TrainerCheckField = (typeof CHECK_FIELDS)[number];
-export type TrainerField = TrainerTextField | TrainerCheckField | "languages";
+export type TrainerField = TrainerTextField | TrainerCheckField | "languages" | "categoryIds" | "skillIds";
 
 /** Echoed back so the form keeps what the user typed (React resets uncontrolled forms after an action). */
 export type TrainerValues = {
   text: Partial<Record<TrainerTextField, string>>;
   checks: Partial<Record<TrainerCheckField, boolean>>;
   languages: string[];
+  categoryIds: string[];
+  skillIds: string[];
+  cvAttachmentId: string;
+  portfolioAttachmentIds: string[];
 };
 
 export type TrainerApplicationState =
@@ -71,13 +75,17 @@ const TEXT_FIELDS = Object.keys(textSchema.shape) as TrainerTextField[];
 const LANGUAGES: readonly string[] = trainerFormOptions.languages;
 
 function readValues(formData: FormData): TrainerValues {
-  const values: TrainerValues = { text: {}, checks: {}, languages: [] };
+  const values: TrainerValues = { text: {}, checks: {}, languages: [], categoryIds: [], skillIds: [], cvAttachmentId: "", portfolioAttachmentIds: [] };
   for (const field of TEXT_FIELDS) {
     const value = formData.get(field);
     if (typeof value === "string") values.text[field] = value.slice(0, 3000);
   }
   for (const field of CHECK_FIELDS) values.checks[field] = formData.get(field) === "on";
   values.languages = formData.getAll("languages").filter((value): value is string => typeof value === "string" && LANGUAGES.includes(value));
+  values.categoryIds = formData.getAll("categoryIds").filter((value): value is string => typeof value === "string");
+  values.skillIds = formData.getAll("skillIds").filter((value): value is string => typeof value === "string");
+  values.cvAttachmentId = String(formData.get("cvAttachmentId") ?? "");
+  values.portfolioAttachmentIds = formData.getAll("portfolioAttachmentIds").filter((value): value is string => typeof value === "string");
   return values;
 }
 
@@ -99,12 +107,15 @@ export async function submitTrainerApplication(
     }
   }
   if (values.languages.length === 0) fieldErrors.languages = "اختر لغة واحدة على الأقل";
+  if (values.categoryIds.length === 0) fieldErrors.categoryIds = "اختر مجالاً واحداً على الأقل";
+  if (values.skillIds.length === 0) fieldErrors.skillIds = "اختر مهارة واحدة على الأقل";
+  if (!values.cvAttachmentId && !values.text.cvUrl) fieldErrors.cvUrl = "أرفق سيرة ذاتية أو أدخل رابطها";
 
-  if (!parsed.success || fieldErrors.languages) {
+  if (!parsed.success || Object.keys(fieldErrors).length > 0) {
     return { status: "invalid", values, fieldErrors };
   }
 
-  const form = parsed.data;
+  const form = parsed.data!;
   const { checks } = values;
   const accepted = await postTrainerApplication({
     specialized: form.specialized,
@@ -133,6 +144,10 @@ export async function submitTrainerApplication(
     consultancy: Boolean(checks.consultancy),
     cvUrl: form.cvUrl,
     recorded: Boolean(checks.recorded),
+    categoryIds: values.categoryIds,
+    skillIds: values.skillIds,
+    cvAttachmentId: values.cvAttachmentId || null,
+    portfolioAttachmentIds: values.portfolioAttachmentIds,
   });
 
   return accepted ? { status: "success" } : { status: "error", values, message: trainerFormCopy.error };

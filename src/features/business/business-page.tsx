@@ -3,14 +3,16 @@ import { ArrowLeft } from "lucide-react";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AppLink } from "@/components/ui/app-link";
-import { buttonClass } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
+import { routes } from "@/config/routes";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
 import { FaqSection } from "@/features/landing/sections/faq-section";
-import { cn } from "@/lib/cn";
+import { ContactSalesCard } from "@/features/subscriptions/components/contact-sales-card";
+import { PlanCard } from "@/features/subscriptions/components/plan-card";
+import type { PlanVM } from "@/features/subscriptions/model/plans";
 
 import type { BusinessCatalogVM, CatalogChipVM } from "./api/get-business-catalog";
-import { B2BLeadForm } from "./components/b2b-lead-form";
 import { b2bCopy, businessPageCopy as copy, corporatePrograms } from "./content/b2b";
 
 const pad = (index: number) => String(index + 1).padStart(2, "0");
@@ -39,22 +41,31 @@ function ChipList({ title, chips }: { title: string; chips: CatalogChipVM[] }) {
   );
 }
 
-/** `/business`: corporate training, the programmes companies need, and the training request form. */
-export function BusinessPage({ catalog }: { catalog: BusinessCatalogVM }) {
+/** `/business`: corporate training, the programmes companies need, and the way to request an offer. */
+export function BusinessPage({ catalog, plans }: { catalog: BusinessCatalogVM; plans: PlanVM[] }) {
   const categoryHref = new Map(catalog.categories.map((category) => [category.code, category.href]));
+  // Teams above the largest self-serve plan talk to the business team instead of paying online.
+  const largestTeam = Math.max(0, ...plans.filter((plan) => plan.perSeat).map((plan) => plan.maxSeats));
+  const contactFrom = largestTeam > 0 ? largestTeam + 1 : 50;
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader brand="business" />
       <main id="main" tabIndex={-1} className="outline-none">
         <header data-theme="dark" className="bg-surface-alt text-fg">
           <div className="ma-container flex flex-col items-start py-16 md:py-20">
             <span className="ma-tag ma-tag--coral">{copy.kicker}</span>
             <h1 className="t-hero m-0 mt-6">{copy.title}</h1>
             <p className="t-lead m-0 mt-6 max-w-[40rem]">{copy.lead}</p>
-            <a href="#request" className={cn(buttonClass({ variant: "primary", size: "lg" }), "mt-8")}>
-              {copy.primaryAction.label}
-            </a>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <ButtonLink href={routes.businessRequest()} variant="primary" size="lg">
+                {copy.primaryAction.label}
+              </ButtonLink>
+              {/* Smaller teams can subscribe online, priced per employee. */}
+              <ButtonLink href={routes.subscriptionsFor("company")} variant="secondary" size="lg">
+                اشترك لفريقك الآن
+              </ButtonLink>
+            </div>
           </div>
         </header>
 
@@ -71,6 +82,21 @@ export function BusinessPage({ catalog }: { catalog: BusinessCatalogVM }) {
               </li>
             ))}
           </ol>
+        </Section>
+
+        <Section aria-labelledby="plans-title">
+          <SectionHeader id="plans-title" label={copy.plans.label} title={copy.plans.title} lead={copy.plans.lead} />
+          <div className="mt-10 grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {plans.map((plan) => (
+              <PlanCard key={plan.id} plan={plan} />
+            ))}
+            <ContactSalesCard fromSeats={contactFrom} />
+          </div>
+          <div className="mt-8 flex justify-center">
+            <ButtonLink href={routes.subscriptionsFor("company")} variant="secondary">
+              {copy.plans.action}
+            </ButtonLink>
+          </div>
         </Section>
 
         <Section tone="alt" aria-labelledby="programs-title">
@@ -117,9 +143,22 @@ export function BusinessPage({ catalog }: { catalog: BusinessCatalogVM }) {
                 ))}
               </dl>
             </div>
-            <div className="self-start rounded-panel border border-line-strong bg-surface p-5 sm:p-8">
-              <h3 className="m-0 mb-6 text-2xl font-bold">{copy.form.title}</h3>
-              <B2BLeadForm />
+            <div className="flex flex-col items-start gap-5 self-start rounded-panel border border-line-strong bg-surface p-5 sm:p-8">
+              <h3 className="m-0 text-2xl font-bold">{copy.form.title}</h3>
+              <p className="m-0 leading-7 text-fg-muted">{copy.form.cta.body}</p>
+              <ol className="m-0 flex list-none flex-col gap-2 p-0">
+                {copy.form.cta.points.map((point, index) => (
+                  <li key={point} className="flex items-center gap-3">
+                    <span aria-hidden="true" className="text-sm font-bold text-accent tabular-nums">
+                      {pad(index)}
+                    </span>
+                    {point}
+                  </li>
+                ))}
+              </ol>
+              <ButtonLink href={routes.businessRequest()} variant="primary" size="lg">
+                {copy.primaryAction.label}
+              </ButtonLink>
             </div>
           </div>
         </Section>

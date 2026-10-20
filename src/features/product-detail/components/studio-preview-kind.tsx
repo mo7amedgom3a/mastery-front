@@ -5,6 +5,9 @@ import { cn } from "@/lib/cn";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { formatDateTime, formatDurationFromSeconds, formatPrice } from "@/lib/format";
+import type { LiveDiploma } from "@/lib/api/live-diplomas";
+import { LiveTrainingDetailPage } from "@/features/live-training/live-training-detail-page";
+import { fromLiveDiploma, toLiveTrainingDetailVM } from "@/features/live-training/model/mappers";
 
 import { ContentBlocks } from "./content-blocks";
 import { StudioBanner } from "./studio-banner";
@@ -45,6 +48,12 @@ export function StudioPreviewKind({
 }) {
   const b = asRecord(base);
   const collection = asRecord(b.collection);
+
+  // A live diploma previews as its real `/live/{slug}` page, with the README being edited in place.
+  if (kind === "live_diploma" && str(b.slug)) {
+    const training = toLiveTrainingDetailVM(fromLiveDiploma({ ...(b as LiveDiploma), readme: readme ?? null }));
+    return <LiveTrainingDetailPage training={training} />;
+  }
 
   const title = str(document.meta?.title) || str(b.title) || str(collection.name) || `معاينة ${KIND_LABEL[kind]}`;
   const summary = str(document.meta?.summary) || str(b.short_description) || str(b.description) || str(collection.description);

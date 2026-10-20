@@ -19,7 +19,6 @@ import {
 import { resolvePriceRows, toPricing, type PriceRow } from "@/lib/pricing";
 
 import type {
-  BannerVM,
   CategoryVM,
   ConsultationCardVM,
   CourseCardVM,
@@ -37,7 +36,6 @@ type SearchItemDto = SearchResponse["items"][number];
 export type ConsultationDto = LandingPageResponse["consultations"]["items"][number];
 type CategoryDto = LandingPageResponse["categories"][number];
 type FaqDto = LandingPageResponse["faqs"][number];
-type BannerDto = LandingPageResponse["banners"][number];
 type InsightsDto = LandingPageResponse["insights"];
 
 /** Cards per rail. */
@@ -169,18 +167,6 @@ function mapFaq(dto: FaqDto): FaqVM | null {
   return question && answer ? { question, answer } : null;
 }
 
-function mapBanner(banners: BannerDto[]): BannerVM | null {
-  const banner = [...banners]
-    .sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER))
-    .find((item) => cleanText(item.header) || cleanText(item.subtitle));
-  if (!banner) {
-    return null;
-  }
-  const text = [cleanText(banner.header), cleanText(banner.subtitle)].filter(Boolean).join(" — ");
-  const href = banner.link_url && /^https?:\/\//.test(banner.link_url) ? banner.link_url : null;
-  return { id: banner.id, text, href };
-}
-
 /** Only real, non-zero counters are shown; a "0 شهادة" stat hurts more than it helps. */
 function mapStats(insights: InsightsDto | null | undefined): StatVM[] {
   if (!insights) {
@@ -280,7 +266,6 @@ function mapConsultationRail(
 }
 
 export const emptyLandingData: LandingData = {
-  banner: null,
   categories: [],
   courses: [],
   courseFilters: [],
@@ -354,7 +339,6 @@ export function mapLandingData({
   );
 
   return {
-    banner: landing ? mapBanner(landing.banners) : null,
     categories,
     courses: courseRails.courses,
     courseFilters: courseRails.filters,

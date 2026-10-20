@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, GraduationCap, Heart, House, LogOut, Receipt, UserRound, type LucideIcon } from "lucide-react";
+import { ChevronDown, GraduationCap, Headset, Heart, House, LogOut, Receipt, UserRound, type LucideIcon } from "lucide-react";
 import type { Route } from "next";
 import { useEffect, useId, useRef, useState } from "react";
 
@@ -21,6 +21,7 @@ export const accountLinks: readonly AccountLink[] = [
   { href: routes.studentAccess, label: "تعلّمي", icon: GraduationCap },
   { href: routes.studentOrders, label: "طلباتي", icon: Receipt },
   { href: routes.studentWishlist, label: "المفضلة", icon: Heart },
+  { href: routes.studentSupport, label: "الدعم الفني", icon: Headset },
 ];
 
 /** The name to show: the profile's (it may have been edited since sign-in), else the session's, else the e-mail. */

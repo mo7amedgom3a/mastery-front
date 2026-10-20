@@ -17,6 +17,9 @@ import { formatDate, formatDateTime } from "@/lib/format";
 import { trackCheckout } from "@/lib/observability/behavior";
 import { syncAccountCart } from "@/lib/shop/cart-sync";
 import { refreshOwnedProducts } from "@/lib/shop/use-owned-products";
+import { useTeamCheckoutStore } from "@/features/subscriptions/model/team-checkout-store";
+
+import { AddEmployeesLink, teamOrderOf, TeamOrderSummary } from "./components/team-order-summary";
 
 import { claimCelebration, settleCheckout, usePendingCheckout } from "./model/checkout-session";
 
@@ -116,6 +119,8 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
     settleCheckout(orderId);
     trackCheckout("payment_settled", { order_id: orderId, status });
     if (status !== "succeeded") return;
+    // A paid team subscription: its details/review answers are no longer needed.
+    useTeamCheckoutStore.getState().reset();
     // The backend emptied the cart it charged; bring this browser's copy in line.
     void syncAccountCart();
     // Product pages should now offer "continue learning" instead of "buy now".
@@ -165,11 +170,23 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
 
   const detail = order.data;
   const titles = lineTitles(detail);
+  // A company subscription: the team and its billing, and the way to add employees.
+  const team = teamOrderOf(detail);
   return (
     <div className="flex flex-col gap-10">
       <header className="flex flex-col items-start gap-4 rounded-panel border border-line-strong bg-surface p-6 md:p-10">
         <CircleCheck aria-hidden="true" className="size-12 fill-none text-accent" />
-        {subscription ? (
+        {team ? (
+          <>
+            <h2 className="m-0 text-3xl leading-[1.4] font-bold">
+              مرحباً بفريق {team.companyName ?? "شركتك"} في <bdi dir="ltr">eMastery Business</bdi>
+            </h2>
+            <p className="m-0 max-w-[60ch] leading-7 text-fg-muted">
+              تمّ الدفع وفُعّل اشتراك {team.seats} موظفاً{subscription ? ` في ${subscription.plan_title}` : ""}. الخطوة التالية:
+              أضف موظفيك ليحصل كل منهم على وصوله فوراً. أرسلنا الفاتورة إلى بريدك الإلكتروني.
+            </p>
+          </>
+        ) : subscription ? (
           <>
             <h2 className="m-0 text-3xl leading-[1.4] font-bold">مبروك! اشتراكك في {subscription.plan_title} فعّال الآن</h2>
             <p className="m-0 max-w-[60ch] leading-7 text-fg-muted">
@@ -217,9 +234,13 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
         ) : null}
         <ul className="ma-cluster m-0 list-none p-0">
           <li>
-            <ButtonLink href={routes.studentAccess} variant="primary">
-              ابدأ التعلّم الآن
-            </ButtonLink>
+            {team ? (
+              <AddEmployeesLink />
+            ) : (
+              <ButtonLink href={routes.studentAccess} variant="primary">
+                ابدأ التعلّم الآن
+              </ButtonLink>
+            )}
           </li>
           {subscription ? (
             <li>
@@ -235,6 +256,10 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
           </li>
         </ul>
       </header>
+
+      {team && detail ? (
+        <TeamOrderSummary team={team} order={detail} renewsOn={subscription?.current_period_end ?? null} />
+      ) : null}
 
       <section aria-labelledby="order-access-title" className="flex flex-col gap-4">
         <h2 id="order-access-title" className="m-0 text-xl font-bold">

@@ -22,6 +22,11 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^catalog\/products\/[A-Za-z0-9_-]+$/, session: false },
   // Onboarding choices (skills, topics, product types), read by the client onboarding steps.
   { methods: ["GET"], pattern: /^catalog\/onboarding-options$/, session: false },
+  // Company request: the country list and one country's cities.
+  { methods: ["GET"], pattern: /^requests\/countries$/, session: false },
+  { methods: ["GET"], pattern: /^requests\/countries\/[A-Z]{2}\/cities$/, session: false },
+  { methods: ["POST"], pattern: /^requests\/trainer-attachments\/presign$/, session: false },
+  { methods: ["POST"], pattern: /^requests\/trainer-attachments\/[A-Za-z0-9-]+\/confirm$/, session: false },
   // Live-diploma catalog reads (list, detail, cohorts, one cohort): public discovery.
   { methods: ["GET"], pattern: /^catalog\/live-diplomas(\/[A-Za-z0-9-]+(\/cohorts(\/[A-Za-z0-9-]+)?)?)?$/, session: false },
   // Live-diploma waitlist: join, read and leave the signed-in customer's entry.
@@ -40,6 +45,7 @@ const RULES: readonly Rule[] = [
   // Subscriptions: public plans and feature catalog, then the customer's checkout and plan.
   { methods: ["GET"], pattern: /^subscriptions\/(plans(\/[A-Za-z0-9_-]+)?|features)$/, session: false },
   { methods: ["POST"], pattern: /^subscriptions\/checkout$/, session: true },
+  { methods: ["POST"], pattern: /^subscriptions\/team-leads$/, session: true },
   { methods: ["GET"], pattern: /^subscriptions\/me(\/[A-Za-z0-9-]+(\/selections)?)?$/, session: true },
   { methods: ["POST"], pattern: /^subscriptions\/me\/[A-Za-z0-9-]+\/(cancel|selections|selections\/replace)$/, session: true },
   // Recommendations for the signed-in customer (dashboard, after onboarding).
@@ -58,9 +64,21 @@ const RULES: readonly Rule[] = [
   { methods: ["PATCH", "DELETE"], pattern: /^experts\/me\/services\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["GET"], pattern: /^experts\/me\/bookings\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^experts\/me\/slots$/, session: true },
-  { methods: ["PATCH", "DELETE"], pattern: /^experts\/me\/slots\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^experts\/me\/bookings\/[A-Za-z0-9-]+\/(approve|reject|cancel)$/, session: true },
+  // Support ticket management: categories, related options, tickets, messages, reopen, feedback, download
+  { methods: ["GET"], pattern: /^support\/categories$/, session: false },
+  { methods: ["GET"], pattern: /^support\/related-options$/, session: true },
+  { methods: ["GET", "POST"], pattern: /^support\/tickets$/, session: true },
+  { methods: ["GET"], pattern: /^support\/tickets\/[A-Za-z0-9-]+(\/messages)?$/, session: true },
+  { methods: ["POST"], pattern: /^support\/tickets\/[A-Za-z0-9-]+\/(messages|reopen|feedback)$/, session: true },
+  { methods: ["GET"], pattern: /^support\/attachments\/[A-Za-z0-9-]+\/download$/, session: true },
 ];
+
+/**
+ * Never through this door: the LMS hand-off answers with the legacy refresh token, which only
+ * `/api/lms/launch` may see (it turns it into an httpOnly cookie).
+ */
+const BLOCKED: readonly RegExp[] = [/^me\/lms(\/|$)/];
 
 /** Same charset the backend accepts; anything else is dropped rather than forwarded. */
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{1,200}$/;
@@ -75,6 +93,7 @@ type Context = RouteContext<"/api/b2c/[...path]">;
  */
 async function forward(request: NextRequest, context: Context): Promise<NextResponse> {
   const path = (await context.params).path.join("/");
+  if (BLOCKED.some((pattern) => pattern.test(path))) return authError(404, "invalid_request", "المورد غير موجود.");
   const rule = RULES.find((candidate) => candidate.methods.includes(request.method) && candidate.pattern.test(path));
   if (!rule) return authError(404, "invalid_request", "المورد غير موجود.");
 

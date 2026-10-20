@@ -4,12 +4,10 @@ import { routes } from "@/config/routes";
 
 export type NavItem = { label: string; href: Route };
 
-// Catalog links open the search page filtered to that product type.
+// The explore menu groups every catalog type; the bar keeps only the main listing and the
+// non-catalog links.
 export const primaryNav: readonly NavItem[] = [
   { label: "الدورات", href: routes.courses },
-  { label: "الدبلومات", href: routes.diplomas },
-  { label: "الباقات", href: routes.packages },
-  { label: "الاستشارات", href: routes.consultations },
   { label: "الاشتراكات", href: routes.subscriptions },
   { label: "للشركات", href: routes.business },
   { label: "للمدربين", href: routes.trainers },

@@ -18,7 +18,9 @@ import { Money } from "@/components/shop/money";
 import { AppLink } from "@/components/ui/app-link";
 import { brandBg, brandColorAt } from "@/components/ui/brand-colors";
 import { buttonClass } from "@/components/ui/button";
+import { ContinueLearningButton } from "@/features/student-dashboard/components/continue-learning-button";
 import { productTypeLabel } from "@/features/student-dashboard/model/products";
+import { LMS_PRODUCT_TYPES } from "@/lib/api/lms";
 import type {
   EntitlementResponse,
   OrderDetailResponse,
@@ -84,7 +86,11 @@ export function OrderLines({ order, artwork }: { order: OrderDetailResponse; art
                   ) : (
                     <span className="font-bold">{title}</span>
                   )}
-                  {line.quantity > 1 ? <span className="text-sm text-fg-muted">الكمية: {line.quantity}</span> : null}
+                  {line.quantity > 1 ? (
+                    <span className="text-sm text-fg-muted">
+                      {line.product_type === "subscription" ? `عدد الموظفين: ${line.quantity}` : `الكمية: ${line.quantity}`}
+                    </span>
+                  ) : null}
                 </div>
                 <Money amount={fromMinor(line.total_amount_minor)} currency={order.currency_code} className="font-bold" />
               </div>
@@ -92,6 +98,22 @@ export function OrderLines({ order, artwork }: { order: OrderDetailResponse; art
           );
         })}
       </ul>
+      {(order.tax_minor ?? 0) > 0 ? (
+        <dl className="m-0 flex flex-col gap-2 text-sm">
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="text-fg-muted">المجموع قبل الضريبة</dt>
+            <dd className="m-0">
+              <Money amount={fromMinor(order.subtotal_minor ?? order.amount_minor - (order.tax_minor ?? 0))} currency={order.currency_code} className="font-bold" />
+            </dd>
+          </div>
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="text-fg-muted">الضريبة</dt>
+            <dd className="m-0">
+              <Money amount={fromMinor(order.tax_minor ?? 0)} currency={order.currency_code} className="font-bold" />
+            </dd>
+          </div>
+        </dl>
+      ) : null}
       <div className="flex items-baseline justify-between gap-4 border-t border-line-strong pt-4">
         <span className="text-lg font-bold">الإجمالي المدفوع</span>
         <Money amount={fromMinor(order.amount_minor)} currency={order.currency_code} className="text-2xl font-bold" />
@@ -305,7 +327,15 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
           </div>
         ) : null}
       </div>
-      {link ? (
+      {active && LMS_PRODUCT_TYPES.has(entitlement.product_type ?? "") ? (
+        <div className="ma-card__foot">
+          <ContinueLearningButton
+            entitlementId={entitlement.entitlement_id}
+            fulfillmentStatus={entitlement.fulfillment_status}
+            title={title}
+          />
+        </div>
+      ) : link ? (
         <div className="ma-card__foot">
           <AppLink
             href={link.href}

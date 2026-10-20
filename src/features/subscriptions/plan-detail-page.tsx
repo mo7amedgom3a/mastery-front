@@ -9,7 +9,7 @@ import { cn } from "@/lib/cn";
 import { FeatureIcon } from "./components/feature-icon";
 import { PlanPrice } from "./components/plan-card";
 import { SubscribePanel } from "./components/subscribe-panel";
-import { PLAN_TYPE_LABELS, RESOURCE_TYPE_LABELS, type PlanVM } from "./model/plans";
+import { libraryLine, PLAN_TYPE_LABELS, RESOURCE_TYPE_LABELS, type PlanVM } from "./model/plans";
 
 function groupResources(plan: PlanVM) {
   const groups = new Map<string, PlanVM["resources"]>();
@@ -20,12 +20,13 @@ function groupResources(plan: PlanVM) {
   return groups;
 }
 
-/** `/subscriptions/[slug]`: everything a plan includes, and the subscribe action. */
-export function PlanDetailPage({ plan }: { plan: PlanVM }) {
+/** `/subscriptions/[slug]`: everything a plan includes, and the subscribe action. `preview`: the admin live preview. */
+export function PlanDetailPage({ plan, preview = false }: { plan: PlanVM; preview?: boolean }) {
   const groups = groupResources(plan);
+  const library = libraryLine(plan);
   return (
     <>
-      <SiteHeader />
+      <SiteHeader brand={plan.audience === "company" ? "business" : "default"} />
       <main id="main" className="ma-container flex flex-col gap-12 py-10 md:py-14">
         <AppLink href={routes.subscriptions} className="inline-flex items-center gap-2 text-fg-muted">
           <ArrowRight aria-hidden="true" className="size-4 fill-none" />
@@ -70,6 +71,18 @@ export function PlanDetailPage({ plan }: { plan: PlanVM }) {
                     </li>
                   ))}
                 </ul>
+              </section>
+            ) : null}
+
+            {library ? (
+              <section className="flex gap-4 rounded-panel border border-line-strong p-6">
+                <FeatureIcon name="library" />
+                <div className="flex flex-col gap-2">
+                  <h2 className="m-0 text-xl font-bold">{library}</h2>
+                  <p className="m-0 leading-7 text-fg-muted">
+                    كل دورة ودبلوم منشور على ماستري متاح لك طوال مدة اشتراكك، وكل ما يُنشر لاحقاً يُضاف إلى اشتراكك تلقائياً.
+                  </p>
+                </div>
               </section>
             ) : null}
 
@@ -129,7 +142,7 @@ export function PlanDetailPage({ plan }: { plan: PlanVM }) {
                     ))}
                   </ul>
                 ) : null}
-                <SubscribePanel plan={plan} />
+                <SubscribePanel plan={plan} preview={preview} />
               </div>
             </div>
           </aside>

@@ -4,6 +4,7 @@ import { buttonClass } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
 import { cn } from "@/lib/cn";
+import type { CatalogCategoriesResponse, OnboardingSkill } from "@/lib/api/catalog";
 
 import { TrainerApplicationForm } from "./components/trainer-application-form";
 import { trainersPageCopy as copy } from "./content/copy";
@@ -11,7 +12,7 @@ import { trainersPageCopy as copy } from "./content/copy";
 const pad = (index: number) => String(index + 1).padStart(2, "0");
 
 /** `/trainers`: why trainers join Mastery, how it works, and the application form. */
-export function TrainersPage({ specialities }: { specialities: readonly string[] }) {
+export function TrainersPage({ specialities, categories, skills }: { specialities: readonly string[]; categories: CatalogCategoriesResponse; skills: OnboardingSkill[] }) {
   return (
     <>
       <SiteHeader />
@@ -61,7 +62,7 @@ export function TrainersPage({ specialities }: { specialities: readonly string[]
           <div className="mx-auto max-w-[56rem]">
             <SectionHeader id="apply-title" label={copy.form.label} title={copy.form.title} lead={copy.form.lead} />
             <div className="mt-10 rounded-panel border border-line-strong bg-surface-alt p-5 sm:p-8">
-              <TrainerApplicationForm specialities={specialities} />
+              <TrainerApplicationForm specialities={specialities} categories={categories} skills={skills} />
             </div>
           </div>
         </Section>

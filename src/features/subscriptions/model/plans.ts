@@ -46,6 +46,13 @@ export type PlanVM = {
   resources: PlanResourceVM[];
   selectionAllowance: number | null;
   maxSeats: number;
+  /** Full-library plans: how many published courses and diplomas they grant today. */
+  libraryCount: number | null;
+  /** Company plans: `amount` is per employee (seat), for a team of `minSeats`–`maxSeats`. */
+  perSeat: boolean;
+  minSeats: number;
+  /** VAT added at checkout on seats × price (0 = none). */
+  taxPercent: number;
 };
 
 const toNumber = (value: string | number | null | undefined) => Number(value ?? 0) || 0;
@@ -108,6 +115,10 @@ export function toPlanVM(plan: SubscriptionPlan): PlanVM {
     resources,
     selectionAllowance: plan.selection_allowance ?? null,
     maxSeats: plan.max_seats ?? 1,
+    libraryCount: plan.library_count ?? null,
+    perSeat: Boolean(plan.per_seat),
+    minSeats: plan.min_seats ?? 1,
+    taxPercent: toNumber(plan.tax_percent),
   };
 }
 
@@ -115,6 +126,12 @@ export type CatalogFeatureVM = { key: string; icon: string | null; title: string
 
 export function toCatalogFeatureVM(feature: SubscriptionFeature): CatalogFeatureVM {
   return { key: feature.key, icon: feature.icon ?? null, title: feature.title, description: feature.description ?? null };
+}
+
+/** "الوصول لكل المكتبة (120 دورة ودبلوم)" — what a full-library plan grants, or null for other plans. */
+export function libraryLine(plan: PlanVM): string | null {
+  if (plan.planType !== "full_library") return null;
+  return plan.libraryCount ? `الوصول لكل المكتبة (${plan.libraryCount} دورة ودبلوم)` : "الوصول لكل دورات ودبلومات المكتبة";
 }
 
 /** "ينتهي العرض في 31 أكتوبر" — the end date in Arabic, or null for an open-ended offer. */

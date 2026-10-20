@@ -29,7 +29,19 @@ export type CheckoutTarget =
   /** A live diploma bought straight from its detail page: known product + cohort, no legacy item. */
   | { mode: "diploma"; productId: string; cohortId: string; payment?: CheckoutPayment }
   /** A subscription plan: recurring Stripe billing only; company plans carry their seats. */
-  | { mode: "subscription"; planId: string; seatCount?: number; companyName?: string; payment?: undefined };
+  | {
+      mode: "subscription";
+      planId: string;
+      seatCount?: number;
+      companyName?: string;
+      /** Company plans: who to contact about the subscription. */
+      contact?: { name: string; email: string; phone?: string; job_title?: string };
+      /** The team lead saved on the details step; checkout links its order to it. */
+      leadId?: string | null;
+      /** Where "back" on the Stripe page returns (defaults to this page). */
+      cancelUrl?: string;
+      payment?: undefined;
+    };
 
 const STRIPE: CheckoutPayment = { provider: "stripe" };
 
@@ -161,6 +173,12 @@ function messageFor(error: unknown, provider: CheckoutPayment["provider"]): stri
         ? "ما زلنا نجهّز صفحة الدفع. حاول مجدداً بعد لحظات."
         : "تغيّرت سلتك أو لم تعد متاحة للدفع. حدّث الصفحة وحاول مجدداً.";
     }
+    if (error.status === 422) {
+      const detail = error.details.detail;
+      return typeof detail === "string" && /Team size|Company name/.test(detail)
+        ? "راجع حجم الفريق واسم الشركة ثم حاول مجدداً."
+        : "تحقّق من البيانات المدخلة ثم حاول مجدداً.";
+    }
     if (error.status === 429) return "محاولات كثيرة في وقت قصير. انتظر قليلاً ثم حاول مجدداً.";
     if (error.status >= 500) return "الدفع غير متاح حالياً. حاول مجدداً بعد قليل.";
   }
@@ -216,8 +234,10 @@ export function useStartCheckout() {
           plan_id: target.planId,
           seat_count: target.seatCount ?? null,
           company_name: target.companyName?.trim() || null,
+          contact: target.contact ?? null,
+          lead_id: target.leadId ?? null,
           success_url: `${origin}${routes.checkoutSuccess}`,
-          cancel_url: window.location.href,
+          cancel_url: target.cancelUrl ? `${origin}${target.cancelUrl}` : window.location.href,
         };
         session = await openSession((key) => createSubscriptionCheckout(body, key), fingerprint);
       } else {

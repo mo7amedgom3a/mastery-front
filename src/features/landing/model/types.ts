@@ -77,14 +77,7 @@ export type FaqVM = {
   answer: string;
 };
 
-export type BannerVM = {
-  id: number;
-  text: string;
-  href: string | null;
-};
-
 export type LandingData = {
-  banner: BannerVM | null;
   categories: CategoryVM[];
   /** The featured rail first, then each category's rail; one entry per course. */
   courses: CourseCardVM[];
