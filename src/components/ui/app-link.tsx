@@ -11,3 +11,18 @@ type AppLinkProps = ComponentProps<typeof Link>;
 export function AppLink({ prefetch = false, ...props }: AppLinkProps) {
   return <Link prefetch={prefetch} {...props} />;
 }
+
+type MaybeLinkProps = Omit<AppLinkProps, "href"> & { href: AppLinkProps["href"] | null };
+
+/** An `AppLink` when there is somewhere to go; otherwise the same content in a plain `span`. */
+export function MaybeLink({ href, children, className, title }: MaybeLinkProps) {
+  return href ? (
+    <AppLink href={href} className={className} title={title}>
+      {children}
+    </AppLink>
+  ) : (
+    <span className={className} title={title}>
+      {children}
+    </span>
+  );
+}

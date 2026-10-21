@@ -15,7 +15,7 @@ import {
 } from "@/lib/api/browse";
 import { getInstructorNames } from "@/lib/api/instructor-names";
 import type { LegacyExpertResponse } from "@/lib/api/legacy";
-import { cachedRead, valueOf } from "@/lib/api/server-cache";
+import { cachedRead, freshRead, valueOf } from "@/lib/api/server-cache";
 
 import { mapExpertDetailData, type ExpertDetailSources } from "../model/mappers";
 import type { ExpertDetailData } from "../model/types";
@@ -85,10 +85,13 @@ export function toLegacyShape(detail: CatalogExpertDetail): LegacyExpertResponse
  * The expert with this key (a trainer, a consultant, or both under one profile), everything they offer,
  * and the rails under it; null when there is no such expert. Read from B2C (`/catalog/experts/{key}`).
  * Rails fail independently and are simply left off the page; a failed expert request throws, so ISR
- * keeps serving the last good page.
+ * keeps serving the last good page. `fresh` skips the cache (the admin Studio preview).
  */
-export const getExpertDetail = cache(async (key: string): Promise<ExpertDetailData | null> => {
-  const options = cachedRead(EXPERT_REVALIDATE_SECONDS, [expertCacheTag(key)]);
+export const getExpertDetail = cache(async (key: string, fresh = false): Promise<ExpertDetailData | null> => {
+  const options = fresh
+    ? // The preview may show a hidden expert and the Studio draft: the API trusts the shared revalidate secret.
+      { ...freshRead([expertCacheTag(key)]), headers: { "x-preview-secret": process.env.REVALIDATE_SECRET ?? "" } }
+    : cachedRead(EXPERT_REVALIDATE_SECONDS, [expertCacheTag(key)]);
   let detail: CatalogExpertDetail;
   try {
     detail = await getCatalogExpert(key, options);
@@ -108,6 +111,7 @@ export const getExpertDetail = cache(async (key: string): Promise<ExpertDetailDa
 
   const sources: ExpertDetailSources = {
     detail: toLegacyShape(detail),
+    b2c: detail,
     recommendations: null,
     catalog: valueOf(catalog, "catalog index"),
     consultations: valueOf(consultations, "consultation index"),

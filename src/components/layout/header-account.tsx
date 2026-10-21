@@ -9,6 +9,8 @@ import { useAccountProfile } from "@/lib/account/use-account-profile";
 import { useAuthStore } from "@/lib/auth/store";
 import { trackAuth } from "@/lib/observability/behavior";
 
+import { NotificationBell } from "@/features/notifications/notification-bell";
+
 import { accountLinks, AccountMenu, displayName } from "./account-menu";
 import { UserAvatar } from "./user-avatar";
 
@@ -41,7 +43,13 @@ export function HeaderAccount({ placement }: { placement: "bar" | "drawer" }) {
     // Re-render what the server made for a signed-in visitor.
     router.refresh();
   };
-  if (bar) return <AccountMenu user={user} onSignOut={signOut} />;
+  if (bar)
+    return (
+      <div className="flex items-center gap-1">
+        <NotificationBell />
+        <AccountMenu user={user} onSignOut={signOut} />
+      </div>
+    );
 
   const name = displayName(user, profile?.full_name);
 

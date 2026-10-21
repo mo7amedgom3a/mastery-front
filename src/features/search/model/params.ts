@@ -12,10 +12,11 @@ export const PRODUCT_TYPES = ["course", "diploma", "package", "consultation"] as
 export type ProductType = (typeof PRODUCT_TYPES)[number];
 
 /**
- * Off until `migrations/20260930_fix_resource_duration_minutes.sql` is applied in the backend: the
- * index currently stores course durations as seconds × 60, so filtering or sorting by it is wrong.
+ * Duration is B2C-owned (`b2c.resources.duration_minutes`, editable by admins) and filtered/sorted in
+ * SQL, so it is correct regardless of the legacy sync. Semantic search does not index duration, so a
+ * duration filter or sort always uses the lexical path.
  */
-export const DURATION_FILTER_ENABLED = false;
+export const DURATION_FILTER_ENABLED = true;
 
 /**
  * `relevance` is the default: ranked by the query, or newest first when there is none. "Newest"

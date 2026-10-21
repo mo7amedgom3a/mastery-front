@@ -195,8 +195,9 @@
 
 /* ---------- Footer ---------- */
 .ma-footer { background: var(--ink); color: var(--white); --logo-mark: var(--coral); padding-block: var(--space-12); }
-.ma-footer a { color: rgba(255,255,255,.72); text-decoration: none; }
-.ma-footer a:hover { color: var(--white); }
+.ma-footer a:not(.ma-btn) { color: rgba(255,255,255,.72); text-decoration: none; }
+.ma-footer a:not(.ma-btn):hover { color: var(--white); }
+.ma-footer .ma-btn--on-color:hover { color: var(--ink); }
 .ma-footer__small { color: rgba(255,255,255,.64); font-size: 13px; line-height: 20px; }
 
 /* ---------- Logo (inline SVG via <use href="#ma-logo"> / "#ma-mark") ---------- */

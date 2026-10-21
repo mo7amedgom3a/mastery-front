@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, GraduationCap, Headset, Heart, House, LogOut, Receipt, UserRound, type LucideIcon } from "lucide-react";
+import { Bell, ChevronDown, GraduationCap, Headset, Heart, House, LogOut, Receipt, UserRound, type LucideIcon } from "lucide-react";
 import type { Route } from "next";
 import { useEffect, useId, useRef, useState } from "react";
 
@@ -20,6 +20,7 @@ export const accountLinks: readonly AccountLink[] = [
   { href: routes.studentProfile, label: "الملف الشخصي", icon: UserRound },
   { href: routes.studentAccess, label: "تعلّمي", icon: GraduationCap },
   { href: routes.studentOrders, label: "طلباتي", icon: Receipt },
+  { href: routes.studentNotifications, label: "الإشعارات", icon: Bell },
   { href: routes.studentWishlist, label: "المفضلة", icon: Heart },
   { href: routes.studentSupport, label: "الدعم الفني", icon: Headset },
 ];

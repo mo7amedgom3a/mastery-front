@@ -12,6 +12,8 @@ const orderStatuses: Record<string, StatusView> = {
   paid: { label: "مدفوع", tag: "ma-tag--green" },
   payment_failed: { label: "فشل الدفع", tag: "ma-tag--pink" },
   cancelled: { label: "ملغى", tag: NEUTRAL },
+  partially_refunded: { label: "مسترد جزئياً", tag: "ma-tag--sky" },
+  refunded: { label: "مسترد", tag: "ma-tag--sky" },
 };
 
 const paymentStatuses: Record<string, StatusView> = {
@@ -41,6 +43,34 @@ const fulfillmentStatuses: Record<string, StatusView> = {
   failed: { label: "تعذّر التفعيل", tag: "ma-tag--pink" },
 };
 
+// Gateway-side states (pending, requires_action, needs_reconciliation) all read as "in progress" to the customer.
+const refundCaseStatuses: Record<string, StatusView> = {
+  requested: { label: "قيد المراجعة", tag: "ma-tag--yellow" },
+  processing: { label: "تمت الموافقة · جارٍ التنفيذ", tag: "ma-tag--sky" },
+  pending: { label: "تمت الموافقة · جارٍ التنفيذ", tag: "ma-tag--sky" },
+  requires_action: { label: "تمت الموافقة · جارٍ التنفيذ", tag: "ma-tag--sky" },
+  needs_reconciliation: { label: "تمت الموافقة · جارٍ التنفيذ", tag: "ma-tag--sky" },
+  succeeded: { label: "تم الاسترداد", tag: "ma-tag--green" },
+  rejected: { label: "مرفوض", tag: "ma-tag--pink" },
+  failed: { label: "تعذّر التنفيذ", tag: "ma-tag--pink" },
+  canceled: { label: "ملغى", tag: NEUTRAL },
+};
+
+/** Why an item can't be refunded, in the customer's words. Unknown codes fall back to a generic line. */
+const refundReasons: Record<string, string> = {
+  open_request_exists: "لديك طلب استرداد قيد المراجعة لهذا المنتج.",
+  outside_30_day_window: "انتهت مهلة طلب الاسترداد (30 يومًا من الشراء).",
+  payment_not_captured: "لم يكتمل الدفع بعد.",
+  learning_started: "بدأت التعلم في هذا المنتج، لذا لم يعد قابلًا للاسترداد.",
+  subscription_period_ended: "انتهت فترة الاشتراك المدفوعة.",
+  subscription_period_missing: "تعذّر تحديد فترة الاشتراك.",
+  consultation_not_provider_failed: "الاستشارة غير مؤهلة للاسترداد وفق سياسة الخدمة.",
+  customer_cancelled_or_missed: "إلغاء الاستشارة أو التغيب عنها لا يؤهل للاسترداد.",
+  fully_refunded_or_reserved: "تم استرداد المبلغ بالكامل أو هناك عملية استرداد قيد التنفيذ.",
+  resource_mapping_missing: "لا يمكن طلب الاسترداد إلكترونيًا لهذا المنتج. تواصل مع الدعم.",
+  unallocated_existing_refund: "توجد عملية استرداد سابقة على هذا الطلب. تواصل مع الدعم.",
+};
+
 const transactionEvents: Record<string, string> = {
   "checkout.session.completed": "اكتملت عملية الدفع",
   "checkout.session.expired": "انتهت مهلة صفحة الدفع",
@@ -68,6 +98,8 @@ export const orderStatus = (status: string) => view(orderStatuses, status);
 export const paymentStatus = (status: string | null | undefined) => view(paymentStatuses, status);
 export const entitlementStatus = (status: string) => view(entitlementStatuses, status);
 export const fulfillmentStatus = (status: string | null | undefined) => view(fulfillmentStatuses, status);
+export const refundCaseStatus = (status: string) => view(refundCaseStatuses, status);
+export const refundReason = (code: string) => refundReasons[code] ?? "هذا المنتج غير مؤهل للاسترداد حاليًا.";
 export const transactionEvent = (eventType: string) => transactionEvents[eventType] ?? eventType;
 
 /** Payment states that will not change any more. */

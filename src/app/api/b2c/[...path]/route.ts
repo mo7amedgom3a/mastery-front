@@ -22,8 +22,10 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^catalog\/products\/[A-Za-z0-9_-]+$/, session: false },
   // Onboarding choices (skills, topics, product types), read by the client onboarding steps.
   { methods: ["GET"], pattern: /^catalog\/onboarding-options$/, session: false },
-  // Company request: the country list and one country's cities.
+  // Company and trainer requests: country list, phone codes, and cities.
   { methods: ["GET"], pattern: /^requests\/countries$/, session: false },
+  { methods: ["GET"], pattern: /^requests\/phone-codes$/, session: false },
+  { methods: ["GET"], pattern: /^requests\/countries\/phone-codes$/, session: false },
   { methods: ["GET"], pattern: /^requests\/countries\/[A-Z]{2}\/cities$/, session: false },
   { methods: ["POST"], pattern: /^requests\/trainer-attachments\/presign$/, session: false },
   { methods: ["POST"], pattern: /^requests\/trainer-attachments\/[A-Za-z0-9-]+\/confirm$/, session: false },
@@ -44,6 +46,13 @@ const RULES: readonly Rule[] = [
   // Tamara eligibility, instalment plans and widget key for the cart total: public.
   { methods: ["GET"], pattern: /^payments\/tamara\/options$/, session: false },
   { methods: ["GET"], pattern: /^orders(\/[A-Za-z0-9-]+(\/(invoices|transactions))?)?$/, session: true },
+  // Customer refund previews, requests and case history on paid order items.
+  { methods: ["GET"], pattern: /^refund-cases\/me$/, session: true },
+  { methods: ["GET"], pattern: /^refund-cases\/orders\/[A-Za-z0-9-]+\/items\/[A-Za-z0-9-]+\/preview$/, session: true },
+  { methods: ["POST"], pattern: /^refund-cases\/orders\/[A-Za-z0-9-]+\/requests$/, session: true },
+  // In-app notifications (the dashboard bell): list, unread count, mark read.
+  { methods: ["GET"], pattern: /^me\/notifications(\/unread-count)?$/, session: true },
+  { methods: ["POST"], pattern: /^me\/notifications\/([A-Za-z0-9-]+\/read|read-all)$/, session: true },
   // Subscriptions: public plans and feature catalog, then the customer's checkout and plan.
   { methods: ["GET"], pattern: /^subscriptions\/(plans(\/[A-Za-z0-9_-]+)?|features)$/, session: false },
   { methods: ["POST"], pattern: /^subscriptions\/checkout$/, session: true },

@@ -42,6 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const listings = [
     listing(searchHref(emptySearchState), 0.9),
     listing(routes.live, 0.8),
+    listing(routes.experts, 0.8),
     page(routes.business, 0.8),
     page(routes.trainers, 0.7),
     page(routes.terms, 0.3),

@@ -11710,12 +11710,30 @@ export interface components {
             packages?: components["schemas"]["ProductCardResponse"][];
             /** Consultations */
             consultations?: components["schemas"]["ProductCardResponse"][];
+            /** Bundles */
+            bundles?: components["schemas"]["ProductCardResponse"][];
+            /** Live Diplomas */
+            live_diplomas?: components["schemas"]["ProductCardResponse"][];
+            /**
+             * Category Items
+             * @description `categories` with ids and slugs.
+             */
+            category_items?: components["schemas"]["ExpertCategoryResponse"][];
+            /** Skills */
+            skills?: components["schemas"]["ExpertTopicResponse"][];
+            /** Tags */
+            tags?: components["schemas"]["ExpertTopicResponse"][];
             highlights?: components["schemas"]["ExpertHighlightsResponse"];
             /**
              * Related
              * @description Other experts' items in the same categories.
              */
             related?: components["schemas"]["ProductCardResponse"][];
+            /**
+             * Related Experts
+             * @description Other experts ranked by shared categories, skills and tags.
+             */
+            related_experts?: components["schemas"]["app__modules__catalog__presentation__browse_router__ExpertSummaryResponse"][];
         };
         /** ExpertHighlightsResponse */
         ExpertHighlightsResponse: {
@@ -11759,6 +11777,40 @@ export interface components {
              * @default 0
              */
             consultation_count: number;
+            /**
+             * Bundle Count
+             * @default 0
+             */
+            bundle_count: number;
+            /**
+             * Live Diploma Count
+             * @default 0
+             */
+            live_diploma_count: number;
+            /**
+             * Headline
+             * @description Title line under the name, e.g. «خبير التسويق الرقمي».
+             */
+            headline?: string | null;
+            /**
+             * Is Consultant
+             * @description Gives consultations: has an active consultant profile.
+             * @default false
+             */
+            is_consultant: boolean;
+            /**
+             * Is Featured
+             * @description In the landing page's experts line-up.
+             * @default false
+             */
+            is_featured: boolean;
+            /** Featured Order */
+            featured_order?: number | null;
+            /**
+             * Categories
+             * @description The fields they teach in, most items first.
+             */
+            categories?: string[];
             /** Cover Image */
             cover_image?: string | null;
             /**
@@ -11784,6 +11836,33 @@ export interface components {
             instagram_url?: string | null;
             /** Youtube Url */
             youtube_url?: string | null;
+            /**
+             * Readme
+             * @description Page content (markdown). Replaces `info` / `more_info` when set.
+             * @default
+             */
+            readme: string;
+            /**
+             * Readme Source
+             * @description `readme` when saved in the admin; `bio` when converted from the legacy HTML bio.
+             * @default empty
+             */
+            readme_source: string;
+            /**
+             * Document
+             * @description The page built in the expert Studio (BlockNote blocks, published copy; the draft in preview). Takes precedence over `readme` when set.
+             */
+            document?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Document Published At */
+            document_published_at?: string | null;
+            /**
+             * Status
+             * @description `inactive` only in preview: hidden experts 404 otherwise.
+             * @default active
+             */
+            status: string;
         };
         /** ExpertServiceResponse */
         ExpertServiceResponse: {
@@ -12035,6 +12114,11 @@ export interface components {
             expertise_json: string;
             /** Sort Order */
             sort_order: number;
+            /**
+             * Key
+             * @description Public expert key for `/catalog/experts/{key}`.
+             */
+            key?: string | null;
         };
         /** JoinResponse */
         JoinResponse: {
@@ -13051,6 +13135,11 @@ export interface components {
             lesson_count: number;
             /** Units */
             units?: components["schemas"]["PackageMemberUnitResponse"][];
+            /**
+             * Instructor Key
+             * @description Public expert key of the member's instructor.
+             */
+            instructor_key?: string | null;
         };
         /**
          * PackageMemberUnitResponse
@@ -13711,6 +13800,11 @@ export interface components {
             /** Skills */
             skills?: components["schemas"]["ProductSkillResponse"][];
             live_diploma?: components["schemas"]["LiveDiplomaView"] | null;
+            /**
+             * Instructor Key
+             * @description Public expert key of the primary instructor.
+             */
+            instructor_key?: string | null;
         };
         /** ProductLearners */
         ProductLearners: {
@@ -16948,6 +17042,40 @@ export interface components {
              * @default 0
              */
             consultation_count: number;
+            /**
+             * Bundle Count
+             * @default 0
+             */
+            bundle_count: number;
+            /**
+             * Live Diploma Count
+             * @default 0
+             */
+            live_diploma_count: number;
+            /**
+             * Headline
+             * @description Title line under the name, e.g. «خبير التسويق الرقمي».
+             */
+            headline?: string | null;
+            /**
+             * Is Consultant
+             * @description Gives consultations: has an active consultant profile.
+             * @default false
+             */
+            is_consultant: boolean;
+            /**
+             * Is Featured
+             * @description In the landing page's experts line-up.
+             * @default false
+             */
+            is_featured: boolean;
+            /** Featured Order */
+            featured_order?: number | null;
+            /**
+             * Categories
+             * @description The fields they teach in, most items first.
+             */
+            categories?: string[];
         };
         /** CategoryResponse */
         app__modules__catalog__presentation__schemas__CategoryResponse: {
@@ -17843,6 +17971,39 @@ export interface components {
             companies: number;
             /** Avg Seats */
             avg_seats?: number | null;
+        };
+        /** ExpertCategoryResponse */
+        ExpertCategoryResponse: {
+            /**
+             * Category Id
+             * Format: uuid
+             */
+            category_id: string;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug?: string | null;
+            /**
+             * Legacy Category Id
+             * @description Id used in storefront category URLs.
+             */
+            legacy_category_id?: number | null;
+        };
+        /**
+         * ExpertTopicResponse
+         * @description A skill or tag across the expert's items; `slug` is null for tags.
+         */
+        ExpertTopicResponse: {
+            /** Name */
+            name: string;
+            /** Slug */
+            slug?: string | null;
+            /**
+             * Count
+             * @description How many of the expert's items carry it.
+             * @default 1
+             */
+            count: number;
         };
     };
     responses: never;
@@ -25226,6 +25387,8 @@ export interface operations {
             query?: {
                 limit?: number;
                 offset?: number;
+                /** @description Only the landing line-up, in its order. */
+                featured?: boolean | null;
             };
             header?: never;
             path?: never;

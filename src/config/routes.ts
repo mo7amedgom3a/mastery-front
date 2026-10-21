@@ -32,7 +32,7 @@ export function parseProductSlug(segment: string): number | null {
 
 /**
  * Expert-profile segment: `{key}-{name}`, e.g. `9-د._مظهر_قنطقجي`. The key is what the API looks up:
- * the trainer id, or `c{id}` for an expert who only gives consultations.
+ * the trainer id, `c{id}` for an expert who only gives consultations, or the instructor uuid of a B2C-only expert.
  */
 export function expertSlug(key: string | number, name?: string | null): string {
   const label = name?.trim().replace(/\s+/g, "_");
@@ -41,7 +41,16 @@ export function expertSlug(key: string | number, name?: string | null): string {
 
 /** The expert key at the start of a profile segment; null when the segment doesn't start with one. */
 export function parseExpertSlug(segment: string): string | null {
-  return segment.match(/^(c?[1-9]\d{0,9})(?:-|$)/)?.[1] ?? null;
+  return segment.match(/^(c?[1-9]\d{0,9}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:-|$)/i)?.[1] ?? null;
+}
+
+/** The expert key of a Studio instructor ref (`legacy:trainer:9`, `legacy:consultant:4`, `b2c:<uuid>`). */
+export function expertKeyOfRef(ref: string): string | null {
+  const legacy = ref.match(/^legacy:(trainer|consultant):(\d+)$/);
+  if (legacy) {
+    return legacy[1] === "trainer" ? legacy[2] : `c${legacy[2]}`;
+  }
+  return ref.startsWith("b2c:") ? parseExpertSlug(ref.slice(4)) : null;
 }
 
 const expertRoute = (key: string | number, name?: string | null) =>
@@ -71,6 +80,8 @@ export const routes = {
   diplomas: route("/search?type=diploma"),
   diploma: (id: number, linkName?: string | null) =>
     route(`/diplomas/${encodeURIComponent(productSlug(id, linkName))}`),
+  /** Every trainer and expert, searchable by name and field (`?q=&field=&kind=`). */
+  experts: route("/experts"),
   /** One profile page for a trainer, a consultant, or someone who is both. */
   expert: expertRoute,
   /** A trainer's profile is their expert page: the trainer id is the expert key. */
@@ -112,6 +123,7 @@ export const routes = {
   studentWishlist: route("/students/wishlist"),
   studentCart: route("/students/cart"),
   studentOrders: route("/students/orders"),
+  studentNotifications: route("/students/notifications"),
   studentOrder: (orderId: string) => route(`/students/orders/${encodeURIComponent(orderId)}`),
   studentAccess: route("/students/access"),
   /** The customer's subscription: plan, renewal, included programs and Choose-X picks. */

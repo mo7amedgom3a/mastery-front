@@ -56,6 +56,7 @@ export function safeUrl(value: unknown): string | null {
 }
 
 export function inlineText(content: unknown): string {
+  if (typeof content === "string") return content;
   if (!Array.isArray(content)) return "";
   return (content as StudioInline[])
     .map((item) => (item.type === "link" ? inlineText(item.content) : (item.text ?? "")))
@@ -65,10 +66,10 @@ export function inlineText(content: unknown): string {
 export function studioSections(blocks: readonly StudioBlock[]): StudioSectionVM[] {
   const sections: StudioSectionVM[] = [];
   let current: StudioSectionVM = { id: "intro", heading: null, blocks: [] };
-  for (const block of blocks) {
+  for (const [index, block] of blocks.entries()) {
     if (block.type === "heading" && block.props?.level === 2) {
       if (current.heading !== null || current.blocks.length) sections.push(current);
-      current = { id: `s-${block.id}`, heading: inlineText(block.content).trim() || null, blocks: [] };
+      current = { id: `s-${block.id || index}`, heading: inlineText(block.content).trim() || null, blocks: [] };
     } else {
       current.blocks.push(block);
     }

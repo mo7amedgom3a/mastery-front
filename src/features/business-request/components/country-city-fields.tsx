@@ -4,19 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 import { useId, useState } from "react";
 
 import { describedBy, Field } from "@/features/auth/components/field";
+import { CountrySearchSelect } from "@/components/ui/country-search-select";
 
 import { locationQueries } from "../api/locations";
 import { useRequestStore } from "../model/request-store";
 import { TextField } from "./text-field";
 
-/** Listed first: where most of our companies are. */
-const NEARBY = ["SA", "AE", "KW", "QA", "BH", "OM", "EG", "JO"];
 /** The city `<select>` option that switches to typing the city. */
 const TYPE_CITY = "__type__";
 
 /**
- * Country `<select>` from the country list, then a city `<select>` for that country. When the city
- * lookup fails or knows no cities, the city is typed instead.
+ * Country search select from the full country list, then a city `<select>` for that country.
+ * When the city lookup fails or knows no cities, the city is typed instead.
  */
 export function CountryCityFields() {
   const countryId = useId();
@@ -32,9 +31,6 @@ export function CountryCityFields() {
 
   const countryError = errors.countryCode ?? errors.countryName;
   const countryHint = countries.isError ? "تعذّر تحميل قائمة الدول. حدّث الصفحة وحاول مجدداً." : undefined;
-  const nearby = (countries.data ?? []).filter((country) => NEARBY.includes(country.code));
-  nearby.sort((a, b) => NEARBY.indexOf(a.code) - NEARBY.indexOf(b.code));
-  const others = (countries.data ?? []).filter((country) => !NEARBY.includes(country.code));
 
   const cityList = cities.data ?? [];
   // A saved city that isn't in the list (typed earlier) keeps the text box.
@@ -42,46 +38,20 @@ export function CountryCityFields() {
 
   return (
     <>
-      <Field
+      <CountrySearchSelect
         id={countryId}
         label="الدولة"
+        value={countryCode ?? ""}
+        valueKey="code"
+        countries={countries.data ?? []}
+        disabled={countries.isPending}
         error={countryError}
         hint={countryHint}
-      >
-        <select
-          id={countryId}
-          name="country"
-          className="ma-select"
-          value={countryCode ?? ""}
-          disabled={countries.isPending}
-          {...describedBy(countryId, countryError, countryHint)}
-          onChange={(event) => {
-            const picked = countries.data?.find((country) => country.code === event.target.value);
-            setTypingCity(false);
-            update({ countryCode: picked?.code ?? null, countryName: picked?.name ?? "", city: "" });
-          }}
-        >
-          <option value="" disabled>
-            {countries.isPending ? "جارٍ تحميل الدول…" : "اختر الدولة"}
-          </option>
-          {nearby.length > 0 ? (
-            <optgroup label="الأكثر اختياراً">
-              {nearby.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.flag} {country.name}
-                </option>
-              ))}
-            </optgroup>
-          ) : null}
-          <optgroup label="كل الدول">
-            {others.map((country) => (
-              <option key={country.code} value={country.code}>
-                {country.flag} {country.name}
-              </option>
-            ))}
-          </optgroup>
-        </select>
-      </Field>
+        onChange={(picked) => {
+          setTypingCity(false);
+          update({ countryCode: picked.code, countryName: picked.name, city: "" });
+        }}
+      />
 
       {cityTyped || !countryCode ? (
         <TextField

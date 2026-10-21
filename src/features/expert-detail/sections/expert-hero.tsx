@@ -1,4 +1,4 @@
-import { BookOpen, ChevronLeft, GraduationCap, Layers, MessagesSquare, type LucideIcon } from "lucide-react";
+import { BookOpen, ChevronLeft, GraduationCap, Layers, MessagesSquare, Package, Radio, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { AppLink } from "@/components/ui/app-link";
@@ -6,7 +6,7 @@ import { routes } from "@/config/routes";
 import { TrainerAvatar } from "@/features/product-detail/components/trainer-avatar";
 
 import { SocialLinks } from "../components/social-links";
-import { expertFacts, expertRoles, type ExpertFactKey } from "../model/facts";
+import { expertFacts, type ExpertFactKey } from "../model/facts";
 import type { ExpertVM } from "../model/types";
 
 const AVATAR_SIZE = 128;
@@ -15,6 +15,8 @@ const factIcon: Record<ExpertFactKey, LucideIcon> = {
   diplomas: GraduationCap,
   consultations: MessagesSquare,
   packages: Layers,
+  bundles: Package,
+  live: Radio,
 };
 
 /**
@@ -23,8 +25,10 @@ const factIcon: Record<ExpertFactKey, LucideIcon> = {
  * LCP element.
  */
 export function ExpertHero({ expert, share }: { expert: ExpertVM; share?: ReactNode }) {
+  // A page built in the expert Studio has its own sections: the tiles then don't jump anywhere.
+  const linkFacts = expert.page.length === 0;
   const facts = expertFacts(expert.counts);
-  const roles = expertRoles(expert.counts);
+  const { roles } = expert;
 
   return (
     <section aria-labelledby="expert-name" className="bg-surface-alt text-fg">
@@ -40,8 +44,8 @@ export function ExpertHero({ expert, share }: { expert: ExpertVM; share?: ReactN
               <ChevronLeft className="size-4" />
             </li>
             <li>
-              <AppLink href={routes.section("experts")} className="text-fg-muted no-underline hover:text-fg">
-                الخبراء
+              <AppLink href={routes.experts} className="text-fg-muted no-underline hover:text-fg">
+                المدربون والخبراء
               </AppLink>
             </li>
             <li aria-hidden="true">
@@ -61,7 +65,7 @@ export function ExpertHero({ expert, share }: { expert: ExpertVM; share?: ReactN
           {roles.length > 0 || expert.specialties.length > 0 ? (
             <ul aria-label="الصفة ومجالات الخبرة" className="ma-cluster m-0 list-none gap-2 p-0">
               {roles.map((role) => (
-                <li key={role} className="ma-tag ma-tag--coral">
+                <li key={role} className={role === "مدرّب" ? "ma-tag ma-tag--coral" : "ma-tag ma-tag--lilac"}>
                   {role}
                 </li>
               ))}
@@ -80,6 +84,11 @@ export function ExpertHero({ expert, share }: { expert: ExpertVM; share?: ReactN
               className="m-0 text-[clamp(2rem,1.3rem+2.8vw,3.5rem)] leading-[1.35] font-bold text-balance"
             >
               {expert.name}
+              {expert.title ? (
+                <span className="mt-2 block text-[clamp(1.125rem,1rem+0.6vw,1.5rem)] leading-normal font-medium text-fg-muted">
+                  {expert.title}
+                </span>
+              ) : null}
             </h1>
             <div className="flex flex-wrap items-center gap-2 sm:mt-3">
               <SocialLinks links={expert.socials} name={expert.name} />
@@ -94,13 +103,20 @@ export function ExpertHero({ expert, share }: { expert: ExpertVM; share?: ReactN
                 return (
                   <li key={key}>
                     {/* Each tile jumps to that kind's section further down the page. */}
-                    <a
-                      href={`#${key}`}
-                      className="flex items-center gap-3 rounded-panel border border-line bg-surface px-4 py-3 text-fg no-underline transition-colors hover:border-line-strong"
-                    >
-                      <Icon aria-hidden="true" className="size-6 shrink-0 text-accent" />
-                      <span className="text-lg font-bold md:text-xl">{label}</span>
-                    </a>
+                    {linkFacts ? (
+                      <a
+                        href={`#${key}`}
+                        className="flex items-center gap-3 rounded-panel border border-line bg-surface px-4 py-3 text-fg no-underline transition-colors hover:border-line-strong"
+                      >
+                        <Icon aria-hidden="true" className="size-6 shrink-0 text-accent" />
+                        <span className="text-lg font-bold md:text-xl">{label}</span>
+                      </a>
+                    ) : (
+                      <span className="flex items-center gap-3 rounded-panel border border-line bg-surface px-4 py-3 text-fg">
+                        <Icon aria-hidden="true" className="size-6 shrink-0 text-accent" />
+                        <span className="text-lg font-bold md:text-xl">{label}</span>
+                      </span>
+                    )}
                   </li>
                 );
               })}

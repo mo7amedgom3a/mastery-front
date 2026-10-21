@@ -9,6 +9,22 @@ import { REQUEST_STEPS, type RequestStepId } from "./steps";
 const text = (message: string, max = 120) => z.string().trim().min(2, message).max(max);
 const list = <T extends string>(values: [T, ...T[]], message: string) => z.array(z.enum(values)).min(1, message);
 
+export const DISALLOWED_COMPANY_EMAIL_DOMAINS = new Set([
+  "gmail.com", "googlemail.com", "yahoo.com", "ymail.com", "rocketmail.com",
+  "hotmail.com", "outlook.com", "live.com", "msn.com",
+  "icloud.com", "me.com", "mac.com",
+  "aol.com", "proton.me", "protonmail.com",
+  "zoho.com", "mail.com", "gmx.com", "gmx.net",
+  "yandex.com", "yandex.ru", "mail.ru", "inbox.ru",
+]);
+
+export function isCorporateEmail(email: string): boolean {
+  const parts = email.trim().toLowerCase().split("@");
+  if (parts.length !== 2) return false;
+  const domain = parts[1];
+  return Boolean(domain && !DISALLOWED_COMPANY_EMAIL_DOMAINS.has(domain));
+}
+
 /** The answers the API accepts; used on every "next" (per step) and again in the Server Action. */
 export const requestSchema = z
   .object({
@@ -41,7 +57,10 @@ export const requestSchema = z
     summary: z.string().trim().min(20, "اكتب ملخصاً من 20 حرفاً على الأقل").max(3000),
     contactName: text("اكتب اسمك", 250),
     jobTitle: text("اكتب مسمّاك الوظيفي"),
-    companyEmail: z.email("اكتب بريداً إلكترونياً صحيحاً").max(320),
+    companyEmail: z
+      .email("اكتب بريداً إلكترونياً صحيحاً")
+      .max(320)
+      .refine(isCorporateEmail, "يرجى استخدام البريد الإلكتروني الرسمي للشركة (لا يُقبل بريد مجاني مثل Gmail أو Yahoo)"),
     contactPhone: z
       .string()
       .trim()

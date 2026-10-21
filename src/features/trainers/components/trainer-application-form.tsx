@@ -5,6 +5,8 @@ import { clsx as cn } from "clsx";
 import { useActionState, useEffect, useId, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { PhoneInputField } from "@/components/ui/phone-input-field";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { describedBy, Field, FormError } from "@/features/auth/components/field";
 import type { CatalogCategoriesResponse, OnboardingSkill } from "@/lib/api/catalog";
 
@@ -16,6 +18,7 @@ import {
 } from "../actions/submit-trainer-application";
 import { trainerFormCopy as copy, trainerFormOptions as options } from "../content/copy";
 import { uploadTrainerAttachment } from "../api/upload-attachment";
+import { TrainerCountryCityFields } from "./trainer-country-city-fields";
 
 const initialState: TrainerApplicationState = { status: "idle" };
 
@@ -37,6 +40,7 @@ export function TrainerApplicationForm({ specialities, categories, skills }: { s
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [step, setStep] = useState(0);
+  const [trainerCountry, setTrainerCountry] = useState(state.status !== "success" ? state.values?.text["country"] ?? "" : "");
   const stepNames = [copy.sections.personal, copy.sections.experience, copy.sections.program, copy.sections.presence, copy.sections.options];
   useEffect(() => {
     if (state.status !== "invalid") return;
@@ -92,7 +96,8 @@ export function TrainerApplicationForm({ specialities, categories, skills }: { s
   const specialityOptions = [...new Set([...specialities, options.otherSpeciality])];
 
   return (
-    <form action={formAction} className="flex flex-col gap-8" noValidate>
+    <QueryProvider>
+      <form action={formAction} className="flex flex-col gap-8" noValidate>
       <nav aria-label="خطوات طلب المدرب" className="flex flex-wrap gap-2 border-b border-line pb-4">
         {stepNames.map((name, index) => <button key={name} type="button" onClick={() => setStep(index)}
           aria-current={step === index ? "step" : undefined}
@@ -111,29 +116,28 @@ export function TrainerApplicationForm({ specialities, categories, skills }: { s
           <Field id={idOf("email")} label="البريد الإلكتروني" error={errors.email}>
             <input {...control("email")} type="email" dir="ltr" className="ma-input" autoComplete="email" />
           </Field>
-          <Field id={idOf("mobile")} label="رقم الجوال" error={errors.mobile}>
-            <input
-              {...control("mobile")}
-              type="tel"
-              dir="ltr"
-              inputMode="tel"
-              className="ma-input text-end"
-              autoComplete="tel"
-              placeholder="+966 5x xxx xxxx"
-            />
-          </Field>
+          <PhoneInputField
+            id={idOf("mobile")}
+            name="mobile"
+            label="رقم الجوال"
+            countryCode={trainerCountry}
+            defaultValue={values?.text["mobile"] ?? ""}
+            error={errors.mobile}
+          />
           <Field id={idOf("nationality")} label="الجنسية" error={errors.nationality}>
             <input {...control("nationality")} className="ma-input" />
           </Field>
           <Field id={idOf("birthdate")} label="تاريخ الميلاد" error={errors.birthdate}>
             <input {...control("birthdate")} type="date" dir="ltr" className="ma-input text-end" autoComplete="bday" />
           </Field>
-          <Field id={idOf("country")} label="دولة الإقامة" error={errors.country}>
-            <input {...control("country")} className="ma-input" autoComplete="country-name" />
-          </Field>
-          <Field id={idOf("city")} label="المدينة" error={errors.city}>
-            <input {...control("city")} className="ma-input" autoComplete="address-level2" />
-          </Field>
+          <TrainerCountryCityFields
+            baseId={baseId}
+            defaultCountry={values?.text["country"] ?? ""}
+            defaultCity={values?.text["city"] ?? ""}
+            countryError={errors.country}
+            cityError={errors.city}
+            onCountryChange={(name, code) => setTrainerCountry(code || name)}
+          />
         </div>
       </Group>
       </div>
@@ -317,5 +321,6 @@ export function TrainerApplicationForm({ specialities, categories, skills }: { s
           : <Button type="submit" variant="primary" size="lg" block disabled={pending || uploading || categories.length === 0 || skills.length === 0} aria-disabled={pending || uploading || categories.length === 0 || skills.length === 0} className={cn(pending && "is-loading")}>{copy.submit}</Button>}
       </div>
     </form>
+    </QueryProvider>
   );
 }

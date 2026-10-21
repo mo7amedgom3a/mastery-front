@@ -1,6 +1,6 @@
 import type { CatalogProductResponse } from "@/lib/api/catalog";
 import type { ProductContentResponse } from "@/lib/api/product-content";
-import { routes } from "@/config/routes";
+import { expertKeyOfRef, routes } from "@/config/routes";
 import { cleanText, formatClock, formatDurationFromSeconds, toPlainText, toTextBlocks } from "@/lib/format";
 import { toPricing } from "@/lib/pricing";
 import { studioSections, type StudioDocument } from "./studio-content";
@@ -72,7 +72,7 @@ export function mapB2CProductDetail(
           avatar: dto.instructor_avatar ?? null,
           bio: [],
           summary: null,
-          href: routes.trainers,
+          href: dto.instructor_key ? routes.expert(dto.instructor_key, dto.instructor_name) : null,
         },
       ]
     : [];
@@ -92,6 +92,7 @@ export function mapB2CProductDetail(
     : null;
   const metaTrainers = (doc?.meta?.instructors ?? []).map((inst, index): TrainerVM => {
     const name = cleanText(inst.display_name) || trainers[0]?.name || "";
+    const key = expertKeyOfRef(inst.ref);
     return {
       id: index + 1,
       name,
@@ -99,7 +100,7 @@ export function mapB2CProductDetail(
       avatar: inst.avatar_url || trainers[0]?.avatar || null,
       bio: [],
       summary: null,
-      href: routes.trainers,
+      href: key ? routes.expert(key, name) : (trainers.find((trainer) => trainer.name === name)?.href ?? null),
     };
   });
 

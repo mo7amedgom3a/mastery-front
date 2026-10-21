@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import React, { type ReactNode } from "react";
 
+import { ProductCard } from "@/components/ui/product-card";
+import { programCardsOf } from "@/features/expert-detail/model/page-document";
 import { cn } from "@/lib/cn";
 import {
   galleryItems,
@@ -246,6 +248,32 @@ function AssetGalleryBlock({ block }: { block: StudioBlock }) {
   );
 }
 
+/** Featured programs (expert Studio pages): cards resolved from the expert's own items before rendering. */
+function ProgramCardsBlock({ block }: { block: StudioBlock }) {
+  const cards = programCardsOf(block.props?.cards);
+  if (cards.length === 0) return null;
+  return (
+    <ul data-block-id={block.id} className="m-0 grid list-none gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3">
+      {cards.map((card, position) => (
+        <li key={card.slug} className="min-w-0">
+          <ProductCard
+            href={card.href}
+            title={card.title}
+            image={card.image}
+            color={card.color}
+            tag={card.tag}
+            summary={card.summary}
+            price={card.price}
+            ctaLabel="التفاصيل"
+            sizes="(min-width: 1200px) 390px, (min-width: 600px) 50vw, 100vw"
+            tracking={{ surface: "expert-page", position }}
+          />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** A Bunny Stream GUID plays inline; any other URL is a direct video file. */
 const BUNNY_GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -341,6 +369,8 @@ function SingleBlock({ block }: { block: StudioBlock }) {
       return <InstructorCardBlock block={block} />;
     case "assetGallery":
       return <AssetGalleryBlock block={block} />;
+    case "programCards":
+      return <ProgramCardsBlock block={block} />;
     case "video":
       return <VideoBlock block={block} />;
     case "file":
@@ -551,9 +581,10 @@ function renderBlockGroup(blocks: readonly StudioBlock[]): ReactNode[] {
 }
 
 /**
- * Renders the Studio sections created in the admin's Course Studio.
+ * Renders the Studio sections created in the admin's Course Studio (and the expert Studio). `wide` lets the text
+ * use the full container width, for pages where the Studio content is the whole body (expert pages).
  */
-export function ContentBlocks({ sections }: { sections: readonly StudioSectionVM[] }) {
+export function ContentBlocks({ sections, wide = false }: { sections: readonly StudioSectionVM[]; wide?: boolean }) {
   if (sections.length === 0) return null;
 
   return (
@@ -568,7 +599,7 @@ export function ContentBlocks({ sections }: { sections: readonly StudioSectionVM
           {section.heading ? (
             <h3 className="m-0 text-2xl font-bold text-fg">{section.heading}</h3>
           ) : null}
-          <div className="flex flex-col gap-4 text-base leading-8 text-fg max-w-[68ch]">
+          <div className={cn("flex flex-col gap-4 text-base leading-8 text-fg", !wide && "max-w-[68ch]")}>
             {renderBlockGroup(section.blocks)}
           </div>
         </section>

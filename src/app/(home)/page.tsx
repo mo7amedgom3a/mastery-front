@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { baseOpenGraph, siteConfig } from "@/config/site";
+import { getExpertCards } from "@/features/experts-directory/api/get-expert-cards";
 import { getLandingData } from "@/features/landing/api/get-landing-data";
 import { LandingPage } from "@/features/landing/landing-page";
 
@@ -24,6 +25,13 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const data = await getLandingData();
-  return <LandingPage data={data} />;
+  const [data, experts] = await Promise.all([
+    getLandingData(),
+    // The experts section keeps its curated line-up when the directory is unavailable.
+    getExpertCards().catch((error: unknown) => {
+      console.error("[api] experts request failed", error);
+      return [];
+    }),
+  ]);
+  return <LandingPage data={data} experts={experts} />;
 }

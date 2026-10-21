@@ -1,7 +1,7 @@
 import { BookOpen, CalendarCheck, ChevronLeft, Clock, Layers, Star, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { AppLink } from "@/components/ui/app-link";
+import { AppLink, MaybeLink } from "@/components/ui/app-link";
 import { routes } from "@/config/routes";
 
 import { TrainerAvatar } from "../components/trainer-avatar";
@@ -107,7 +107,7 @@ export function DetailHero({ product, share }: { product: ProductDetailVM; share
           >
             {product.trainers.map((trainer, index) => (
               <li key={trainer.id}>
-                <AppLink href={trainer.href} className="group flex items-end gap-4 text-fg no-underline">
+                <MaybeLink href={trainer.href} className="group flex items-end gap-4 text-fg no-underline">
                   <TrainerAvatar
                     trainer={trainer}
                     size={AVATAR_SIZE}
@@ -118,7 +118,7 @@ export function DetailHero({ product, share }: { product: ProductDetailVM; share
                     <span className="text-xs text-fg-muted">المدرب</span>
                     <span className="font-bold underline-offset-4 group-hover:underline">{trainer.name}</span>
                   </span>
-                </AppLink>
+                </MaybeLink>
               </li>
             ))}
           </ul>

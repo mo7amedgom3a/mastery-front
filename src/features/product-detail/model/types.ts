@@ -44,7 +44,8 @@ export type TrainerVM = {
   bio: TextBlock[];
   /** Short plain-text bio for the hero and structured data. */
   summary: string | null;
-  href: Route;
+  /** The expert profile; null when the instructor has no public key. */
+  href: Route | null;
 };
 
 /** The promo video as the API describes it; checked against the Bunny library before it is shown. */

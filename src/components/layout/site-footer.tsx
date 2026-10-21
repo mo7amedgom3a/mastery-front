@@ -1,45 +1,18 @@
-import type { Route } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
 
 import { Logo } from "@/components/brand/logo";
 import { SocialIcon, socialLabel, type SocialNetwork } from "@/components/icons/social-icons";
 import { AppLink } from "@/components/ui/app-link";
-import { routes } from "@/config/routes";
+import { ButtonLink } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/cn";
 
-const columns: { title: string; links: { label: string; href: Route }[] }[] = [
-  {
-    title: "تعلّم",
-    links: [
-      { label: "الدورات", href: routes.courses },
-      { label: "الدبلومات", href: routes.diplomas },
-      { label: "البث المباشر", href: routes.live },
-      { label: "الباقات", href: routes.packages },
-      { label: "حزم ماستري", href: routes.section("bundles") },
-      { label: "الاستشارات", href: routes.consultations },
-    ],
-  },
-  {
-    title: "الأكاديمية",
-    links: [
-      { label: "حول ماستري أكاديمي", href: routes.section("about") },
-      { label: "الخبراء", href: routes.section("experts") },
-      { label: "انضم لنا كمدرب", href: routes.trainers },
-      { label: "للشركات", href: routes.business },
-    ],
-  },
-  {
-    title: "روابط مهمة",
-    links: [
-      { label: "سلة المشتريات", href: routes.cart },
-      { label: "الأسئلة الشائعة", href: routes.section("faq") },
-      { label: "سياسة الخصوصية", href: routes.privacy },
-      { label: "الشروط والأحكام", href: routes.terms },
-    ],
-  },
-];
+import {
+  enterpriseBannerData,
+  navigationColumns,
+  skillDirectoryColumns,
+} from "./footer-data";
 
 // Same order as `siteConfig.social`.
 const NETWORKS: readonly SocialNetwork[] = ["instagram", "facebook", "x", "linkedin", "youtube"];
@@ -60,33 +33,131 @@ const payments: { src: string; name: string; fit: "object-cover" | "object-conta
 ];
 
 /** External link in the footer: new tab, and announced as such. */
-function ExternalLink({ href, label, className, children }: { href: string; label: string; className?: string; children: ReactNode }) {
+function ExternalLink({
+  href,
+  label,
+  className,
+  children,
+}: {
+  href: string;
+  label: string;
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${label} (يفتح في نافذة جديدة)`} className={className}>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${label} (يفتح في نافذة جديدة)`}
+      className={className}
+    >
       {children}
     </a>
   );
 }
 
-/** Kit `.ma-footer`: always ink. Brand and links, then accreditation and the app, then payments. */
+/**
+ * Enhanced site footer:
+ * 1. Enterprise Trust Banner (coral band with on-color CTAs matching cta-band pattern)
+ * 2. Explore Top Skills, Categories, Tags & Common Searches (4-column directory)
+ * 3. Platform & Corporate Navigation (Enterprise, Pricing, Learn, Academy, Legal)
+ * 4. Accreditation & Mobile Apps
+ * 5. Bottom Utility Bar & Safe Payment Providers
+ */
 export function SiteFooter() {
   return (
-    <footer className="ma-footer">
-      <div className="ma-container grid gap-12 md:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))]">
+    <footer className="ma-footer" data-theme="dark">
+      {/* 1. Enterprise Trust Banner */}
+      <div className="ma-container mb-12">
+        <div className="flex flex-col gap-8 rounded-panel bg-coral p-6 text-ink md:p-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex max-w-2xl flex-col gap-3">
+            <div>
+              <span className="ma-tag ma-tag--ink">
+                {enterpriseBannerData.tag}
+              </span>
+            </div>
+            <h2 className="m-0 text-lg font-bold text-ink md:text-xl">
+              {enterpriseBannerData.title}
+            </h2>
+            <p className="m-0 text-sm leading-relaxed text-ink/85">
+              {enterpriseBannerData.description}
+            </p>
+            <ul className="m-0 mt-1 flex list-none flex-wrap gap-x-6 gap-y-2 p-0 text-xs text-ink/80">
+              {enterpriseBannerData.highlights.map((item) => (
+                <li key={item.label} className="flex items-center gap-1.5">
+                  <span className="inline-block size-1.5 rounded-full bg-ink" aria-hidden="true" />
+                  <span>{item.label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <ButtonLink
+              href={enterpriseBannerData.primaryAction.href}
+              variant="on-color"
+              size="lg"
+              className="hover:!text-ink"
+            >
+              {enterpriseBannerData.primaryAction.label}
+            </ButtonLink>
+            <ButtonLink
+              href={enterpriseBannerData.secondaryAction.href}
+              variant="on-color"
+              size="lg"
+              className="hover:!text-ink"
+            >
+              {enterpriseBannerData.secondaryAction.label}
+            </ButtonLink>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Top Skills & Directory Grid (Udemy-style 4-column directory) */}
+      <div className="ma-container border-b border-line pb-12">
+        <div className="mb-6 flex flex-col gap-1">
+          <h2 className="m-0 text-base font-bold text-fg">استكشف المهارات والمجالات الأكثر طلباً</h2>
+          <p className="ma-footer__small m-0 text-xs text-fg-muted">
+            تصفح برامج ماستري عبر المهارات التخصصية، الوسوم الشائعة، وعمليات البحث الأكثر صلة.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {skillDirectoryColumns.map((col) => (
+            <div key={col.title} className="flex flex-col gap-3">
+              <h3 className="m-0 text-sm font-bold text-fg">{col.title}</h3>
+              <ul className="m-0 flex list-none flex-col gap-2 p-0">
+                {col.links.map((link) => (
+                  <li key={link.label}>
+                    <AppLink
+                      href={link.href}
+                      className="text-xs text-fg-muted transition-colors hover:text-fg"
+                    >
+                      {link.label}
+                    </AppLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Main Navigation & Brand Overview */}
+      <div className="ma-container mt-12 grid gap-12 lg:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(0,1fr))]">
         <div className="flex flex-col gap-6">
           <Logo tone="on-dark" className="w-48" />
           <p className="ma-footer__small m-0 max-w-xs">
             منصة عربية للتعلّم عن بُعد في التسويق والإدارة والقيادة وريادة الأعمال، منذ {siteConfig.foundingYear}.
           </p>
           <div>
-            <h2 className="m-0 mb-3 text-sm font-bold text-white">تابعنا على</h2>
+            <h3 className="m-0 mb-3 text-sm font-bold text-fg">تابعنا على</h3>
             <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
               {NETWORKS.map((network, index) => (
                 <li key={network}>
                   <ExternalLink
                     href={siteConfig.social[index]}
                     label={`${siteConfig.name} على ${socialLabel[network]}`}
-                    className="grid size-11 place-items-center border border-white/25 transition-colors hover:border-white"
+                    className="grid size-11 place-items-center rounded-ctl border border-line transition-colors hover:border-line-strong"
                   >
                     <SocialIcon network={network} className="size-5" />
                   </ExternalLink>
@@ -95,13 +166,16 @@ export function SiteFooter() {
             </ul>
           </div>
         </div>
-        {columns.map((column) => (
+
+        {navigationColumns.map((column) => (
           <nav key={column.title} aria-label={column.title}>
-            <h2 className="m-0 mb-4 text-sm font-bold text-white">{column.title}</h2>
+            <h3 className="m-0 mb-4 text-sm font-bold text-fg">{column.title}</h3>
             <ul className="m-0 flex list-none flex-col gap-3 p-0">
               {column.links.map((link) => (
                 <li key={link.label}>
-                  <AppLink href={link.href}>{link.label}</AppLink>
+                  <AppLink href={link.href} className="text-sm">
+                    {link.label}
+                  </AppLink>
                 </li>
               ))}
             </ul>
@@ -109,25 +183,33 @@ export function SiteFooter() {
         ))}
       </div>
 
-      <div className="ma-container mt-12 flex flex-col gap-8 border-t border-white/15 pt-8 md:flex-row md:items-center md:justify-between">
+      {/* 4. Accreditation & Mobile App Download */}
+      <div className="ma-container mt-12 flex flex-col gap-8 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-wrap items-center gap-4">
-          <Image src="/icons/cpd.svg" alt="The CPD Certification Service" width={180} height={51} unoptimized className="h-auto w-[180px]" />
+          <Image
+            src="/icons/cpd.svg"
+            alt="The CPD Certification Service"
+            width={180}
+            height={51}
+            unoptimized
+            className="h-auto w-[180px]"
+          />
           <p className="ma-footer__small m-0 max-w-[16rem]">برامج ودورات معتمدة ضمن إطار التطوير المهني المستمر</p>
         </div>
         <div>
-          <h2 className="m-0 mb-3 text-sm font-bold text-white">حمّل التطبيق</h2>
+          <h3 className="m-0 mb-3 text-sm font-bold text-fg">حمّل التطبيق</h3>
           <ul className="m-0 flex list-none flex-wrap gap-3 p-0">
             {apps.map((app) => (
               <li key={app.store}>
                 <ExternalLink
                   href={app.href}
                   label={`تطبيق ${siteConfig.name} على ${app.store}`}
-                  className="flex min-h-12 items-center gap-3 border border-white/25 px-4 py-2 transition-colors hover:border-white"
+                  className="flex min-h-12 items-center gap-3 rounded-ctl border border-line px-4 py-2 transition-colors hover:border-line-strong"
                 >
                   <Image src={app.icon} alt="" width={24} height={24} unoptimized className="size-6" />
                   <span className="flex flex-col text-start leading-tight">
                     <span className="text-[11px]">حمّله من</span>
-                    <span dir="ltr" className="text-sm font-bold text-white">
+                    <span dir="ltr" className="text-sm font-bold text-fg">
                       {app.store}
                     </span>
                   </span>
@@ -138,7 +220,8 @@ export function SiteFooter() {
         </div>
       </div>
 
-      <div className="ma-container mt-8 flex flex-col-reverse gap-4 border-t border-white/15 pt-6 md:flex-row md:items-center md:justify-between">
+      {/* 5. Copyright & Safe Payments Bar */}
+      <div className="ma-container mt-8 flex flex-col-reverse gap-4 border-t border-line pt-6 md:flex-row md:items-center md:justify-between">
         <p className="ma-footer__small m-0">
           © {new Date().getFullYear()} {siteConfig.name}. جميع الحقوق محفوظة.
         </p>
@@ -146,7 +229,7 @@ export function SiteFooter() {
           <span className="ma-footer__small">بوابات دفع آمنة</span>
           <ul aria-label="وسائل الدفع" className="m-0 flex list-none flex-wrap gap-2 p-0">
             {payments.map((payment) => (
-              <li key={payment.name} className="relative h-9 w-16 overflow-hidden bg-white">
+              <li key={payment.name} className="relative h-9 w-16 overflow-hidden rounded-ctl bg-white">
                 <Image src={payment.src} alt={payment.name} fill sizes="64px" unoptimized className={cn("p-1", payment.fit)} />
               </li>
             ))}

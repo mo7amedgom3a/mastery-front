@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { routes } from "@/config/routes";
+import { PhoneInputField } from "@/components/ui/phone-input-field";
 import { b2bFormCopy } from "@/features/business/content/b2b";
 
 import { submitCompanyRequest } from "../actions/submit-request";
@@ -17,6 +18,10 @@ export function ContactStep() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const countryCode = useRequestStore((state) => state.countryCode);
+  const contactPhone = useRequestStore((state) => state.contactPhone);
+  const phoneError = useRequestStore((state) => state.errors.contactPhone);
+  const update = useRequestStore((state) => state.update);
 
   const submit = () =>
     startTransition(async () => {
@@ -53,16 +58,21 @@ export function ContactStep() {
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField name="contactName" label="الاسم الكامل" autoComplete="name" />
         <TextField name="jobTitle" label="المسمّى الوظيفي" autoComplete="organization-title" />
-        <TextField name="companyEmail" label="البريد الإلكتروني للعمل" type="email" dir="ltr" autoComplete="email" />
         <TextField
-          name="contactPhone"
-          label="رقم الهاتف"
-          type="tel"
+          name="companyEmail"
+          label="البريد الإلكتروني للعمل"
+          type="email"
           dir="ltr"
-          inputMode="tel"
-          className="ma-input text-end"
-          autoComplete="tel"
-          placeholder="+966 5x xxx xxxx"
+          autoComplete="email"
+          placeholder="name@company.com"
+          hint="البريد الرسمي للشركة (لا يُقبل بريد مجاني)"
+        />
+        <PhoneInputField
+          label="رقم الهاتف"
+          countryCode={countryCode ?? undefined}
+          value={contactPhone}
+          error={phoneError}
+          onChange={(val) => update({ contactPhone: val })}
         />
       </div>
     </RequestFrame>

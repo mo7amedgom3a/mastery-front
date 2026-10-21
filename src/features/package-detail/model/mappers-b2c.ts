@@ -9,6 +9,8 @@ import { toPricing } from "@/lib/pricing";
 import type { PackageDetailData, PackageDetailVM, PackageItemVM, PackageUnitVM } from "./types";
 import type { InfoSectionVM, TrainerVM } from "@/features/product-detail/model/types";
 
+const expertHref = (key: string | null | undefined, name: string) => (key ? routes.expert(key, name) : null);
+
 /**
  * Maps the B2C catalog product (`/api/v1/catalog/products/{slug}`) to the package page view model.
  * B2C is the source of truth: the package's own details plus `package_members` (the bundled B2C
@@ -53,7 +55,7 @@ export function mapB2CPackageDetail(
       duration: formatDurationFromSeconds(member.duration_seconds),
       lessonCount: member.lesson_count ?? 0,
       trainers: member.instructor_name
-        ? [{ id: index + 1, name: member.instructor_name, href: routes.trainers }]
+        ? [{ id: index + 1, name: member.instructor_name, href: expertHref(member.instructor_key, member.instructor_name) }]
         : [],
       units,
       price: toPricing(member.price_amount),
@@ -68,17 +70,18 @@ export function mapB2CPackageDetail(
   const trainerMap = new Map<string, TrainerVM>();
   for (const member of members) {
     const name = member.instructor_name;
-    if (!name || trainerMap.has(name)) {
+    const id = member.instructor_key ?? name;
+    if (!name || !id || trainerMap.has(id)) {
       continue;
     }
-    trainerMap.set(name, {
+    trainerMap.set(id, {
       id: trainerMap.size + 1,
       name,
       initial: name.trim().charAt(0),
       avatar: member.instructor_avatar ?? null,
       bio: [],
       summary: null,
-      href: routes.trainers,
+      href: expertHref(member.instructor_key, name),
     });
   }
   const trainers = Array.from(trainerMap.values());

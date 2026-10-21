@@ -1,0 +1,1319 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ماستري أكاديمي — بودكاست spotlight</title>
+
+  <!-- Mastery Academy kit fonts: IBM Plex Sans Arabic for Arabic, Raleway fallback for Latin -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       Mastery Academy design tokens — copied verbatim from tokens.css
+       ============================================================ */
+    :root,
+    [data-theme="light"] {
+      color-scheme: light;
+      --coral:   #ff6555;
+      --ink:     #17161b;
+      --yellow:  #ffcd4c;
+      --purple:  #8a64ff;
+      --sky:     #49d4ff;
+      --pink:    #fd4b7d;
+      --teal:    #13e5cc;
+      --lilac:   #e89cff;
+      --green:   #1fed8b;
+      --cream:   #fffeeb;
+      --white:   #ffffff;
+      --surface:        #ffffff;
+      --surface-alt:     #fffeeb;
+      --text:            #17161b;
+      --text-muted:      rgba(23, 22, 27, 0.64);
+      --line:            rgba(23, 22, 27, 0.16);
+      --line-strong:     #17161b;
+      --accent:          var(--coral);
+      --on-accent:       var(--ink);
+      --focus:           var(--purple);
+    }
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --surface:        #17161b;
+      --surface-alt:     #000000;
+      --text:            #ffffff;
+      --text-muted:      rgba(255, 255, 255, 0.64);
+      --line:            rgba(255, 255, 255, 0.16);
+      --line-strong:     #ffffff;
+    }
+    :root, [data-theme] {
+      --fill-soft:        color-mix(in srgb, var(--text) 7%, transparent);
+      --fill-soft-hover: color-mix(in srgb, var(--text) 14%, transparent);
+      --fill-soft-active:color-mix(in srgb, var(--text) 20%, transparent);
+    }
+    :root {
+      --space-1: 4px;  --space-2: 8px;  --space-3: 12px;
+      --space-4: 16px; --space-6: 24px; --space-8: 32px;
+      --space-12: 48px; --space-16: 64px;
+      --radius-tag:      6px;
+      --radius-control:  10px;
+      --radius-soft:     12px;
+      --radius-card:     16px;
+      --radius-full:     9999px;
+      --font-sans:    "Neue Montreal", "Helvetica Neue", Arial, sans-serif;
+      --font-arabic:  "Swissra", "IBM Plex Sans Arabic", "Helvetica Neue LT Arabic", Tahoma, sans-serif;
+      --font-raleway: "Raleway", "Helvetica Neue", Arial, sans-serif;
+      --font-plex:    "IBM Plex Sans Arabic", Tahoma, sans-serif;
+    }
+
+    /* ============================================================
+       Base — Arabic first
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-plex);
+      background: var(--surface);
+      color: var(--text);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* Cinematic ambient backdrop */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    [data-theme="dark"] body::after {
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(138, 100, 255, 0.10), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 100%, rgba(255, 101, 85, 0.06), transparent 60%),
+        radial-gradient(ellipse 95% 80% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.45) 100%);
+    }
+    [data-theme="light"] body::after {
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(138, 100, 255, 0.05), transparent 60%),
+        radial-gradient(ellipse 95% 80% at 50% 50%, transparent 40%, rgba(23, 22, 27, 0.03) 100%);
+    }
+
+    /* When the page is in LTR (English) toggle, switch to the Latin stack */
+    [dir="ltr"] body,
+    [dir="ltr"] .ma-sp-title,
+    [dir="ltr"] .ma-sp-lead,
+    [dir="ltr"] .ma-sp-card__title,
+    [dir="ltr"] .ma-sp-caption__title,
+    [dir="ltr"] .ma-sp-caption__meta,
+    [dir="ltr"] .ma-sp-badge,
+    [dir="ltr"] .ma-sp-tag,
+    [dir="ltr"] .ma-sp-modal__title,
+    [dir="ltr"] .ma-sp-run {
+      font-family: var(--font-raleway);
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+    }
+
+    /* ============================================================
+       Top-right tools — bare icon buttons (.ma-btn--bare pattern)
+       ============================================================ */
+    .ma-tools {
+      position: fixed;
+      top: 20px;
+      inset-inline-end: 20px;
+      z-index: 100;
+      display: flex;
+      gap: 8px;
+    }
+    .ma-tool {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      border: none;
+      background: var(--fill-soft);
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 150ms ease, transform 150ms ease, color 150ms ease;
+    }
+    .ma-tool:hover { background: var(--fill-soft-hover); transform: translateY(-1px); }
+    .ma-tool:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    .ma-tool svg { width: 20px; height: 20px; }
+    [dir="rtl"] .ma-tool--dir svg { transform: scaleX(-1); }
+
+    /* ============================================================
+       Spotlight section
+       ============================================================ */
+    .ma-sp {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 96px 24px 64px;
+    }
+
+    /* ---- Section header (.ma-sechead pattern) ---- */
+    .ma-sp-sechead {
+      max-width: 760px;
+      margin: 0 auto 56px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line-strong);
+    }
+    .ma-sp-run {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-plex);
+      font-size: 13px;
+      line-height: 20px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    [dir="ltr"] .ma-sp-run { font-family: var(--font-raleway); letter-spacing: 0.04em; text-transform: uppercase; font-size: 12px; }
+    .ma-sp-run span:last-child { color: var(--text); }
+
+    .ma-sp-title {
+      font-family: var(--font-plex);
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.4;
+      font-weight: 700;
+      margin: 0 0 20px;
+      color: var(--text);
+    }
+    [dir="ltr"] .ma-sp-title { line-height: 44px; letter-spacing: -0.01em; font-family: var(--font-raleway); }
+
+    .ma-sp-sechead__rule {
+      width: 54px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: var(--radius-full);
+      margin: 0 0 20px;
+    }
+
+    .ma-sp-lead {
+      font-family: var(--font-plex);
+      font-size: 17px;
+      line-height: 28px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin: 0;
+      max-width: 620px;
+    }
+    [dir="ltr"] .ma-sp-lead { font-family: var(--font-raleway); }
+
+    /* ============================================================
+       Stage
+       ============================================================ */
+    .ma-sp-stage {
+      position: relative;
+      width: 100%;
+      height: 510px;
+      margin-bottom: 28px;
+      overflow: hidden;
+      border-radius: var(--radius-card);
+    }
+    @media (max-width: 768px) { .ma-sp-stage { height: 420px; } }
+
+    .ma-sp-stage::before,
+    .ma-sp-stage::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 10%;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .ma-sp-stage::before {
+      inset-inline-start: 0;
+      background: linear-gradient(to var(--inline-end, right), var(--stage-edge), transparent);
+    }
+    .ma-sp-stage::after {
+      inset-inline-end: 0;
+      background: linear-gradient(to var(--inline-start, left), var(--stage-edge), transparent);
+    }
+    [data-theme="dark"]  { --stage-edge: rgba(23, 22, 27, 0.92); }
+    [data-theme="light"] { --stage-edge: rgba(255, 254, 235, 0.92); }
+
+    /* ============================================================
+       Card — only the image cover (with on-image overlays)
+       ============================================================ */
+    .ma-sp-card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: min(680px, 64vw);
+      aspect-ratio: 16 / 9;
+      --tx: 0px;
+      --scale: 1;
+      transform: translate(-50%, -50%) translateX(var(--tx)) scale(var(--scale));
+      transform-origin: center center;
+      transition:
+        transform 800ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity   600ms ease,
+        filter    600ms ease;
+      cursor: pointer;
+      z-index: 1;
+      opacity: 0;
+      filter: blur(6px) saturate(0.7);
+      pointer-events: none;
+      will-change: transform, opacity, filter;
+    }
+    @media (max-width: 768px) { .ma-sp-card { width: 88vw; } }
+
+    .ma-sp-card.is-active {
+      z-index: 5;
+      opacity: 1;
+      filter: blur(0) saturate(1);
+      pointer-events: auto;
+    }
+    .ma-sp-card.is-side {
+      z-index: 3;
+      opacity: 0.50;
+      filter: blur(2px) saturate(0.85);
+    }
+    .ma-sp-card.is-far {
+      z-index: 2;
+      opacity: 0.14;
+      filter: blur(6px) saturate(0.7);
+    }
+
+    /* ---- Glow behind the active card (atmospheric, not a UI shadow) ---- */
+    .ma-sp-card__glow {
+      position: absolute;
+      inset: -40px -64px;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 800ms ease;
+      background: radial-gradient(ellipse 60% 75% at 50% 50%,
+        rgba(255, 101, 85, 0.55) 0%,
+        rgba(255, 101, 85, 0.20) 38%,
+        transparent 72%);
+      filter: blur(28px);
+    }
+    .ma-sp-card.is-active .ma-sp-card__glow { opacity: 1; }
+
+    .ma-sp-card[data-color="purple"] .ma-sp-card__glow {
+      background: radial-gradient(ellipse 60% 75% at 50% 50%,
+        rgba(138, 100, 255, 0.60) 0%, rgba(138, 100, 255, 0.24) 38%, transparent 72%);
+    }
+    .ma-sp-card[data-color="yellow"] .ma-sp-card__glow {
+      background: radial-gradient(ellipse 60% 75% at 50% 50%,
+        rgba(255, 205, 76, 0.55) 0%, rgba(255, 205, 76, 0.20) 38%, transparent 72%);
+    }
+    .ma-sp-card[data-color="teal"] .ma-sp-card__glow {
+      background: radial-gradient(ellipse 60% 75% at 50% 50%,
+        rgba(19, 229, 204, 0.55) 0%, rgba(19, 229, 204, 0.20) 38%, transparent 72%);
+    }
+    .ma-sp-card[data-color="coral"] .ma-sp-card__glow {
+      background: radial-gradient(ellipse 60% 75% at 50% 50%,
+        rgba(255, 101, 85, 0.60) 0%, rgba(255, 101, 85, 0.24) 38%, transparent 72%);
+    }
+
+    /* ---- Card surface — 16px radius, 1px border, no shadow ---- */
+    .ma-sp-card__inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      background: var(--ink);
+      border: 1px solid var(--line);
+      isolation: isolate;
+    }
+    .ma-sp-card.is-active .ma-sp-card__inner { border-color: var(--line-strong); }
+
+    /* ---- Image cover ---- */
+    .ma-sp-card__img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 1200ms cubic-bezier(0.22, 1, 0.36, 1);
+      display: block;
+    }
+    .ma-sp-card.is-active .ma-sp-card__img { transform: scale(1.04); }
+
+    /* ---- Gradient scrim ---- */
+    .ma-sp-card__scrim {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        linear-gradient(180deg,
+          rgba(0, 0, 0, 0.55) 0%,
+          rgba(0, 0, 0, 0.0) 32%,
+          rgba(0, 0, 0, 0.0) 55%,
+          rgba(0, 0, 0, 0.78) 100%);
+    }
+
+    /* ---- Play button (coral, ink icon — kit's primary CTA colour) ---- */
+    .ma-sp-card__play {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius-full);
+      background: var(--accent);
+      color: var(--on-accent);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      animation: ma-sp-pulse 3s ease-in-out infinite;
+      transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes ma-sp-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 101, 85, 0.45); }
+      50%      { box-shadow: 0 0 0 14px rgba(255, 101, 85, 0); }
+    }
+    .ma-sp-card__play:hover { transform: translate(-50%, -50%) scale(1.10); animation-play-state: paused; }
+    .ma-sp-card__play:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+    .ma-sp-card__play svg { transform: scaleX(-1); margin-inline-end: 4px; }
+    [dir="ltr"] .ma-sp-card__play svg { transform: none; margin-inline-end: 0; margin-inline-start: 4px; }
+    @media (max-width: 768px) { .ma-sp-card__play { width: 60px; height: 60px; } }
+
+    /* ---- Top-row overlay: episode # + category tag ---- */
+    .ma-sp-card__top {
+      position: absolute;
+      top: 16px;
+      inset-inline-start: 16px;
+      inset-inline-end: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 3;
+    }
+
+    .ma-sp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-control);
+      font-family: var(--font-plex);
+      font-size: 13px;
+      font-weight: 500;
+      background: rgba(23, 22, 27, 0.55);
+      color: #ffffff;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .ma-sp-badge svg { width: 14px; height: 14px; }
+
+    /* ---- Category tag (.ma-tag pattern: radius-tag, ink text) ---- */
+    .ma-sp-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: var(--radius-tag);
+      font-family: var(--font-plex);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .ma-sp-tag--purple { background: var(--purple); color: #ffffff; }
+    .ma-sp-tag--yellow { background: var(--yellow); color: var(--ink); }
+    .ma-sp-tag--teal   { background: var(--teal);   color: var(--ink); }
+    .ma-sp-tag--coral  { background: var(--coral);  color: var(--ink); }
+
+    /* ---- Bottom overlay: small title + duration ---- */
+    .ma-sp-card__bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 18px 22px;
+      z-index: 3;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    @media (max-width: 768px) { .ma-sp-card__bottom { padding: 14px 16px; } }
+
+    .ma-sp-card__title {
+      font-family: var(--font-plex);
+      font-size: clamp(14px, 1.4vw, 16px);
+      line-height: 1.4;
+      font-weight: 600;
+      color: #ffffff;
+      margin: 0;
+      max-width: 78%;
+      text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+      opacity: 0.85;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .ma-sp-card.is-active .ma-sp-card__title { opacity: 1; }
+
+    .ma-sp-card__duration {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-control);
+      font-family: var(--font-plex);
+      font-size: 13px;
+      font-weight: 500;
+      color: #ffffff;
+      background: rgba(23, 22, 27, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      flex-shrink: 0;
+    }
+    .ma-sp-card__duration svg { width: 14px; height: 14px; }
+
+    /* ============================================================
+       Now-playing caption below the stage
+       ============================================================ */
+    .ma-sp-caption {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      min-height: 56px;
+    }
+    .ma-sp-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-plex);
+      font-size: 16px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .ma-sp-avatar--purple { background: var(--purple); color: #ffffff; }
+    .ma-sp-avatar--yellow { background: var(--yellow); color: var(--ink); }
+    .ma-sp-avatar--teal   { background: var(--teal);   color: var(--ink); }
+    .ma-sp-avatar--coral  { background: var(--coral);  color: var(--ink); }
+
+    .ma-sp-caption__info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: opacity 250ms ease;
+    }
+    .ma-sp-caption__title {
+      font-family: var(--font-plex);
+      font-size: clamp(16px, 1.8vw, 20px);
+      line-height: 1.35;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .ma-sp-caption__meta {
+      font-family: var(--font-plex);
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .ma-sp-caption__meta span { display: inline-flex; align-items: center; gap: 5px; }
+    .ma-sp-caption__meta svg { width: 13px; height: 13px; opacity: 0.7; }
+    .ma-sp-caption__meta-sep { width: 3px; height: 3px; border-radius: var(--radius-full); background: currentColor; opacity: 0.5; }
+
+    /* ---- "Watch on YouTube" link — kit's .ma-link pattern (coral underline) ---- */
+    .ma-sp-yt-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-plex);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      padding-bottom: 2px;
+      border-bottom: 2px solid var(--accent);
+      transition: opacity 150ms ease;
+    }
+    .ma-sp-yt-link:hover { opacity: 0.75; }
+    .ma-sp-yt-link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-tag); }
+    .ma-sp-yt-link svg { width: 14px; height: 14px; }
+    [dir="rtl"] .ma-sp-yt-link svg { transform: scaleX(-1); }
+
+    /* ============================================================
+       Controls
+       ============================================================ */
+    .ma-sp-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+    @media (max-width: 768px) { .ma-sp-controls { gap: 16px; } }
+
+    .ma-sp-arrow {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-full);
+      border: none;
+      background: var(--fill-soft);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 150ms ease, transform 150ms ease, color 150ms ease;
+      flex-shrink: 0;
+    }
+    .ma-sp-arrow:hover {
+      background: var(--fill-soft-hover);
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .ma-sp-arrow:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    .ma-sp-arrow svg { width: 20px; height: 20px; transform: scaleX(-1); }
+    [dir="ltr"] .ma-sp-arrow svg { transform: none; }
+    @media (max-width: 768px) {
+      .ma-sp-arrow { width: 40px; height: 40px; }
+      .ma-sp-arrow svg { width: 16px; height: 16px; }
+    }
+
+    .ma-sp-progress-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      max-width: 360px;
+    }
+
+    .ma-sp-dots {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ma-sp-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: var(--radius-full);
+      border: none;
+      background: var(--line-strong);
+      cursor: pointer;
+      padding: 0;
+      transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1), background 200ms ease, opacity 200ms ease;
+      opacity: 0.4;
+    }
+    .ma-sp-dot.is-active { width: 28px; background: var(--accent); opacity: 1; }
+    .ma-sp-dot:hover { opacity: 0.7; }
+    .ma-sp-dot.is-active:hover { opacity: 1; }
+    .ma-sp-dot:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+    .ma-sp-progress {
+      width: 100%;
+      height: 2px;
+      background: var(--line);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .ma-sp-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: inherit;
+    }
+    .ma-sp-progress-bar.is-running { animation: ma-sp-progress 7000ms linear forwards; }
+    @keyframes ma-sp-progress { from { width: 0%; } to { width: 100%; } }
+
+    .ma-sp.is-paused .ma-sp-progress-bar { animation-play-state: paused; }
+
+    /* ============================================================
+       YouTube modal — cinematic embed lightbox
+       ============================================================ */
+    .ma-sp-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(11, 11, 14, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 280ms ease, visibility 280ms ease;
+    }
+    .ma-sp-modal.is-open { opacity: 1; visibility: visible; }
+
+    .ma-sp-modal__panel {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      background: var(--surface);
+      border-radius: var(--radius-card);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      transform: translateY(20px) scale(0.96);
+      transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .ma-sp-modal.is-open .ma-sp-modal__panel { transform: translateY(0) scale(1); }
+
+    .ma-sp-modal__player {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+    }
+    .ma-sp-modal__iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .ma-sp-modal__body {
+      padding: 18px 22px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .ma-sp-modal__title {
+      font-family: var(--font-plex);
+      font-size: clamp(15px, 1.6vw, 18px);
+      line-height: 1.4;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+    }
+    [dir="ltr"] .ma-sp-modal__title { font-family: var(--font-raleway); }
+
+    .ma-sp-modal__close {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      border: none;
+      background: var(--fill-soft);
+      color: var(--text);
+      cursor: pointer;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 150ms ease, color 150ms ease;
+    }
+    .ma-sp-modal__close:hover { background: var(--fill-soft-hover); color: var(--accent); }
+    .ma-sp-modal__close:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    .ma-sp-modal__close svg { width: 20px; height: 20px; }
+
+    /* When the modal opens, lock body scroll */
+    body.is-modal-open { overflow: hidden; }
+
+    @media (max-width: 600px) {
+      .ma-sp-modal { padding: 12px; }
+      .ma-sp-modal__body { padding: 14px 16px; flex-direction: column; gap: 12px; }
+      .ma-sp-modal__close { align-self: flex-end; }
+    }
+
+    /* ============================================================
+       Reduced motion
+       ============================================================ */
+    @media (prefers-reduced-motion: reduce) {
+      .ma-sp-card,
+      .ma-sp-card__glow,
+      .ma-sp-card__play,
+      .ma-sp-card__img,
+      .ma-sp-arrow,
+      .ma-sp-dot,
+      .ma-sp-caption__info,
+      .ma-sp-modal,
+      .ma-sp-modal__panel {
+        transition-duration: 1ms !important;
+        animation: none !important;
+      }
+      .ma-sp-progress { display: none; }
+    }
+
+    /* ============================================================
+       Responsive
+       ============================================================ */
+    @media (max-width: 768px) {
+      .ma-sp { padding: 72px 16px 40px; }
+      .ma-sp-sechead { margin-bottom: 36px; }
+      .ma-sp-caption { flex-wrap: wrap; gap: 10px; }
+      .ma-sp-caption__info { text-align: center; align-items: center; }
+    }
+    @media (max-width: 360px) {
+      .ma-sp { padding-inline: 12px; }
+      .ma-tools { top: 12px; inset-inline-end: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top-right bare icon tools -->
+  <div class="ma-tools">
+    <button class="ma-tool ma-tool--dir" id="dirToggle" type="button" aria-label="تبديل اتجاه النص (RTL / LTR)" title="تبديل اتجاه النص">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M17 4l4 4-4 4"/><path d="M3 8h18"/>
+        <path d="M7 20l-4-4 4-4"/><path d="M21 16H3" opacity="0.35"/>
+      </svg>
+    </button>
+    <button class="ma-tool" id="themeToggle" type="button" aria-label="تبديل السمة الداكنة / الفاتحة" title="تبديل السمة">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- =================== Spotlight component =================== -->
+  <section class="ma-sp" id="spotlight" aria-label="بودكاست ماستري أكاديمي — spotlight">
+
+    <!-- Brand-guide section header -->
+    <header class="ma-sp-sechead">
+      <div class="ma-sp-run">
+        <span>بودكاست / ٠١</span>
+        <span>ماستري أكاديمي</span>
+      </div>
+      <h2 class="ma-sp-title">حلقات مختارة من ضيوف ماستري أكاديمي</h2>
+      <div class="ma-sp-sechead__rule" aria-hidden="true"></div>
+      <p class="ma-sp-lead">محادثات حقيقية مع المدربين والخبراء الذين يقودون في الميدان — قيادة وتسويق وموارد بشرية وتطوير ذات. اختر حلقة، اضغط تشغيل، وشاهد المقابلة كاملة على يوتيوب مباشرةً.</p>
+    </header>
+
+    <!-- Stage -->
+    <div class="ma-sp-stage" id="spotlightStage"
+         role="region" aria-roledescription="carousel"
+         aria-label="معرض حلقات البودكاست. استخدم الأسهم أو النقاط أو مفاتيح الأسهم في لوحة المفاتيح للتنقل بين الحلقات.">
+
+      <!-- ============ Episode 01 — بودكاست بترولي ============ -->
+      <article class="ma-sp-card" data-index="0" data-color="purple"
+               data-video-id="99Jk4iUu7bo"
+               data-video-url="https://www.youtube.com/watch?v=99Jk4iUu7bo"
+               data-title="من موظف خدمة عملاء إلى بناء شركات بملايين الريالات"
+               data-show="بودكاست بترولي"
+               data-host="د. سهل مهدي"
+               data-role="مؤسس ماستري أكاديمي"
+               data-views="118,994"
+               data-likes="1,269"
+               data-date="11 أكتوبر 2026"
+               data-duration="1:28:36"
+               data-avatar="س" data-avatar-color="purple"
+               data-category="ريادة أعمال">
+        <div class="ma-sp-card__glow"></div>
+        <div class="ma-sp-card__inner">
+          <img class="ma-sp-card__img" src="https://img.youtube.com/vi/99Jk4iUu7bo/maxresdefault.jpg" alt="بودكاست بترولي — من موظف خدمة عملاء إلى بناء شركات بملايين الريالات">
+          <div class="ma-sp-card__scrim"></div>
+          <div class="ma-sp-card__top">
+            <span class="ma-sp-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              الحلقة ٠١
+            </span>
+            <span class="ma-sp-tag ma-sp-tag--purple">ريادة أعمال</span>
+          </div>
+          <button class="ma-sp-card__play" type="button" data-yt-open="99Jk4iUu7bo" data-yt-title="من موظف خدمة عملاء إلى بناء شركات بملايين الريالات" aria-label="تشغيل الحلقة ١: من موظف خدمة عملاء إلى بناء شركات بملايين الريالات">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="ma-sp-card__bottom">
+            <h3 class="ma-sp-card__title">من موظف خدمة عملاء إلى بناء شركات بملايين الريالات</h3>
+            <span class="ma-sp-card__duration">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>
+              1:28:36
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <!-- ============ Episode 02 — جلسة استشارية ============ -->
+      <article class="ma-sp-card" data-index="1" data-color="yellow"
+               data-video-id="2PgzVCmyGZM"
+               data-video-url="https://www.youtube.com/watch?v=2PgzVCmyGZM"
+               data-title="بدون مجاملات!! جلسة استشارية مع د.ثابت حجازي و د. سهل مهدي"
+               data-show="جلسة استشارية"
+               data-host="د. ثابت حجازي · د. سهل مهدي"
+               data-role="خبراء التسويق والقيادة"
+               data-views="5,120"
+               data-likes="211"
+               data-date="11 يوليو 2026"
+               data-duration="1:21:10"
+               data-avatar="ث" data-avatar-color="yellow"
+               data-category="تسويق">
+        <div class="ma-sp-card__glow"></div>
+        <div class="ma-sp-card__inner">
+          <img class="ma-sp-card__img" src="https://img.youtube.com/vi/2PgzVCmyGZM/maxresdefault.jpg" alt="جلسة استشارية مع د. ثابت حجازي و د. سهل مهدي">
+          <div class="ma-sp-card__scrim"></div>
+          <div class="ma-sp-card__top">
+            <span class="ma-sp-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              الحلقة ٠٢
+            </span>
+            <span class="ma-sp-tag ma-sp-tag--yellow">تسويق</span>
+          </div>
+          <button class="ma-sp-card__play" type="button" data-yt-open="2PgzVCmyGZM" data-yt-title="بدون مجاملات!! جلسة استشارية مع د.ثابت حجازي و د. سهل مهدي" aria-label="تشغيل الحلقة ٢: جلسة استشارية مع د. ثابت حجازي و د. سهل مهدي">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="ma-sp-card__bottom">
+            <h3 class="ma-sp-card__title">بدون مجاملات!! جلسة استشارية مع د.ثابت حجازي و د. سهل مهدي</h3>
+            <span class="ma-sp-card__duration">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>
+              1:21:10
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <!-- ============ Episode 03 — الانفصال الوظيفي ============ -->
+      <article class="ma-sp-card" data-index="2" data-color="teal"
+               data-video-id="J-xdKvfsQaY"
+               data-video-url="https://www.youtube.com/watch?v=J-xdKvfsQaY"
+               data-title="موظفك جسد بلا روح ، ظاهرة الانفصال الوظيفي"
+               data-show="ثابت حجازي"
+               data-host="ثابت حجازي"
+               data-role="خبير القيادة والإدارة"
+               data-views="8,819"
+               data-likes="384"
+               data-date="23 أبريل 2026"
+               data-duration="28:55"
+               data-avatar="ث" data-avatar-color="teal"
+               data-category="موارد بشرية">
+        <div class="ma-sp-card__glow"></div>
+        <div class="ma-sp-card__inner">
+          <img class="ma-sp-card__img" src="https://img.youtube.com/vi/J-xdKvfsQaY/maxresdefault.jpg" alt="موظفك جسد بلا روح — ظاهرة الانفصال الوظيفي مع ثابت حجازي">
+          <div class="ma-sp-card__scrim"></div>
+          <div class="ma-sp-card__top">
+            <span class="ma-sp-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              الحلقة ٠٣
+            </span>
+            <span class="ma-sp-tag ma-sp-tag--teal">موارد بشرية</span>
+          </div>
+          <button class="ma-sp-card__play" type="button" data-yt-open="J-xdKvfsQaY" data-yt-title="موظفك جسد بلا روح ، ظاهرة الانفصال الوظيفي | ثابت حجازي" aria-label="تشغيل الحلقة ٣: ظاهرة الانفصال الوظيفي مع ثابت حجازي">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="ma-sp-card__bottom">
+            <h3 class="ma-sp-card__title">موظفك جسد بلا روح ، ظاهرة الانفصال الوظيفي</h3>
+            <span class="ma-sp-card__duration">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>
+              28:55
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <!-- ============ Episode 04 — بودكاست على البنش ============ -->
+      <article class="ma-sp-card" data-index="3" data-color="coral"
+               data-video-id="yrT3DcZAfhw"
+               data-video-url="https://www.youtube.com/watch?v=yrT3DcZAfhw"
+               data-title="الدروس اللي ما تتعلمها في المدرسة ولا الجامعة"
+               data-show="بودكاست على البنش"
+               data-host="سهل المهدي"
+               data-role="ضيف بودكاست على البنش"
+               data-views="16,208"
+               data-likes="343"
+               data-date="17 أكتوبر 2026"
+               data-duration="1:08:09"
+               data-avatar="س" data-avatar-color="coral"
+               data-category="تطوير ذات">
+        <div class="ma-sp-card__glow"></div>
+        <div class="ma-sp-card__inner">
+          <img class="ma-sp-card__img" src="https://img.youtube.com/vi/yrT3DcZAfhw/maxresdefault.jpg" alt="بودكاست على البنش — الدروس اللي ما تتعلمها في المدرسة ولا الجامعة">
+          <div class="ma-sp-card__scrim"></div>
+          <div class="ma-sp-card__top">
+            <span class="ma-sp-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              الحلقة ٠٤
+            </span>
+            <span class="ma-sp-tag ma-sp-tag--coral">تطوير ذات</span>
+          </div>
+          <button class="ma-sp-card__play" type="button" data-yt-open="yrT3DcZAfhw" data-yt-title="الدروس اللي ما تتعلمها في المدرسة ولا الجامعة | بودكاست على البنش" aria-label="تشغيل الحلقة ٤: الدروس اللي ما تتعلمها في المدرسة ولا الجامعة">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="ma-sp-card__bottom">
+            <h3 class="ma-sp-card__title">الدروس اللي ما تتعلمها في المدرسة ولا الجامعة</h3>
+            <span class="ma-sp-card__duration">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>
+              1:08:09
+            </span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Now-playing caption -->
+    <div class="ma-sp-caption" id="nowPlaying" aria-live="polite">
+      <div class="ma-sp-avatar ma-sp-avatar--purple" id="npAvatar">س</div>
+      <div class="ma-sp-caption__info" id="npInfo">
+        <div class="ma-sp-caption__title" id="npTitle">من موظف خدمة عملاء إلى بناء شركات بملايين الريالات</div>
+        <div class="ma-sp-caption__meta" id="npMeta">
+          <span id="npHost">د. سهل مهدي</span>
+          <span class="ma-sp-caption__meta-sep" aria-hidden="true"></span>
+          <span id="npRole">مؤسس ماستري أكاديمي</span>
+          <span class="ma-sp-caption__meta-sep" aria-hidden="true"></span>
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span id="npViews">118,994</span>
+          </span>
+          <span class="ma-sp-caption__meta-sep" aria-hidden="true"></span>
+          <span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H7"/></svg>
+            <span id="npLikes">1,269</span>
+          </span>
+          <span class="ma-sp-caption__meta-sep" aria-hidden="true"></span>
+          <a class="ma-sp-yt-link" id="npYtLink" href="https://www.youtube.com/watch?v=99Jk4iUu7bo" target="_blank" rel="noopener noreferrer">
+            شاهد على يوتيوب
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="ma-sp-controls">
+      <button class="ma-sp-arrow" id="prevBtn" type="button" aria-label="الحلقة السابقة">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="ma-sp-progress-wrap">
+        <div class="ma-sp-dots" role="tablist" aria-label="التنقل بين الحلقات"></div>
+        <div class="ma-sp-progress" aria-hidden="true">
+          <div class="ma-sp-progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+      <button class="ma-sp-arrow" id="nextBtn" type="button" aria-label="الحلقة التالية">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+  </section>
+
+  <!-- =================== YouTube modal =================== -->
+  <div class="ma-sp-modal" id="ytModal" role="dialog" aria-modal="true" aria-labelledby="ytModalTitle" aria-hidden="true">
+    <div class="ma-sp-modal__panel" role="document">
+      <div class="ma-sp-modal__player">
+        <iframe class="ma-sp-modal__iframe" id="ytIframe" src="" title="مشغل يوتيوب" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+      <div class="ma-sp-modal__body">
+        <h3 class="ma-sp-modal__title" id="ytModalTitle">—</h3>
+        <button class="ma-sp-modal__close" id="ytModalClose" type="button" aria-label="إغلاق الفيديو">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const root        = document.getElementById('spotlight');
+      const stage       = document.getElementById('spotlightStage');
+      const cards       = Array.from(stage.querySelectorAll('.ma-sp-card'));
+      const dotsWrap    = root.querySelector('.ma-sp-dots');
+      const prevBtn     = document.getElementById('prevBtn');
+      const nextBtn     = document.getElementById('nextBtn');
+      const progressBar = document.getElementById('progressBar');
+      const themeToggle = document.getElementById('themeToggle');
+      const themeIcon   = document.getElementById('themeIcon');
+      const dirToggle   = document.getElementById('dirToggle');
+
+      // Now-playing caption elements
+      const npAvatar = document.getElementById('npAvatar');
+      const npTitle  = document.getElementById('npTitle');
+      const npHost   = document.getElementById('npHost');
+      const npRole   = document.getElementById('npRole');
+      const npViews  = document.getElementById('npViews');
+      const npLikes  = document.getElementById('npLikes');
+      const npYtLink = document.getElementById('npYtLink');
+      const npInfo   = document.getElementById('npInfo');
+
+      // YouTube modal elements
+      const ytModal      = document.getElementById('ytModal');
+      const ytIframe     = document.getElementById('ytIframe');
+      const ytModalTitle = document.getElementById('ytModalTitle');
+      const ytModalClose = document.getElementById('ytModalClose');
+
+      const AUTO_DELAY    = 7000;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const total         = cards.length;
+      let   activeIndex   = 0;
+      let   autoTimer     = null;
+      let   isHovering    = false;
+
+      /* ---------- YouTube modal ---------- */
+      function openYtModal(videoId, title) {
+        if (!videoId) return;
+        ytIframe.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0&modestbranding=1';
+        ytModalTitle.textContent = title || '';
+        ytModal.classList.add('is-open');
+        ytModal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('is-modal-open');
+        stopAuto();
+        // Move focus to the close button for keyboard users
+        window.setTimeout(() => ytModalClose.focus(), 50);
+      }
+      function closeYtModal() {
+        ytModal.classList.remove('is-open');
+        ytModal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('is-modal-open');
+        // Stop the video by clearing the iframe src
+        ytIframe.src = '';
+        startAuto();
+      }
+
+      // Wire up every play button (and let the active card itself open the modal too)
+      document.querySelectorAll('[data-yt-open]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const videoId = btn.getAttribute('data-yt-open');
+          const title   = btn.getAttribute('data-yt-title') || '';
+          openYtModal(videoId, title);
+        });
+      });
+
+      ytModalClose.addEventListener('click', closeYtModal);
+      // Click on backdrop (but not on the panel) closes the modal
+      ytModal.addEventListener('click', (e) => {
+        if (e.target === ytModal) closeYtModal();
+      });
+      // ESC closes the modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && ytModal.classList.contains('is-open')) closeYtModal();
+      });
+
+      /* ---------- Build the dot indicators ---------- */
+      function buildDots() {
+        dotsWrap.innerHTML = '';
+        cards.forEach((_, i) => {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'ma-sp-dot' + (i === 0 ? ' is-active' : '');
+          dot.setAttribute('role', 'tab');
+          dot.setAttribute('aria-label', 'اذهب إلى الحلقة ' + (i + 1));
+          dot.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+          dot.addEventListener('click', () => { goTo(i); });
+          dotsWrap.appendChild(dot);
+        });
+      }
+
+      /* ---------- Update the now-playing caption ---------- */
+      function updateCaption() {
+        const card = cards[activeIndex];
+        npTitle.textContent  = card.dataset.title;
+        npHost.textContent   = card.dataset.host;
+        npRole.textContent   = card.dataset.role;
+        npViews.textContent  = card.dataset.views;
+        npLikes.textContent  = card.dataset.likes;
+        npAvatar.textContent = card.dataset.avatar;
+        npAvatar.className   = 'ma-sp-avatar ma-sp-avatar--' + card.dataset.avatarColor;
+        npYtLink.href        = card.dataset.videoUrl;
+
+        if (!reducedMotion) {
+          npInfo.style.opacity = '0';
+          requestAnimationFrame(() => { npInfo.style.opacity = '1'; });
+        }
+      }
+
+      /* ---------- Position every card relative to the active one ---------- */
+      function updateLayout() {
+        const stageWidth = stage.offsetWidth;
+        const sideOffset = stageWidth * 0.42;
+        const farOffset  = stageWidth * 0.70;
+
+        cards.forEach((card, i) => {
+          let delta = i - activeIndex;
+          if (delta >  total / 2) delta -= total;
+          if (delta < -total / 2) delta += total;
+
+          const absDelta = Math.abs(delta);
+          let translateX = 0, scale = 1;
+
+          card.classList.remove('is-active', 'is-side', 'is-far');
+
+          if (delta === 0) {
+            translateX = 0; scale = 1;
+            card.classList.add('is-active');
+            card.setAttribute('aria-hidden', 'false');
+            card.setAttribute('tabindex', '0');
+          } else if (absDelta === 1) {
+            translateX = delta * sideOffset; scale = 0.78;
+            card.classList.add('is-side');
+            card.setAttribute('aria-hidden', 'true');
+            card.setAttribute('tabindex', '-1');
+          } else if (absDelta === 2) {
+            translateX = delta * farOffset; scale = 0.58;
+            card.classList.add('is-far');
+            card.setAttribute('aria-hidden', 'true');
+            card.setAttribute('tabindex', '-1');
+          } else {
+            translateX = delta * farOffset * 1.3; scale = 0.40;
+            card.setAttribute('aria-hidden', 'true');
+            card.setAttribute('tabindex', '-1');
+          }
+
+          card.style.setProperty('--tx', translateX + 'px');
+          card.style.setProperty('--scale', scale);
+        });
+
+        const dots = dotsWrap.querySelectorAll('.ma-sp-dot');
+        dots.forEach((dot, i) => {
+          const active = i === activeIndex;
+          dot.classList.toggle('is-active', active);
+          dot.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+
+        updateCaption();
+      }
+
+      /* ---------- Navigation ---------- */
+      function goTo(index) {
+        activeIndex = ((index % total) + total) % total;
+        updateLayout();
+        restartAuto();
+      }
+      function next() { goTo(activeIndex + 1); }
+      function prev() { goTo(activeIndex - 1); }
+
+      /* ---------- Auto-advance with progress bar ---------- */
+      function startAuto() {
+        if (reducedMotion || isHovering) return;
+        stopAuto();
+        root.classList.remove('is-paused');
+        autoTimer = window.setInterval(next, AUTO_DELAY);
+        startProgress();
+      }
+      function stopAuto() {
+        if (autoTimer) { window.clearInterval(autoTimer); autoTimer = null; }
+        root.classList.add('is-paused');
+      }
+      function restartAuto() {
+        if (autoTimer) { window.clearInterval(autoTimer); autoTimer = null; }
+        if (!isHovering && !reducedMotion) {
+          autoTimer = window.setInterval(next, AUTO_DELAY);
+          startProgress();
+        }
+      }
+      function startProgress() {
+        if (reducedMotion || !progressBar) return;
+        progressBar.classList.remove('is-running');
+        void progressBar.offsetWidth;
+        progressBar.classList.add('is-running');
+      }
+
+      /* ---------- Event bindings ---------- */
+      prevBtn.addEventListener('click', prev);
+      nextBtn.addEventListener('click', next);
+
+      // Click on a side card to bring it to the spotlight.
+      // Click on the active card opens the YouTube modal.
+      cards.forEach((card, i) => {
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('button[data-yt-open]')) return; // play button handled separately
+          if (card.classList.contains('is-active')) {
+            // The active card's image click also opens the video
+            const videoId = card.dataset.videoId;
+            const title   = card.dataset.title;
+            openYtModal(videoId, title);
+          } else {
+            goTo(i);
+          }
+        });
+      });
+
+      stage.setAttribute('tabindex', '0');
+      stage.addEventListener('keydown', (e) => {
+        const isRTL = document.documentElement.dir === 'rtl';
+        if (e.key === 'ArrowLeft')  { isRTL ? next() : prev(); e.preventDefault(); }
+        if (e.key === 'ArrowRight') { isRTL ? prev() : next(); e.preventDefault(); }
+        if (e.key === 'Home')       { goTo(0);          e.preventDefault(); }
+        if (e.key === 'End')        { goTo(total - 1);  e.preventDefault(); }
+        if (e.key === 'Enter' || e.key === ' ') {
+          // Open the active card's video
+          const activeCard = cards[activeIndex];
+          if (activeCard) {
+            e.preventDefault();
+            openYtModal(activeCard.dataset.videoId, activeCard.dataset.title);
+          }
+        }
+      });
+
+      root.addEventListener('mouseenter', () => { isHovering = true; stopAuto(); });
+      root.addEventListener('mouseleave', () => { isHovering = false; startAuto(); });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopAuto(); else startAuto();
+      });
+
+      let resizeTimer = null;
+      window.addEventListener('resize', () => {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(updateLayout, 120);
+      });
+
+      /* ---------- Theme & direction toggles ---------- */
+      const sunSVG  = '<path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/><circle cx="12" cy="12" r="4"/>';
+      const moonSVG = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        if (themeIcon) themeIcon.innerHTML = (theme === 'dark') ? moonSVG : sunSVG;
+      }
+      themeToggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        setTheme(current === 'dark' ? 'light' : 'dark');
+      });
+
+      dirToggle.addEventListener('click', () => {
+        const html = document.documentElement;
+        const current = html.getAttribute('dir') || 'rtl';
+        const nextDir = current === 'rtl' ? 'ltr' : 'rtl';
+        html.setAttribute('dir', nextDir);
+        html.setAttribute('lang', nextDir === 'rtl' ? 'ar' : 'en');
+        // Toggle the section header text
+        if (nextDir === 'ltr') {
+          document.querySelector('.ma-sp-run span:first-child').textContent = 'Podcast / 01';
+          document.querySelector('.ma-sp-run span:last-child').textContent  = 'Mastery Academy';
+          document.querySelector('.ma-sp-title').textContent = 'Spotlight episodes from Mastery Academy guests';
+          document.querySelector('.ma-sp-lead').textContent = 'Real conversations with trainers and experts who lead in the field — leadership, marketing, people ops and self-development. Pick an episode, press play, and watch the full interview on YouTube.';
+          prevBtn.setAttribute('aria-label', 'Previous episode');
+          nextBtn.setAttribute('aria-label', 'Next episode');
+        } else {
+          document.querySelector('.ma-sp-run span:first-child').textContent = 'بودكاست / ٠١';
+          document.querySelector('.ma-sp-run span:last-child').textContent  = 'ماستري أكاديمي';
+          document.querySelector('.ma-sp-title').textContent = 'حلقات مختارة من ضيوف ماستري أكاديمي';
+          document.querySelector('.ma-sp-lead').textContent = 'محادثات حقيقية مع المدربين والخبراء الذين يقودون في الميدان — قيادة وتسويق وموارد بشرية وتطوير ذات. اختر حلقة، اضغط تشغيل، وشاهد المقابلة كاملة على يوتيوب مباشرةً.';
+          prevBtn.setAttribute('aria-label', 'الحلقة السابقة');
+          nextBtn.setAttribute('aria-label', 'الحلقة التالية');
+        }
+        updateLayout();
+      });
+
+      /* ---------- Init ---------- */
+      buildDots();
+      updateLayout();
+      startAuto();
+    })();
+  </script>
+
+</body>
+</html>

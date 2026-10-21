@@ -10,6 +10,7 @@ import { formatDateTime } from "@/lib/format";
 
 import { AccessCard, lineTitles, OrderInvoices, OrderLines, OrderTransactions } from "./components/order-sections";
 import { PaymentProvider } from "./components/payment-provider";
+import { RefundRequests } from "./components/refund-requests";
 import { StatusTag } from "./components/status-tag";
 import { orderNumber, orderStatus, paymentStatus } from "./model/status";
 
@@ -120,6 +121,7 @@ export function OrderDetailPage({ orderId }: { orderId: string }) {
       ) : null}
 
       <OrderLines order={detail} artwork={artwork} />
+      <RefundRequests order={detail} artwork={artwork} />
       <OrderInvoices orderId={detail.order_id} invoices={detail.invoices ?? []} />
       <OrderTransactions transactions={detail.transactions ?? []} />
     </div>

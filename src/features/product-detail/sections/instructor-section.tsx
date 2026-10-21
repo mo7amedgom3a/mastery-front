@@ -23,23 +23,35 @@ export function InstructorSection({ trainers }: { trainers: readonly TrainerVM[]
       <div className="mt-6 flex flex-col gap-10">
         {trainers.map((trainer, index) => (
           <article key={trainer.id} className="flex flex-col gap-5 rounded-panel border border-line p-6 md:flex-row md:gap-8">
-            <AppLink href={trainer.href} className="shrink-0 self-start" tabIndex={-1} aria-hidden="true">
-              <TrainerAvatar trainer={trainer} size={112} index={index} />
-            </AppLink>
+            {trainer.href ? (
+              <AppLink href={trainer.href} className="shrink-0 self-start" tabIndex={-1} aria-hidden="true">
+                <TrainerAvatar trainer={trainer} size={112} index={index} />
+              </AppLink>
+            ) : (
+              <span className="shrink-0 self-start">
+                <TrainerAvatar trainer={trainer} size={112} index={index} />
+              </span>
+            )}
             <div className="flex min-w-0 flex-col gap-4">
               <h3 className="m-0 text-xl font-bold">
-                <AppLink href={trainer.href} className="text-fg no-underline underline-offset-4 hover:underline">
-                  {trainer.name}
-                </AppLink>
+                {trainer.href ? (
+                  <AppLink href={trainer.href} className="text-fg no-underline underline-offset-4 hover:underline">
+                    {trainer.name}
+                  </AppLink>
+                ) : (
+                  trainer.name
+                )}
               </h3>
               {trainer.bio.length > 0 ? <TextBlocks blocks={trainer.bio} className="text-fg-muted" /> : null}
-              <AppLink
-                href={trainer.href}
-                className="inline-flex items-center gap-1 self-start text-sm font-medium text-fg no-underline hover:text-accent"
-              >
-                الملف الشخصي للمدرب
-                <ArrowLeft aria-hidden="true" className="size-4" />
-              </AppLink>
+              {trainer.href ? (
+                <AppLink
+                  href={trainer.href}
+                  className="inline-flex items-center gap-1 self-start text-sm font-medium text-fg no-underline hover:text-accent"
+                >
+                  الملف الشخصي للمدرب
+                  <ArrowLeft aria-hidden="true" className="size-4" />
+                </AppLink>
+              ) : null}
             </div>
           </article>
         ))}

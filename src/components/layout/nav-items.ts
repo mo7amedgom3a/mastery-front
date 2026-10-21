@@ -8,6 +8,7 @@ export type NavItem = { label: string; href: Route };
 // non-catalog links.
 export const primaryNav: readonly NavItem[] = [
   { label: "الدورات", href: routes.courses },
+  { label: "المدربون", href: routes.experts },
   { label: "الاشتراكات", href: routes.subscriptions },
   { label: "للشركات", href: routes.business },
   { label: "للمدربين", href: routes.trainers },

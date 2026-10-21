@@ -27,7 +27,7 @@ export type PackageItemVM = {
   category: string | null;
   duration: string | null;
   lessonCount: number;
-  trainers: { id: number; name: string; href: Route }[];
+  trainers: { id: number; name: string; href: Route | null }[];
   /** Outline only (no lessons); empty when only the catalog card was available. */
   units: PackageUnitVM[];
   price: Pricing;

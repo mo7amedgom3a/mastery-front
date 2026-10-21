@@ -17038,6 +17038,24 @@
               "default": 0,
               "title": "Offset"
             }
+          },
+          {
+            "name": "featured",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only the landing line-up, in its order.",
+              "title": "Featured"
+            },
+            "description": "Only the landing line-up, in its order."
           }
         ],
         "responses": {
@@ -47152,6 +47170,42 @@
             "type": "array",
             "title": "Consultations"
           },
+          "bundles": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCardResponse"
+            },
+            "type": "array",
+            "title": "Bundles"
+          },
+          "live_diplomas": {
+            "items": {
+              "$ref": "#/components/schemas/ProductCardResponse"
+            },
+            "type": "array",
+            "title": "Live Diplomas"
+          },
+          "category_items": {
+            "items": {
+              "$ref": "#/components/schemas/ExpertCategoryResponse"
+            },
+            "type": "array",
+            "title": "Category Items",
+            "description": "`categories` with ids and slugs."
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/ExpertTopicResponse"
+            },
+            "type": "array",
+            "title": "Skills"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/ExpertTopicResponse"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
           "highlights": {
             "$ref": "#/components/schemas/ExpertHighlightsResponse"
           },
@@ -47162,6 +47216,14 @@
             "type": "array",
             "title": "Related",
             "description": "Other experts' items in the same categories."
+          },
+          "related_experts": {
+            "items": {
+              "$ref": "#/components/schemas/app__modules__catalog__presentation__browse_router__ExpertSummaryResponse"
+            },
+            "type": "array",
+            "title": "Related Experts",
+            "description": "Other experts ranked by shared categories, skills and tags."
           }
         },
         "type": "object",
@@ -47246,6 +47308,59 @@
             "type": "integer",
             "title": "Consultation Count",
             "default": 0
+          },
+          "bundle_count": {
+            "type": "integer",
+            "title": "Bundle Count",
+            "default": 0
+          },
+          "live_diploma_count": {
+            "type": "integer",
+            "title": "Live Diploma Count",
+            "default": 0
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline",
+            "description": "Title line under the name, e.g. «خبير التسويق الرقمي»."
+          },
+          "is_consultant": {
+            "type": "boolean",
+            "title": "Is Consultant",
+            "description": "Gives consultations: has an active consultant profile.",
+            "default": false
+          },
+          "is_featured": {
+            "type": "boolean",
+            "title": "Is Featured",
+            "description": "In the landing page's experts line-up.",
+            "default": false
+          },
+          "featured_order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Featured Order"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories",
+            "description": "The fields they teach in, most items first."
           },
           "cover_image": {
             "anyOf": [
@@ -47368,6 +47483,52 @@
               }
             ],
             "title": "Youtube Url"
+          },
+          "readme": {
+            "type": "string",
+            "title": "Readme",
+            "description": "Page content (markdown). Replaces `info` / `more_info` when set.",
+            "default": ""
+          },
+          "readme_source": {
+            "type": "string",
+            "title": "Readme Source",
+            "description": "`readme` when saved in the admin; `bio` when converted from the legacy HTML bio.",
+            "default": "empty"
+          },
+          "document": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document",
+            "description": "The page built in the expert Studio (BlockNote blocks, published copy; the draft in preview). Takes precedence over `readme` when set."
+          },
+          "document_published_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Published At"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "`inactive` only in preview: hidden experts 404 otherwise.",
+            "default": "active"
           }
         },
         "type": "object",
@@ -48159,6 +48320,18 @@
           "sort_order": {
             "type": "integer",
             "title": "Sort Order"
+          },
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key",
+            "description": "Public expert key for `/catalog/experts/{key}`."
           }
         },
         "type": "object",
@@ -51033,6 +51206,18 @@
             },
             "type": "array",
             "title": "Units"
+          },
+          "instructor_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructor Key",
+            "description": "Public expert key of the member's instructor."
           }
         },
         "type": "object",
@@ -53025,6 +53210,18 @@
                 "type": "null"
               }
             ]
+          },
+          "instructor_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instructor Key",
+            "description": "Public expert key of the primary instructor."
           }
         },
         "type": "object",
@@ -62867,6 +63064,59 @@
             "type": "integer",
             "title": "Consultation Count",
             "default": 0
+          },
+          "bundle_count": {
+            "type": "integer",
+            "title": "Bundle Count",
+            "default": 0
+          },
+          "live_diploma_count": {
+            "type": "integer",
+            "title": "Live Diploma Count",
+            "default": 0
+          },
+          "headline": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headline",
+            "description": "Title line under the name, e.g. «خبير التسويق الرقمي»."
+          },
+          "is_consultant": {
+            "type": "boolean",
+            "title": "Is Consultant",
+            "description": "Gives consultations: has an active consultant profile.",
+            "default": false
+          },
+          "is_featured": {
+            "type": "boolean",
+            "title": "Is Featured",
+            "description": "In the landing page's experts line-up.",
+            "default": false
+          },
+          "featured_order": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Featured Order"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories",
+            "description": "The fields they teach in, most items first."
           }
         },
         "type": "object",
@@ -65983,6 +66233,79 @@
           "companies"
         ],
         "title": "CompanyStageInsightOut"
+      },
+      "ExpertCategoryResponse": {
+        "properties": {
+          "category_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Category Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug"
+          },
+          "legacy_category_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Category Id",
+            "description": "Id used in storefront category URLs."
+          }
+        },
+        "type": "object",
+        "required": [
+          "category_id",
+          "name"
+        ],
+        "title": "ExpertCategoryResponse"
+      },
+      "ExpertTopicResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "How many of the expert's items carry it.",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "ExpertTopicResponse",
+        "description": "A skill or tag across the expert's items; `slug` is null for tags."
       }
     },
     "securitySchemes": {

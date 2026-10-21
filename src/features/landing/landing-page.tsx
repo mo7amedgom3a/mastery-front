@@ -1,5 +1,6 @@
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import type { ExpertCardVM } from "@/features/experts-directory/model";
 import { LiveSpotlightCarousel } from "@/features/live-training/sections/live-spotlight-carousel";
 
 import { fallbackFaqs } from "./content/faqs";
@@ -9,6 +10,7 @@ import { AboutSection } from "./sections/about-section";
 import { BusinessSection } from "./sections/business-section";
 import { BundlesSection, ConsultationsSection, CoursesSection, DiplomasSection, PackagesSection } from "./sections/catalog-sections";
 import { CtaBand } from "./sections/cta-band";
+import { ExpertVideosSection } from "./sections/expert-videos-section";
 import { ExpertsSection } from "./sections/experts-section";
 import { ExpertsTicker } from "./sections/experts-ticker";
 import { FaqSection } from "./sections/faq-section";
@@ -22,7 +24,7 @@ import { LandingJsonLd } from "./seo/json-ld";
  * Pure composition: sections are fed by view models. The catalog rails are client components so
  * their filter chips work without a round trip; everything else renders on the server.
  */
-export function LandingPage({ data }: { data: LandingData }) {
+export function LandingPage({ data, experts = [] }: { data: LandingData; experts?: readonly ExpertCardVM[] }) {
   const faqs = data.faqs.length > 0 ? data.faqs : fallbackFaqs;
   const instructorCount = data.stats.find((stat) => stat.key === "instructors")?.value ?? null;
 
@@ -38,13 +40,14 @@ export function LandingPage({ data }: { data: LandingData }) {
           <ExpertsTicker />
         </div>
         <OfferingsSection />
+        <ExpertVideosSection />
         <CoursesSection courses={data.courses} total={data.coursesTotal} filters={data.courseFilters} />
         <DiplomasSection diplomas={data.diplomas} filters={data.diplomaFilters} />
         <PackagesSection packages={data.packages} filters={data.packageFilters} />
         <BundlesSection bundles={data.bundles} filters={data.bundleFilters} />
         <ConsultationsSection consultations={data.consultations} filters={data.consultationFilters} />
         <AboutSection />
-        <ExpertsSection instructorCount={instructorCount} />
+        <ExpertsSection instructorCount={instructorCount} directory={experts} />
         <BusinessSection />
         <TestimonialsSection />
         <FaqSection faqs={faqs} />

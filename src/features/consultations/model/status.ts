@@ -13,6 +13,7 @@ const bookingStatuses: Record<string, StatusView> = {
   completed: { label: "مكتملة", tag: "ma-tag--green" },
   rejected: { label: "مرفوضة", tag: "ma-tag--pink" },
   refund_pending: { label: "قيد الاسترداد", tag: "ma-tag--sky" },
+  refunded: { label: "تم الاسترداد", tag: "ma-tag--sky" },
   no_show_customer: { label: "لم يحضر العميل", tag: "ma-tag--pink" },
   no_show_expert: { label: "لم يحضر الخبير · قيد الاسترداد", tag: "ma-tag--pink" },
   cancelled: { label: "ملغاة", tag: "ma-tag--soft" },

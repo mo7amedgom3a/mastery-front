@@ -1,7 +1,7 @@
 import { BookOpen, CalendarCheck, ChevronLeft, Clock, Layers, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { AppLink } from "@/components/ui/app-link";
+import { AppLink, MaybeLink } from "@/components/ui/app-link";
 import { routes } from "@/config/routes";
 import { TrainerAvatar } from "@/features/product-detail/components/trainer-avatar";
 import { formatCount } from "@/lib/format";
@@ -101,7 +101,7 @@ export function PackageHero({ product, share }: { product: PackageDetailVM; shar
             <ul aria-label="مدربو الباقة" className="m-0 flex list-none p-0">
               {shown.map((trainer, index) => (
                 <li key={trainer.id} className={index > 0 ? "-ms-4" : undefined}>
-                  <AppLink href={trainer.href} title={trainer.name} className="group block rounded-full">
+                  <MaybeLink href={trainer.href} title={trainer.name} className="group block rounded-full">
                     <span className="sr-only">{trainer.name}</span>
                     <TrainerAvatar
                       trainer={trainer}
@@ -109,7 +109,7 @@ export function PackageHero({ product, share }: { product: PackageDetailVM; shar
                       index={index}
                       className="ring-4 ring-surface transition-transform duration-200 group-hover:-translate-y-1 motion-reduce:transition-none"
                     />
-                  </AppLink>
+                  </MaybeLink>
                 </li>
               ))}
               {hidden > 0 ? (

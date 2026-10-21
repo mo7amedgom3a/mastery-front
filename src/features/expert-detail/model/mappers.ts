@@ -1,3 +1,5 @@
+import type { Route } from "next";
+
 import { routes } from "@/config/routes";
 import { consultationCard, type ConsultationIndex } from "@/features/consultation-detail/model/mappers";
 import { isPublishable, type CourseDto } from "@/features/landing/model/mappers";
@@ -8,11 +10,17 @@ import {
   recommendationCard,
 } from "@/features/product-detail/model/mappers";
 import type { CatalogIndex, RailCardVM } from "@/features/product-detail/model/types";
+import { expertColorIndex, mapExpertCard } from "@/features/experts-directory/model";
+import type { CatalogCard, CatalogExpertDetail } from "@/lib/api/browse";
 import type { InstructorNames } from "@/lib/api/instructor-names";
 import type { LegacyExpertResponse, LegacyRecommendationsResponse } from "@/lib/api/legacy";
 import { cleanText, stripHonorific, toPlainText, toTextBlocks } from "@/lib/format";
+import { toPricing } from "@/lib/pricing";
 
-import type { ExpertDetailData, ExpertVM, SocialLinkVM } from "./types";
+import { expertRoles } from "./facts";
+import { programCardIndex, resolveProgramCards } from "./page-document";
+import { studioSections, type StudioBlock } from "@/features/product-detail/model/studio-content";
+import type { ExpertDetailData, ExpertFieldVM, ExpertVM, LinkCardVM, SocialLinkVM } from "./types";
 
 type ProfileDto = LegacyExpertResponse["expert"];
 type RecommendationDto = LegacyRecommendationsResponse["items"][number];
@@ -20,11 +28,6 @@ type RecommendationDto = LegacyRecommendationsResponse["items"][number];
 const CONSULTATION_SLUG = /^consultation-(\d+)$/;
 /** Specialty chips in the hero; more than this reads as a list, not a specialty. */
 const MAX_SPECIALTIES = 4;
-
-/** Avatar colour from the key, so an expert keeps the same one on every visit. */
-function colorIndex(key: string): number {
-  return [...key].reduce((sum, character) => sum + character.charCodeAt(0), 0);
-}
 
 function socialLinks(dto: ProfileDto): SocialLinkVM[] {
   const links: (SocialLinkVM | null)[] = [
@@ -44,6 +47,30 @@ function specialties(detail: LegacyExpertResponse): string[] {
   }
   const names = detail.categories.map((category) => cleanText(category.name)).filter((name) => name !== null);
   return [...new Set(names)].slice(0, MAX_SPECIALTIES);
+}
+
+/** A bundle or live diploma card; it has no cart controls here, its own page sells it. */
+function linkCard(card: CatalogCard, kind: LinkCardVM["kind"]): LinkCardVM {
+  return {
+    key: `${kind}:${card.slug}`,
+    kind,
+    title: cleanText(card.title) ?? card.slug,
+    summary: toPlainText(card.short_description, 160),
+    image: card.image ?? null,
+    href: kind === "bundle" ? routes.bundle(card.slug) : routes.liveTraining(card.slug),
+    tag: kind === "bundle" ? "حزمة" : "برنامج مباشر",
+    price: toPricing(card.price?.amount, card.price?.compare_at_amount),
+  };
+}
+
+/** A field links to its course listing: legacy categories by id, B2C ones by slug. */
+function fieldOf(item: NonNullable<CatalogExpertDetail["category_items"]>[number]): ExpertFieldVM {
+  const href: Route | null = item.legacy_category_id
+    ? routes.category(item.legacy_category_id)
+    : item.slug
+      ? routes.categoryOf("course", item.slug)
+      : null;
+  return { name: item.name.trim(), href };
 }
 
 /** Takes one card from each list in turn, so a mixed rail shows every kind it has. */
@@ -72,6 +99,8 @@ function recommendedCard(
 
 export type ExpertDetailSources = {
   detail: LegacyExpertResponse;
+  /** The B2C profile itself, for what the legacy shape has no room for (README, bundles, related experts). */
+  b2c: CatalogExpertDetail;
   recommendations: LegacyRecommendationsResponse | null;
   catalog: CatalogIndex | null;
   consultations: ConsultationIndex | null;
@@ -80,6 +109,7 @@ export type ExpertDetailSources = {
 
 export function mapExpertDetailData({
   detail,
+  b2c,
   recommendations,
   catalog,
   consultations: consultationIndex,
@@ -94,6 +124,8 @@ export function mapExpertDetailData({
   const courses = detail.courses.filter(isPublishable).map(toCourseCard);
   const diplomas = detail.diplomas.filter(isPublishable).map(toCourseCard);
   const packages = detail.packages.filter(isPublishable).map(packageCard);
+  const bundles = (b2c.bundles ?? []).map((card) => linkCard(card, "bundle"));
+  const liveDiplomas = (b2c.live_diplomas ?? []).map((card) => linkCard(card, "live"));
   const own = [...consultations, ...courses, ...diplomas, ...packages];
   const seen = new Set(own.map((card) => card.key));
 
@@ -117,27 +149,60 @@ export function mapExpertDetailData({
     seen,
   );
 
+  const profile = b2c.expert;
+  const counts = {
+    courses: courses.length,
+    diplomas: diplomas.length,
+    packages: packages.length,
+    consultations: consultations.length,
+    bundles: bundles.length,
+    live: liveDiplomas.length,
+  };
+  const isConsultant = Boolean(profile.is_consultant);
+  const programs = programCardIndex([
+    ...(b2c.courses ?? []), ...(b2c.diplomas ?? []), ...(b2c.live_diplomas ?? []),
+    ...(b2c.packages ?? []), ...(b2c.bundles ?? []), ...(b2c.consultations ?? []),
+  ]);
+  const document = Array.isArray(profile.document) ? (profile.document as unknown as StudioBlock[]) : null;
+  const readme = profile.readme?.trim() ?? "";
+  const title = cleanText(profile.headline);
   const expert: ExpertVM = {
     key: dto.key,
     name,
     initial: stripHonorific(name).charAt(0) || name.charAt(0),
     avatar: dto.profile_image || null,
-    colorIndex: colorIndex(dto.key),
-    bio: [...toTextBlocks(dto.info), ...toTextBlocks(dto.more_info)],
-    summary: toPlainText(dto.info ?? dto.more_info, 160),
+    colorIndex: expertColorIndex(dto.key),
+    title,
+    roles: expertRoles(counts, isConsultant),
+    isConsultant,
+    page: document?.length ? studioSections(resolveProgramCards(document, programs)) : [],
+    document,
+    readme,
+    bio: readme ? [] : [...toTextBlocks(dto.info), ...toTextBlocks(dto.more_info)],
+    summary: title ?? toPlainText(readme || dto.info || dto.more_info, 160),
+    fields: (b2c.category_items ?? []).map(fieldOf),
+    topics: [...new Set([...(b2c.skills ?? []), ...(b2c.tags ?? [])].map((topic) => topic.name.trim()).filter(Boolean))].slice(0, 16),
     specialties: specialties(detail),
     socials: socialLinks(dto),
-    counts: {
-      courses: courses.length,
-      diplomas: diplomas.length,
-      packages: packages.length,
-      consultations: consultations.length,
-    },
+    counts,
     whatTheyDo: detail.highlights.what_i_do ?? [],
     whoTheyHelp: detail.highlights.who_i_help ?? [],
     href: routes.expert(dto.key, name),
-    indexable: own.length > 0,
+    indexable: own.length + bundles.length + liveDiplomas.length > 0,
   };
 
-  return { expert, consultations, courses, diplomas, packages, relatedPrograms, relatedConsultations, recommended };
+  return {
+    expert,
+    consultations,
+    courses,
+    diplomas,
+    packages,
+    bundles,
+    liveDiplomas,
+    programs: [...programs.values()],
+    relatedExperts: (b2c.related_experts ?? []).map(mapExpertCard),
+    relatedPrograms,
+    relatedConsultations,
+    recommended,
+  };
 }

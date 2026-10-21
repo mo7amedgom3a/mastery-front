@@ -19,7 +19,7 @@ export function ProductJsonLd({ product, faqs }: { product: ProductDetailVM; faq
   const instructors = product.trainers.map((trainer) => ({
     "@type": "Person",
     name: trainer.name,
-    url: `${siteUrl}${trainer.href}`,
+    ...(trainer.href ? { url: `${siteUrl}${trainer.href}` } : {}),
     ...(trainer.avatar ? { image: trainer.avatar } : {}),
     ...(trainer.summary ? { description: trainer.summary } : {}),
   }));

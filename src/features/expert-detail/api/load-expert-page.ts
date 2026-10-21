@@ -6,7 +6,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { parseExpertSlug } from "@/config/routes";
 import { baseOpenGraph, siteConfig } from "@/config/site";
 
-import { expertFacts, expertRoles } from "../model/facts";
+import { expertFacts } from "../model/facts";
 import type { ExpertDetailData } from "../model/types";
 import { getExpertDetail } from "./get-expert-detail";
 
@@ -49,7 +49,7 @@ export async function expertMetadata(slug: string): Promise<Metadata> {
     return {};
   }
   const { expert } = data;
-  const role = expertRoles(expert.counts).join(" و");
+  const role = expert.roles.join(" و");
   // "د. مظهر قنطقجي – مدرّب ومستشار في المالية والمحاسبة": the name first, it is what people search.
   const field = expert.specialties[0] ? ` في ${expert.specialties[0]}` : "";
   const title = role ? `${expert.name} – ${role}${field}` : expert.name;

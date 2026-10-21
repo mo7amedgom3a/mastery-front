@@ -2,7 +2,6 @@ import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
 
-import { expertRoles } from "../model/facts";
 import type { ExpertVM } from "../model/types";
 
 /** Escapes `<` so user-controlled strings can never close the script tag. */
@@ -14,7 +13,7 @@ function serialize(data: unknown): string {
 export function ExpertJsonLd({ expert }: { expert: ExpertVM }) {
   const siteUrl = getSiteUrl();
   const url = `${siteUrl}${expert.href}`;
-  const roles = expertRoles(expert.counts);
+  const { roles } = expert;
 
   const graph: Record<string, unknown>[] = [
     {
