@@ -31,6 +31,8 @@ type OrderSummaryProps = {
   paymentMethods: ReactNode;
   /** Tamara's cart widget, under the total; null when Tamara can't take this order. */
   instalmentsWidget: ReactNode;
+  /** Coupon field and vouchers, above the totals (signed-in carts). */
+  incentives?: ReactNode;
 };
 
 /** Totals and the pay button. Sticky beside the cart on large screens. */
@@ -47,6 +49,7 @@ export function OrderSummary({
   methodIncomplete,
   paymentMethods,
   instalmentsWidget,
+  incentives,
 }: OrderSummaryProps) {
   const totals = quote?.totals;
   const canPay = !!quote && quote.lines.length > 0 && !stale && !blocked && !paying && !methodIncomplete;
@@ -57,6 +60,8 @@ export function OrderSummary({
         ملخّص الطلب
       </h2>
 
+      {incentives}
+
       {totals && quote ? (
         <dl aria-busy={stale} className={cn("m-0 flex flex-col gap-3 text-[15px] transition-opacity", stale && "opacity-50")}>
           <SummaryRow term={`المجموع (${formatCount(quote.lines.length, PRODUCT_FORMS)})`}>
@@ -66,6 +71,12 @@ export function OrderSummary({
             <SummaryRow term="الخصم">
               <span dir="ltr">−</span>
               <Money amount={totals.discount} />
+            </SummaryRow>
+          ) : null}
+          {totals.voucher ? (
+            <SummaryRow term="قسائم الرصيد">
+              <span dir="ltr">−</span>
+              <Money amount={totals.voucher} />
             </SummaryRow>
           ) : null}
           {totals.tax > 0 ? (
@@ -128,7 +139,13 @@ export function OrderSummary({
           className={cn("ma-btn ma-btn--primary ma-btn--lg ma-btn--block gap-2", paying && "is-loading")}
         >
           <Lock aria-hidden="true" className="size-5 fill-none" />
-          {paying ? "جارٍ تجهيز الدفع…" : provider === "tamara" ? "ادفع بالتقسيط مع تمارا" : "أتمم الدفع"}
+          {paying
+            ? "جارٍ تجهيز الدفع…"
+            : totals && totals.total === 0
+              ? "أكمل الطلب"
+              : provider === "tamara"
+                ? "ادفع بالتقسيط مع تمارا"
+                : "أتمم الدفع"}
           {totals && !stale && !paying && provider === "stripe" ? (
             <>
               {" · "}
@@ -139,9 +156,11 @@ export function OrderSummary({
 
         <p className="m-0 flex items-start gap-2 text-sm leading-6 text-fg-muted">
           <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 fill-none" />
-          {provider === "tamara"
-            ? "ستنتقل إلى صفحة تمارا الآمنة لاختيار خطتك وإتمام الدفع بالدرهم الإماراتي."
-            : "تتم عملية الدفع في صفحة Stripe الآمنة. لا نحفظ بيانات بطاقتك."}
+          {totals && totals.total === 0
+            ? "يُغطّى طلبك بالكامل، فلا حاجة لبيانات الدفع."
+            : provider === "tamara"
+              ? "ستنتقل إلى صفحة تمارا الآمنة لاختيار خطتك وإتمام الدفع بالدرهم الإماراتي."
+              : "تتم عملية الدفع في صفحة Stripe الآمنة. لا نحفظ بيانات بطاقتك."}
         </p>
       </div>
     </aside>

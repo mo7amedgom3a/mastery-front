@@ -12,5 +12,6 @@ pnpm-debug.log*
 *.tsbuildinfo
 *.seo*
 docs/
+.playwright-cli/
 mediadelivery.txt
 bunny_iframe.txt

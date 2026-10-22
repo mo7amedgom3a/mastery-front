@@ -19,6 +19,7 @@ import { useShopStore, type ShopItem } from "@/lib/shop/store";
 import { ensureAuthStatus } from "@/lib/shop/use-shop-actions";
 
 import { checkoutKey, rotateCheckoutKey, savePendingCheckout } from "../model/checkout-session";
+import { incentivesRequest, useCheckoutIncentives } from "../model/incentives-store";
 
 /** Who takes the payment. Tamara needs the customer's UAE mobile (9 digits, starting with 5). */
 export type CheckoutPayment = { provider: "stripe" } | { provider: "tamara"; phone: string };
@@ -109,21 +110,36 @@ function paymentFields(payment: CheckoutPayment) {
 async function prepareCart(payment: CheckoutPayment): Promise<{ body: CheckoutSessionRequest; fingerprint: string }> {
   // Lines added as a guest, or on another tab, reach the account cart before it is charged.
   await syncAccountCart();
-  const quote = await quoteCart();
+  const quote = await quoteCart(undefined, incentivesRequest(useCheckoutIncentives.getState()));
   const lines = quote.lines ?? [];
   if (lines.length === 0) throw new CheckoutProblem("سلتك فارغة.");
   if (quote.unavailable_product_ids.length > 0) {
     throw new CheckoutProblem("بعض المنتجات في سلتك لم تعد متاحة للشراء. أزلها ثم أكمل الدفع.");
   }
+  // Only what the quote accepted is sent: a rejected code stays on screen but never fails the payment.
+  const couponCode = quote.coupon?.status === "applied" ? quote.coupon.code : null;
+  const voucherIds = (quote.vouchers_applied ?? []).map((voucher) => voucher.voucher_id);
   // The provider is part of what is bought: switching to Tamara is a new order, not a reused key.
+  // So are the coupon and vouchers: another discount is another order.
   const fingerprint = [
     "cart",
     payment.provider,
     lines.map((line) => `${line.product_id}x${line.quantity}`).toSorted().join(","),
     quote.total_amount_minor,
     quote.currency_code,
+    couponCode ?? "",
+    voucherIds.toSorted().join(","),
   ].join("|");
-  return { body: { currency_code: quote.currency_code, quantity: 1, ...paymentFields(payment) }, fingerprint };
+  return {
+    body: {
+      currency_code: quote.currency_code,
+      quantity: 1,
+      ...paymentFields(payment),
+      ...(couponCode ? { coupon_code: couponCode } : {}),
+      ...(voucherIds.length ? { voucher_ids: voucherIds } : {}),
+    },
+    fingerprint,
+  };
 }
 
 async function prepareProduct(
@@ -158,7 +174,9 @@ async function prepareDiploma(
 function messageFor(error: unknown, provider: CheckoutPayment["provider"]): string {
   if (error instanceof CheckoutProblem) return error.message;
   if (error instanceof ApiError && provider === "tamara") {
-    if (error.status === 409 && errorCode(error) !== "checkout_in_progress") {
+    const code = errorCode(error);
+    const incentive = code === "voucher_unavailable" || Boolean(code?.startsWith("coupon_"));
+    if (error.status === 409 && code !== "checkout_in_progress" && !incentive) {
       return "أدخل رقم جوال إماراتي صالح للدفع عبر تمارا.";
     }
     if (error.status === 503) return "تمارا غير متاحة حالياً لهذا الطلب. جرّب الدفع بالبطاقة.";
@@ -166,6 +184,9 @@ function messageFor(error: unknown, provider: CheckoutPayment["provider"]): stri
   if (error instanceof ApiError) {
     if (error.status === 404) return "هذا المنتج غير متاح للشراء حالياً.";
     if (error.status === 409) {
+      const code = errorCode(error);
+      if (code === "voucher_unavailable") return "تغيّر رصيد إحدى القسائم. راجع طلبك ثم حاول مجدداً.";
+      if (code?.startsWith("coupon_")) return "لم تعد القسيمة صالحة لهذا الطلب. أزلها أو جرّب قسيمة أخرى.";
       if (errorCode(error) === "cohort_waitlisted") {
         return "اكتملت مقاعد هذه الدفعة. أضفناك إلى قائمة الانتظار وسنخبرك فور توفّر مقعد.";
       }

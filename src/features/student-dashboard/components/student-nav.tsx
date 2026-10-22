@@ -10,6 +10,7 @@ import {
   House,
   Receipt,
   Repeat,
+  WalletCards,
   Search,
   ShoppingCart,
   UserRound,
@@ -53,6 +54,7 @@ export const studentNavGroups: readonly StudentNavGroup[] = [
       { href: routes.studentWishlist, label: "المفضلة", icon: Heart, count: "wishlist" },
       { href: routes.studentCart, label: "السلة", icon: ShoppingCart, count: "cart" },
       { href: routes.studentOrders, label: "الطلبات", icon: Receipt },
+      { href: routes.studentVouchers, label: "قسائم الرصيد", icon: WalletCards },
     ],
   },
   {

@@ -22,6 +22,7 @@ import { useTeamCheckoutStore } from "@/features/subscriptions/model/team-checko
 import { AddEmployeesLink, teamOrderOf, TeamOrderSummary } from "./components/team-order-summary";
 
 import { claimCelebration, settleCheckout, usePendingCheckout } from "./model/checkout-session";
+import { useCheckoutIncentives } from "./model/incentives-store";
 
 /** Fast at first (the webhook usually lands within seconds), then calmer, then give up waiting. */
 const FAST_POLL_MS = 1500;
@@ -86,6 +87,11 @@ function OrderOutcome({ orderId, paymentIntentId }: Ids) {
   // Free enrollments settle at once with a 0.00 total; only the wording differs.
   const free = intent.data?.amount_minor === 0;
   const failed = status === "failed" || status === "cancelled";
+
+  useEffect(() => {
+    // The coupon and vouchers were spent on this order; the next cart starts without them.
+    if (paid) useCheckoutIncentives.getState().reset();
+  }, [paid]);
 
   const order = useQuery({ ...commerceQueries.order(orderId), enabled: paid });
   // A subscription order grants access under the subscription, not the order.

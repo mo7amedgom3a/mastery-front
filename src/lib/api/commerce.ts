@@ -12,6 +12,8 @@ type GetCartOperation = "get_cart_api_v1_cart_get";
 type AddCartItemOperation = "add_cart_item_api_v1_cart_items_post";
 type UpdateCartItemOperation = "update_cart_item_api_v1_cart_items__cart_item_id__patch";
 type QuoteOperation = "checkout_quote_api_v1_checkout_quote_post";
+type ProductQuoteOperation = "product_quote_api_v1_checkout_product_quote_post";
+type MyVouchersOperation = "my_vouchers_api_v1_me_vouchers_get";
 type CreateCheckoutOperation = "create_checkout_session_api_v1_checkout_sessions_post";
 type FreeEnrollmentOperation = "create_free_enrollment_api_v1_checkout_free_enrollments_post";
 type PaymentIntentOperation = "payment_intent_status_api_v1_payments_intents__payment_intent_id__get";
@@ -27,6 +29,13 @@ export type CartResponse = SuccessResponse<GetCartOperation>;
 export type CartLineResponse = NonNullable<CartResponse["lines"]>[number];
 export type CartItemRequest = RequestBody<AddCartItemOperation>;
 export type CheckoutQuoteResponse = SuccessResponse<QuoteOperation>;
+export type ProductQuoteRequest = RequestBody<ProductQuoteOperation>;
+export type ProductQuoteResponse = SuccessResponse<ProductQuoteOperation>;
+export type MyVoucherPageResponse = SuccessResponse<MyVouchersOperation>;
+export type MyVoucherResponse = MyVoucherPageResponse["items"][number];
+export type QuotedVoucherResponse = CheckoutQuoteResponse["available_vouchers"] extends (infer V)[] | undefined ? V : never;
+/** The coupon and vouchers to price an order with (sent to the quote and to checkout). */
+export type CheckoutIncentives = { coupon_code?: string | null; voucher_ids?: string[] | null };
 export type CheckoutSessionRequest = RequestBody<CreateCheckoutOperation>;
 export type CheckoutSessionResponse = SuccessResponse<CreateCheckoutOperation>;
 export type FreeEnrollmentResponse = SuccessResponse<FreeEnrollmentOperation>;
@@ -55,6 +64,8 @@ const commercePaths = {
   cartItems: "/api/v1/cart/items",
   cartItem: "/api/v1/cart/items/{cart_item_id}",
   quote: "/api/v1/checkout/quote",
+  productQuote: "/api/v1/checkout/product-quote",
+  myVouchers: "/api/v1/me/vouchers",
   sessions: "/api/v1/checkout/sessions",
   freeEnrollments: "/api/v1/checkout/free-enrollments",
   paymentIntent: "/api/v1/payments/intents/{payment_intent_id}",
@@ -70,7 +81,10 @@ const commercePaths = {
 export const commerceKeys = {
   all: ["commerce"] as const,
   cart: () => [...commerceKeys.all, "cart"] as const,
-  quote: () => [...commerceKeys.all, "quote"] as const,
+  quote: (incentives?: CheckoutIncentives) =>
+    incentives ? ([...commerceKeys.all, "quote", incentives] as const) : ([...commerceKeys.all, "quote"] as const),
+  productQuote: (body: ProductQuoteRequest) => [...commerceKeys.all, "product-quote", body] as const,
+  myVouchers: () => [...commerceKeys.all, "my-vouchers"] as const,
   paymentIntent: (id: string) => [...commerceKeys.all, "payment-intent", id] as const,
   tamaraOptions: (amountMinor: number) => [...commerceKeys.all, "tamara-options", amountMinor] as const,
   orders: (params?: OrdersParams) => [...commerceKeys.all, "orders", params ?? {}] as const,
@@ -118,10 +132,38 @@ export function removeCartItem(cartItemId: string, options?: AuthenticatedReques
   });
 }
 
-export function quoteCart(options?: AuthenticatedRequestOptions): Promise<CheckoutQuoteResponse> {
+function incentivesBody(incentives?: CheckoutIncentives): CheckoutIncentives | undefined {
+  const coupon_code = incentives?.coupon_code?.trim() || null;
+  const voucher_ids = incentives?.voucher_ids?.length ? incentives.voucher_ids : null;
+  return coupon_code || voucher_ids ? { coupon_code, voucher_ids } : undefined;
+}
+
+/** Cart totals; `incentives` previews a coupon and vouchers (a rejected coupon comes back in `coupon.status`). */
+export function quoteCart(
+  options?: AuthenticatedRequestOptions,
+  incentives?: CheckoutIncentives,
+): Promise<CheckoutQuoteResponse> {
+  const body = incentivesBody(incentives);
   return customerRequest<CheckoutQuoteResponse>("POST", commercePaths.quote, {
     ...withAuthCookies(options),
     query: { currency_code: CHECKOUT_CURRENCY },
+    ...(body ? { body } : {}),
+  });
+}
+
+/** The customer's vouchers (store credit), newest first, with balance and status. */
+export function listMyVouchers(options?: AuthenticatedRequestOptions): Promise<MyVoucherPageResponse> {
+  return customerRequest<MyVoucherPageResponse>("GET", commercePaths.myVouchers, {
+    ...withAuthCookies(options),
+    query: { limit: 100 },
+  });
+}
+
+/** Buy-now totals for one product with an optional coupon and vouchers. */
+export function quoteProduct(body: ProductQuoteRequest, options?: AuthenticatedRequestOptions): Promise<ProductQuoteResponse> {
+  return customerRequest<ProductQuoteResponse>("POST", commercePaths.productQuote, {
+    ...withAuthCookies(options),
+    body: { ...body, ...incentivesBody(body) },
   });
 }
 
@@ -235,10 +277,18 @@ export const commerceQueries = {
       queryFn: ({ signal }) => getCart({ signal, context }),
       staleTime: 15_000,
     }),
-  quote: (context?: ApiRequestContext) =>
+  quote: (context?: ApiRequestContext, incentives?: CheckoutIncentives) =>
     queryOptions({
-      queryKey: commerceKeys.quote(),
-      queryFn: ({ signal }) => quoteCart({ signal, context }),
+      queryKey: commerceKeys.quote(incentives),
+      queryFn: ({ signal }) => quoteCart({ signal, context }, incentives),
+      staleTime: 0,
+    }),
+  myVouchers: () =>
+    queryOptions({ queryKey: commerceKeys.myVouchers(), queryFn: ({ signal }) => listMyVouchers({ signal }) }),
+  productQuote: (body: ProductQuoteRequest) =>
+    queryOptions({
+      queryKey: commerceKeys.productQuote(body),
+      queryFn: ({ signal }) => quoteProduct(body, { signal }),
       staleTime: 0,
     }),
   /** Keyed by the amount, so eligibility and the widget follow every cart change. */

@@ -123,6 +123,7 @@ export const routes = {
   studentWishlist: route("/students/wishlist"),
   studentCart: route("/students/cart"),
   studentOrders: route("/students/orders"),
+  studentVouchers: route("/students/vouchers"),
   studentNotifications: route("/students/notifications"),
   studentOrder: (orderId: string) => route(`/students/orders/${encodeURIComponent(orderId)}`),
   studentAccess: route("/students/access"),

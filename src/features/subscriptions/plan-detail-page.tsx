@@ -90,7 +90,7 @@ export function PlanDetailPage({ plan, preview = false }: { plan: PlanVM; previe
               <section className="rounded-panel border border-line-strong p-6">
                 <h2 className="m-0 text-xl font-bold">اختر {plan.selectionAllowance} برامج على مدار السنة</h2>
                 <p className="m-0 mt-2 leading-7 text-fg-muted">
-                  اختر البرامج متى شئت خلال سنة اشتراكك، ويمكنك استبدال أي برنامج ما دمت لم تبدأ التعلّم فيه بعد. مع
+                  اختر من جميع الدورات والدبلومات والحزم والباقات المنشورة متى شئت خلال سنة اشتراكك. يُحسب كل برنامج اختياراً واحداً، ويمكنك استبداله ما دمت لم تبدأ التعلّم فيه بعد. مع
                   التجديد السنوي يتجدد رصيدك كاملاً.
                 </p>
               </section>

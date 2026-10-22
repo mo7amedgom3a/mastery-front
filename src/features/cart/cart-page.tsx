@@ -9,6 +9,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
 import { useStartCheckout } from "@/features/checkout/api/use-start-checkout";
+import { incentivesRequest, useCheckoutIncentives } from "@/features/checkout/model/incentives-store";
 import { AuthGateDialog } from "@/features/checkout/components/auth-gate-dialog";
 import { CheckoutRedirectOverlay } from "@/features/checkout/components/checkout-redirect-overlay";
 import { RecommendationRail } from "@/features/search/components/recommendation-rail";
@@ -26,6 +27,7 @@ import { useUndo } from "@/lib/shop/use-undo";
 
 import { shopQueries } from "./api/shop-client";
 import { CartLineRow } from "./components/cart-line";
+import { IncentivesPanel } from "./components/incentives-panel";
 import { OrderSummary } from "./components/order-summary";
 import { PaymentMethodPicker } from "./components/payment-method-picker";
 import { TamaraWidget } from "./components/tamara-widget";
@@ -50,7 +52,23 @@ function useCartQuote(hydrated: boolean, signedIn: boolean, cart: CartLine[]): C
     if (signedIn) void queryClient.invalidateQueries({ queryKey: commerceKeys.quote() });
   }, [queryClient, revision, signedIn]);
 
-  const account = useQuery({ ...commerceQueries.quote(), enabled: hydrated && signedIn });
+  const couponCode = useCheckoutIncentives((state) => state.couponCode);
+  const voucherIds = useCheckoutIncentives((state) => state.voucherIds);
+  const incentives = useMemo(() => incentivesRequest({ couponCode, voucherIds }), [couponCode, voucherIds]);
+  const account = useQuery({
+    ...commerceQueries.quote(undefined, incentives),
+    enabled: hydrated && signedIn,
+    // Keep the totals on screen while a coupon or voucher change is re-quoted.
+    placeholderData: (previous) => previous,
+  });
+
+  useEffect(() => {
+    // First quote: spend the vouchers (soonest expiry first) unless the customer already chose.
+    const available = account.data?.available_vouchers ?? [];
+    if (voucherIds === null && available.length > 0) {
+      useCheckoutIncentives.getState().setVoucherIds(available.map((voucher) => voucher.voucher_id));
+    }
+  }, [account.data, voucherIds]);
   const accountKeys = useMemo(
     () => (account.data?.lines ?? []).flatMap((line) => shopKeyFromSlug(line.slug) ?? []),
     [account.data],
@@ -106,6 +124,7 @@ export function CartPage() {
 
   const { quote, stale, failed, refetch } = useCartQuote(hydrated, signedIn, cart);
   const checkout = useStartCheckout();
+  const incentiveState = useCheckoutIncentives();
   const payment = usePaymentChoice(quote && { amount: quote.totals.total, currency: quote.totals.currency });
   const shopRoutes = useShopRoutes();
 
@@ -218,9 +237,36 @@ export function CartPage() {
             blocked={signedIn && unavailable.size > 0}
             paying={checkout.busy}
             payError={checkout.error}
-            onPay={() => void checkout.start({ mode: "cart", payment: payment.payment })}
+            // An order the coupon and vouchers fully cover has no payment page.
+            onPay={() => void checkout.start({ mode: "cart", payment: quote?.totals.total === 0 ? undefined : payment.payment })}
             provider={payment.payment.provider}
-            methodIncomplete={payment.incomplete}
+            methodIncomplete={quote?.totals.total !== 0 && payment.incomplete}
+            incentives={
+              signedIn ? (
+                <IncentivesPanel
+                  coupon={quote?.coupon ?? null}
+                  couponCode={incentiveState.couponCode}
+                  onApplyCoupon={(code) => {
+                    checkout.clearError();
+                    incentiveState.setCoupon(code);
+                  }}
+                  onRemoveCoupon={() => {
+                    checkout.clearError();
+                    incentiveState.setCoupon(null);
+                  }}
+                  vouchers={quote?.vouchers}
+                  selectedVoucherIds={incentiveState.voucherIds ?? []}
+                  onVouchersChange={(ids) => {
+                    checkout.clearError();
+                    incentiveState.setVoucherIds(ids);
+                  }}
+                  currency={quote?.totals.currency ?? "USD"}
+                  disabled={checkout.busy}
+                />
+              ) : (
+                <p className="m-0 text-sm leading-6 text-fg-muted">لديك قسيمة خصم أو رصيد؟ سجّل الدخول لاستخدامه عند الدفع.</p>
+              )
+            }
             paymentMethods={
               <PaymentMethodPicker
                 method={payment.method}

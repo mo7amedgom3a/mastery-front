@@ -94,7 +94,17 @@ export type QuoteLine = {
   totalAmount: number;
 };
 
-export type CouponStatus = "applied" | "invalid" | "expired" | "not_applicable" | "min_not_met";
+export type CouponStatus =
+  | "applied"
+  | "invalid"
+  | "expired"
+  | "not_applicable"
+  | "min_not_met"
+  // Backend checks beyond the guest preview's.
+  | "inactive"
+  | "not_started"
+  | "limit_reached"
+  | "not_eligible";
 
 export type QuoteCoupon = {
   code: string;
@@ -107,6 +117,14 @@ export type QuoteCoupon = {
   appliedKeys: ShopItemKey[];
 };
 
+export type QuoteVoucher = {
+  id: string;
+  code: string;
+  /** Applied: the amount used here. Available: what is left on the voucher. */
+  amount: number;
+  expiresAt: string | null;
+};
+
 export type QuoteTotals = {
   currency: string;
   /** Items at their current prices, plus selected add-ons. */
@@ -115,6 +133,8 @@ export type QuoteTotals = {
   offerSavings: number;
   /** Coupon discount. */
   discount: number;
+  /** Paid with vouchers (store credit), after the coupon. Account carts only. */
+  voucher?: number;
   tax: number;
   total: number;
 };
@@ -134,6 +154,8 @@ export type Quote = {
   unavailable: { key: ShopItemKey; reason: "missing" | "inactive" | "free" | "unpriced" | "not_purchasable" }[];
   /** Null when no coupon was sent. */
   coupon: QuoteCoupon | null;
+  /** Account carts: vouchers used on this order and every voucher the customer can spend. */
+  vouchers?: { applied: QuoteVoucher[]; available: QuoteVoucher[] };
   totals: QuoteTotals;
   paymentMethods: PaymentMethodOption[];
 };

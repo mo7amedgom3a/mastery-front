@@ -39,6 +39,8 @@ function ChooseXPanel({ subscription }: { subscription: MySubscription }) {
   const queryClient = useQueryClient();
   const state = useQuery(subscriptionQueries.selections(subscription.subscription_id));
   const [swap, setSwap] = useState<Record<string, string>>({});
+  const [search, setSearch] = useState("");
+  const [type, setType] = useState("");
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: subscriptionKeys.all });
     void queryClient.invalidateQueries({ queryKey: commerceKeys.all });
@@ -55,6 +57,10 @@ function ChooseXPanel({ subscription }: { subscription: MySubscription }) {
   const { usage, active_selections: active, eligible_products: eligible } = state.data;
   const chosen = new Set(active.map((s) => s.product_id));
   const available = eligible.filter((p) => !chosen.has(p.product_id));
+  const visible = available.filter((p) =>
+    (!type || p.product_type === type) &&
+    `${p.title ?? ""} ${p.slug ?? ""}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()),
+  );
   const error = select.error ?? replace.error;
 
   return (
@@ -105,18 +111,33 @@ function ChooseXPanel({ subscription }: { subscription: MySubscription }) {
       ) : null}
       {usage.remaining_selections > 0 && available.length > 0 ? (
         <div className="flex flex-col gap-3">
-          <h3 className="m-0 text-base font-bold">اختر برنامجاً</h3>
+          <h3 className="m-0 text-base font-bold">اختر برنامجاً من الكتالوج المنشور</h3>
+          <div className="flex flex-wrap gap-2">
+            <input className="ma-input min-h-11 flex-1" type="search" aria-label="ابحث عن برنامج" placeholder="ابحث عن برنامج…"
+              value={search} onChange={(event) => setSearch(event.target.value)} />
+            <select className="ma-input min-h-11" aria-label="نوع البرنامج" value={type} onChange={(event) => setType(event.target.value)}>
+              <option value="">كل الأنواع</option>
+              <option value="course">دورات</option>
+              <option value="diploma">دبلومات</option>
+              <option value="package">حزم</option>
+              <option value="bundle">باقات</option>
+            </select>
+          </div>
           <ul className="m-0 grid list-none gap-2 p-0 md:grid-cols-2">
-            {available.map((product) => (
+            {visible.map((product) => (
               <li key={product.product_id} className="flex items-center justify-between gap-3 rounded-panel border border-line p-3">
-                <span>{product.title ?? product.slug}</span>
+                <span>{product.title ?? product.slug} <span className="text-sm text-fg-muted">{product.product_type === "course" ? "دورة" : product.product_type === "diploma" ? "دبلوم" : product.product_type === "package" ? "حزمة" : "باقة"}</span></span>
                 <Button size="sm" variant="primary" disabled={select.isPending} onClick={() => select.mutate(product.product_id)}>
                   اختيار
                 </Button>
               </li>
             ))}
           </ul>
+          {visible.length === 0 ? <p className="m-0 text-sm text-fg-muted">لا توجد برامج مطابقة.</p> : null}
         </div>
+      ) : null}
+      {usage.remaining_selections > 0 && available.length === 0 ? (
+        <p className="m-0 text-sm text-fg-muted">لا توجد برامج منشورة متاحة للاختيار حالياً.</p>
       ) : null}
       {error ? (
         <p className="m-0 text-sm text-danger" role="alert">

@@ -60,7 +60,7 @@ const toNumber = (value: string | number | null | undefined) => Number(value ?? 
 export const PLAN_TYPE_LABELS: Record<PlanVM["planType"], string> = {
   standard: "باقة أساسية",
   full_library: "المكتبة الكاملة",
-  choose_x: "اختر دوراتك",
+  choose_x: "اختر برامجك",
 };
 
 export const RESOURCE_TYPE_LABELS: Record<string, string> = {
@@ -78,7 +78,7 @@ export function toPlanVM(plan: SubscriptionPlan): PlanVM {
   const discount = plan.discount?.is_active ? plan.discount : null;
   const percent = discount && list > 0 ? Math.round(((list - amount) / list) * 100) : 0;
   const interval = plan.billing_interval as Interval;
-  const resources = [...(plan.included_products ?? []), ...(plan.selectable_products ?? [])].map((p) => ({
+  const resources = [...(plan.included_products ?? []), ...(plan.plan_type === "choose_x" ? [] : plan.selectable_products ?? [])].map((p) => ({
     productId: p.product_id,
     title: p.title ?? p.slug ?? "",
     type: p.product_type ?? "course",
