@@ -5,9 +5,10 @@ import { ArrowUpLeft, ChevronLeft, ChevronRight, Clock, Eye, Mic, Play, ThumbsUp
 import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 
 import { brandBg } from "@/components/ui/brand-colors";
+import { buttonClass } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
 
-import { expertVideos, type ExpertVideo } from "../content/expert-videos";
+import { expertVideoCategories, expertVideos, type ExpertVideo } from "../content/expert-videos";
 
 const ROTATE_MS = 7000;
 
@@ -25,9 +26,9 @@ function placement(index: number, active: number, total: number): { slot: number
   return { slot: delta * 91, scale: 0.4, state: "hidden" };
 }
 
-/** First letter of the name, skipping honorifics like "د." */
+/** First letter of the name, skipping honorifics like "د."، "م." and "أ." */
 function initialOf(name: string): string {
-  return name.replace(/^د\.\s*/, "").trim().charAt(0);
+  return name.replace(/^(?:د|م|أ)\.\s*/, "").trim().charAt(0);
 }
 
 const thumbnailUrl = (id: string) => `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
@@ -36,14 +37,15 @@ const embedUrl = (id: string) =>
   `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
 
 /**
- * Cinematic spotlight of interviews and podcasts featuring Mastery experts: the active video sits
- * centre-stage with a brand-colour glow, neighbours recede blurred to either side. Auto-advances
- * when the progress bar fills (so pausing the bar pauses the carousel). Hovering does not pause it;
+ * Cinematic spotlight of "كرسي ماستري" episodes: the active video sits centre-stage with a
+ * brand-colour glow, neighbours recede blurred to either side. Category chips narrow the line-up
+ * before the stage renders, so the carousel keeps exactly the same motion. Auto-advances when the
+ * progress bar fills (so pausing the bar pauses the carousel); hovering does not pause it, while
  * keyboard focus, being offscreen or a playing video does, and it never runs under reduced motion.
  * The YouTube player loads only inside the dialog, after the click.
  */
 export function ExpertVideosSection() {
-  const total = expertVideos.length;
+  const [category, setCategory] = useState<string | null>(null);
   const [active, setActive] = useState(0);
   const [focused, setFocused] = useState(false);
   const [inView, setInView] = useState(false);
@@ -61,13 +63,23 @@ export function ExpertVideosSection() {
     return () => observer.disconnect();
   }, []);
 
+  // Filtering happens before the stage renders, so the carousel keeps its motion and only the line-up changes.
+  const listed = category ? expertVideos.filter((video) => video.category === category) : expertVideos;
+  const total = listed.length;
+
   if (total === 0) return null;
 
   const paused = focused || !inView || playing !== null;
-  const current = expertVideos[active];
+  const current = listed[active];
   const goTo = (index: number) => setActive(((index % total) + total) % total);
   const next = () => goTo(active + 1);
   const prev = () => goTo(active - 1);
+
+  /** A new category starts at its first episode, and the progress bar restarts with it. */
+  const selectCategory = (nextCategory: string | null) => {
+    setCategory(nextCategory);
+    setActive(0);
+  };
 
   const play = (video: ExpertVideo) => {
     setPlaying(video);
@@ -102,20 +114,44 @@ export function ExpertVideosSection() {
       <div className="ma-container">
         <SectionHeader
           id={titleId}
-          label="خبراؤنا على الشاشة"
-          title="حلقات مختارة من ضيوف ماستري أكاديمي"
-          lead="محادثات حقيقية مع المدربين والخبراء الذين يقودون في الميدان — قيادة وتسويق وموارد بشرية وتطوير ذات. اختر حلقة، اضغط تشغيل، وشاهد المقابلة كاملة."
+          label="من إنتاج ماستري أكاديمي"
+          title="بودكاست كورسي ماستري"
+          lead="أكثر من ثلاثين حلقة من «كرسي ماستري» مع خبراء المبيعات والتسويق والمالية والإدارة والفنون. اختر المجال الذي يهمك، تنقّل بين الحلقات، ثم اضغط تشغيل لمشاهدة اللقاء كاملاً."
         />
+
+        {/* Category filter: the same kit buttons as the catalogue sections, scrollable on phones. */}
+        <div className="ma-vs-filters mt-10 short:mt-6">
+          <ul
+            aria-label="تصفية الحلقات حسب المجال"
+            className="-mx-4 m-0 flex list-none gap-2 overflow-x-auto p-0 px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0"
+          >
+            {[{ key: null, label: "الكل" }, ...expertVideoCategories.map((item) => ({ key: item, label: item }))].map((chip) => {
+              const selected = category === chip.key;
+              return (
+                <li key={chip.key ?? "all"} className="shrink-0">
+                  <button
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => selectCategory(chip.key)}
+                    className={buttonClass({ variant: selected ? "secondary" : "soft", size: "sm" })}
+                  >
+                    {chip.label}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
 
       <div
         role="region"
         aria-roledescription="carousel"
-        aria-label="حلقات خبراء ماستري. استخدم الأسهم للتنقل بين الحلقات."
+        aria-label="بودكاست كورسي ماستري. استخدم الأسهم للتنقل بين الحلقات."
         className="ma-vs-stage mt-12 short:mt-6"
         onKeyDown={onStageKeyDown}
       >
-        {expertVideos.map((video, index) => {
+        {listed.map((video, index) => {
           const { slot, scale, state } = placement(index, active, total);
           const isActive = state === "active";
           return (
@@ -170,13 +206,17 @@ export function ExpertVideosSection() {
         <div aria-live={paused ? "polite" : "off"} className="mt-7 flex min-h-14 items-center justify-center">
           <div key={current.youtubeId} className="ma-vs-caption flex items-center gap-3.5 max-sm:flex-col max-sm:text-center">
             <span aria-hidden="true" className={cn("ma-avatar size-11 text-base", brandBg[current.color])}>
-              {initialOf(current.host)}
+              {initialOf(current.host || current.role)}
             </span>
             <div className="flex flex-col gap-1 max-sm:items-center">
               <p className="m-0 text-[clamp(1rem,1.8vw,1.25rem)] leading-snug font-semibold">{current.title}</p>
               <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-fg-muted max-sm:justify-center">
-                <span>{current.host}</span>
-                <Dot />
+                {current.host ? (
+                  <>
+                    <span>{current.host}</span>
+                    <Dot />
+                  </>
+                ) : null}
                 <span>{current.role}</span>
                 <Dot />
                 <span className="inline-flex items-center gap-1.5 tabular-nums">
@@ -210,8 +250,8 @@ export function ExpertVideosSection() {
             <ChevronRight aria-hidden="true" />
           </button>
           <div className="flex max-w-90 flex-1 flex-col items-center gap-3">
-            <div className="flex items-center gap-2">
-              {expertVideos.map((video, index) => (
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {listed.map((video, index) => (
                 <button
                   key={video.youtubeId}
                   type="button"
@@ -226,8 +266,8 @@ export function ExpertVideosSection() {
               ))}
             </div>
             <div className="ma-vs-progress" aria-hidden="true">
-              {/* Keyed by slide so the bar restarts on every change; its end turns to the next one. */}
-              <div key={active} className="ma-vs-progress__bar" onAnimationEnd={next} />
+              {/* Keyed by category + slide so the bar restarts on every change; its end turns to the next one. */}
+              <div key={`${category ?? "all"}:${active}`} className="ma-vs-progress__bar" onAnimationEnd={next} />
             </div>
           </div>
           <button type="button" onClick={next} aria-label="الحلقة التالية" className="ma-btn ma-btn--soft ma-btn--icon rounded-full">
@@ -264,7 +304,8 @@ export function ExpertVideosSection() {
               {playing?.title}
             </h3>
             <p className="m-0 text-[13px] text-fg-muted">
-              {playing?.show} · {playing?.host}
+              {playing?.show}
+              {playing?.host ? ` · ${playing.host}` : null}
             </p>
           </div>
           <button type="button" onClick={close} aria-label="إغلاق الفيديو" className="ma-btn ma-btn--soft ma-btn--icon size-11 min-h-11 rounded-full">
