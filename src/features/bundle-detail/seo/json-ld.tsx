@@ -3,7 +3,6 @@ import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
 import type { FaqVM } from "@/features/landing/model/types";
 
-import { MOCK_PRICING } from "../content/mock-pricing";
 import type { BundleDetailVM } from "../model/types";
 
 /** Escapes `<` so user-controlled strings can never close the script tag. */
@@ -25,9 +24,10 @@ export function BundleJsonLd({ bundle, faqs }: { bundle: BundleDetailVM; faqs: r
       url,
       description: bundle.description ?? bundle.summary ?? bundle.title,
       brand: { "@type": "Brand", name: siteConfig.name },
+      ...(bundle.image ? { image: bundle.image } : {}),
       ...(bundle.skills.length > 0 ? { keywords: bundle.skills.join("، ") } : {}),
-      // Placeholder prices must never reach search engines.
-      ...(!MOCK_PRICING && bundle.priceAmount
+      // Real catalog price (the same amount the purchase card shows).
+      ...(bundle.priceAmount != null
         ? {
             offers: {
               "@type": "Offer",

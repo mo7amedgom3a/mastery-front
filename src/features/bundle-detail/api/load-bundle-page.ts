@@ -38,7 +38,18 @@ export async function bundleMetadata(slug: string): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: bundle.href, languages: { ar: bundle.href, "x-default": bundle.href } },
-    openGraph: { ...baseOpenGraph, url: bundle.href, title: bundle.title, description },
-    twitter: { card: "summary", title: bundle.title, description },
+    openGraph: {
+      ...baseOpenGraph,
+      url: bundle.href,
+      title: bundle.title,
+      description,
+      ...(bundle.image ? { images: [{ url: bundle.image, alt: bundle.title }] } : {}),
+    },
+    twitter: {
+      card: bundle.image ? "summary_large_image" : "summary",
+      title: bundle.title,
+      description,
+      ...(bundle.image ? { images: [bundle.image] } : {}),
+    },
   };
 }

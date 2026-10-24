@@ -5,7 +5,7 @@ import type { InfoSectionVM, TrainerVM } from "@/features/product-detail/model/t
 import type { StudioBannerVM, StudioSectionVM } from "@/features/product-detail/model/studio-content";
 import type { Pricing } from "@/lib/pricing";
 
-import type { BundleSavings } from "../content/mock-pricing";
+import type { BundleSavings } from "../content/pricing";
 
 /** View models for bundles (حزم ماستري). Mapped from catalog DTOs in `mappers.ts`, never used raw. */
 
@@ -20,6 +20,8 @@ export type BundleCardVM = {
   id: string;
   title: string;
   summary: string | null;
+  /** The Studio page's cover (else its banner, else the catalog image). */
+  image: string | null;
   href: Route;
   composition: BundleCompositionVM[];
   price: Pricing;
@@ -60,6 +62,8 @@ export type BundleDetailVM = {
   productId: string;
   title: string;
   summary: string | null;
+  /** The Studio page's cover; the hero/purchase card artwork. */
+  image: string | null;
   /** Plain-text description for metadata. */
   description: string | null;
   sections: InfoSectionVM[];

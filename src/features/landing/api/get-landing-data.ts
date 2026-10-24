@@ -6,6 +6,7 @@ import { getCatalogBundle } from "@/features/bundle-detail/api/get-bundle-detail
 import { mapBundleLanding } from "@/features/bundle-detail/model/mappers";
 import type { BundleLandingVM } from "@/features/bundle-detail/model/types";
 import { getCatalogProducts, type CatalogBundleDetail } from "@/lib/api/catalog";
+import { ApiError } from "@/lib/api/client";
 import { getFeaturedLiveTrainings } from "@/features/live-training/api/get-live-trainings";
 import {
   cardToConsultationDto,
@@ -18,6 +19,7 @@ import {
 } from "@/lib/api/browse";
 import { getInstructorNames } from "@/lib/api/instructor-names";
 import type { LandingPageResponse } from "@/lib/api/legacy";
+import { getProductContent } from "@/lib/api/product-content";
 import { searchProducts } from "@/lib/api/search";
 import { cachedRead as cachedReadOptions, valueOf } from "@/lib/api/server-cache";
 
@@ -105,7 +107,18 @@ async function getBundles(): Promise<BundleLandingVM> {
   const details = results
     .map((result, index) => valueOf(result, `bundle ${page.items[index].slug}`))
     .filter((detail): detail is CatalogBundleDetail => detail !== null);
-  return mapBundleLanding(details);
+  // The Studio page supplies the card's cover and its authored title/summary; 404 means none.
+  const contents = await Promise.all(details.map(bundleContent));
+  return mapBundleLanding(details, contents);
+}
+
+/** A bundle's published Studio page; 404 is expected and silently falls back to catalog fields. */
+function bundleContent(detail: CatalogBundleDetail) {
+  return getProductContent(detail.product.product_id, cachedRead).catch((error: unknown) => {
+    if (error instanceof ApiError && error.status === 404) return null;
+    console.error(`[api] bundle ${detail.product.slug} content request failed`, error);
+    return null;
+  });
 }
 
 /**

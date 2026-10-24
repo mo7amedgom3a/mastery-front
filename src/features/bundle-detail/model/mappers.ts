@@ -8,7 +8,7 @@ import type { ProductContentResponse } from "@/lib/api/product-content";
 import { cleanText, formatCount, formatMinutes, toPlainText, toTextBlocks } from "@/lib/format";
 import { noPricing, toPricing } from "@/lib/pricing";
 
-import { bundlePricing } from "../content/mock-pricing";
+import { bundlePricing } from "../content/pricing";
 import type {
   BundleCardVM,
   BundleCompositionVM,
@@ -96,13 +96,19 @@ function memberHref(kind: BundleMemberKind, id: number | null) {
 }
 
 /** The landing card for one bundle. Its category names double as filter chips. */
-export function mapBundleCard(detail: CatalogBundleDetail): BundleCardVM {
+export function mapBundleCard(
+  detail: CatalogBundleDetail,
+  content: ProductContentResponse | null = null,
+): BundleCardVM {
   const { product } = detail;
-  const pricing = bundlePricing(product.slug);
+  const meta = studioDocument(content)?.meta;
+  const pricing = bundlePricing(detail.price);
   return {
     id: product.slug,
-    title: cleanText(product.title) ?? product.slug,
-    summary: toPlainText(product.short_description ?? detail.description, 180),
+    // The page authored in the Studio wins, so a card always matches the page it opens.
+    title: cleanText(meta?.title) || cleanText(product.title) || product.slug,
+    summary: toPlainText(meta?.summary || product.short_description || detail.description, 180),
+    image: meta?.cover?.url || meta?.banner?.url || detail.image || null,
     href: routes.bundle(product.slug),
     composition: compositionOf(detail.bundle_members),
     price: pricing.price,
@@ -112,8 +118,13 @@ export function mapBundleCard(detail: CatalogBundleDetail): BundleCardVM {
 }
 
 /** Published bundles, in the API's order, and filter chips from their categories (most-used first). */
-export function mapBundleLanding(details: readonly CatalogBundleDetail[]): BundleLandingVM {
-  const bundles = details.filter((detail) => isPublishedBundle(detail.product)).map(mapBundleCard);
+export function mapBundleLanding(
+  details: readonly CatalogBundleDetail[],
+  contents: readonly (ProductContentResponse | null)[] = [],
+): BundleLandingVM {
+  const bundles = details.flatMap((detail, index) =>
+    isPublishedBundle(detail.product) ? [mapBundleCard(detail, contents[index] ?? null)] : [],
+  );
   const counts = new Map<string, number>();
   for (const bundle of bundles) {
     for (const key of bundle.filterKeys) counts.set(key, (counts.get(key) ?? 0) + 1);
@@ -235,20 +246,22 @@ export function mapBundleDetail(
     if (!trainers.has(trainer.id)) trainers.set(trainer.id, trainer);
   }
 
-  // The page published from the admin Studio: `meta` (banner, title) + BlockNote blocks.
+  // The page published from the admin Studio: `meta` (cover, banner, title, summary) + BlockNote blocks.
   const doc = studioDocument(content);
+  const meta = doc?.meta;
   const blocks = doc?.blocks ?? [];
   const studioContent = blocks.length > 0 ? studioSections(blocks) : null;
-  const banner = doc?.meta?.banner?.url
-    ? { url: doc.meta.banner.url, alt: doc.meta.banner.alt ?? "", headline: doc.meta.banner.headline ?? "" }
+  const banner = meta?.banner?.url
+    ? { url: meta.banner.url, alt: meta.banner.alt ?? "", headline: meta.banner.headline ?? "" }
     : null;
 
-  const summary = toPlainText(product.short_description ?? detail.description, 240);
+  const summary = toPlainText(meta?.summary || product.short_description || detail.description, 240);
   return {
     slug: product.slug,
     productId: product.product_id,
-    title: (doc?.meta?.title ? cleanText(doc.meta.title) : null) || title,
+    title: (meta?.title ? cleanText(meta.title) : null) || title,
     summary,
+    image: meta?.cover?.url || detail.image || null,
     description: toPlainText(detail.description ?? product.short_description, 160),
     sections: aboutSections(detail),
     readme: detail.readme?.trim() || null,
@@ -261,7 +274,7 @@ export function mapBundleDetail(
     composition: compositionOf(detail.bundle_members),
     trainers: [...trainers.values()],
     access: accessLabel(product.access_duration_days),
-    ...bundlePricing(product.slug),
+    ...bundlePricing(detail.price),
     href: routes.bundle(product.slug),
   };
 }

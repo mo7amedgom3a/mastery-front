@@ -195,6 +195,7 @@ export function BundlesSection({ bundles, filters }: { bundles: BundleCardVM[]; 
           key: bundle.id,
           href: bundle.href,
           title: bundle.title,
+          image: bundle.image,
           color: "sky",
           tag: "حزمة",
           summary: bundle.summary,
