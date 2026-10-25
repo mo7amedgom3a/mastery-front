@@ -6,6 +6,7 @@ import {
   Copy,
   DollarSign,
   Gift,
+  Hourglass,
   MousePointerClick,
   Share2,
   ShoppingBag,
@@ -25,6 +26,8 @@ import { ApiError } from "@/lib/api/client";
 import { joinReferrals, referralKeys, referralQueries, type MyReferralsResponse } from "@/lib/api/referrals";
 import { cn } from "@/lib/cn";
 import { formatDate, fromMinor } from "@/lib/format";
+
+import { StudentCredit } from "./components/student-credit";
 
 const REWARD_STATUS: Record<string, { label: string; tone: string }> = {
   pending: { label: "قيد الانتظار", tone: "ma-tag--sky" },
@@ -114,8 +117,21 @@ function ShareLink({ link }: { link: string }) {
   );
 }
 
+function PendingApplication() {
+  return (
+    <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10 bg-surface">
+      <Hourglass aria-hidden="true" className="size-8 text-accent" />
+      <h2 className="m-0 text-2xl font-bold">طلب انضمامك كمسوّق قيد المراجعة</h2>
+      <p className="m-0 max-w-[60ch] text-fg-muted">
+        سنراجع طلبك ونرسل لك بريداً عند الموافقة. بعدها يظهر هنا رابطك وأرباحك ويمكنك طلب صرف عمولاتك.
+      </p>
+    </div>
+  );
+}
+
 function Joined({ data }: { data: MyReferralsResponse }) {
   const invites = useQuery(referralQueries.invites());
+  const marketer = data.partner_type === "marketer";
 
   return (
     <div className="flex flex-col gap-6">
@@ -132,8 +148,9 @@ function Joined({ data }: { data: MyReferralsResponse }) {
           </div>
         </div>
         <p className="m-0 text-fg-muted text-sm sm:text-base">
-          شارك رابطك أو كودك مع أصدقائك وجمهورك. يحصل عميلك على خصم {Number(data.friend_discount_percent)}% على أول شراء،
-          وتحصل أنت على قسائم رصيد وعمولات تسويقية بعد تأكيد الطلب.
+          {marketer
+            ? "شارك رابطك أو كودك مع جمهورك. تُحسب عمولتك عن كل عملية شراء، وتُضاف إلى رصيدك بعد اعتمادها لتطلب صرفها."
+            : `شارك رابطك مع أصدقائك. يحصل صديقك على خصم ${Number(data.friend_discount_percent)}% على أول شراء، وتحصل أنت على رصيد يُخصم من مشترياتك القادمة.`}
         </p>
         {data.link ? <ShareLink link={data.link} /> : null}
       </section>
@@ -144,24 +161,30 @@ function Joined({ data }: { data: MyReferralsResponse }) {
           أداء الإحالات والمبيعات
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          <Stat
-            label="إجمالي المبيعات"
-            value={<Money amount={fromMinor(data.total_revenue_minor ?? 0)} />}
-            icon={TrendingUp}
-            tone="accent"
-          />
-          <Stat
-            label="العمولات المعتمدة"
-            value={<Money amount={fromMinor(data.approved_commission_minor ?? 0)} />}
-            icon={DollarSign}
-            tone="green"
-          />
-          <Stat
-            label="قسائم الرصيد المكتسبة"
-            value={<Money amount={fromMinor(data.earned_minor)} />}
-            icon={WalletCards}
-            tone="green"
-          />
+          {marketer ? (
+            <>
+              <Stat
+                label="إجمالي المبيعات"
+                value={<Money amount={fromMinor(data.total_revenue_minor ?? 0)} />}
+                icon={TrendingUp}
+                tone="accent"
+              />
+              <Stat
+                label="العمولات المعتمدة"
+                value={<Money amount={fromMinor(data.approved_commission_minor ?? 0)} />}
+                sublabel="لم تُصرف بعد"
+                icon={DollarSign}
+                tone="green"
+              />
+            </>
+          ) : (
+            <Stat
+              label="رصيد مكتسب (إجمالي)"
+              value={<Money amount={fromMinor(data.earned_minor)} />}
+              icon={WalletCards}
+              tone="green"
+            />
+          )}
           <Stat
             label="النقرات (Clicks)"
             value={data.clicks ?? 0}
@@ -180,28 +203,16 @@ function Joined({ data }: { data: MyReferralsResponse }) {
         </div>
       </section>
 
-      {/* Store Credit Balance Quick Card */}
-      <section className="flex flex-wrap items-center justify-between gap-4 rounded-panel border border-green/30 bg-green/5 p-4 sm:p-5">
-        <div className="flex items-center gap-3">
-          <div className="grid size-11 place-items-center rounded-control bg-green/10 text-green">
-            <WalletCards aria-hidden="true" className="size-6" />
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-xs font-medium text-fg-muted">رصيد قسائمك المتاح للاستخدام</span>
-            <strong className="text-xl sm:text-2xl font-bold text-fg">
-              <Money amount={fromMinor(data.earned_minor)} />
-            </strong>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <ButtonLink href={routes.studentVouchers} variant="soft" className="gap-2 text-sm">
-            عرض قسائم الرصيد
-          </ButtonLink>
-          <ButtonLink href={routes.studentCart} variant="primary" className="gap-2 text-sm">
-            استخدم الرصيد في السلة
-          </ButtonLink>
-        </div>
-      </section>
+      {marketer ? (
+        <section className="flex flex-wrap items-center justify-between gap-4 rounded-panel border border-accent/30 bg-accent/5 p-4 sm:p-5">
+          <p className="m-0 text-sm sm:text-base">
+            <strong>لوحة المسوّق</strong> — إحصاءاتك ورسومك البيانية وعملاؤك وكوبوناتك وطلبات الصرف في مكان واحد.
+          </p>
+          <ButtonLink href={routes.marketerDashboard} variant="primary" className="text-sm">افتح لوحة المسوّق</ButtonLink>
+        </section>
+      ) : (
+        <StudentCredit data={data} />
+      )}
 
       {/* Conversions / Orders History Table */}
       {data.conversions && data.conversions.length > 0 ? (
@@ -269,31 +280,33 @@ function Joined({ data }: { data: MyReferralsResponse }) {
         </section>
       ) : null}
 
-      {/* Rewards List */}
-      <section className="flex flex-col gap-3">
-        <h2 className="m-0 text-lg font-bold">المكافآت وقسائم الرصيد</h2>
-        {data.rewards.length === 0 ? (
-          <p className="m-0 text-fg-muted">ستظهر هنا مكافأتك عندما يشتري أول صديق.</p>
-        ) : (
-          <ul className="m-0 flex list-none flex-col gap-2 p-0">
-            {data.rewards.map((reward) => {
-              const status = REWARD_STATUS[reward.status] ?? { label: reward.status, tone: "ma-tag--soft" };
-              return (
-                <li key={reward.reward_id} className="flex flex-wrap items-center justify-between gap-3 rounded-panel border border-line p-4 bg-surface">
-                  <span className="flex flex-col gap-1">
-                    <strong className="text-base font-bold"><Money amount={fromMinor(reward.amount_minor)} /></strong>
-                    <span className="text-sm text-fg-muted">
-                      <bdi dir="ltr">{reward.referred_email}</bdi> ·{" "}
-                      {reward.status === "pending" ? `تُضاف في ${formatDate(reward.eligible_at)}` : formatDate(reward.created_at ?? reward.eligible_at)}
+      {/* Rewards List (students: referral credit) */}
+      {marketer ? null : (
+        <section className="flex flex-col gap-3">
+          <h2 className="m-0 text-lg font-bold">المكافآت وقسائم الرصيد</h2>
+          {data.rewards.length === 0 ? (
+            <p className="m-0 text-fg-muted">ستظهر هنا مكافأتك عندما يشتري أول صديق.</p>
+          ) : (
+            <ul className="m-0 flex list-none flex-col gap-2 p-0">
+              {data.rewards.map((reward) => {
+                const status = REWARD_STATUS[reward.status] ?? { label: reward.status, tone: "ma-tag--soft" };
+                return (
+                  <li key={reward.reward_id} className="flex flex-wrap items-center justify-between gap-3 rounded-panel border border-line p-4 bg-surface">
+                    <span className="flex flex-col gap-1">
+                      <strong className="text-base font-bold"><Money amount={fromMinor(reward.amount_minor)} /></strong>
+                      <span className="text-sm text-fg-muted">
+                        <bdi dir="ltr">{reward.referred_email}</bdi> ·{" "}
+                        {reward.status === "pending" ? `تُضاف في ${formatDate(reward.eligible_at)}` : formatDate(reward.created_at ?? reward.eligible_at)}
+                      </span>
                     </span>
-                  </span>
-                  <span className={cn("ma-tag", status.tone)}>{status.label}</span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+                    <span className={cn("ma-tag", status.tone)}>{status.label}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      )}
 
       {/* Invited Friends List */}
       <section className="flex flex-col gap-3">
@@ -339,6 +352,7 @@ export function ReferralsPage() {
     return <p role="alert" className="ma-alert ma-alert--warning m-0">تعذّر تحميل برنامج الدعوة. حدّث الصفحة وحاول مجدداً.</p>;
   }
   const data = me.data;
+  if (data.joined && data.partner_type === "marketer" && data.partner_status === "pending") return <PendingApplication />;
   if (data.joined) return <Joined data={data} />;
   return (
     <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10 bg-surface">

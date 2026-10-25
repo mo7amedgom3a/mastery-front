@@ -226,6 +226,10 @@ function VoucherPicker({
 }) {
   const name = useId();
   const used = new Map(vouchers.applied.map((voucher) => [voucher.id, voucher.amount]));
+  const total = vouchers.available.reduce((sum, voucher) => sum + voucher.amount, 0);
+  const referralTotal = vouchers.available
+    .filter((voucher) => voucher.source === "referral")
+    .reduce((sum, voucher) => sum + voucher.amount, 0);
   const toggle = (id: string, checked: boolean) =>
     onChange(checked ? [...selected.filter((v) => v !== id), id] : selected.filter((v) => v !== id));
 
@@ -233,8 +237,13 @@ function VoucherPicker({
     <fieldset className="m-0 flex w-full min-w-0 max-w-full flex-col gap-2 border-0 p-0" disabled={disabled}>
       <legend className="mb-2 flex items-center gap-2 p-0 text-sm font-bold">
         <Wallet aria-hidden="true" className="size-4 shrink-0 text-accent fill-none" />
-        قسائم الرصيد
+        {vouchers.available.every((voucher) => voucher.source === "referral") ? "رصيد الإحالة" : "قسائم الرصيد"}
       </legend>
+      {referralTotal > 0 && referralTotal !== total ? (
+        <p className="m-0 text-xs text-fg-muted">
+          منها رصيد إحالة <Money amount={referralTotal} /> من دعوة أصدقائك.
+        </p>
+      ) : null}
       {vouchers.available.map((voucher) => {
         const id = `${name}-${voucher.id}`;
         const isSelected = selected.includes(voucher.id);
@@ -259,10 +268,15 @@ function VoucherPicker({
             />
             <span className="flex min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
               <span className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-                <span className="inline-flex min-w-0 max-w-[65%] items-center gap-1 rounded bg-surface-alt px-1.5 py-0.5 border border-line text-xs font-mono font-bold tracking-wide">
-                  <bdi dir="ltr" className="truncate">
-                    {voucher.code}
-                  </bdi>
+                <span className="inline-flex min-w-0 max-w-[65%] items-center gap-1.5">
+                  <span className="inline-flex min-w-0 items-center gap-1 rounded bg-surface-alt px-1.5 py-0.5 border border-line text-xs font-mono font-bold tracking-wide">
+                    <bdi dir="ltr" className="truncate">
+                      {voucher.code}
+                    </bdi>
+                  </span>
+                  {voucher.source === "referral" ? (
+                    <span className="ma-tag ma-tag--green shrink-0 px-1.5 py-0.5 text-[10px]">إحالة</span>
+                  ) : null}
                 </span>
                 <span className="shrink-0 text-xs font-semibold text-accent">
                   الرصيد: <Money amount={voucher.amount} />

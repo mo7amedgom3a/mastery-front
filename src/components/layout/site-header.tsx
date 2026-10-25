@@ -38,7 +38,7 @@ export function SiteHeader({ brand = "default" }: { brand?: "default" | "busines
               <ExploreMenu />
             </li>
             {primaryNav.map((item) => (
-              <li key={item.href}>
+              <li key={item.href} className={item.wideOnly ? "max-[1280px]:hidden" : undefined}>
                 <AppLink href={item.href}>{item.label}</AppLink>
               </li>
             ))}

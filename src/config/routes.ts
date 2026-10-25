@@ -107,6 +107,9 @@ export const routes = {
     route(`/subscriptions/${encodeURIComponent(slug)}/team/${step}`),
   trainers: route("/trainers"),
   marketers: route("/marketers"),
+  /** The step-by-step marketer application (`/marketers/apply/<step>`). */
+  marketersApply: (step?: string) => route(step ? `/marketers/apply/${encodeURIComponent(step)}` : "/marketers/apply"),
+  marketersApplyDone: route("/marketers/apply/done"),
   cart: route("/cart"),
   wishlist: route("/wishlist"),
   /** Stripe sends the buyer back here; the backend appends `order_id` and `payment_intent_id`. */
@@ -147,6 +150,14 @@ export const routes = {
   expertBooking: (bookingId: string) => route(`/expert/bookings/${encodeURIComponent(bookingId)}`),
   expertCalendar: route("/expert/calendar"),
   expertSettings: route("/expert/settings"),
+  /** The marketer dashboard (signed in; the public programme page is `marketers`). */
+  marketerDashboard: route("/marketer"),
+  marketerCustomers: route("/marketer/customers"),
+  marketerSales: route("/marketer/sales"),
+  marketerCommissions: route("/marketer/commissions"),
+  marketerCoupons: route("/marketer/coupons"),
+  marketerPayouts: route("/marketer/payouts"),
+  marketerProfile: route("/marketer/profile"),
   privacy: route("/privacy"),
   terms: route("/terms"),
 } as const;

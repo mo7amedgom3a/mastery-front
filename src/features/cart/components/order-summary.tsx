@@ -74,7 +74,13 @@ export function OrderSummary({
             </SummaryRow>
           ) : null}
           {totals.voucher ? (
-            <SummaryRow term="قسائم الرصيد">
+            <SummaryRow
+              term={
+                quote.vouchers?.applied.length && quote.vouchers.applied.every((voucher) => voucher.source === "referral")
+                  ? "رصيد الإحالة"
+                  : "قسائم الرصيد"
+              }
+            >
               <span dir="ltr">−</span>
               <Money amount={totals.voucher} />
             </SummaryRow>

@@ -11,8 +11,15 @@ type IncentivesState = {
   couponCode: string | null;
   /** Vouchers chosen to pay with. Null until the customer (or the first quote) decides. */
   voucherIds: string[] | null;
+  /** Vouchers the cart has already offered, so one the customer unticked is not ticked again. */
+  seenVoucherIds: string[];
   setCoupon: (code: string | null) => void;
   setVoucherIds: (ids: string[]) => void;
+  /**
+   * A quote listed these spendable vouchers: select the ones not offered before (all of them on the
+   * first quote). New referral credit is then spent without the customer opening the voucher list.
+   */
+  offerVouchers: (ids: string[]) => void;
   /** After a paid order: the coupon and vouchers were used. */
   reset: () => void;
 };
@@ -26,14 +33,24 @@ export const useCheckoutIncentives = create<IncentivesState>()(
     (set) => ({
       couponCode: null,
       voucherIds: null,
+      seenVoucherIds: [],
       setCoupon: (code) => set({ couponCode: normalizeCouponCode(code?.replace(/\s+/g, "")) }),
       setVoucherIds: (ids) => set({ voucherIds: ids }),
-      reset: () => set({ couponCode: null, voucherIds: null }),
+      offerVouchers: (ids) =>
+        set((state) => {
+          const fresh = ids.filter((id) => !state.seenVoucherIds.includes(id));
+          if (fresh.length === 0) return state;
+          return {
+            voucherIds: [...(state.voucherIds ?? []), ...fresh],
+            seenVoucherIds: [...state.seenVoucherIds, ...fresh],
+          };
+        }),
+      reset: () => set({ couponCode: null, voucherIds: null, seenVoucherIds: [] }),
     }),
     {
       name: "ma-checkout-incentives",
       storage: createJSONStorage(() => sessionStorage),
-      partialize: ({ couponCode, voucherIds }) => ({ couponCode, voucherIds }),
+      partialize: ({ couponCode, voucherIds, seenVoucherIds }) => ({ couponCode, voucherIds, seenVoucherIds }),
     },
   ),
 );

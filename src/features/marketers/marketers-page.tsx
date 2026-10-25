@@ -1,13 +1,16 @@
-import { ChevronDown, Sparkles, TrendingUp, Wallet, Clock } from "lucide-react";
+import { ArrowLeft, ChevronDown, Sparkles, TrendingUp, Wallet, Clock } from "lucide-react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { buttonClass } from "@/components/ui/button";
+import { AppLink } from "@/components/ui/app-link";
+import { buttonClass, ButtonLink } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
+import { routes } from "@/config/routes";
 import { cn } from "@/lib/cn";
 
-import { MarketerApplicationForm } from "./components/marketer-application-form";
+import { APPLY_STEPS } from "@/features/marketer-application/model/steps";
+
 import { marketersPageCopy as copy } from "./content/copy";
 
 type ProgramTerms = {
@@ -85,12 +88,18 @@ export function MarketersPage({ terms }: { terms: ProgramTerms }) {
             </div>
 
             <div className="mt-8 flex flex-wrap gap-4">
-              <a href="#apply" className={cn(buttonClass({ variant: "primary", size: "lg" }))}>
+              <AppLink
+                href={terms.applications_open ? routes.marketersApply(APPLY_STEPS[0].id) : "#apply"}
+                className={cn(buttonClass({ variant: "primary", size: "lg" }))}
+              >
                 {copy.primaryAction}
-              </a>
+              </AppLink>
               <a href="#how-it-works" className={cn(buttonClass({ variant: "secondary", size: "lg" }))}>
                 كيف يعمل البرنامج؟
               </a>
+              <AppLink href={routes.loginThen(routes.marketerDashboard)} className={cn(buttonClass({ variant: "soft", size: "lg" }))}>
+                دخول المسوقين
+              </AppLink>
             </div>
           </div>
         </header>
@@ -154,8 +163,35 @@ export function MarketersPage({ terms }: { terms: ProgramTerms }) {
         <Section id="apply" aria-labelledby="apply-title" tone="alt" className="scroll-mt-20">
           <div className="mx-auto max-w-[56rem]">
             <SectionHeader id="apply-title" label={copy.form.label} title={copy.form.title} lead={copy.form.lead} />
-            <div className="mt-10 rounded-panel border border-line-strong bg-surface p-5 sm:p-8">
-              <MarketerApplicationForm applicationsOpen={terms.applications_open} />
+            <div className="mt-10 flex flex-col gap-6 rounded-panel border border-line-strong bg-surface p-5 sm:p-8">
+              {terms.applications_open ? (
+                <>
+                  <ol className="m-0 grid list-none gap-3 p-0 sm:grid-cols-5">
+                    {APPLY_STEPS.map((step, index) => (
+                      <li key={step.id} className="flex items-center gap-2 text-sm font-medium sm:flex-col sm:items-start">
+                        <span className="grid size-7 shrink-0 place-items-center rounded-full border border-line-strong text-xs tabular-nums" aria-hidden="true">
+                          {index + 1}
+                        </span>
+                        {step.label}
+                      </li>
+                    ))}
+                  </ol>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <ButtonLink href={routes.marketersApply(APPLY_STEPS[0].id)} variant="primary" size="lg" className="gap-2">
+                      ابدأ طلب الانضمام
+                      <ArrowLeft aria-hidden="true" className="size-5 fill-none" />
+                    </ButtonLink>
+                    <span className="text-sm text-fg-muted">يستغرق نحو 5 دقائق، ونراجعه خلال 48 ساعة.</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <h3 className="m-0 text-xl font-bold">باب التقديم مغلق حاليًا</h3>
+                  <p className="m-0 text-fg-muted">
+                    نعتذر منك، استقبال طلبات المسوقين الجدد مغلق مؤقتًا. تابع قنواتنا لمعرفة موعد إعادة فتح باب التقديم.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </Section>

@@ -123,6 +123,8 @@ export type QuoteVoucher = {
   /** Applied: the amount used here. Available: what is left on the voucher. */
   amount: number;
   expiresAt: string | null;
+  /** `referral`: credit earned by inviting friends (shown as the referral balance). */
+  source?: string;
 };
 
 export type QuoteTotals = {

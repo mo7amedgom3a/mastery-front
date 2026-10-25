@@ -64,10 +64,11 @@ function useCartQuote(hydrated: boolean, signedIn: boolean, cart: CartLine[]): C
   });
 
   useEffect(() => {
-    // First quote: spend the vouchers (soonest expiry first) unless the customer already chose.
+    // Spend vouchers (soonest expiry first) as they become available, e.g. newly granted referral
+    // credit; a voucher the customer unticked stays unticked.
     const available = account.data?.available_vouchers ?? [];
-    if (voucherIds === null && available.length > 0) {
-      useCheckoutIncentives.getState().setVoucherIds(available.map((voucher) => voucher.voucher_id));
+    if (available.length > 0) {
+      useCheckoutIncentives.getState().offerVouchers(available.map((voucher) => voucher.voucher_id));
     }
     // Auto-apply welcome coupon or referral coupon if no coupon is active
     if (!couponCode) {

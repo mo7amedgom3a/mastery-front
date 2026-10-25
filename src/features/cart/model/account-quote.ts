@@ -45,6 +45,7 @@ export function quoteVoucher(voucher: QuotedVoucherResponse): QuoteVoucher {
     code: voucher.code,
     amount: fromMinor(voucher.amount_minor),
     expiresAt: voucher.expires_at ?? null,
+    source: voucher.source ?? undefined,
   };
 }
 
