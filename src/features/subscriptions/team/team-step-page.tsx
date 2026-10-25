@@ -87,19 +87,26 @@ function TeamTextField({
   name,
   label,
   hint,
+  required,
   ...input
-}: { name: Exclude<TeamField, "seats">; label: string; hint?: string } & Omit<InputHTMLAttributes<HTMLInputElement>, "name" | "value" | "onChange">) {
+}: {
+  name: Exclude<TeamField, "seats">;
+  label: string;
+  hint?: string;
+  required?: boolean;
+} & Omit<InputHTMLAttributes<HTMLInputElement>, "name" | "value" | "onChange" | "required">) {
   const id = useId();
   const value = useTeamCheckoutStore((state) => state[name]);
   const error = useTeamCheckoutStore((state) => state.errors[name]);
   const update = useTeamCheckoutStore((state) => state.update);
   return (
-    <Field id={id} label={label} error={error} hint={hint}>
+    <Field id={id} label={label} error={error} hint={hint} required={required}>
       <input
         {...input}
         id={id}
         name={name}
         value={value}
+        required={required}
         onChange={(event) => update({ [name]: event.target.value })}
         className="ma-input"
         {...describedBy(id, error, hint)}
@@ -131,7 +138,7 @@ function DetailsStep({ plan }: { plan: PlanVM }) {
         contact: {
           name: store.contactName.trim(),
           email: store.email.trim(),
-          phone: store.phone.trim() || null,
+          phone: store.phone.trim(),
           job_title: store.jobTitle.trim() || null,
         },
       });
@@ -159,17 +166,18 @@ function DetailsStep({ plan }: { plan: PlanVM }) {
       <fieldset className="m-0 flex flex-col gap-5 border-0 p-0">
         <legend className="mb-4 text-lg font-bold">الشركة</legend>
         <div className="grid gap-5 sm:grid-cols-2">
-          <TeamTextField name="companyName" label="اسم الشركة" autoComplete="organization" maxLength={255} />
+          <TeamTextField name="companyName" label="اسم الشركة" autoComplete="organization" maxLength={255} required />
         </div>
       </fieldset>
       <fieldset className="m-0 flex flex-col gap-5 border-0 p-0">
         <legend className="mb-4 text-lg font-bold">المسؤول عن الاشتراك</legend>
         <div className="grid gap-5 sm:grid-cols-2">
-          <TeamTextField name="contactName" label="الاسم" autoComplete="name" maxLength={160} />
+          <TeamTextField name="contactName" label="الاسم" autoComplete="name" maxLength={160} required />
           <TeamTextField name="jobTitle" label="المسمى الوظيفي (اختياري)" autoComplete="organization-title" maxLength={160} />
-          <TeamTextField name="email" label="بريد العمل" type="email" dir="ltr" autoComplete="email" maxLength={255}
+          <TeamTextField name="email" label="بريد العمل" type="email" dir="ltr" autoComplete="email" maxLength={255} required
             hint="نرسل إليه الفاتورة وتفاصيل الاشتراك." />
-          <TeamTextField name="phone" label="رقم الجوال (اختياري)" type="tel" dir="ltr" autoComplete="tel" maxLength={40} />
+          <TeamTextField name="phone" label="رقم الجوال" type="tel" dir="ltr" autoComplete="tel" maxLength={40} required
+            hint="لتواصل فريق الأعمال معك بخصوص الاشتراك." />
         </div>
       </fieldset>
     </FlowStep>
@@ -204,7 +212,7 @@ function ReviewStep({ plan }: { plan: PlanVM }) {
         contact: {
           name: state.contactName.trim(),
           email: state.email.trim(),
-          phone: state.phone.trim() || null,
+          phone: state.phone.trim(),
           job_title: state.jobTitle.trim() || null,
         },
       })
@@ -238,7 +246,7 @@ function ReviewStep({ plan }: { plan: PlanVM }) {
       contact: {
         name: answers.contactName.trim(),
         email: answers.email.trim(),
-        ...(answers.phone.trim() ? { phone: answers.phone.trim() } : {}),
+        phone: answers.phone.trim(),
         ...(answers.jobTitle.trim() ? { job_title: answers.jobTitle.trim() } : {}),
       },
       cancelUrl: routes.subscriptionTeam(plan.slug, "review"),
@@ -259,6 +267,19 @@ function ReviewStep({ plan }: { plan: PlanVM }) {
       pending={checkout.busy}
       error={checkout.error}
       nextLabel="الدفع الآمن عبر Stripe"
+      beforeNext={
+        <label className="flex items-start gap-3 rounded-panel border border-line bg-surface p-4 text-sm leading-6">
+          <input
+            type="checkbox"
+            className="mt-1 size-4 shrink-0"
+            checked={checked}
+            onChange={(event) => setChecked(event.target.checked)}
+          />
+          <span>
+            راجعت عدد الموظفين ({seats}) والإجمالي، وأوافق على تجديد الاشتراك {renews}.
+          </span>
+        </label>
+      }
     >
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-6">
@@ -267,7 +288,7 @@ function ReviewStep({ plan }: { plan: PlanVM }) {
               <Users aria-hidden="true" className="size-5 fill-none text-accent" />
               كم موظفاً في فريقك؟
             </h2>
-            <SeatStepper value={seats} min={plan.minSeats} max={plan.maxSeats} onChange={(value) => answers.update({ seats: value })} />
+            <SeatStepper value={seats} min={plan.minSeats} max={plan.maxSeats} required onChange={(value) => answers.update({ seats: value })} />
           </section>
 
           <section aria-labelledby="team-summary-title" className="flex flex-col gap-4 rounded-panel border border-line p-5">
@@ -341,12 +362,6 @@ function ReviewStep({ plan }: { plan: PlanVM }) {
               </span>
             </li>
           </ul>
-          <label className="flex items-start gap-3 text-sm leading-6">
-            <input type="checkbox" className="mt-1 size-4" checked={checked} onChange={(event) => setChecked(event.target.checked)} />
-            <span>
-              راجعت عدد الموظفين ({seats}) والإجمالي، وأوافق على تجديد الاشتراك {renews}.
-            </span>
-          </label>
           <p className="m-0 flex items-start gap-2 text-xs leading-5 text-fg-muted">
             <Lock aria-hidden="true" className="mt-0.5 size-3.5 shrink-0 fill-none" />
             دفع آمن عبر Stripe. ستظهر لك نفس الأرقام في صفحة الدفع.

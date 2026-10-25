@@ -16,6 +16,7 @@ import { RecommendationRail } from "@/features/search/components/recommendation-
 import { commerceKeys, commerceQueries, type CartResponse } from "@/lib/api/commerce";
 import { useAuthStore } from "@/lib/auth/store";
 import { formatCount } from "@/lib/format";
+import { readStoredReferralInfo } from "@/lib/referral";
 import { shopKeyFromSlug } from "@/lib/shop/product-links";
 import { useShopRoutes } from "@/lib/shop/use-shop-routes";
 import { mirrorAccountCart } from "@/lib/shop/cart-sync";
@@ -25,9 +26,9 @@ import { useShopHydrated, useShopStore, type CartLine } from "@/lib/shop/store";
 import { addToCart, removeFromCart, saveToWishlist } from "@/lib/shop/use-shop-actions";
 import { useUndo } from "@/lib/shop/use-undo";
 
-import { shopQueries } from "./api/shop-client";
+import { shopKeys, shopQueries } from "./api/shop-client";
 import { CartLineRow } from "./components/cart-line";
-import { IncentivesPanel } from "./components/incentives-panel";
+import { IncentivesPanel, ReferralDiscountBadge } from "./components/incentives-panel";
 import { OrderSummary } from "./components/order-summary";
 import { PaymentMethodPicker } from "./components/payment-method-picker";
 import { TamaraWidget } from "./components/tamara-widget";
@@ -68,7 +69,28 @@ function useCartQuote(hydrated: boolean, signedIn: boolean, cart: CartLine[]): C
     if (voucherIds === null && available.length > 0) {
       useCheckoutIncentives.getState().setVoucherIds(available.map((voucher) => voucher.voucher_id));
     }
-  }, [account.data, voucherIds]);
+    // Auto-apply welcome coupon or referral coupon if no coupon is active
+    if (!couponCode) {
+      const suggested = account.data?.suggested_coupons ?? [];
+      if (suggested.length > 0 && suggested[0].code) {
+        useCheckoutIncentives.getState().setCoupon(suggested[0].code);
+      } else {
+        const stored = readStoredReferralInfo();
+        if (stored && stored.valid && (stored.coupon_code || stored.referral_code)) {
+          useCheckoutIncentives.getState().setCoupon(stored.coupon_code || stored.referral_code);
+        }
+      }
+    }
+  }, [account.data, voucherIds, couponCode]);
+
+  useEffect(() => {
+    if (!signedIn && !couponCode) {
+      const stored = readStoredReferralInfo();
+      if (stored && stored.valid && (stored.coupon_code || stored.referral_code)) {
+        useCheckoutIncentives.getState().setCoupon(stored.coupon_code || stored.referral_code);
+      }
+    }
+  }, [signedIn, couponCode]);
   const accountKeys = useMemo(
     () => (account.data?.lines ?? []).flatMap((line) => shopKeyFromSlug(line.slug) ?? []),
     [account.data],
@@ -98,7 +120,10 @@ function useCartQuote(hydrated: boolean, signedIn: boolean, cart: CartLine[]): C
       quote: accountView,
       stale: account.isFetching,
       failed: account.isError && !account.data,
-      refetch: () => void account.refetch(),
+      refetch: () => {
+        void queryClient.invalidateQueries({ queryKey: commerceKeys.quote() });
+        void account.refetch();
+      },
     };
   }
   return {
@@ -106,7 +131,10 @@ function useCartQuote(hydrated: boolean, signedIn: boolean, cart: CartLine[]): C
     // Placeholder data is the previous cart's quote: fine to look at, not to pay against.
     stale: guest.isPlaceholderData || (guest.isFetching && !guest.data),
     failed: guest.isError && !guest.data,
-    refetch: () => void guest.refetch(),
+    refetch: () => {
+      void queryClient.invalidateQueries({ queryKey: shopKeys.all });
+      void guest.refetch();
+    },
   };
 }
 
@@ -127,6 +155,7 @@ export function CartPage() {
   const incentiveState = useCheckoutIncentives();
   const payment = usePaymentChoice(quote && { amount: quote.totals.total, currency: quote.totals.currency });
   const shopRoutes = useShopRoutes();
+  const storedReferral = useMemo(() => (hydrated ? readStoredReferralInfo() : null), [hydrated]);
 
   const undo = useUndo<Removed>();
   const remove = (line: CartLine) => {
@@ -244,7 +273,9 @@ export function CartPage() {
             incentives={
               signedIn ? (
                 <IncentivesPanel
+                  referral={storedReferral}
                   coupon={quote?.coupon ?? null}
+                  suggestedCoupons={quote?.suggestedCoupons}
                   couponCode={incentiveState.couponCode}
                   onApplyCoupon={(code) => {
                     checkout.clearError();
@@ -264,7 +295,10 @@ export function CartPage() {
                   disabled={checkout.busy}
                 />
               ) : (
-                <p className="m-0 text-sm leading-6 text-fg-muted">لديك قسيمة خصم أو رصيد؟ سجّل الدخول لاستخدامه عند الدفع.</p>
+                <div className="flex flex-col gap-3">
+                  {storedReferral && storedReferral.valid ? <ReferralDiscountBadge referral={storedReferral} /> : null}
+                  <p className="m-0 text-sm leading-6 text-fg-muted">لديك قسيمة خصم أو رصيد؟ سجّل الدخول لاستخدامه عند الدفع.</p>
+                </div>
               )
             }
             paymentMethods={

@@ -96,6 +96,7 @@ export function detailsErrors(answers: TeamAnswers): TeamErrors {
   if (!answers.companyName.trim()) errors.companyName = "اكتب اسم الشركة.";
   if (!answers.contactName.trim()) errors.contactName = "اكتب اسم المسؤول عن الاشتراك.";
   if (!EMAIL.test(answers.email.trim())) errors.email = "اكتب بريداً إلكترونياً صالحاً للعمل.";
-  if (answers.phone.trim() && !/^\+?[\d\s-]{7,20}$/.test(answers.phone.trim())) errors.phone = "اكتب رقماً صالحاً، مثل ‎+971 50 123 4567.";
+  if (!answers.phone.trim()) errors.phone = "اكتب رقم الجوال.";
+  else if (!/^\+?[\d\s()-]{7,20}$/.test(answers.phone.trim())) errors.phone = "اكتب رقماً صالحاً، مثل ‎+971 50 123 4567.";
   return errors;
 }

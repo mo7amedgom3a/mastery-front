@@ -12,13 +12,14 @@ export type SubmitRequestResult =
   | { status: "error"; message: string };
 
 /** Company training request: validated again here, then stored by the B2C API. */
-export async function submitCompanyRequest(answers: RequestAnswers): Promise<SubmitRequestResult> {
+export async function submitCompanyRequest(answers: RequestAnswers, draftToken: string | null): Promise<SubmitRequestResult> {
   const parsed = requestSchema.safeParse(answers);
   if (!parsed.success) return { status: "invalid", errors: errorsOf(parsed.error.issues) };
 
   const request = parsed.data;
   const usedPlatform = request.usedPlatformBefore;
   const accepted = await submitCompanyTrainingRequest({
+    draftToken,
     companyName: request.companyName,
     contactName: request.contactName,
     companyEmail: request.companyEmail,
@@ -28,18 +29,22 @@ export async function submitCompanyRequest(answers: RequestAnswers): Promise<Sub
     country: request.countryName,
     city: request.city,
     industry: request.industry === "other" ? request.industryOther : request.industry,
-    websiteUrl: request.websiteUrl,
+    websiteUrl: request.websiteUrl || null,
     teamSize: request.teamSize,
     trainingTypes: request.trainingTypes,
     trainingGoals: request.trainingGoals,
+    otherTrainingGoal: request.trainingGoals.includes("other") ? request.otherTrainingGoal : null,
     departments: request.departments,
     otherDepartment: request.departments.includes("other") ? request.otherDepartment : null,
     hasTrainingBudget: request.hasTrainingBudget,
+    hasInternalLms: request.hasInternalLms,
     usedPlatformBefore: usedPlatform,
     previousPlatforms: usedPlatform ? request.previousPlatforms : [],
     otherPlatform: usedPlatform && request.previousPlatforms.includes("other") ? request.otherPlatform : null,
     categoryIds: request.categoryIds,
+    otherCategory: request.otherCategorySelected ? request.otherCategory : null,
     skillIds: request.skillIds,
+    otherSkill: request.otherSkillSelected ? request.otherSkill : null,
     summary: request.summary,
   });
 

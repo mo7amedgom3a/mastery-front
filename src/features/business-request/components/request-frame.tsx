@@ -7,6 +7,8 @@ import { FlowStep } from "@/components/flow/flow-step";
 import { routes } from "@/config/routes";
 
 import { useRequestStore } from "../model/request-store";
+import { answersOf } from "../model/request-store";
+import { saveCompanyDraftForStep } from "../model/draft-progress";
 import { stepErrors } from "../model/schema";
 import { stepAt, stepIndex, type RequestStepId } from "../model/steps";
 
@@ -33,6 +35,7 @@ export function RequestFrame({ step, title, lead, children, onNext, nextLabel, p
   const direction = useRequestStore((state) => state.direction);
   const setDirection = useRequestStore((state) => state.setDirection);
   const setErrors = useRequestStore((state) => state.setErrors);
+  const draftSaveStatus = useRequestStore((state) => state.draftSaveStatus);
   const index = stepIndex(step);
   const previous = stepAt(index - 1);
   const following = stepAt(index + 1);
@@ -41,6 +44,7 @@ export function RequestFrame({ step, title, lead, children, onNext, nextLabel, p
     if (!previous) return;
     setDirection(-1);
     setErrors({});
+    void saveCompanyDraftForStep(previous, answersOf(useRequestStore.getState())).catch((error) => console.error("[company-request] Draft progress could not be saved", error));
     router.push(routes.businessRequest(previous));
   };
   const goNext = () => {
@@ -53,7 +57,10 @@ export function RequestFrame({ step, title, lead, children, onNext, nextLabel, p
     }
     setDirection(1);
     if (onNext) onNext();
-    else if (following) router.push(routes.businessRequest(following));
+    else if (following) {
+      void saveCompanyDraftForStep(following, answersOf(useRequestStore.getState())).catch((error) => console.error("[company-request] Draft progress could not be saved", error));
+      router.push(routes.businessRequest(following));
+    }
   };
 
   return (
@@ -69,6 +76,9 @@ export function RequestFrame({ step, title, lead, children, onNext, nextLabel, p
       pending={pending}
       error={error}
     >
+      {draftSaveStatus === "saving" ? <p className="m-0 text-sm text-fg-muted" role="status">جارٍ حفظ التقدم…</p> : null}
+      {draftSaveStatus === "saved" ? <p className="m-0 text-sm text-fg-muted" role="status">تم حفظ التقدم.</p> : null}
+      {draftSaveStatus === "error" ? <p className="m-0 text-sm text-pink" role="alert">تعذّر حفظ التقدم حالياً. أعد المحاولة بتعديل أحد الحقول أو الانتقال للخطوة التالية.</p> : null}
       {children}
     </FlowStep>
   );

@@ -16,6 +16,7 @@ export function TrainerCountryCityFields({
   countryError,
   cityError,
   onCountryChange,
+  onCityChange,
 }: {
   baseId: string;
   defaultCountry?: string;
@@ -23,6 +24,7 @@ export function TrainerCountryCityFields({
   countryError?: string;
   cityError?: string;
   onCountryChange?: (countryName: string, countryCode: string) => void;
+  onCityChange?: (cityName: string) => void;
 }) {
   const countryId = `${baseId}-country`;
   const cityId = `${baseId}-city`;
@@ -72,6 +74,7 @@ export function TrainerCountryCityFields({
           setTypingCity(false);
           setCityValue("");
           onCountryChange?.(picked.name, picked.code);
+          onCityChange?.("");
         }}
       />
 
@@ -91,7 +94,10 @@ export function TrainerCountryCityFields({
             placeholder={!selectedCountryCode ? "اختر الدولة أولاً" : "اكتب اسم المدينة"}
             value={cityValue}
             {...describedBy(cityId, cityError)}
-            onChange={(event) => setCityValue(event.target.value)}
+            onChange={(event) => {
+              setCityValue(event.target.value);
+              onCityChange?.(event.target.value);
+            }}
           />
         </Field>
       ) : (
@@ -108,8 +114,10 @@ export function TrainerCountryCityFields({
               if (event.target.value === TYPE_CITY) {
                 setTypingCity(true);
                 setCityValue("");
+                onCityChange?.("");
               } else {
                 setCityValue(event.target.value);
+                onCityChange?.(event.target.value);
               }
             }}
           >

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChoiceGroup } from "../components/choice-group";
+import { ChoiceGroup, Reveal } from "../components/choice-group";
 import { RequestFrame } from "../components/request-frame";
 import { TextField } from "../components/text-field";
 import { trainingGoals, trainingTypes } from "../model/options";
@@ -16,20 +16,27 @@ export function TrainingStep() {
     <RequestFrame step="training" title="ما التدريب الذي تحتاجونه؟" lead="يمكنك اختيار أكثر من إجابة في كل سؤال.">
       <ChoiceGroup
         legend="نوع التدريب"
+        required
         choices={trainingTypes}
         isSelected={(value) => types.includes(value)}
         onToggle={(value) => update({ trainingTypes: toggleValue(types, value) })}
         error={errors.trainingTypes}
       />
-      <ChoiceGroup
-        legend="الهدف من التدريب"
-        choices={trainingGoals}
-        isSelected={(value) => goals.includes(value)}
-        onToggle={(value) => update({ trainingGoals: toggleValue(goals, value) })}
-        error={errors.trainingGoals}
-      />
+      <div className="flex flex-col gap-2">
+        <ChoiceGroup
+          legend="الهدف من التدريب"
+          required
+          choices={trainingGoals}
+          isSelected={(value) => goals.includes(value)}
+          onToggle={(value) => update({ trainingGoals: toggleValue(goals, value) })}
+          error={errors.trainingGoals}
+        />
+        <Reveal show={goals.includes("other")}>
+          <TextField name="otherTrainingGoal" label="الهدف الآخر من التدريب" required />
+        </Reveal>
+      </div>
       <div className="sm:max-w-xs">
-        <TextField name="teamSize" label="عدد الموظفين المطلوب تدريبهم" type="number" inputMode="numeric" min={1} dir="ltr" />
+        <TextField name="teamSize" label="عدد الموظفين المطلوب تدريبهم" type="number" inputMode="numeric" min={1} dir="ltr" required />
       </div>
     </RequestFrame>
   );

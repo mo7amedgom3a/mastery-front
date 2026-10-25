@@ -4,7 +4,6 @@ export const REQUEST_STEPS = [
   { id: "departments", label: "الأقسام" },
   { id: "budget", label: "الميزانية والخبرة" },
   { id: "needs", label: "المجالات والمهارات" },
-  { id: "contact", label: "جهة التواصل" },
 ] as const;
 
 export type RequestStepId = (typeof REQUEST_STEPS)[number]["id"];

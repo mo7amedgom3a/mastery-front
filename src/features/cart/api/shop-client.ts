@@ -70,5 +70,7 @@ export const shopQueries = {
       queryFn: ({ signal }) => getCartQuote(request, signal),
       // The previous totals stay on screen (dimmed) while a change is re-priced.
       placeholderData: keepPreviousData,
+      retry: 2,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 3000),
     }),
 };

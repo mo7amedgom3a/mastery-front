@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   BriefcaseBusiness,
   CalendarClock,
+  Gift,
   GraduationCap,
   Headset,
   Heart,
@@ -55,6 +56,7 @@ export const studentNavGroups: readonly StudentNavGroup[] = [
       { href: routes.studentCart, label: "السلة", icon: ShoppingCart, count: "cart" },
       { href: routes.studentOrders, label: "الطلبات", icon: Receipt },
       { href: routes.studentVouchers, label: "قسائم الرصيد", icon: WalletCards },
+      { href: routes.studentReferrals, label: "ادعُ صديقًا", icon: Gift },
     ],
   },
   {

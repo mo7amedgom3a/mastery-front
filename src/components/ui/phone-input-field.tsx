@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { describedBy, Field } from "@/features/auth/components/field";
 import { locationQueries, type PhoneCode } from "@/features/business-request/api/locations";
@@ -47,7 +47,7 @@ const COUNTRY_SAMPLE_NUMBERS: Record<string, string> = {
 
 export function getPhonePlaceholder(callingCode: string): string {
   const sample = COUNTRY_SAMPLE_NUMBERS[callingCode] ?? "x xxx xxxx";
-  return `${callingCode} ${sample}`;
+  return sample;
 }
 
 function splitPhoneNumber(raw: string, codes: PhoneCode[]): { code: string; local: string } {
@@ -88,6 +88,7 @@ export function PhoneInputField({
   defaultValue = "",
   error,
   hint,
+  required,
   disabled = false,
   autoComplete = "tel",
   placeholder,
@@ -140,17 +141,21 @@ export function PhoneInputField({
   const initialDefaultCode = targetCallingCode || splitPhoneNumber(defaultValue, allCodes).code;
   const [uncontrolledCode, setUncontrolledCode] = useState(initialDefaultCode);
   const [uncontrolledLocal, setUncontrolledLocal] = useState(() => splitPhoneNumber(defaultValue, allCodes).local);
+  const [manualCode, setManualCode] = useState<string | null>(null);
 
   // Sync calling code when countryCode prop changes
   const [prevTargetCode, setPrevTargetCode] = useState(targetCallingCode);
   if (targetCallingCode && targetCallingCode !== prevTargetCode) {
     setPrevTargetCode(targetCallingCode);
     setUncontrolledCode(targetCallingCode);
+    setManualCode(null);
   }
 
   // Active calling code
-  const callingCode = targetCallingCode
-    ? targetCallingCode
+  const callingCode = manualCode
+    ? manualCode
+    : targetCallingCode
+      ? targetCallingCode
     : isControlled && parsedValue
       ? parsedValue.code
       : uncontrolledCode;
@@ -158,29 +163,33 @@ export function PhoneInputField({
   const localNumber = isControlled && parsedValue ? parsedValue.local : uncontrolledLocal;
 
   // Sync controlled onChange when targetCallingCode changes externally
+  const lastSyncedTarget = useRef<string | null>(null);
   useEffect(() => {
-    if (targetCallingCode && isControlled) {
-      const cleanedLocal = localNumber.trim().replace(/^0+/, "");
+    if (targetCallingCode && isControlled && targetCallingCode !== lastSyncedTarget.current) {
+      lastSyncedTarget.current = targetCallingCode;
+      const cleanedLocal = localNumber.trim();
       const full = cleanedLocal ? `${targetCallingCode} ${cleanedLocal}` : "";
       onChange?.(full);
     }
   }, [targetCallingCode, isControlled, localNumber, onChange]);
 
   const updateNumber = (newCode: string, newLocal: string) => {
+    if (newCode !== callingCode) setManualCode(newCode);
     if (!isControlled) {
       setUncontrolledCode(newCode);
       setUncontrolledLocal(newLocal);
     }
-    const cleanedLocal = newLocal.trim().replace(/^0+/, "");
+    const entered = newLocal.trim();
+    const cleanedLocal = entered.startsWith(newCode) ? entered.slice(newCode.length).trim() : entered;
     const full = cleanedLocal ? `${newCode} ${cleanedLocal}` : "";
     onChange?.(full);
   };
 
-  const fullPhone = localNumber.trim() ? `${callingCode} ${localNumber.trim().replace(/^0+/, "")}` : "";
+  const fullPhone = localNumber.trim() ? `${callingCode} ${localNumber.trim()}` : "";
   const dynamicPlaceholder = placeholder ?? getPhonePlaceholder(callingCode);
 
   return (
-    <Field id={id} label={label} error={error} hint={hint}>
+    <Field id={id} label={label} error={error} hint={hint} required={required}>
       {name ? <input type="hidden" name={name} value={fullPhone} /> : null}
       <div className="flex gap-2" dir="ltr">
         <select

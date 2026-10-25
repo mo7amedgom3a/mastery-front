@@ -105,6 +105,11 @@ export function accountQuote(quote: CheckoutQuoteResponse, items: ReadonlyMap<st
       applied: (quote.vouchers_applied ?? []).map(quoteVoucher),
       available: (quote.available_vouchers ?? []).map(quoteVoucher),
     },
+    suggestedCoupons: (quote.suggested_coupons ?? []).map((coupon) => ({
+      code: coupon.code,
+      label: coupon.kind === "percent" ? `${Number(coupon.value)}%` : `$${Number(coupon.value)}`,
+      endsAt: coupon.ends_at ?? null,
+    })),
     totals: {
       currency: quote.currency_code,
       subtotal: fromMinor(quote.subtotal_amount_minor),

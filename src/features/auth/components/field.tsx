@@ -7,15 +7,16 @@ type FieldProps = {
   error?: string;
   /** Shown under the control while there is no error. */
   hint?: string;
+  required?: boolean;
   children: ReactNode;
 };
 
 /** Kit `.ma-field`: label, control, and a hint or error the control points at via `aria-describedby`. */
-export function Field({ id, label, error, hint, children }: FieldProps) {
+export function Field({ id, label, error, hint, required, children }: FieldProps) {
   return (
     <div className={cn("ma-field", error && "is-error")}>
       <label htmlFor={id} className="ma-label">
-        {label}
+        {label}{required ? <> <span className="ms-1 text-pink" aria-label="مطلوب">*</span></> : null}
       </label>
       {children}
       {error ? (

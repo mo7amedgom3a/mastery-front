@@ -313,6 +313,8 @@ export const commerceQueries = {
       queryKey: commerceKeys.quote(incentives),
       queryFn: ({ signal }) => quoteCart({ signal, context }, incentives),
       staleTime: 0,
+      retry: 2,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 3000),
     }),
   myVouchers: () =>
     queryOptions({ queryKey: commerceKeys.myVouchers(), queryFn: ({ signal }) => listMyVouchers({ signal }) }),

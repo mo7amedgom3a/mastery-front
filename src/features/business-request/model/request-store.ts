@@ -20,14 +20,20 @@ export type RequestAnswers = {
   teamSize: string;
   trainingTypes: TrainingType[];
   trainingGoals: TrainingGoal[];
+  otherTrainingGoal: string;
   departments: Department[];
   otherDepartment: string;
-  hasTrainingBudget: boolean | null;
+  hasTrainingBudget: boolean | "maybe" | null;
+  hasInternalLms: boolean | null;
   usedPlatformBefore: boolean | null;
   previousPlatforms: Platform[];
   otherPlatform: string;
   categoryIds: string[];
+  otherCategorySelected: boolean;
+  otherCategory: string;
   skillIds: string[];
+  otherSkillSelected: boolean;
+  otherSkill: string;
   summary: string;
   contactName: string;
   jobTitle: string;
@@ -39,6 +45,8 @@ export type RequestField = keyof RequestAnswers;
 export type RequestErrors = Partial<Record<RequestField, string>>;
 
 type RequestState = RequestAnswers & {
+  draftToken: string | null;
+  draftSaveStatus: "idle" | "saving" | "saved" | "error";
   /** +1 after "next", -1 after "back": which side the next step slides in from. */
   direction: 1 | -1;
   /** Errors on screen: set by "next" on an incomplete step, or by the server after submit. */
@@ -46,6 +54,8 @@ type RequestState = RequestAnswers & {
   update: (patch: Partial<RequestAnswers>) => void;
   setDirection: (direction: 1 | -1) => void;
   setErrors: (errors: RequestErrors) => void;
+  setDraftToken: (token: string) => void;
+  setDraftSaveStatus: (status: RequestState["draftSaveStatus"]) => void;
   reset: () => void;
 };
 
@@ -61,14 +71,20 @@ const EMPTY: RequestAnswers = {
   teamSize: "",
   trainingTypes: [],
   trainingGoals: [],
+  otherTrainingGoal: "",
   departments: [],
   otherDepartment: "",
   hasTrainingBudget: null,
+  hasInternalLms: null,
   usedPlatformBefore: null,
   previousPlatforms: [],
   otherPlatform: "",
   categoryIds: [],
+  otherCategorySelected: false,
+  otherCategory: "",
   skillIds: [],
+  otherSkillSelected: false,
+  otherSkill: "",
   summary: "",
   contactName: "",
   jobTitle: "",
@@ -91,6 +107,8 @@ export const useRequestStore = create<RequestState>()(
   persist(
     (set, get) => ({
       ...EMPTY,
+      draftToken: null,
+      draftSaveStatus: "idle",
       direction: 1,
       errors: {},
       // Editing a field clears its error.
@@ -101,13 +119,29 @@ export const useRequestStore = create<RequestState>()(
       },
       setDirection: (direction) => set({ direction }),
       setErrors: (errors) => set({ errors }),
-      reset: () => set({ ...EMPTY, direction: 1, errors: {} }),
+      setDraftToken: (draftToken) => set({ draftToken }),
+      setDraftSaveStatus: (draftSaveStatus) => set({ draftSaveStatus }),
+      reset: () => set({ ...EMPTY, draftToken: null, draftSaveStatus: "idle", direction: 1, errors: {} }),
     }),
     {
       name: "mastery-b2b-request",
-      version: 1,
+      version: 3,
+      migrate: (persisted, version) => {
+        const saved = persisted as Partial<RequestAnswers> & { previousPlatforms?: string[]; draftToken?: string | null };
+        const oldPlatforms = Array.isArray(saved.previousPlatforms) ? saved.previousPlatforms : [];
+        const allowed = new Set<string>(["coursera", "udemy", "linkedin_learning", "other"]);
+        return {
+          ...EMPTY,
+          ...saved,
+          // The old "No" label meant that the amount was decided by need.
+          hasTrainingBudget: version < 2 && saved.hasTrainingBudget === false ? "maybe" : (saved.hasTrainingBudget ?? null),
+          hasInternalLms: oldPlatforms.includes("internal_lms") ? true : (saved.hasInternalLms ?? null),
+          previousPlatforms: oldPlatforms.filter((value): value is Platform => allowed.has(value)),
+          draftToken: saved.draftToken ?? null,
+        };
+      },
       storage: createJSONStorage(() => sessionStorage),
-      partialize: (state): RequestAnswers => answersOf(state),
+      partialize: (state) => ({ ...answersOf(state), draftToken: state.draftToken }),
       // Rehydrated on mount (see `useRequestHydrated`), so server and first client render agree.
       skipHydration: true,
     },

@@ -156,6 +156,8 @@ export type Quote = {
   coupon: QuoteCoupon | null;
   /** Account carts: vouchers used on this order and every voucher the customer can spend. */
   vouchers?: { applied: QuoteVoucher[]; available: QuoteVoucher[] };
+  /** Account carts: coupons issued to this customer (e.g. a friend's welcome), offered one-click. */
+  suggestedCoupons?: { code: string; label: string; endsAt: string | null }[];
   totals: QuoteTotals;
   paymentMethods: PaymentMethodOption[];
 };

@@ -106,6 +106,7 @@ export const routes = {
   subscriptionTeam: (slug: string, step: "details" | "review") =>
     route(`/subscriptions/${encodeURIComponent(slug)}/team/${step}`),
   trainers: route("/trainers"),
+  marketers: route("/marketers"),
   cart: route("/cart"),
   wishlist: route("/wishlist"),
   /** Stripe sends the buyer back here; the backend appends `order_id` and `payment_intent_id`. */
@@ -124,6 +125,7 @@ export const routes = {
   studentCart: route("/students/cart"),
   studentOrders: route("/students/orders"),
   studentVouchers: route("/students/vouchers"),
+  studentReferrals: route("/students/referrals"),
   studentNotifications: route("/students/notifications"),
   studentOrder: (orderId: string) => route(`/students/orders/${encodeURIComponent(orderId)}`),
   studentAccess: route("/students/access"),

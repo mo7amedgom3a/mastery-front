@@ -19,6 +19,8 @@ type FlowStepProps = {
   onBack?: () => void;
   onNext: () => void;
   canContinue: boolean;
+  /** Confirmation or consent shown directly above the next/pay row. */
+  beforeNext?: ReactNode;
   nextLabel?: string;
   pending?: boolean;
   error?: string | null;
@@ -29,7 +31,7 @@ type FlowStepProps = {
  * side it is coming from (RTL: forward comes from the left); `MotionConfig` turns this off for reduced
  * motion.
  */
-export function FlowStep({ stepKey, title, lead, children, direction, onBack, onNext, canContinue, nextLabel, pending, error }: FlowStepProps) {
+export function FlowStep({ stepKey, title, lead, children, direction, onBack, onNext, canContinue, beforeNext, nextLabel, pending, error }: FlowStepProps) {
   const titleId = `flow-${stepKey}-title`;
 
   return (
@@ -55,6 +57,8 @@ export function FlowStep({ stepKey, title, lead, children, direction, onBack, on
           {error}
         </p>
       ) : null}
+
+      {beforeNext}
 
       <div className={cn("flex items-center gap-3 border-t border-line pt-6", onBack ? "justify-between" : "justify-end")}>
         {onBack ? (

@@ -28,7 +28,10 @@ export async function POST(request: NextRequest) {
 
   let result: AuthResponse;
   try {
-    result = await verifyTwoFactor({ ...pending.account, code: body.data.code }, backendOptions(request));
+    result = await verifyTwoFactor(
+      { ...pending.account, code: body.data.code, referral: body.data.referral ?? null },
+      backendOptions(request),
+    );
   } catch (error) {
     if (isBackendStatus(error, 401) || isBackendStatus(error, 422)) return invalidCode();
     return backendFailure("verify", error);

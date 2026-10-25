@@ -15,6 +15,7 @@ import { customerQueries } from "@/lib/api/customers";
 import { useAuthStore } from "@/lib/auth/store";
 
 import { DashboardSection } from "./components/dashboard-section";
+import { InviteFriendCard } from "./components/invite-friend-card";
 import { LearningCard } from "./components/learning-card";
 import { RecommendationGrid } from "./components/recommendation-grid";
 import { TypeFilter } from "./components/type-filter";
@@ -181,6 +182,7 @@ export function DashboardHome() {
 
       {/* Nothing bought yet: the suggestions are the whole story. */}
       {ownsNothing ? null : continueLearning}
+      <InviteFriendCard />
       {whatNext}
     </div>
   );

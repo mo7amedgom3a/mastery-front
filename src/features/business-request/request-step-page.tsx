@@ -1,13 +1,15 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CatalogCategoriesResponse, OnboardingSkill } from "@/lib/api/catalog";
 
+import { DraftProgressSync } from "./model/draft-progress";
 import { useRequestHydrated } from "./model/request-store";
 import type { RequestStepId } from "./model/steps";
 import { BudgetStep } from "./steps/budget-step";
 import { CompanyStep } from "./steps/company-step";
-import { ContactStep } from "./steps/contact-step";
 import { DepartmentsStep } from "./steps/departments-step";
 import { NeedsStep } from "./steps/needs-step";
 import { TrainingStep } from "./steps/training-step";
@@ -34,18 +36,24 @@ export function RequestStepPage({ step, categories, skills }: RequestStepPagePro
     );
   }
 
+  let content: ReactNode;
   switch (step) {
     case "company":
-      return <CompanyStep />;
+      content = <CompanyStep />;
+      break;
     case "training":
-      return <TrainingStep />;
+      content = <TrainingStep />;
+      break;
     case "departments":
-      return <DepartmentsStep />;
+      content = <DepartmentsStep />;
+      break;
     case "budget":
-      return <BudgetStep />;
+      content = <BudgetStep />;
+      break;
     case "needs":
-      return <NeedsStep categories={categories} skills={skills} />;
-    case "contact":
-      return <ContactStep />;
+      content = <NeedsStep categories={categories} skills={skills} />;
+      break;
   }
+
+  return <><DraftProgressSync step={step} />{content}</>;
 }

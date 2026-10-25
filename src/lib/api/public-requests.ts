@@ -36,6 +36,7 @@ export type TrainerApplicationDto = {
 };
 
 export type CompanyTrainingRequestDto = {
+  draftToken?: string | null;
   companyName: string;
   contactName: string;
   companyEmail: string;
@@ -46,18 +47,22 @@ export type CompanyTrainingRequestDto = {
   city: string;
   /** An industry code, or the company's own wording when it picked "other". */
   industry: string;
-  websiteUrl: string;
+  websiteUrl: string | null;
   teamSize: number;
   trainingTypes: Array<"recorded" | "live" | "in_person">;
-  trainingGoals: Array<"solve_problem" | "employee_performance" | "increase_sales" | "knowledge_skills" | "disclosure_compliance">;
+  trainingGoals: Array<"solve_problem" | "employee_performance" | "increase_sales" | "knowledge_skills" | "disclosure_compliance" | "other">;
+  otherTrainingGoal: string | null;
   departments: Array<"sales" | "finance" | "it" | "quality_control" | "top_management" | "warehouses" | "ohs" | "all" | "other">;
   otherDepartment: string | null;
-  hasTrainingBudget: boolean | null;
+  hasTrainingBudget: boolean | "maybe" | null;
+  hasInternalLms: boolean;
   usedPlatformBefore: boolean;
-  previousPlatforms: Array<"coursera" | "udemy" | "linkedin_learning" | "edraak" | "rwaq" | "doroob" | "internal_lms" | "other">;
+  previousPlatforms: Array<"coursera" | "udemy" | "linkedin_learning" | "other">;
   otherPlatform: string | null;
   categoryIds: string[];
+  otherCategory: string | null;
   skillIds: string[];
+  otherSkill: string | null;
   summary: string;
 };
 

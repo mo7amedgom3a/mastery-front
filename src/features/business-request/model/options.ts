@@ -12,6 +12,7 @@ export const trainingGoals = [
   { value: "increase_sales", label: "زيادة مبيعات الشركة" },
   { value: "knowledge_skills", label: "تطوير المعرفة واكتساب المهارات" },
   { value: "disclosure_compliance", label: "الامتثال لنظام الإفصاح" },
+  { value: "other", label: "أخرى" },
 ] as const;
 
 /** `other` asks for the company's own wording, which is sent instead of the code. */
@@ -47,16 +48,13 @@ export const platforms = [
   { value: "coursera", label: "Coursera" },
   { value: "udemy", label: "Udemy" },
   { value: "linkedin_learning", label: "LinkedIn Learning" },
-  { value: "edraak", label: "إدراك" },
-  { value: "rwaq", label: "رواق" },
-  { value: "doroob", label: "دروب" },
-  { value: "internal_lms", label: "منصة تدريب داخلية (LMS)" },
   { value: "other", label: "أخرى" },
 ] as const;
 
 export const budgetChoices = [
   { value: true, label: "نعم، لدينا ميزانية سنوية مخصّصة للتدريب" },
-  { value: false, label: "لا توجد لدينا ميزانية مخصّصة، وعادةً ما نحدّدها حسب الاحتياج" },
+  { value: false, label: "لا، لا توجد لدينا ميزانية للتدريب" },
+  { value: "maybe", label: "نوعاً ما، لا توجد لدينا ميزانية مخصّصة وعادةً ما نحدّدها حسب الاحتياج" },
 ] as const;
 
 export type TrainingType = (typeof trainingTypes)[number]["value"];

@@ -29,11 +29,14 @@ export type TwoFactorCheckRequest = {
   email: string;
   userId: string;
   code: string;
+  /** How the visitor arrived (affiliate / friend link). */
+  referral?: { ref?: string | null; tolt_click_id?: string | null; tolt_partner_id?: string | null } | null;
 };
 
 export type QALoginRequest = {
   email: string;
   key: string;
+  referral?: TwoFactorCheckRequest["referral"];
 };
 
 export type CustomerAuthResponse = {

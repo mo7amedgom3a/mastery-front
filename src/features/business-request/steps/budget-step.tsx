@@ -13,6 +13,7 @@ const yesNo = [
 
 export function BudgetStep() {
   const hasBudget = useRequestStore((state) => state.hasTrainingBudget);
+  const hasInternalLms = useRequestStore((state) => state.hasInternalLms);
   const usedBefore = useRequestStore((state) => state.usedPlatformBefore);
   const previous = useRequestStore((state) => state.previousPlatforms);
   const errors = useRequestStore((state) => state.errors);
@@ -20,7 +21,7 @@ export function BudgetStep() {
 
   return (
     <RequestFrame step="budget" title="الميزانية والتجارب السابقة" lead="تساعدنا إجاباتك على اقتراح عرض يناسب طريقة عمل شركتك.">
-      <ChoiceGroup
+      <ChoiceGroup<boolean | "maybe">
         legend="هل لدى الشركة ميزانية مخصّصة للتدريب؟"
         hint="اختياري"
         choices={budgetChoices}
@@ -29,25 +30,39 @@ export function BudgetStep() {
         stacked
       />
 
+      <ChoiceGroup
+        legend="هل لديكم منصة تدريب داخلية؟"
+        required
+        choices={yesNo}
+        isSelected={(value) => hasInternalLms === value}
+        onToggle={(value) => update({ hasInternalLms: hasInternalLms === value ? null : value })}
+        error={errors.hasInternalLms}
+      />
+
       <div className="flex flex-col gap-2">
         <ChoiceGroup
           legend="هل سبق أن اشتركتم في منصة تدريب من قبل؟"
+          required
           choices={yesNo}
           isSelected={(value) => usedBefore === value}
-          onToggle={(value) => update({ usedPlatformBefore: usedBefore === value ? null : value })}
+          onToggle={(value) => update({
+            usedPlatformBefore: usedBefore === value ? null : value,
+            ...(value === false ? { previousPlatforms: [], otherPlatform: "" } : {}),
+          })}
           error={errors.usedPlatformBefore}
         />
         <Reveal show={usedBefore === true}>
           <div className="flex flex-col gap-4 pt-4">
             <ChoiceGroup
               legend="اختر المنصات"
+              required
               choices={platforms}
               isSelected={(value) => previous.includes(value)}
               onToggle={(value) => update({ previousPlatforms: toggleValue(previous, value) })}
               error={errors.previousPlatforms}
             />
             <Reveal show={previous.includes("other")}>
-              <TextField name="otherPlatform" label="اسم المنصة" />
+              <TextField name="otherPlatform" label="اسم المنصة" required />
             </Reveal>
           </div>
         </Reveal>

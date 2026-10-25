@@ -18,6 +18,7 @@ export type CountrySearchSelectProps = {
   disabled?: boolean;
   error?: string;
   hint?: string;
+  required?: boolean;
   valueKey?: "code" | "name";
   onChange: (country: Country) => void;
 };
@@ -33,6 +34,7 @@ export function CountrySearchSelect({
   disabled = false,
   error,
   hint,
+  required,
   valueKey = "code",
   onChange,
 }: CountrySearchSelectProps) {
@@ -117,7 +119,7 @@ export function CountrySearchSelect({
   };
 
   return (
-    <Field id={id} label={label} error={error} hint={hint}>
+    <Field id={id} label={label} error={error} hint={hint} required={required}>
       {name ? (
         <input
           type="hidden"

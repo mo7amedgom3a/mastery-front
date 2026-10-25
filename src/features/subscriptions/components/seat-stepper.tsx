@@ -12,6 +12,7 @@ type SeatStepperProps = {
   max: number;
   onChange: (seats: number) => void;
   label?: string;
+  required?: boolean;
   error?: string;
 };
 
@@ -19,7 +20,7 @@ type SeatStepperProps = {
  * Team size: − / + buttons around a number field, kept within the plan's range. Typing a number above the
  * range shows the way to the business team instead of silently capping it.
  */
-export function SeatStepper({ value, min, max, onChange, label = "عدد الموظفين", error }: SeatStepperProps) {
+export function SeatStepper({ value, min, max, onChange, label = "عدد الموظفين", required, error }: SeatStepperProps) {
   const id = useId();
   // What is typed, so an in-between value ("1" on the way to "12") isn't snapped while typing.
   const [draft, setDraft] = useState<string | null>(null);
@@ -35,6 +36,7 @@ export function SeatStepper({ value, min, max, onChange, label = "عدد الم�
     <div className="ma-field">
       <label htmlFor={id} className="ma-label">
         {label}
+        {required ? <> <span className="ms-1 text-pink" aria-label="مطلوب">*</span></> : null}
       </label>
       <div className="flex items-center gap-2">
         <button type="button" className="ma-btn ma-btn--soft ma-btn--icon size-11" aria-label="موظف أقل" disabled={value <= min} onClick={() => set(value - 1)}>

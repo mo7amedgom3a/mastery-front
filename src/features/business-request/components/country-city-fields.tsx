@@ -41,6 +41,7 @@ export function CountryCityFields() {
       <CountrySearchSelect
         id={countryId}
         label="الدولة"
+        required
         value={countryCode ?? ""}
         valueKey="code"
         countries={countries.data ?? []}
@@ -57,12 +58,13 @@ export function CountryCityFields() {
         <TextField
           name="city"
           label="المدينة"
+          required
           autoComplete="address-level2"
           disabled={!countryCode}
           hint={!countryCode ? "اختر الدولة أولاً" : cities.isError ? "تعذّر تحميل المدن، اكتب اسم المدينة." : undefined}
         />
       ) : (
-        <Field id={cityId} label="المدينة" error={errors.city}>
+        <Field id={cityId} label="المدينة" error={errors.city} required>
           <select
             id={cityId}
             name="city"

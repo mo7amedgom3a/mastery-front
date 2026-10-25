@@ -16,13 +16,14 @@ export function DepartmentsStep() {
       <div className="flex flex-col gap-2">
         <ChoiceGroup
           legend="الأقسام"
+          required
           choices={departments}
           isSelected={(value) => selected.includes(value)}
           onToggle={(value) => update({ departments: toggleDepartment(selected, value) })}
           error={errors.departments}
         />
         <Reveal show={selected.includes("other")}>
-          <TextField name="otherDepartment" label="الأقسام الأخرى" hint="مثلاً: الشؤون القانونية، المشتريات" />
+          <TextField name="otherDepartment" label="الأقسام الأخرى" hint="مثلاً: الشؤون القانونية، المشتريات" required />
         </Reveal>
       </div>
     </RequestFrame>

@@ -11,6 +11,7 @@ type Choice<T> = { value: T; label: string };
 type ChoiceGroupProps<T> = {
   legend: string;
   hint?: string;
+  required?: boolean;
   choices: readonly Choice<T>[];
   isSelected: (value: T) => boolean;
   onToggle: (value: T) => void;
@@ -23,20 +24,20 @@ type ChoiceGroupProps<T> = {
  * A question answered with chips. The chips are toggle buttons (`aria-pressed`); the group carries the
  * legend and, when invalid, the error the screen reader hears on focus.
  */
-export function ChoiceGroup<T extends string | boolean>({ legend, hint, choices, isSelected, onToggle, error, stacked }: ChoiceGroupProps<T>) {
+export function ChoiceGroup<T extends string | boolean>({ legend, hint, required, choices, isSelected, onToggle, error, stacked }: ChoiceGroupProps<T>) {
   const id = useId();
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
 
   return (
     // `data-invalid`: "next" focuses the first chip of the first unanswered question.
-    <fieldset className="m-0 flex flex-col gap-3 border-0 p-0" aria-describedby={describedBy} data-invalid={error ? "" : undefined}>
-      <legend className="mb-3 p-0 font-bold">{legend}</legend>
+    <fieldset className="m-0 min-w-0 flex flex-col gap-3 border-0 p-0" aria-describedby={describedBy} data-invalid={error ? "" : undefined}>
+      <legend className="mb-3 p-0 font-bold">{legend}{required ? <> <span className="ms-1 text-pink" aria-label="مطلوب">*</span></> : null}</legend>
       {hint ? (
         <p id={`${id}-hint`} className="-mt-2 m-0 text-sm text-fg-muted">
           {hint}
         </p>
       ) : null}
-      <div className={cn("flex gap-2", stacked ? "flex-col items-stretch [&>button]:justify-start [&>button]:text-start" : "flex-wrap")}>
+      <div className={cn("flex gap-2", stacked ? "min-w-0 flex-col items-stretch [&>button]:min-w-0 [&>button]:justify-start [&>button]:text-start [&>button]:whitespace-normal" : "flex-wrap")}>
         {choices.map((choice) => (
           <ChoiceChip key={String(choice.value)} selected={isSelected(choice.value)} onToggle={() => onToggle(choice.value)}>
             {choice.label}

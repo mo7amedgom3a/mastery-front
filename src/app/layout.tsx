@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import type { ReactNode } from "react";
 
 import { MotionProvider } from "@/components/motion/motion-provider";
+import { ReferralTracking } from "@/components/referral/referral-tracking";
 import { ShopAuthBridge } from "@/components/shop/shop-auth-bridge";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { getSiteUrl, isIndexable } from "@/config/env";
@@ -107,6 +108,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           <ExploreMenuProvider menu={menu}>
             {children}
             <ShopAuthBridge />
+            <ReferralTracking />
           </ExploreMenuProvider>
         </MotionProvider>
       </body>

@@ -8,14 +8,23 @@ export const loginSchema = z.object({
   loginName: z.string().trim().min(3, "أدخل بريدك الإلكتروني.").max(256, "البريد الإلكتروني طويل جداً."),
 });
 
+export const referralSchema = z.object({
+  ref: z.string().max(100).nullish(),
+  tolt_click_id: z.string().max(100).nullish(),
+  tolt_partner_id: z.string().max(100).nullish(),
+});
+
 export const verifySchema = z.object({
   code: z.string().trim().min(4, "أدخل رمز التحقق كما وصلك.").max(20, "رمز التحقق غير صحيح."),
+  /** How the visitor arrived (affiliate / friend link); attributed on first sign-in. */
+  referral: referralSchema.optional(),
 });
 
 /** The development-only QA sign-in: a configured QA account and the shared QA key. */
 export const qaLoginSchema = z.object({
   email: z.email("أدخل بريداً إلكترونياً صحيحاً.").max(256, "البريد الإلكتروني طويل جداً."),
   key: z.string().min(1, "أدخل مفتاح QA.").max(512, "مفتاح QA غير صحيح."),
+  referral: referralSchema.optional(),
 });
 
 export const registerSchema = z

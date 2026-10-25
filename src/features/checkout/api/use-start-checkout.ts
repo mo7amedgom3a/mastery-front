@@ -13,6 +13,7 @@ import {
 } from "@/lib/api/commerce";
 import { createSubscriptionCheckout, type SubscriptionCheckoutResponse } from "@/lib/api/subscriptions";
 import { trackAuth, trackCheckout } from "@/lib/observability/behavior";
+import { currentReferral } from "@/lib/referral";
 import { resolveCatalogProductId } from "@/lib/shop/catalog-ids";
 import { syncAccountCart } from "@/lib/shop/cart-sync";
 import { useShopStore, type ShopItem } from "@/lib/shop/store";
@@ -96,8 +97,13 @@ async function openSession(
 
 function paymentFields(payment: CheckoutPayment) {
   const origin = window.location.origin;
-  // The backend appends order_id and payment_intent_id (and Stripe the session id).
-  const urls = { success_url: `${origin}${routes.checkoutSuccess}`, cancel_url: `${origin}${routes.checkoutCancelled}` };
+  // The backend appends order_id and payment_intent_id (and Stripe the session id). The referral
+  // attributes a customer who has no partner yet; it is not part of what is bought (no fingerprint).
+  const urls = {
+    success_url: `${origin}${routes.checkoutSuccess}`,
+    cancel_url: `${origin}${routes.checkoutCancelled}`,
+    referral: currentReferral() ?? null,
+  };
   if (payment.provider === "stripe") return { provider: "stripe" as const, ...urls };
   return {
     provider: "tamara" as const,
@@ -259,6 +265,8 @@ export function useStartCheckout() {
           lead_id: target.leadId ?? null,
           success_url: `${origin}${routes.checkoutSuccess}`,
           cancel_url: target.cancelUrl ? `${origin}${target.cancelUrl}` : window.location.href,
+          // Attributes a customer with no partner yet; not part of what is bought (no fingerprint).
+          referral: currentReferral() ?? null,
         };
         session = await openSession((key) => createSubscriptionCheckout(body, key), fingerprint);
       } else {

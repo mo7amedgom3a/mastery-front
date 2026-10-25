@@ -27,6 +27,7 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^requests\/phone-codes$/, session: false },
   { methods: ["GET"], pattern: /^requests\/countries\/phone-codes$/, session: false },
   { methods: ["GET"], pattern: /^requests\/countries\/[A-Z]{2}\/cities$/, session: false },
+  { methods: ["PUT"], pattern: /^requests\/company-training\/draft$/, session: false },
   { methods: ["POST"], pattern: /^requests\/trainer-attachments\/presign$/, session: false },
   { methods: ["POST"], pattern: /^requests\/trainer-attachments\/[A-Za-z0-9-]+\/confirm$/, session: false },
   // Live-diploma catalog reads (list, detail, cohorts, one cohort): public discovery.
@@ -47,6 +48,10 @@ const RULES: readonly Rule[] = [
   { methods: ["POST"], pattern: /^payments\/intents\/[A-Za-z0-9-]+\/reconcile$/, session: true },
   // Tamara eligibility, instalment plans and widget key for the cart total: public.
   { methods: ["GET"], pattern: /^payments\/tamara\/options$/, session: false },
+  // Affiliates program terms (public) and marketer applications.
+  { methods: ["GET"], pattern: /^affiliates\/program$/, session: false },
+  { methods: ["POST"], pattern: /^affiliates\/applications$/, session: false },
+  { methods: ["GET"], pattern: /^affiliates\/referrals\/resolve$/, session: false },
   { methods: ["GET"], pattern: /^orders(\/[A-Za-z0-9-]+(\/(invoices|transactions))?)?$/, session: true },
   // Customer refund previews, requests and case history on paid order items.
   { methods: ["GET"], pattern: /^refund-cases\/me$/, session: true },

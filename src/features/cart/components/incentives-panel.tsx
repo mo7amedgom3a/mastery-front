@@ -6,11 +6,13 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Money } from "@/components/shop/money";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
+import type { ResolvedReferral } from "@/lib/referral";
 import { trackCoupon } from "@/lib/observability/behavior";
 import type { QuoteCoupon, QuoteVoucher } from "@/lib/shop/contract";
 
 type IncentivesPanelProps = {
   coupon: QuoteCoupon | null;
+  suggestedCoupons?: { code: string; label: string; endsAt: string | null }[];
   /** The code the customer entered (shown while its quote is on its way). */
   couponCode: string | null;
   onApplyCoupon: (code: string) => void;
@@ -20,11 +22,42 @@ type IncentivesPanelProps = {
   onVouchersChange: (ids: string[]) => void;
   currency: string;
   disabled: boolean;
+  referral?: ResolvedReferral | null;
 };
+
+export function ReferralDiscountBadge({ referral }: { referral: ResolvedReferral }) {
+  const percent = Number(referral.discount_percent);
+  const formattedPercent = Number.isInteger(percent) ? `${percent}%` : `${percent.toFixed(1)}%`;
+
+  return (
+    <div className="flex w-full min-w-0 max-w-full flex-col gap-1.5 rounded-control border border-green/30 bg-green/10 p-3 text-xs sm:text-sm overflow-hidden">
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="grid size-5 shrink-0 place-items-center rounded-full bg-green text-surface text-xs font-bold">
+            ✓
+          </span>
+          <span className="font-bold text-fg truncate">خصم الإحالة مفعّل</span>
+        </div>
+        <span className="shrink-0 rounded-full bg-green/20 px-2 py-0.5 text-xs font-bold text-green">
+          خصم {formattedPercent}
+        </span>
+      </div>
+      {referral.partner_name ? (
+        <div className="flex items-center gap-1.5 ps-7 min-w-0 text-xs text-fg-muted">
+          <span className="shrink-0">بواسطة:</span>
+          <bdi dir="ltr" className="font-mono truncate text-fg font-medium max-w-[200px] sm:max-w-[240px]">
+            {referral.partner_name}
+          </bdi>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 /** Coupon code and voucher (store credit) selection, above the order totals. */
 export function IncentivesPanel({
   coupon,
+  suggestedCoupons = [],
   couponCode,
   onApplyCoupon,
   onRemoveCoupon,
@@ -33,9 +66,26 @@ export function IncentivesPanel({
   onVouchersChange,
   currency,
   disabled,
+  referral,
 }: IncentivesPanelProps) {
   return (
     <div className="flex flex-col gap-5">
+      {referral && referral.valid ? <ReferralDiscountBadge referral={referral} /> : null}
+      {!couponCode && suggestedCoupons.length > 0 ? (
+        <div className="flex flex-col gap-2 rounded-sm border border-green bg-surface-alt p-3">
+          {suggestedCoupons.map((suggestion) => (
+            <div key={suggestion.code} className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm">
+                لديك قسيمة ترحيب بخصم <strong>{suggestion.label}</strong>
+                {suggestion.endsAt ? ` حتى ${formatDate(suggestion.endsAt)}` : ""}
+              </span>
+              <button type="button" className="ma-btn ma-btn--soft ma-btn--sm" disabled={disabled} onClick={() => onApplyCoupon(suggestion.code)}>
+                تطبيق
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : null}
       <CouponField
         coupon={coupon}
         couponCode={couponCode}
@@ -180,41 +230,49 @@ function VoucherPicker({
     onChange(checked ? [...selected.filter((v) => v !== id), id] : selected.filter((v) => v !== id));
 
   return (
-    <fieldset className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0" disabled={disabled}>
-      <legend className="mb-2 flex items-center gap-2 p-0 text-base font-bold">
-        <Wallet aria-hidden="true" className="size-4 fill-none" />
+    <fieldset className="m-0 flex w-full min-w-0 max-w-full flex-col gap-2 border-0 p-0" disabled={disabled}>
+      <legend className="mb-2 flex items-center gap-2 p-0 text-sm font-bold">
+        <Wallet aria-hidden="true" className="size-4 shrink-0 text-accent fill-none" />
         قسائم الرصيد
       </legend>
       {vouchers.available.map((voucher) => {
         const id = `${name}-${voucher.id}`;
+        const isSelected = selected.includes(voucher.id);
         const amountUsed = used.get(voucher.id);
         return (
           <label
             key={voucher.id}
             htmlFor={id}
-            className="flex cursor-pointer items-start gap-3 rounded-sm border border-line px-3 py-2"
+            className={cn(
+              "flex w-full min-w-0 max-w-full cursor-pointer items-start gap-3 rounded-control border p-3 transition-colors",
+              isSelected
+                ? "border-accent bg-accent/5 shadow-xs"
+                : "border-line bg-surface hover:border-line-strong"
+            )}
           >
             <input
               id={id}
               type="checkbox"
-              checked={selected.includes(voucher.id)}
+              checked={isSelected}
               onChange={(event) => toggle(voucher.id, event.target.checked)}
-              className="mt-1.5 size-4 shrink-0 cursor-pointer accent-[var(--accent)]"
+              className="mt-1 size-4 shrink-0 cursor-pointer accent-[var(--accent)]"
             />
-            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="flex flex-wrap items-baseline justify-between gap-x-3">
-                <bdi dir="ltr" className="font-bold">
-                  {voucher.code}
-                </bdi>
-                <span className="text-sm">
-                  الرصيد <Money amount={voucher.amount} />
+            <span className="flex min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
+              <span className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                <span className="inline-flex min-w-0 max-w-[65%] items-center gap-1 rounded bg-surface-alt px-1.5 py-0.5 border border-line text-xs font-mono font-bold tracking-wide">
+                  <bdi dir="ltr" className="truncate">
+                    {voucher.code}
+                  </bdi>
+                </span>
+                <span className="shrink-0 text-xs font-semibold text-accent">
+                  الرصيد: <Money amount={voucher.amount} />
                 </span>
               </span>
-              <span className="text-sm text-fg-muted">
+              <span className="text-xs text-fg-muted">
                 {amountUsed ? (
-                  <>
-                    يُستخدم منها <Money amount={amountUsed} /> في هذا الطلب
-                  </>
+                  <span className="inline-flex items-center gap-1 text-green font-medium">
+                    <span className="font-bold">✓</span> يُستخدم منها <Money amount={amountUsed} /> في هذا الطلب
+                  </span>
                 ) : voucher.expiresAt ? (
                   `صالحة حتى ${formatDate(voucher.expiresAt)}`
                 ) : (
