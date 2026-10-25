@@ -31,6 +31,11 @@ export type TwoFactorCheckRequest = {
   code: string;
 };
 
+export type QALoginRequest = {
+  email: string;
+  key: string;
+};
+
 export type CustomerAuthResponse = {
   customer_id: string;
   email: string;
@@ -71,6 +76,7 @@ const authPaths = {
   register: "/api/v1/auth/register",
   login: "/api/v1/auth/login",
   twoFactorCheck: "/api/v1/auth/2fa/check",
+  qaLogin: "/api/v1/auth/qa/login",
   refresh: "/api/v1/auth/refresh",
   logout: "/api/v1/auth/logout",
   me: "/api/v1/auth/me",
@@ -110,6 +116,14 @@ export function verifyTwoFactor(
   options?: AuthRequestOptions,
 ): Promise<AuthResponse> {
   return apiRequest<AuthResponse>("POST", authPaths.twoFactorCheck, {
+    ...withAuthCookies(options),
+    body,
+  });
+}
+
+/** Development-only sign-in for the QA accounts; the backend answers 404 unless QA login is on. */
+export function qaLogin(body: QALoginRequest, options?: AuthRequestOptions): Promise<AuthResponse> {
+  return apiRequest<AuthResponse>("POST", authPaths.qaLogin, {
     ...withAuthCookies(options),
     body,
   });

@@ -12,6 +12,12 @@ export const verifySchema = z.object({
   code: z.string().trim().min(4, "أدخل رمز التحقق كما وصلك.").max(20, "رمز التحقق غير صحيح."),
 });
 
+/** The development-only QA sign-in: a configured QA account and the shared QA key. */
+export const qaLoginSchema = z.object({
+  email: z.email("أدخل بريداً إلكترونياً صحيحاً.").max(256, "البريد الإلكتروني طويل جداً."),
+  key: z.string().min(1, "أدخل مفتاح QA.").max(512, "مفتاح QA غير صحيح."),
+});
+
 export const registerSchema = z
   .object({
     fullname: z.string().trim().min(1, "أدخل اسمك الكامل.").max(300, "الاسم طويل جداً."),
@@ -35,5 +41,6 @@ export const registerSchema = z
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type VerifyInput = z.infer<typeof verifySchema>;
+export type QALoginInput = z.infer<typeof qaLoginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type RegisterField = keyof RegisterInput;

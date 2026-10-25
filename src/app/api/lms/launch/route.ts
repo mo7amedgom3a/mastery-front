@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
   }
   if (upstream.status === 401) return authError(401, "unauthenticated", "سجّل الدخول للمتابعة.");
   if (upstream.status === 404) return authError(404, "forbidden", "لا يوجد وصول فعّال لهذا البرنامج.");
+  if (upstream.status === 403) return authError(403, "forbidden", "وصولك إلى هذا البرنامج موقوف. تواصل مع الدعم.");
   if (upstream.status === 409) return authError(409, "unavailable", "نجهّز وصولك إلى منصة التعلّم، حاول بعد دقائق.");
   if (!upstream.ok) return authError(502, "unavailable", "تعذّر فتح منصة التعلّم حالياً. حاول مجدداً بعد قليل.");
 

@@ -19,6 +19,7 @@ import { AppLink } from "@/components/ui/app-link";
 import { brandBg, brandColorAt } from "@/components/ui/brand-colors";
 import { buttonClass } from "@/components/ui/button";
 import { ContinueLearningButton } from "@/features/student-dashboard/components/continue-learning-button";
+import { routes } from "@/config/routes";
 import { productTypeLabel } from "@/features/student-dashboard/model/products";
 import { LMS_PRODUCT_TYPES } from "@/lib/api/lms";
 import type {
@@ -34,6 +35,7 @@ import { kindLabel } from "@/lib/shop/labels";
 import { cn } from "@/lib/cn";
 
 import { entitlementStatus, fulfillmentStatus, paymentStatus, transactionEvent } from "../model/status";
+import { ExtendAccessButton } from "./extend-access-button";
 import { InvoiceDownloadButton } from "./invoice-download-button";
 import { PaymentProvider } from "./payment-provider";
 import { StatusTag } from "./status-tag";
@@ -206,6 +208,8 @@ export function OrderTransactions({ transactions }: { transactions: OrderTransac
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** Offer an extension once this few days of access are left. */
+const EXTEND_WINDOW_DAYS = 30;
 const DAY_FORMS = { one: "يوم واحد", two: "يومان", few: "أيام", many: "يوماً" };
 
 /** Days of access left, rounded up; null for lifetime access. */
@@ -268,6 +272,13 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
   const active = entitlement.status === "active";
   const remaining = daysLeft(entitlement.expires_at, now);
   const used = active ? elapsedPercent(entitlement.starts_at, entitlement.expires_at, now) : null;
+  const suspended = entitlement.status === "suspended";
+  const revoked = entitlement.status === "revoked";
+  // Paid time-limited access can be extended near its end or after it; subscription access renews instead.
+  const extendable =
+    Boolean(entitlement.expires_at) &&
+    entitlement.source_type !== "subscription" &&
+    ((active && remaining !== null && remaining <= EXTEND_WINDOW_DAYS) || entitlement.status === "expired");
   const TypeIcon = (entitlement.product_type ? typeIcon[entitlement.product_type] : undefined) ?? PlayCircle;
 
   return (
@@ -308,6 +319,23 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
             <dd className="m-0 font-bold">{entitlement.expires_at ? formatDate(entitlement.expires_at) : "وصول مدى الحياة"}</dd>
           </div>
         </dl>
+        {suspended || revoked ? (
+          <div className="ma-alert ma-alert--warning" role="status">
+            <div>
+              <p className="ma-alert__title">{suspended ? "وصولك موقوف مؤقتاً" : "تم إلغاء وصولك"}</p>
+              <p className="ma-alert__text">
+                {suspended
+                  ? entitlement.suspended_remaining_days != null
+                    ? `أيامك المتبقية (${formatCount(entitlement.suspended_remaining_days, DAY_FORMS)}) محفوظة وتعود عند استئناف الوصول.`
+                    : "وصولك مدى الحياة محفوظ ويعود عند استئناف الوصول."
+                  : "لم يعد هذا البرنامج متاحاً في حسابك."}{" "}
+                <AppLink href={routes.studentSupportNew} className="font-bold underline">
+                  تواصل مع الدعم
+                </AppLink>
+              </p>
+            </div>
+          </div>
+        ) : null}
         {used !== null && remaining !== null ? (
           <div className="ma-progress">
             <div className="ma-progress__row">
@@ -328,14 +356,19 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
         ) : null}
       </div>
       {active && LMS_PRODUCT_TYPES.has(entitlement.product_type ?? "") ? (
-        <div className="ma-card__foot">
+        <div className="ma-card__foot flex flex-col gap-2">
           <ContinueLearningButton
             entitlementId={entitlement.entitlement_id}
             fulfillmentStatus={entitlement.fulfillment_status}
             title={title}
           />
+          {extendable ? <ExtendAccessButton entitlementId={entitlement.entitlement_id} title={title} /> : null}
         </div>
-      ) : link ? (
+      ) : extendable ? (
+        <div className="ma-card__foot">
+          <ExtendAccessButton entitlementId={entitlement.entitlement_id} title={title} primary />
+        </div>
+      ) : suspended || revoked ? null : link ? (
         <div className="ma-card__foot">
           <AppLink
             href={link.href}

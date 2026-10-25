@@ -45,6 +45,10 @@ function memberSource(member: CatalogBundleDetail["bundle_members"][number]): Pr
     const options = cachedRead(BUNDLE_REVALIDATE_SECONDS, [productCacheTag("consultation", id)]);
     return getCatalogProduct(member.slug, options).then((detail) => ({ type: "consultation", detail }));
   }
+  if (kind === "package") {
+    const options = cachedRead(BUNDLE_REVALIDATE_SECONDS, [productCacheTag("package", id)]);
+    return getCatalogProduct(member.slug, options).then((detail) => ({ type: "package", detail }));
+  }
   return Promise.resolve(null);
 }
 

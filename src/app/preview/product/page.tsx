@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { CoursePreview } from "@/features/product-detail/components/course-preview";
 import { StudioPreviewKind, type PreviewKind } from "@/features/product-detail/components/studio-preview-kind";
 import { PackagePreview } from "@/features/package-detail/components/package-preview";
+import { BundlePreview } from "@/features/bundle-detail/components/bundle-preview";
 import type { StudioDocument } from "@/features/product-detail/model/studio-content";
 import { useStudioChannel } from "@/features/preview/use-studio-channel";
 
@@ -78,6 +79,9 @@ export default function ProductPreviewPage() {
     const packageSlug = kindData.kind === "package" && typeof base?.slug === "string" ? base.slug : null;
     if (packageSlug) {
       return <PackagePreview slug={packageSlug} revision={revision} document={kindData.document} readme={readme} />;
+    }
+    if (kindData.kind === "bundle") {
+      return <BundlePreview base={kindData.base} revision={revision} document={kindData.document} readme={readme} />;
     }
     return <StudioPreviewKind kind={kindData.kind} base={kindData.base} document={kindData.document} readme={readme} />;
   }

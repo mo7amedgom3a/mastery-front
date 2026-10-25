@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { getSession, onSessionLost, refreshOnce, signOut, verifyLoginCode } from "./client";
+import { getSession, onSessionLost, qaSignIn, refreshOnce, signOut, verifyLoginCode } from "./client";
 import type { AuthCustomer } from "./contract";
 
 export type AuthStatus = "idle" | "loading" | "authenticated" | "unauthenticated";
@@ -13,6 +13,8 @@ export type AuthState = {
   refresh: () => Promise<AuthCustomer | null>;
   /** Finishes a sign-in with the emailed code. */
   verifyCode: (code: string) => Promise<AuthCustomer>;
+  /** Development-only: signs in a QA account with the shared QA key. */
+  qaLogin: (email: string, key: string) => Promise<AuthCustomer>;
   logout: () => Promise<void>;
   setAuthenticated: (user: AuthCustomer) => void;
   setUnauthenticated: () => void;
@@ -67,6 +69,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   verifyCode: async (code) => {
     const user = await verifyLoginCode(code);
+    get().setAuthenticated(user);
+    announce("signed-in");
+    return user;
+  },
+
+  qaLogin: async (email, key) => {
+    const user = await qaSignIn(email, key);
     get().setAuthenticated(user);
     announce("signed-in");
     return user;

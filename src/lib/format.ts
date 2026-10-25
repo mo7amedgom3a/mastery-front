@@ -13,9 +13,13 @@ const priceFormatter = new Intl.NumberFormat("en-US", {
 
 const numberFormatter = new Intl.NumberFormat(LOCALE);
 
-export function formatPrice(amount: number | null | undefined): string | null {
+/** A whole-unit price in the site currency, or in `currency` when the API names another one. */
+export function formatPrice(amount: number | null | undefined, currency?: string | null): string | null {
   if (amount === null || amount === undefined || !Number.isFinite(amount) || amount <= 0) {
     return null;
+  }
+  if (currency && currency.toUpperCase() !== siteConfig.currency) {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase(), maximumFractionDigits: 0 }).format(amount);
   }
   return priceFormatter.format(amount);
 }

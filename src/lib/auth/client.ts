@@ -12,6 +12,7 @@ const paths = {
   login: "/api/auth/login",
   resend: "/api/auth/resend",
   verify: "/api/auth/verify",
+  qaLogin: "/api/auth/qa-login",
   refresh: "/api/auth/refresh",
   logout: "/api/auth/logout",
   session: "/api/auth/session",
@@ -54,6 +55,11 @@ export function resendLoginCode(): Promise<CodeSentResponse> {
 /** Step two: the emailed code. Starts the session. */
 export async function verifyLoginCode(code: string): Promise<AuthCustomer> {
   return (await request<CustomerResponse>("POST", paths.verify, { code })).customer;
+}
+
+/** Development-only: signs in a QA account with the shared QA key. Starts the session. */
+export async function qaSignIn(email: string, key: string): Promise<AuthCustomer> {
+  return (await request<CustomerResponse>("POST", paths.qaLogin, { email, key })).customer;
 }
 
 export function getSession(): Promise<SessionResponse> {

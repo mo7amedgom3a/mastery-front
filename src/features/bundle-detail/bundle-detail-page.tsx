@@ -3,7 +3,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { getSiteUrl } from "@/config/env";
 import { CtaBand } from "@/features/landing/sections/cta-band";
 import { FaqSection } from "@/features/landing/sections/faq-section";
-import { toQrMatrix } from "@/features/product-detail/api/share-qr";
+import type { QrMatrix } from "@/features/product-detail/model/qr";
 import { SectionNav, type SectionNavItem } from "@/features/product-detail/components/section-nav";
 import { ShareButton } from "@/features/product-detail/components/share-dialog";
 import { StickySidebar } from "@/features/product-detail/components/sticky-sidebar";
@@ -26,9 +26,9 @@ import { BundleJsonLd } from "./seo/json-ld";
  * → certificates → FAQ. Same frame as the package page; every member links to its own page. Pure
  * composition over view models; only the section nav and share dialog hydrate.
  */
-export function BundleDetailPage({ bundle }: { bundle: BundleDetailVM }) {
+export function BundleDetailPage({ bundle, qr }: { bundle: BundleDetailVM; qr: QrMatrix | null }) {
   const shareUrl = `${getSiteUrl()}${bundle.href}`;
-  const shareProps = {
+  const shareProps = qr ? {
     url: shareUrl,
     title: bundle.title,
     kindLabel: "حزمة",
@@ -36,9 +36,9 @@ export function BundleDetailPage({ bundle }: { bundle: BundleDetailVM }) {
     facts: bundleFacts(bundle).map((fact) => fact.label),
     trainers: bundle.trainers.map(({ name, avatar, initial }) => ({ name, avatar, initial })),
     // Scans are tagged so they can be told apart from other visits in analytics.
-    qr: toQrMatrix(`${shareUrl}?utm_source=qr&utm_medium=share`),
+    qr,
     fileName: `bundle-${bundle.slug}`,
-  };
+  } : null;
 
   const hasStudioContent = Boolean(bundle.content && bundle.content.length > 0);
   // A studio page's headings become the nav, exactly like the course page.
@@ -62,7 +62,7 @@ export function BundleDetailPage({ bundle }: { bundle: BundleDetailVM }) {
     <>
       <SiteHeader />
       <main id="main" tabIndex={-1} className="outline-none">
-        <BundleHero bundle={bundle} share={<ShareButton {...shareProps} />} />
+        <BundleHero bundle={bundle} share={shareProps ? <ShareButton {...shareProps} /> : null} />
 
         <div className="mt-10">
           <SectionNav items={nav} />
@@ -72,7 +72,7 @@ export function BundleDetailPage({ bundle }: { bundle: BundleDetailVM }) {
           <div className="flex min-w-0 flex-col gap-16">
             {/* Above the content on phones, beside it from `lg`. */}
             <div className="lg:hidden">
-              <BundlePurchaseCard bundle={bundle} share={<ShareButton {...shareProps} variant="block" />} />
+              <BundlePurchaseCard bundle={bundle} share={shareProps ? <ShareButton {...shareProps} variant="block" /> : null} />
             </div>
             {bundle.banner ? <StudioBanner banner={bundle.banner} /> : null}
             {hasStudioContent && bundle.content ? (
@@ -98,7 +98,7 @@ export function BundleDetailPage({ bundle }: { bundle: BundleDetailVM }) {
             <InstructorSection trainers={bundle.trainers} />
           </div>
           <StickySidebar>
-            <BundlePurchaseCard bundle={bundle} share={<ShareButton {...shareProps} variant="block" />} />
+            <BundlePurchaseCard bundle={bundle} share={shareProps ? <ShareButton {...shareProps} variant="block" /> : null} />
           </StickySidebar>
         </div>
 

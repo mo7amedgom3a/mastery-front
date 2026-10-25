@@ -1,6 +1,6 @@
 "use client";
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQueries } from "@tanstack/react-query";
 import { KeyRound } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -16,9 +16,11 @@ import { cn } from "@/lib/cn";
 
 import { AccessCard } from "./components/order-sections";
 
+/** "Inactive" groups what support paused or ended (suspended and revoked access). */
 const FILTERS = [
-  { status: "active", label: "الفعّال" },
-  { status: "expired", label: "المنتهي" },
+  { status: "active", label: "الفعّال", statuses: ["active"] },
+  { status: "expired", label: "المنتهي", statuses: ["expired"] },
+  { status: "inactive", label: "الموقوف", statuses: ["suspended", "revoked"] },
 ] as const;
 
 type Filter = (typeof FILTERS)[number]["status"];
@@ -44,19 +46,38 @@ export function AccessPage() {
     window.history.replaceState(null, "", query ? `${pathname}?${query}` : pathname);
   };
 
-  const access = useQuery({
-    ...commerceQueries.entitlements({ status: filter, limit: 100 }),
-    placeholderData: keepPreviousData,
+  const statuses = FILTERS.find((option) => option.status === filter)?.statuses ?? ["active"];
+  const pages = useQueries({
+    queries: statuses.map((status) => ({
+      ...commerceQueries.entitlements({ status, limit: 100 }),
+      placeholderData: keepPreviousData,
+    })),
   });
-  const items = access.data?.items ?? [];
+  const access = {
+    isPending: pages.some((page) => page.isPending),
+    isError: pages.some((page) => page.isError),
+    isFetching: pages.some((page) => page.isFetching),
+    dataUpdatedAt: Math.max(0, ...pages.map((page) => page.dataUpdatedAt)),
+  };
+  const items = pages.flatMap((page) => page.data?.items ?? []);
   const artwork = useCatalogArtwork(items.flatMap((item) => (item.product_slug ? [item.product_slug] : [])));
   const counts = countByType(items, (item) => item.product_type ?? "");
   // A type that isn't in this list (e.g. after switching status) filters nothing out of sight.
   const selected = type && counts.some((count) => count.type === type) ? type : null;
   const visible = selected ? items.filter((item) => item.product_type === selected) : items;
 
+  const extended = searchParams.get("extended") === "1";
+
   return (
     <div className="@container flex flex-col gap-6">
+      {extended ? (
+        <div className="ma-alert ma-alert--success" role="status">
+          <div>
+            <p className="ma-alert__title">تم الدفع بنجاح</p>
+            <p className="ma-alert__text">يُضاف التمديد إلى تاريخ انتهاء وصولك خلال لحظات بعد تأكيد الدفع.</p>
+          </div>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
         <TypeFilter counts={counts} total={items.length} value={selected} onChange={setType} />
         <div role="group" aria-label="تصفية حسب الحالة" className="ma-cluster">
@@ -92,7 +113,7 @@ export function AccessPage() {
         <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10">
           <KeyRound aria-hidden="true" className="size-8 fill-none text-accent" />
           <p className="m-0 text-fg-muted">
-            {filter === "active" ? "لا يوجد لديك وصول فعّال حالياً." : "لا يوجد وصول منتهٍ."}
+            {filter === "active" ? "لا يوجد لديك وصول فعّال حالياً." : filter === "expired" ? "لا يوجد وصول منتهٍ." : "لا يوجد وصول موقوف."}
           </p>
           {filter === "active" ? (
             <ButtonLink href={routes.search} variant="primary">

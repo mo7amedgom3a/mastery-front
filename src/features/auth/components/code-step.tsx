@@ -31,7 +31,7 @@ type CodeStepProps = {
  * their learning profile (and didn't skip it) goes to onboarding. A real `next` (e.g. back to
  * checkout) always wins, and a failed profile read never blocks signing in.
  */
-async function landingPath(next: string, customerId: string): Promise<string> {
+export async function landingPath(next: string, customerId: string): Promise<string> {
   if (next !== "/" || isOnboardingSkipped(customerId)) return next;
   try {
     const profile = await getLearningProfile();

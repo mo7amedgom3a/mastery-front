@@ -16,15 +16,15 @@ export const noPricing: Pricing = { current: null, original: null, free: false }
  * `current` must come from a real price row: only an explicit `0` means free. A missing price
  * (null/undefined) stays unknown, so legacy placeholder zeros must be dropped before calling this.
  */
-export function toPricing(current: number | null | undefined, original?: number | null): Pricing {
+export function toPricing(current: number | null | undefined, original?: number | null, currency?: string | null): Pricing {
   if (current === null || current === undefined || !Number.isFinite(current) || current < 0) {
     return noPricing;
   }
-  const struck = original && original > current ? formatPrice(original) : null;
+  const struck = original && original > current ? formatPrice(original, currency) : null;
   if (current === 0) {
     return { current: null, original: struck, free: true };
   }
-  return { current: formatPrice(current), original: struck, free: false };
+  return { current: formatPrice(current, currency), original: struck, free: false };
 }
 
 /** One row of a legacy price list (`prices[]` on a course, `/legacy/courses/{id}/prices`). */

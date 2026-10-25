@@ -18,7 +18,8 @@
     "api:test": "tsx scripts/test-api-layer.ts",
     "api:test:mutations": "tsx scripts/test-api-layer.ts --include-mutations",
     "test:cart": "tsx scripts/test-cart-pricing.ts",
-    "seo:check": "tsx scripts/seo-check.ts"
+    "seo:check": "tsx scripts/seo-check.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -76,6 +77,7 @@
   },
   "devDependencies": {
     "@grafana/faro-webpack-plugin": "^0.14.0",
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/postcss": "latest",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "latest",

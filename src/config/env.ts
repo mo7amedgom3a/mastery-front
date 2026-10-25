@@ -25,6 +25,14 @@ export function isIndexable(): boolean {
   return !vercelEnv || vercelEnv === "production";
 }
 
+/**
+ * Whether `/login` offers the QA account sign-in. Off unless set; the backend is the real gate and
+ * refuses QA sign-in outside development (its own `QA_LOGIN_ENABLED`).
+ */
+export function isQaLoginEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_QA_LOGIN_ENABLED === "true";
+}
+
 /** Host Vercel serves this deployment on (system env vars, no scheme), if any. */
 function vercelSiteUrl(): string | undefined {
   const host =

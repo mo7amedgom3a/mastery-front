@@ -1,7 +1,7 @@
 import { routes } from "@/config/routes";
 import type { FilterVM } from "@/features/landing/model/types";
 import { mapB2CProductDetail, studioDocument } from "@/features/product-detail/model/mappers-b2c";
-import { studioSections } from "@/features/product-detail/model/studio-content";
+import { studioSections, type StudioDocument } from "@/features/product-detail/model/studio-content";
 import type { InfoSectionVM, TrainerVM } from "@/features/product-detail/model/types";
 import type { CatalogBundleDetail, CatalogProductResponse } from "@/lib/api/catalog";
 import type { ProductContentResponse } from "@/lib/api/product-content";
@@ -40,7 +40,7 @@ export const memberKindLabel: Record<BundleMemberKind, string> = {
   other: "برنامج",
 };
 
-const GROUP_TITLES: Record<BundleMemberKind, string> = {
+export const bundleGroupTitles: Record<BundleMemberKind, string> = {
   diploma: "الدبلومات",
   course: "الدورات",
   consultation: "الاستشارات",
@@ -139,6 +139,7 @@ export function mapBundleLanding(
 export type MemberSource =
   | { type: "course"; id: number; detail: CatalogProductResponse }
   | { type: "consultation"; detail: CatalogProductResponse }
+  | { type: "package"; detail: CatalogProductResponse }
   | null;
 
 type MappedMember = { member: BundleMemberVM; trainers: TrainerVM[] };
@@ -204,6 +205,21 @@ function mapMember(dto: MemberDto, source: MemberSource, position: number): Mapp
     };
   }
 
+  if (source?.type === "package") {
+    const { product, price, image } = source.detail;
+    return {
+      member: {
+        ...base,
+        title: cleanText(product.title) || base.title,
+        summary: base.summary ?? toPlainText(product.short_description, 200),
+        image: image ?? null,
+        href: product.status === "published" ? memberHref("package", id) : null,
+        price: toPricing(price?.amount ?? null, price?.compare_at_amount ?? null),
+      },
+      trainers: [],
+    };
+  }
+
   return { member: base, trainers: [] };
 }
 
@@ -238,7 +254,7 @@ export function mapBundleDetail(
   for (const member of members) {
     const group = groups.find((entry) => entry.kind === member.kind);
     if (group) group.members.push(member);
-    else groups.push({ kind: member.kind, title: GROUP_TITLES[member.kind], members: [member] });
+    else groups.push({ kind: member.kind, title: bundleGroupTitles[member.kind], members: [member] });
   }
 
   const trainers = new Map<number, TrainerVM>();
@@ -276,5 +292,26 @@ export function mapBundleDetail(
     access: accessLabel(product.access_duration_days),
     ...bundlePricing(detail.price),
     href: routes.bundle(product.slug),
+  };
+}
+
+/** Apply the Studio's unsaved document to the same view model used by the public bundle page. */
+export function withBundleStudioDocument(
+  bundle: BundleDetailVM,
+  document: StudioDocument,
+  readme: string | null,
+  product: { title?: string | null; short_description?: string | null },
+): BundleDetailVM {
+  const sections = document.blocks.length > 0 ? studioSections(document.blocks) : null;
+  return {
+    ...bundle,
+    title: cleanText(document.meta.title) || cleanText(product.title) || bundle.title,
+    summary: toPlainText(document.meta.summary || product.short_description, 240),
+    image: document.meta.cover?.url || bundle.image,
+    banner: document.meta.banner?.url
+      ? { url: document.meta.banner.url, alt: document.meta.banner.alt ?? "", headline: document.meta.banner.headline ?? "" }
+      : null,
+    content: sections,
+    readme: readme ?? bundle.readme,
   };
 }

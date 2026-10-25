@@ -2,11 +2,13 @@
 
 import { Hourglass, LifeBuoy, LoaderCircle, PlayCircle } from "lucide-react";
 import type { Route } from "next";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { AppLink } from "@/components/ui/app-link";
 import { buttonClass } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/client";
+import { commerceKeys } from "@/lib/api/commerce";
 import { launchLms } from "@/lib/api/lms";
 import { cn } from "@/lib/cn";
 
@@ -24,6 +26,7 @@ type ContinueLearningButtonProps = {
  * says so instead.
  */
 export function ContinueLearningButton({ entitlementId, fulfillmentStatus, title }: ContinueLearningButtonProps) {
+  const queryClient = useQueryClient();
   const [opening, setOpening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const className = cn(buttonClass({ variant: "primary", block: true }), "gap-2");
@@ -54,6 +57,10 @@ export function ContinueLearningButton({ entitlementId, fulfillmentStatus, title
     } catch (caught) {
       setOpening(false);
       setError(caught instanceof ApiError ? caught.message : "تعذّر فتح منصة التعلّم حالياً.");
+      // The access changed since the list loaded (suspended, revoked or expired): show its real state.
+      if (caught instanceof ApiError && (caught.status === 403 || caught.status === 404)) {
+        void queryClient.invalidateQueries({ queryKey: commerceKeys.all });
+      }
     }
   }
 

@@ -3,6 +3,7 @@
 import { useId, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { isQaLoginEnabled } from "@/config/env";
 import { requestLoginCode } from "@/lib/auth/client";
 import { trackAuth } from "@/lib/observability/behavior";
 
@@ -10,6 +11,7 @@ import { authErrorMessage } from "../model/messages";
 import { loginSchema } from "../model/schemas";
 import { CodeStep } from "./code-step";
 import { describedBy, Field, FormError } from "./field";
+import { QALoginForm } from "./qa-login-form";
 
 type PendingLogin = { loginName: string; resendAfter: number };
 
@@ -26,9 +28,26 @@ export function LoginForm({ next }: { next: string }) {
   const [pending, setPending] = useState(false);
   const [fieldError, setFieldError] = useState<string>();
   const [formError, setFormError] = useState<string | null>(null);
+  const [qaMode, setQaMode] = useState(false);
 
   if (pendingLogin) {
     return <CodeStep {...pendingLogin} next={next} onBack={() => setPendingLogin(null)} />;
+  }
+
+  // Development only: the QA accounts sign in with the shared QA key instead of an emailed code.
+  const qaToggle = isQaLoginEnabled() ? (
+    <button type="button" className="ma-link self-center" onClick={() => setQaMode(!qaMode)}>
+      {qaMode ? "الدخول برمز التحقق" : "الدخول بحساب QA"}
+    </button>
+  ) : null;
+
+  if (qaMode) {
+    return (
+      <div className="flex flex-col gap-5">
+        <QALoginForm next={next} />
+        {qaToggle}
+      </div>
+    );
   }
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -76,6 +95,7 @@ export function LoginForm({ next }: { next: string }) {
       <Button type="submit" block disabled={pending} aria-busy={pending}>
         {pending ? "جارٍ الإرسال…" : "إرسال رمز التحقق"}
       </Button>
+      {qaToggle}
     </form>
   );
 }

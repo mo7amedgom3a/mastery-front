@@ -41,6 +41,8 @@ const RULES: readonly Rule[] = [
   { methods: ["POST"], pattern: /^cart\/items$/, session: true },
   { methods: ["PATCH", "DELETE"], pattern: /^cart\/items\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^checkout\/(quote|sessions|free-enrollments)$/, session: true },
+  // Buying more access time for an entitlement (options are read under `me/`).
+  { methods: ["POST"], pattern: /^access-extensions\/checkout$/, session: true },
   { methods: ["GET"], pattern: /^payments\/intents\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^payments\/intents\/[A-Za-z0-9-]+\/reconcile$/, session: true },
   // Tamara eligibility, instalment plans and widget key for the cart total: public.

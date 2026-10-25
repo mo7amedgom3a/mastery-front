@@ -114,7 +114,7 @@ export function mapB2CProductDetail(
     image: doc?.meta?.cover?.url || dto.image || null,
     duration: formatDurationFromSeconds(dto.duration_seconds),
     rating: null,
-    price: toPricing(priceAmount, dto.price?.compare_at_amount ?? null),
+    price: toPricing(priceAmount, dto.price?.compare_at_amount ?? null, dto.price?.currency_code),
     priceAmount,
     lessonCount: dto.lesson_count ?? allLessons.length,
     freeLessonCount: allLessons.filter((lesson) => lesson.free).length,

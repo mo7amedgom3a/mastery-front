@@ -24,6 +24,8 @@ type GetOrderOperation = "get_order_api_v1_orders__order_id__get";
 type OrderInvoicesOperation = "order_invoices_api_v1_orders__order_id__invoices_get";
 type ListEntitlementsOperation = "list_entitlements_api_v1_me_entitlements_get";
 type ListOwnedProductsOperation = "list_owned_products_api_v1_me_products_get";
+type ExtensionOptionsOperation = "extension_options_api_v1_me_entitlements__entitlement_id__extension_options_get";
+type ExtensionCheckoutOperation = "access_extension_checkout_api_v1_access_extensions_checkout_post";
 
 export type CartResponse = SuccessResponse<GetCartOperation>;
 export type CartLineResponse = NonNullable<CartResponse["lines"]>[number];
@@ -55,6 +57,8 @@ export type EntitlementResponse = EntitlementPageResponse["items"][number];
 export type OwnedProductsParams = QueryParams<ListOwnedProductsOperation>;
 export type OwnedProductPageResponse = SuccessResponse<ListOwnedProductsOperation>;
 export type OwnedProductResponse = OwnedProductPageResponse["items"][number];
+export type ExtensionOptionResponse = SuccessResponse<ExtensionOptionsOperation>[number];
+export type ExtensionCheckoutRequest = RequestBody<ExtensionCheckoutOperation>;
 
 /** Single-product checkout is always charged in USD by the backend; the cart follows suit. */
 export const CHECKOUT_CURRENCY = "USD";
@@ -76,6 +80,8 @@ const commercePaths = {
   orderInvoices: "/api/v1/orders/{order_id}/invoices",
   entitlements: "/api/v1/me/entitlements",
   ownedProducts: "/api/v1/me/products",
+  extensionOptions: "/api/v1/me/entitlements/{entitlement_id}/extension-options",
+  extensionCheckout: "/api/v1/access-extensions/checkout",
 } as const;
 
 export const commerceKeys = {
@@ -91,6 +97,7 @@ export const commerceKeys = {
   order: (id: string) => [...commerceKeys.all, "order", id] as const,
   entitlements: (params?: EntitlementsParams) => [...commerceKeys.all, "entitlements", params ?? {}] as const,
   ownedProducts: (params?: OwnedProductsParams) => [...commerceKeys.all, "owned-products", params ?? {}] as const,
+  extensionOptions: (entitlementId: string) => [...commerceKeys.all, "extension-options", entitlementId] as const,
 };
 
 export function getCart(options?: AuthenticatedRequestOptions): Promise<CartResponse> {
@@ -270,6 +277,30 @@ export function listOwnedProducts(
   });
 }
 
+/** Ways to buy more access time for one entitlement; `eligible: false` options say why in `reason`. */
+export function listExtensionOptions(
+  entitlementId: string,
+  options?: AuthenticatedRequestOptions,
+): Promise<ExtensionOptionResponse[]> {
+  return customerRequest<ExtensionOptionResponse[]>("GET", commercePaths.extensionOptions, {
+    ...withAuthCookies(options),
+    path: { entitlement_id: entitlementId },
+  });
+}
+
+/** A Stripe Checkout session for an access extension; the paid order moves the expiry forward. */
+export function startExtensionCheckout(
+  body: ExtensionCheckoutRequest,
+  idempotencyKey: string,
+  options?: AuthenticatedRequestOptions,
+): Promise<CheckoutSessionResponse> {
+  return customerRequest<CheckoutSessionResponse>("POST", commercePaths.extensionCheckout, {
+    ...withAuthCookies(options),
+    headers: { "Idempotency-Key": idempotencyKey },
+    body,
+  });
+}
+
 export const commerceQueries = {
   cart: (context?: ApiRequestContext) =>
     queryOptions({
@@ -321,5 +352,11 @@ export const commerceQueries = {
       queryKey: commerceKeys.ownedProducts(params),
       queryFn: ({ signal }) => listOwnedProducts(params, { signal, context }),
       staleTime: 30_000,
+    }),
+  extensionOptions: (entitlementId: string) =>
+    queryOptions({
+      queryKey: commerceKeys.extensionOptions(entitlementId),
+      queryFn: ({ signal }) => listExtensionOptions(entitlementId, { signal }),
+      staleTime: 60_000,
     }),
 };
