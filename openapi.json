@@ -5274,7 +5274,7 @@
           "Admin catalog"
         ],
         "summary": "Package detail sections",
-        "description": "Ordered detail sections of a package (\u0627\u0644\u0645\u0642\u062f\u0645\u0629\u060c \u0627\u0644\u0645\u062d\u0627\u0648\u0631\u060c \u0627\u0644\u0623\u0647\u062f\u0627\u0641\u060c \u0627\u0644\u0641\u0626\u0629 \u0627\u0644\u0645\u0633\u062a\u0647\u062f\u0641\u0629) from `b2c.product_sections`.",
+        "description": "Ordered detail sections of a package (المقدمة، المحاور، الأهداف، الفئة المستهدفة) from `b2c.product_sections`.",
         "operationId": "package_detail_sections_api_v1_admin_catalog_products__product_ref__package_sections_get",
         "security": [
           {
@@ -5347,7 +5347,7 @@
           "Admin catalog"
         ],
         "summary": "Update package detail sections",
-        "description": "Replaces a package's ordered detail sections (\u0627\u0644\u0645\u0642\u062f\u0645\u0629\u060c \u0627\u0644\u0645\u062d\u0627\u0648\u0631\u060c \u0627\u0644\u0623\u0647\u062f\u0627\u0641\u060c \u0627\u0644\u0641\u0626\u0629 \u0627\u0644\u0645\u0633\u062a\u0647\u062f\u0641\u0629). Writes `b2c.product_sections`.",
+        "description": "Replaces a package's ordered detail sections (المقدمة، المحاور، الأهداف، الفئة المستهدفة). Writes `b2c.product_sections`.",
         "operationId": "update_package_sections_api_v1_admin_catalog_products__product_ref__package_sections_put",
         "security": [
           {
@@ -16489,7 +16489,7 @@
           "Admin analytics"
         ],
         "summary": "Behavior funnel",
-        "description": "Distinct visitors per step (default: product viewed \u2192 search \u2192 checkout started \u2192 order paid). Pass `steps` (repeated `event_type` values) to build a custom funnel. Step conversion is measured from the first step and from the previous step.\n\nRequires `admin:analytics:read` or `admin:operations:read`. A *visitor* is a `fingerprint_hash`; a *known visitor* is one whose events carried a customer id. Windows are half-open `[start, end)` in UTC.",
+        "description": "Distinct visitors per step (default: product viewed → search → checkout started → order paid). Pass `steps` (repeated `event_type` values) to build a custom funnel. Step conversion is measured from the first step and from the previous step.\n\nRequires `admin:analytics:read` or `admin:operations:read`. A *visitor* is a `fingerprint_hash`; a *known visitor* is one whose events carried a customer id. Windows are half-open `[start, end)` in UTC.",
         "operationId": "behavior_funnel_api_v1_admin_analytics_funnels_get",
         "security": [
           {
@@ -32061,6 +32061,22 @@
             }
           },
           {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
             "name": "b2c_access_token",
             "in": "cookie",
             "required": false,
@@ -34197,7 +34213,7 @@
           "Admin Subscriptions"
         ],
         "summary": "Admin Subscription Stats Funnel",
-        "description": "Per plan: distinct visitors who viewed the plan page \u2192 customers who started\ncheckout \u2192 customers who paid. Requires `admin:catalog:read` or `admin:analytics:read`.",
+        "description": "Per plan: distinct visitors who viewed the plan page → customers who started\ncheckout → customers who paid. Requires `admin:catalog:read` or `admin:analytics:read`.",
         "operationId": "admin_subscription_stats_funnel_api_v1_admin_subscriptions_stats_funnel_get",
         "security": [
           {
@@ -34850,6 +34866,24 @@
               "format": "uuid",
               "title": "Subscription Id"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional; a retried request with the same key repeats the Stripe call safely.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Optional; a retried request with the same key repeats the Stripe call safely."
           },
           {
             "name": "b2c_admin_access_token",
@@ -42820,6 +42854,375 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AffiliatePolicyOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions/me/{subscription_id}/resume": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Undo a scheduled cancellation before the period ends",
+        "operationId": "resume_my_subscription_api_v1_subscriptions_me__subscription_id__resume_post",
+        "security": [
+          {
+            "B2C JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Subscription Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "b2c_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "B2C Access Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/subscriptions/customer-subscriptions/{subscription_id}/resume": {
+      "post": {
+        "tags": [
+          "Admin Subscriptions"
+        ],
+        "summary": "Undo a scheduled cancellation",
+        "operationId": "admin_resume_customer_subscription_api_v1_admin_subscriptions_customer_subscriptions__subscription_id__resume_post",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Subscription Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional; a retried request with the same key repeats the Stripe call safely.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Optional; a retried request with the same key repeats the Stripe call safely."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ResumeSubscriptionRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/subscriptions/customer-subscriptions/{subscription_id}/extend": {
+      "post": {
+        "tags": [
+          "Admin Subscriptions"
+        ],
+        "summary": "Add free days to the current period and its access",
+        "operationId": "admin_extend_customer_subscription_api_v1_admin_subscriptions_customer_subscriptions__subscription_id__extend_post",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Subscription Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional; a retried request with the same key repeats the Stripe call safely.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Optional; a retried request with the same key repeats the Stripe call safely."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtendSubscriptionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/subscriptions/customer-subscriptions/{subscription_id}/revoke": {
+      "post": {
+        "tags": [
+          "Admin Subscriptions"
+        ],
+        "summary": "End the subscription now and revoke its access",
+        "operationId": "admin_revoke_customer_subscription_api_v1_admin_subscriptions_customer_subscriptions__subscription_id__revoke_post",
+        "security": [
+          {
+            "B2C Admin JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Subscription Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional; a retried request with the same key repeats the Stripe call safely.",
+              "title": "Idempotency-Key"
+            },
+            "description": "Optional; a retried request with the same key repeats the Stripe call safely."
+          },
+          {
+            "name": "b2c_admin_access_token",
+            "in": "cookie",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent.",
+              "title": "B2C Admin Access Token"
+            },
+            "description": "Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokeSubscriptionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -52152,7 +52555,21 @@
           "immediate": {
             "type": "boolean",
             "title": "Immediate",
+            "description": "End now and lose access; otherwise cancel at the end of the paid period.",
             "default": false
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Admin only: recorded in the audit log."
           }
         },
         "type": "object",
@@ -57554,13 +57971,13 @@
           "featured": {
             "type": "boolean",
             "title": "Featured",
-            "description": "Featured product (\u062f\u0648\u0631\u0629 \u0645\u0645\u064a\u0632\u0629).",
+            "description": "Featured product (دورة مميزة).",
             "default": false
           },
           "manual_accounting": {
             "type": "boolean",
             "title": "Manual Accounting",
-            "description": "Manual accounting flag (\u062d\u0633\u0627\u0628 \u064a\u062f\u0648\u0649).",
+            "description": "Manual accounting flag (حساب يدوى).",
             "default": false
           },
           "apple_store_id": {
@@ -57595,7 +58012,7 @@
             },
             "type": "array",
             "title": "Instructor Ids",
-            "description": "Legacy trainer ids (\u0627\u0644\u0645\u062f\u0631\u0628\u0648\u0646)."
+            "description": "Legacy trainer ids (المدربون)."
           },
           "expert_ids": {
             "items": {
@@ -57603,7 +58020,7 @@
             },
             "type": "array",
             "title": "Expert Ids",
-            "description": "Legacy consultant ids (\u0627\u0644\u062e\u0628\u0631\u0627\u0621)."
+            "description": "Legacy consultant ids (الخبراء)."
           },
           "course_refs": {
             "items": {
@@ -60926,7 +61343,7 @@
               }
             ],
             "title": "Headline",
-            "description": "Title line under the name, e.g. \u00ab\u062e\u0628\u064a\u0631 \u0627\u0644\u062a\u0633\u0648\u064a\u0642 \u0627\u0644\u0631\u0642\u0645\u064a\u00bb."
+            "description": "Title line under the name, e.g. «خبير التسويق الرقمي»."
           },
           "is_consultant": {
             "type": "boolean",
@@ -65287,7 +65704,7 @@
             "maxLength": 500,
             "minLength": 1,
             "title": "Heading",
-            "description": "Section heading, e.g. \u0627\u0644\u0645\u0642\u062f\u0645\u0629."
+            "description": "Section heading, e.g. المقدمة."
           },
           "body": {
             "anyOf": [
@@ -65342,7 +65759,7 @@
           "heading"
         ],
         "title": "PackageSectionResponse",
-        "description": "An ordered \"about\" section of a package (\u0627\u0644\u0645\u0642\u062f\u0645\u0629\u060c \u0627\u0644\u0645\u062d\u0627\u0648\u0631\u060c \u0627\u0644\u0623\u0647\u062f\u0627\u0641\u060c \u0627\u0644\u0641\u0626\u0629 \u0627\u0644\u0645\u0633\u062a\u0647\u062f\u0641\u0629)."
+        "description": "An ordered \"about\" section of a package (المقدمة، المحاور، الأهداف، الفئة المستهدفة)."
       },
       "PackageSummary": {
         "properties": {
@@ -70223,7 +70640,7 @@
           "group_name_ar": {
             "type": "string",
             "title": "Group Name Ar",
-            "default": "\u0623\u062e\u0631\u0649"
+            "default": "أخرى"
           },
           "group_name_en": {
             "type": "string",
@@ -78747,7 +79164,7 @@
               }
             ],
             "title": "Headline",
-            "description": "Title line under the name, e.g. \u00ab\u062e\u0628\u064a\u0631 \u0627\u0644\u062a\u0633\u0648\u064a\u0642 \u0627\u0644\u0631\u0642\u0645\u064a\u00bb."
+            "description": "Title line under the name, e.g. «خبير التسويق الرقمي»."
           },
           "is_consultant": {
             "type": "boolean",
@@ -85838,6 +86255,63 @@
           "body_html"
         ],
         "title": "AffiliatePolicySectionOut"
+      },
+      "ExtendSubscriptionRequest": {
+        "properties": {
+          "days": {
+            "type": "integer",
+            "maximum": 365.0,
+            "minimum": 1.0,
+            "title": "Days",
+            "description": "Days added to the current period, free of charge."
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "reason"
+        ],
+        "title": "ExtendSubscriptionRequest"
+      },
+      "ResumeSubscriptionRequest": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Admin only: recorded in the audit log."
+          }
+        },
+        "type": "object",
+        "title": "ResumeSubscriptionRequest"
+      },
+      "RevokeSubscriptionRequest": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "RevokeSubscriptionRequest"
       }
     },
     "securitySchemes": {

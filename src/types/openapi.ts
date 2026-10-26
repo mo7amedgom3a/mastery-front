@@ -9099,6 +9099,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/subscriptions/me/{subscription_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undo a scheduled cancellation before the period ends */
+        post: operations["resume_my_subscription_api_v1_subscriptions_me__subscription_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscriptions/customer-subscriptions/{subscription_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undo a scheduled cancellation */
+        post: operations["admin_resume_customer_subscription_api_v1_admin_subscriptions_customer_subscriptions__subscription_id__resume_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscriptions/customer-subscriptions/{subscription_id}/extend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add free days to the current period and its access */
+        post: operations["admin_extend_customer_subscription_api_v1_admin_subscriptions_customer_subscriptions__subscription_id__extend_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/subscriptions/customer-subscriptions/{subscription_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** End the subscription now and revoke its access */
+        post: operations["admin_revoke_customer_subscription_api_v1_admin_subscriptions_customer_subscriptions__subscription_id__revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -12053,9 +12121,15 @@ export interface components {
         CancelSubscriptionRequest: {
             /**
              * Immediate
+             * @description End now and lose access; otherwise cancel at the end of the paid period.
              * @default false
              */
             immediate: boolean;
+            /**
+             * Reason
+             * @description Admin only: recorded in the audit log.
+             */
+            reason?: string | null;
         };
         /** CartItemRequest */
         CartItemRequest: {
@@ -23298,6 +23372,29 @@ export interface components {
              * @description Legacy rich text (HTML); render as text, never as raw HTML.
              */
             body_html: string | null;
+        };
+        /** ExtendSubscriptionRequest */
+        ExtendSubscriptionRequest: {
+            /**
+             * Days
+             * @description Days added to the current period, free of charge.
+             */
+            days: number;
+            /** Reason */
+            reason: string;
+        };
+        /** ResumeSubscriptionRequest */
+        ResumeSubscriptionRequest: {
+            /**
+             * Reason
+             * @description Admin only: recorded in the audit log.
+             */
+            reason?: string | null;
+        };
+        /** RevokeSubscriptionRequest */
+        RevokeSubscriptionRequest: {
+            /** Reason */
+            reason: string;
         };
     };
     responses: never;
@@ -37609,7 +37706,9 @@ export interface operations {
     cancel_my_subscription_api_v1_subscriptions_me__subscription_id__cancel_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
             path: {
                 subscription_id: string;
             };
@@ -38856,7 +38955,10 @@ export interface operations {
     admin_cancel_customer_subscription_api_v1_admin_subscriptions_customer_subscriptions__subscription_id__cancel_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional; a retried request with the same key repeats the Stripe call safely. */
+                "Idempotency-Key"?: string | null;
+            };
             path: {
                 subscription_id: string;
             };
@@ -42889,6 +42991,164 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AffiliatePolicyOut"];
+                };
+            };
+        };
+    };
+    resume_my_subscription_api_v1_subscriptions_me__subscription_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                subscription_id: string;
+            };
+            cookie?: {
+                b2c_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_resume_customer_subscription_api_v1_admin_subscriptions_customer_subscriptions__subscription_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional; a retried request with the same key repeats the Stripe call safely. */
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                subscription_id: string;
+            };
+            cookie?: {
+                /** @description Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent. */
+                b2c_admin_access_token?: string | null;
+            };
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ResumeSubscriptionRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_extend_customer_subscription_api_v1_admin_subscriptions_customer_subscriptions__subscription_id__extend_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional; a retried request with the same key repeats the Stripe call safely. */
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                subscription_id: string;
+            };
+            cookie?: {
+                /** @description Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent. */
+                b2c_admin_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtendSubscriptionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_revoke_customer_subscription_api_v1_admin_subscriptions_customer_subscriptions__subscription_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional; a retried request with the same key repeats the Stripe call safely. */
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                subscription_id: string;
+            };
+            cookie?: {
+                /** @description Admin access token cookie set by `POST /admin/auth/login`; used when no Bearer header is sent. */
+                b2c_admin_access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeSubscriptionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -50,3 +50,39 @@ export async function signInCustomer(context: BrowserContext, baseURL: string): 
 }
 
 export { json };
+
+/** A backend client signed in as the QA customer (bearer token). */
+export async function customerApi(): Promise<APIRequestContext> {
+  const anon = await playwrightRequest.newContext({ baseURL: API_URL, extraHTTPHeaders: fingerprint });
+  const login = await json<{ tokens: { access_token: string } }>(
+    await anon.post("/api/v1/auth/qa/login", { data: { email: qa().customer, key: qa().key } }),
+  );
+  await anon.dispose();
+  return playwrightRequest.newContext({
+    baseURL: API_URL,
+    extraHTTPHeaders: { ...fingerprint, Authorization: `Bearer ${login.tokens.access_token}` },
+  });
+}
+
+/**
+ * Gives the QA customer a monthly subscription without paying: a subscription checkout, then the
+ * backend's development-only activation (what Stripe's webhook does after payment). It has no Stripe
+ * subscription, so lifecycle actions stay local.
+ */
+export async function seedSubscription(customer: APIRequestContext): Promise<string> {
+  const plans = await json<{ plan_id: string; plan_type: string; billing_interval: string }[]>(
+    await customer.get("/api/v1/subscriptions/plans", { params: { audience_type: "individual" } }),
+  );
+  const plan = plans.find((item) => item.plan_type === "standard" && item.billing_interval === "month") ?? plans[0];
+  expect(plan, "a published individual subscription plan").toBeTruthy();
+  const checkout = await json<{ order_id: string }>(
+    await customer.post("/api/v1/subscriptions/checkout", {
+      data: { plan_id: plan.plan_id, success_url: "http://localhost:3000/", cancel_url: "http://localhost:3000/" },
+      headers: { "Idempotency-Key": randomUUID() },
+    }),
+  );
+  const subscriptions = await json<{ subscription_id: string }[]>(
+    await customer.post(`/api/v1/subscriptions/dev/activate-order/${checkout.order_id}`),
+  );
+  return subscriptions[0].subscription_id;
+}

@@ -1,18 +1,19 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Info, Video } from "lucide-react";
+import { AlertTriangle, CalendarClock, Info, Video } from "lucide-react";
 import { useState } from "react";
 
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
 import { AccessCard } from "@/features/orders/components/order-sections";
+import { CancelSubscriptionDialog } from "@/features/subscriptions/components/cancel-subscription-dialog";
 import { ApiError } from "@/lib/api/client";
 import { commerceKeys, commerceQueries } from "@/lib/api/commerce";
 import {
-  cancelMySubscription,
   replaceChooseXCourse,
+  resumeMySubscription,
   selectChooseXCourse,
   subscriptionKeys,
   subscriptionQueries,
@@ -25,6 +26,7 @@ const STATUS: Record<string, { label: string; tag: string }> = {
   active: { label: "فعّال", tag: "ma-tag--teal" },
   pending: { label: "قيد التفعيل", tag: "ma-tag--sky" },
   past_due: { label: "متأخر السداد", tag: "ma-tag--yellow" },
+  suspended: { label: "موقوف", tag: "ma-tag--yellow" },
   canceled: { label: "ملغي", tag: "ma-tag--pink" },
   expired: { label: "منتهٍ", tag: "ma-tag--soft" },
 };
@@ -154,13 +156,26 @@ function SubscriptionCard({ subscription }: { subscription: MySubscription }) {
   const snapshot = (subscription.plan_snapshot ?? {}) as Record<string, unknown>;
   const paid = Number(snapshot.effective_price ?? snapshot.price ?? subscription.price ?? 0);
   const live = subscription.status === "active" || subscription.status === "past_due";
-  const cancel = useMutation({
-    mutationFn: () => cancelMySubscription(subscription.subscription_id),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: subscriptionKeys.all }),
+  const [cancelOpen, setCancelOpen] = useState(false);
+  // One key per resume attempt: a double click repeats the same Stripe call.
+  const [resumeKey, setResumeKey] = useState(() => crypto.randomUUID());
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: subscriptionKeys.all });
+    void queryClient.invalidateQueries({ queryKey: commerceKeys.all });
+    void refreshOwnedProducts();
+  };
+  const resume = useMutation({
+    mutationFn: () => resumeMySubscription(subscription.subscription_id, resumeKey),
+    onSuccess: () => {
+      setResumeKey(crypto.randomUUID());
+      refresh();
+    },
   });
   const access = useQuery({
     ...commerceQueries.entitlements({ limit: 100 }),
-    select: (page) => page.items.filter((e) => e.source_id === subscription.subscription_id && e.status === "active"),
+    // Past-due access is paused, not gone: keep showing it with its hold notice.
+    select: (page) =>
+      page.items.filter((e) => e.source_id === subscription.subscription_id && (e.status === "active" || e.status === "suspended")),
   });
 
   return (
@@ -169,6 +184,7 @@ function SubscriptionCard({ subscription }: { subscription: MySubscription }) {
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="m-0 text-2xl font-bold">{subscription.plan_title}</h2>
           <span className={`ma-tag ${status.tag}`}>{status.label}</span>
+          {live && subscription.cancel_at_period_end ? <span className="ma-tag ma-tag--pink">ينتهي ولن يتجدد</span> : null}
         </div>
         <dl className="m-0 grid gap-x-8 gap-y-2 text-sm sm:grid-cols-3">
           <div>
@@ -178,8 +194,12 @@ function SubscriptionCard({ subscription }: { subscription: MySubscription }) {
             </dd>
           </div>
           <div>
-            <dt className="text-fg-muted">{subscription.cancel_at_period_end ? "ينتهي الوصول في" : "التجديد القادم"}</dt>
-            <dd className="m-0 font-bold">{formatDate(subscription.current_period_end)}</dd>
+            <dt className="text-fg-muted">
+              {!live ? "انتهى في" : subscription.cancel_at_period_end ? "ينتهي الوصول في" : "التجديد القادم"}
+            </dt>
+            <dd className="m-0 font-bold">
+              {formatDate(!live && subscription.canceled_at ? subscription.canceled_at : subscription.current_period_end)}
+            </dd>
           </div>
           {subscription.audience_type === "company" ? (
             <div>
@@ -188,20 +208,61 @@ function SubscriptionCard({ subscription }: { subscription: MySubscription }) {
             </div>
           ) : null}
         </dl>
-        {subscription.cancel_at_period_end ? (
-          <p className="m-0 flex items-center gap-2 text-sm text-fg-muted">
-            <CalendarClock aria-hidden="true" className="size-4 fill-none" />
-            ألغيت التجديد. يبقى وصولك حتى نهاية الفترة المدفوعة.
-          </p>
-        ) : live ? (
-          <div>
-            <Button size="sm" variant="soft" disabled={cancel.isPending} onClick={() => cancel.mutate()}>
-              إلغاء التجديد
-            </Button>
-            {cancel.error ? <p className="m-0 mt-2 text-sm text-danger">{errorText(cancel.error)}</p> : null}
+        {subscription.status === "past_due" ? (
+          <div className="ma-alert ma-alert--warning" role="status">
+            <AlertTriangle aria-hidden="true" className="fill-none" />
+            <div>
+              <p className="ma-alert__title">تعذّر تجديد اشتراكك</p>
+              <p className="ma-alert__text">
+                أوقفنا الوصول إلى برامج الباقة مؤقتاً حتى تنجح دفعة التجديد. سيعود الوصول تلقائياً بعد الدفع.
+              </p>
+            </div>
           </div>
         ) : null}
+        {live && subscription.cancel_at_period_end ? (
+          <div className="flex flex-col gap-3">
+            <p className="m-0 flex items-center gap-2 text-sm text-fg-muted">
+              <CalendarClock aria-hidden="true" className="size-4 fill-none" />
+              ألغيت التجديد. يبقى وصولك حتى {formatDate(subscription.current_period_end)}، ويمكنك التراجع قبل هذا التاريخ.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="primary" disabled={resume.isPending} aria-busy={resume.isPending} onClick={() => resume.mutate()}>
+                {resume.isPending ? "جارٍ الاستئناف…" : "استئناف الاشتراك"}
+              </Button>
+              <Button size="sm" variant="soft" disabled={resume.isPending} onClick={() => setCancelOpen(true)}>
+                إلغاء الآن
+              </Button>
+            </div>
+            {resume.error ? (
+              <p className="m-0 text-sm text-danger" role="alert">
+                {errorText(resume.error)}
+              </p>
+            ) : null}
+          </div>
+        ) : live ? (
+          <div>
+            <Button size="sm" variant="soft" onClick={() => setCancelOpen(true)}>
+              إلغاء الاشتراك
+            </Button>
+          </div>
+        ) : null}
+        {resume.isSuccess && !subscription.cancel_at_period_end ? (
+          <p className="m-0 text-sm text-fg-muted" role="status">
+            تم استئناف اشتراكك وسيتجدد تلقائياً في {formatDate(subscription.current_period_end)}.
+          </p>
+        ) : null}
       </header>
+      {cancelOpen ? (
+        <CancelSubscriptionDialog
+          subscription={subscription}
+          onClose={() => setCancelOpen(false)}
+          onCanceled={() => {
+            setCancelOpen(false);
+            resume.reset();
+            refresh();
+          }}
+        />
+      ) : null}
 
       {live && subscription.plan_type === "choose_x" ? <ChooseXPanel subscription={subscription} /> : null}
 

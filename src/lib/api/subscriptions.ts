@@ -17,6 +17,7 @@ type SelectionsOperation = "get_my_choose_x_selections_api_v1_subscriptions_me__
 type SelectOperation = "select_choose_x_course_api_v1_subscriptions_me__subscription_id__selections_post";
 type ReplaceOperation = "replace_choose_x_course_api_v1_subscriptions_me__subscription_id__selections_replace_post";
 type CancelOperation = "cancel_my_subscription_api_v1_subscriptions_me__subscription_id__cancel_post";
+type ResumeOperation = "resume_my_subscription_api_v1_subscriptions_me__subscription_id__resume_post";
 type TeamLeadOperation = "save_team_lead_api_v1_subscriptions_team_leads_post";
 
 export type SubscriptionPlan = SuccessResponse<PlanOperation>;
@@ -46,6 +47,7 @@ const subscriptionPaths = {
   selections: "/api/v1/subscriptions/me/{subscription_id}/selections",
   replace: "/api/v1/subscriptions/me/{subscription_id}/selections/replace",
   cancel: "/api/v1/subscriptions/me/{subscription_id}/cancel",
+  resume: "/api/v1/subscriptions/me/{subscription_id}/resume",
 } as const;
 
 // ---------------------------------------------------------------- public (server reads)
@@ -129,12 +131,31 @@ export function replaceChooseXCourse(
   });
 }
 
-/** Stops renewal; access stays until the end of the paid period. */
-export function cancelMySubscription(subscriptionId: SubscriptionId): Promise<SuccessResponse<CancelOperation>> {
+/**
+ * Stops renewal; access stays until the end of the paid period and the customer can resume.
+ * `immediate` ends the subscription now and the plan's access with it.
+ */
+export function cancelMySubscription(
+  subscriptionId: SubscriptionId,
+  { immediate = false, idempotencyKey }: { immediate?: boolean; idempotencyKey: string },
+): Promise<SuccessResponse<CancelOperation>> {
   return customerRequest("POST", subscriptionPaths.cancel, {
     ...withAuthCookies(),
     path: { subscription_id: subscriptionId },
-    body: { immediate: false },
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: { immediate },
+  });
+}
+
+/** Undoes a scheduled cancellation before the period ends; renewal continues. */
+export function resumeMySubscription(
+  subscriptionId: SubscriptionId,
+  idempotencyKey: string,
+): Promise<SuccessResponse<ResumeOperation>> {
+  return customerRequest("POST", subscriptionPaths.resume, {
+    ...withAuthCookies(),
+    path: { subscription_id: subscriptionId },
+    headers: { "Idempotency-Key": idempotencyKey },
   });
 }
 

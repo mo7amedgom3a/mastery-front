@@ -273,6 +273,9 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
   const remaining = daysLeft(entitlement.expires_at, now);
   const used = active ? elapsedPercent(entitlement.starts_at, entitlement.expires_at, now) : null;
   const suspended = entitlement.status === "suspended";
+  // A failed renewal pauses subscription access without freezing days (admin suspensions always do).
+  const paymentHold =
+    suspended && entitlement.source_type === "subscription" && entitlement.suspended_remaining_days == null && Boolean(entitlement.expires_at);
   const revoked = entitlement.status === "revoked";
   // Paid time-limited access can be extended near its end or after it; subscription access renews instead.
   const extendable =
@@ -322,9 +325,11 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
         {suspended || revoked ? (
           <div className="ma-alert ma-alert--warning" role="status">
             <div>
-              <p className="ma-alert__title">{suspended ? "وصولك موقوف مؤقتاً" : "تم إلغاء وصولك"}</p>
+              <p className="ma-alert__title">{paymentHold ? "وصولك موقوف لتعذّر تجديد الدفع" : suspended ? "وصولك موقوف مؤقتاً" : "تم إلغاء وصولك"}</p>
               <p className="ma-alert__text">
-                {suspended
+                {paymentHold
+                  ? "يعود الوصول تلقائياً فور نجاح دفعة التجديد. حدّث بيانات بطاقتك أو"
+                  : suspended
                   ? entitlement.suspended_remaining_days != null
                     ? `أيامك المتبقية (${formatCount(entitlement.suspended_remaining_days, DAY_FORMS)}) محفوظة وتعود عند استئناف الوصول.`
                     : "وصولك مدى الحياة محفوظ ويعود عند استئناف الوصول."

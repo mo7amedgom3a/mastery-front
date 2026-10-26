@@ -65,7 +65,7 @@ const RULES: readonly Rule[] = [
   { methods: ["POST"], pattern: /^subscriptions\/checkout$/, session: true },
   { methods: ["POST"], pattern: /^subscriptions\/team-leads$/, session: true },
   { methods: ["GET"], pattern: /^subscriptions\/me(\/[A-Za-z0-9-]+(\/selections)?)?$/, session: true },
-  { methods: ["POST"], pattern: /^subscriptions\/me\/[A-Za-z0-9-]+\/(cancel|selections|selections\/replace)$/, session: true },
+  { methods: ["POST"], pattern: /^subscriptions\/me\/[A-Za-z0-9-]+\/(cancel|resume|selections|selections\/replace)$/, session: true },
   // Recommendations for the signed-in customer (dashboard, after onboarding).
   { methods: ["GET"], pattern: /^recommendations\/me$/, session: true },
   // Consultations: public free slots, then booking, the meeting room and its recording.
