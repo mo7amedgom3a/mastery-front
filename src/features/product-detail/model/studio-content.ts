@@ -99,3 +99,14 @@ export function legacyTrainerId(ref: string): number | null {
   const match = /^legacy:trainer:(\d+)$/.exec(ref);
   return match ? Number(match[1]) : null;
 }
+
+/** `tags.items`: a JSON array of chip labels (blank ones dropped). */
+export function tagItems(value: unknown): string[] {
+  if (typeof value !== "string" || !value) return [];
+  try {
+    const items = JSON.parse(value) as unknown;
+    return Array.isArray(items) ? items.filter((item): item is string => typeof item === "string" && item.trim() !== "") : [];
+  } catch {
+    return [];
+  }
+}

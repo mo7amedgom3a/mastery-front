@@ -22,6 +22,7 @@ import {
   type StudioSectionVM,
   type StudioTableContent,
   type StudioText,
+  tagItems,
 } from "../model/studio-content";
 
 /** The palette the studio's text-colour picker offers; anything else is ignored. */
@@ -274,6 +275,23 @@ function ProgramCardsBlock({ block }: { block: StudioBlock }) {
   );
 }
 
+/** A row of chips (an expert's fields or skills), styled like the default expert page's. */
+function TagsBlock({ block }: { block: StudioBlock }) {
+  const items = tagItems(block.props?.items);
+  if (items.length === 0) return null;
+  const tone = block.props?.tone === "yellow" ? "ma-tag--yellow" : "ma-tag--soft";
+  const label = String(block.props?.label ?? "").trim();
+  return (
+    <ul data-block-id={block.id} aria-label={label || undefined} className="ma-cluster m-0 list-none gap-2 p-0">
+      {items.map((item) => (
+        <li key={item} className={cn("ma-tag", tone)}>
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** A Bunny Stream GUID plays inline; any other URL is a direct video file. */
 const BUNNY_GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -371,6 +389,8 @@ function SingleBlock({ block }: { block: StudioBlock }) {
       return <AssetGalleryBlock block={block} />;
     case "programCards":
       return <ProgramCardsBlock block={block} />;
+    case "tags":
+      return <TagsBlock block={block} />;
     case "video":
       return <VideoBlock block={block} />;
     case "file":
