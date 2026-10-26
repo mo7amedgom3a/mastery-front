@@ -230,6 +230,17 @@ function mapCourseRails(
   };
 }
 
+/** Experts (catalog keys) whose consultation leads the rail, in this order: حذيفة حجازي، مظهر قنطقجي، مروة الشرع. */
+const LEAD_CONSULTATION_EXPERTS = ["7", "9", "14"];
+
+/** The first consultation of each lead expert, in their order, then everything else as the API sent it. */
+function leadExpertsFirst(items: ConsultationDto[]): ConsultationDto[] {
+  const leads = LEAD_CONSULTATION_EXPERTS.map((key) => items.find((dto) => dto.expert_key === key)).filter(
+    (dto): dto is ConsultationDto => dto !== undefined,
+  );
+  return [...leads, ...items.filter((dto) => !leads.includes(dto))];
+}
+
 /**
  * Consultations under the chips of the top-level categories the API files them in (their own
  * categories plus the ones their consultant teaches in; sub-categories roll up to their parent).
@@ -252,7 +263,7 @@ function mapConsultationRail(
     }
     return current;
   };
-  const consultations = items.filter(isPublishable).map((dto) => {
+  const consultations = leadExpertsFirst(items.filter(isPublishable)).map((dto) => {
     const keys = [...new Set((dto.category_ids ?? []).map((id) => String(topLevel(id))))];
     return mapConsultation(dto, keys);
   });

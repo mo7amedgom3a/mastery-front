@@ -44,6 +44,16 @@ type Episode = Omit<ExpertVideo, "show" | "color">;
  */
 const episodes: readonly Episode[] = [
   {
+    youtubeId: "ef-INNRzZ5M",
+    title: "هل قياس ROI هام لنجاح الحملات التسويقية؟!",
+    host: "",
+    role: "خبير التسويق",
+    category: "التسويق",
+    duration: "20:32",
+    views: "165",
+    likes: "12",
+  },
+  {
     youtubeId: "LXJMWPNxVJs",
     title: "كيف تكتب خطة مبيعات وتنفذها باحترافية",
     host: "م. أيمن السيد",
@@ -203,16 +213,7 @@ const episodes: readonly Episode[] = [
     views: "785",
     likes: "25",
   },
-  {
-    youtubeId: "ef-INNRzZ5M",
-    title: "هل قياس ROI هام لنجاح الحملات التسويقية؟!",
-    host: "",
-    role: "خبير التسويق",
-    category: "التسويق",
-    duration: "20:32",
-    views: "165",
-    likes: "12",
-  },
+  
   {
     youtubeId: "9_pKpNZMmAo",
     title: "كيف يمكن الاستفادة من أتمتة التسويق وتطويعها لخدمة الأعمال؟",

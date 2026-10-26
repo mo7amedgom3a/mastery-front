@@ -6,6 +6,7 @@ import { CoursePreview } from "@/features/product-detail/components/course-previ
 import { StudioPreviewKind, type PreviewKind } from "@/features/product-detail/components/studio-preview-kind";
 import { PackagePreview } from "@/features/package-detail/components/package-preview";
 import { BundlePreview } from "@/features/bundle-detail/components/bundle-preview";
+import { ConsultationPreview } from "@/features/consultation-detail/components/consultation-preview";
 import type { StudioDocument } from "@/features/product-detail/model/studio-content";
 import { useStudioChannel } from "@/features/preview/use-studio-channel";
 
@@ -27,6 +28,13 @@ function courseIdOf(base: unknown): number | null {
   const fromSlug = typeof record.slug === "string" ? record.slug.match(/(\d+)$/)?.[1] : undefined;
   const id = fromSlug ? Number(fromSlug) : Number(record.course?.id);
   return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
+/** The legacy id of a consultation preview base (`consultation-21`); null for B2C-native consultations. */
+function consultationIdOf(base: unknown): number | null {
+  const slug = (base ?? {}) as { slug?: unknown };
+  const match = typeof slug.slug === "string" ? slug.slug.match(/^consultation-(\d+)$/) : null;
+  return match ? Number(match[1]) : null;
 }
 
 export default function ProductPreviewPage() {
@@ -83,7 +91,20 @@ export default function ProductPreviewPage() {
     if (kindData.kind === "bundle") {
       return <BundlePreview base={kindData.base} revision={revision} document={kindData.document} readme={readme} />;
     }
-    return <StudioPreviewKind kind={kindData.kind} base={kindData.base} document={kindData.document} readme={readme} />;
+    const generic = <StudioPreviewKind kind={kindData.kind} base={kindData.base} document={kindData.document} readme={readme} />;
+    const consultationId = kindData.kind === "consultation" ? consultationIdOf(kindData.base) : null;
+    if (consultationId !== null) {
+      return (
+        <ConsultationPreview
+          id={consultationId}
+          revision={revision}
+          document={kindData.document}
+          readme={readme}
+          fallback={generic}
+        />
+      );
+    }
+    return generic;
   }
 
   return (
