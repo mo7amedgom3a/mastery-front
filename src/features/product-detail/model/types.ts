@@ -74,6 +74,8 @@ export type ProductDetailVM = {
   /** Longer plain-text description for metadata. */
   description: string | null;
   category: string | null;
+  /** Field, categories, skills and tags, each linking to the search filtered by it (B2C pages). */
+  topics?: TopicChipVM[];
   /** Wide artwork (16:10) for cards, the video poster and share previews. */
   image: string | null;
   duration: string | null;
@@ -129,4 +131,10 @@ export type ProductDetailData = {
   product: ProductDetailVM;
   related: RailCardVM[];
   recommended: RailCardVM[];
+};
+
+export type TopicChipVM = {
+  kind: "field" | "category" | "skill" | "tag";
+  label: string;
+  href: Route;
 };

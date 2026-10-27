@@ -17457,6 +17457,16 @@ export interface components {
             learning_outcomes?: string[];
             /** Skills */
             skills?: components["schemas"]["ProductSkillResponse"][];
+            /**
+             * Tags
+             * @description Product tags (the search `tag` filter values).
+             */
+            tags?: string[];
+            /**
+             * Fields
+             * @description Top-level categories (fields) of `categories`.
+             */
+            fields?: components["schemas"]["app__modules__catalog__presentation__schemas__CategoryResponse"][];
             live_diploma?: components["schemas"]["LiveDiplomaView"] | null;
         };
         /** ProductLearners */
@@ -18731,7 +18741,7 @@ export interface components {
             /** Product Types */
             product_types: components["schemas"]["SearchOptionResponse"][];
             /** Categories */
-            categories: components["schemas"]["SearchOptionResponse"][];
+            categories: components["schemas"]["SearchCategoryOptionResponse"][];
             /** Skills */
             skills: components["schemas"]["SearchOptionResponse"][];
             /** Tags */
@@ -18914,6 +18924,11 @@ export interface components {
             debug?: {
                 [key: string]: unknown;
             } | null;
+            /**
+             * Image
+             * @description First product image; card art for B2C-only products.
+             */
+            image?: string | null;
             /**
              * Legacy Id
              * @description Id of the legacy record behind this product (the number in its slug).
@@ -23395,6 +23410,20 @@ export interface components {
         RevokeSubscriptionRequest: {
             /** Reason */
             reason: string;
+        };
+        /** SearchCategoryOptionResponse */
+        SearchCategoryOptionResponse: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Count */
+            count: number;
+            /**
+             * Parent
+             * @description Parent category code; null for a top-level category (a field).
+             */
+            parent?: string | null;
         };
     };
     responses: never;

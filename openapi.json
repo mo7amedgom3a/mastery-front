@@ -68019,6 +68019,22 @@
             "type": "array",
             "title": "Skills"
           },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "description": "Product tags (the search `tag` filter values)."
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/app__modules__catalog__presentation__schemas__CategoryResponse"
+            },
+            "type": "array",
+            "title": "Fields",
+            "description": "Top-level categories (fields) of `categories`."
+          },
           "live_diploma": {
             "anyOf": [
               {
@@ -71918,7 +71934,7 @@
           },
           "categories": {
             "items": {
-              "$ref": "#/components/schemas/SearchOptionResponse"
+              "$ref": "#/components/schemas/SearchCategoryOptionResponse"
             },
             "type": "array",
             "title": "Categories"
@@ -72512,6 +72528,18 @@
               }
             ],
             "title": "Debug"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image",
+            "description": "First product image; card art for B2C-only products."
           },
           "legacy_id": {
             "anyOf": [
@@ -86312,6 +86340,41 @@
           "reason"
         ],
         "title": "RevokeSubscriptionRequest"
+      },
+      "SearchCategoryOptionResponse": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "parent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent",
+            "description": "Parent category code; null for a top-level category (a field)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "count"
+        ],
+        "title": "SearchCategoryOptionResponse"
       }
     },
     "securitySchemes": {

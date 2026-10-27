@@ -42,6 +42,8 @@ const MAX_VALUES_PER_FACET = 12;
 const MAX_AMOUNT = 1_000_000;
 /** Category, skill and tag codes: `legacy-category-27`, `marketing/digital-marketing`, `data-analysis`. */
 const SLUG = /^[a-z0-9][a-z0-9/_.-]{0,79}$/;
+/** Tags are what admins type, so Arabic and spaces are fine: `sales`, `تسويق رقمي`. */
+const TAG = /^[\p{L}\p{N}][\p{L}\p{N}\p{M} _./&+#-]{0,159}$/u;
 
 export type SearchState = {
   q: string;
@@ -101,8 +103,12 @@ function unique<T>(items: T[]): T[] {
   return [...new Set(items)].slice(0, MAX_VALUES_PER_FACET);
 }
 
-function slugs(raw: RawSearchParams, key: string): string[] {
-  return unique(values(raw, key).map((value) => value.toLowerCase()).filter((value) => SLUG.test(value)));
+function slugs(raw: RawSearchParams, key: string, pattern: RegExp = SLUG): string[] {
+  return unique(
+    values(raw, key)
+      .map((value) => value.replace(/\s+/g, " ").toLowerCase())
+      .filter((value) => pattern.test(value)),
+  );
 }
 
 function amount(raw: RawSearchParams, key: string): number | null {
@@ -152,7 +158,7 @@ export function parseSearchParams(raw: RawSearchParams): SearchState {
     types,
     categories,
     skills: slugs(raw, "skill"),
-    tags: slugs(raw, "tag"),
+    tags: slugs(raw, "tag", TAG),
     trainers,
     expert: first(raw, "expert") === "1",
     free,

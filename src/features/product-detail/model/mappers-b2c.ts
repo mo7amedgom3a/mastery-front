@@ -3,9 +3,10 @@ import type { ProductContentResponse } from "@/lib/api/product-content";
 import { expertKeyOfRef, routes } from "@/config/routes";
 import { cleanText, formatClock, formatDurationFromSeconds, toPlainText, toTextBlocks } from "@/lib/format";
 import { toPricing } from "@/lib/pricing";
+import { emptySearchState, searchHref } from "@/features/search/model/params";
 import { studioSections, type StudioDocument } from "./studio-content";
 
-import type { InfoSectionVM, IntroVideoSource, LessonVM, ProductDetailData, ProductDetailVM, TrainerVM, UnitVM } from "./types";
+import type { InfoSectionVM, IntroVideoSource, LessonVM, ProductDetailData, ProductDetailVM, TopicChipVM, TrainerVM, UnitVM } from "./types";
 
 /**
  * Maps the B2C catalog product (`/api/v1/catalog/products/{slug}`) to the course/diploma page view
@@ -110,7 +111,8 @@ export function mapB2CProductDetail(
     title: (doc?.meta?.title ? cleanText(doc.meta.title) : null) || product.title || product.slug,
     summary: toPlainText(doc?.meta?.summary || product.short_description, 200),
     description: toPlainText(dto.description, 400),
-    category: dto.categories?.[0]?.name ?? null,
+    category: dto.fields?.[0]?.name ?? dto.categories?.[0]?.name ?? null,
+    topics: topicChips(dto),
     image: doc?.meta?.cover?.url || dto.image || null,
     duration: formatDurationFromSeconds(dto.duration_seconds),
     rating: null,
@@ -130,4 +132,33 @@ export function mapB2CProductDetail(
   };
 
   return { product: product_, related: [], recommended: [] };
+}
+
+const MAX_TOPIC_TAGS = 6;
+
+/** The page's topic chips: its field(s), then sub-categories, skills and tags, each a search link. */
+function topicChips(dto: CatalogProductResponse): TopicChipVM[] {
+  const chips: TopicChipVM[] = [];
+  const seen = new Set<string>();
+  const add = (kind: TopicChipVM["kind"], label: string | null | undefined, href: TopicChipVM["href"]) => {
+    const clean = cleanText(label);
+    if (!clean || seen.has(`${kind}:${clean}`)) return;
+    seen.add(`${kind}:${clean}`);
+    chips.push({ kind, label: clean, href });
+  };
+  const fieldIds = new Set((dto.fields ?? []).map((field) => field.category_id));
+  for (const field of dto.fields ?? []) {
+    add("field", field.name, searchHref({ ...emptySearchState, categories: [field.slug.toLowerCase()] }));
+  }
+  for (const category of dto.categories ?? []) {
+    if (fieldIds.has(category.category_id)) continue;
+    add("category", category.name, searchHref({ ...emptySearchState, categories: [category.slug.toLowerCase()] }));
+  }
+  for (const skill of dto.skills ?? []) {
+    add("skill", skill.name, searchHref({ ...emptySearchState, skills: [skill.slug.toLowerCase()] }));
+  }
+  for (const tag of (dto.tags ?? []).slice(0, MAX_TOPIC_TAGS)) {
+    add("tag", tag, searchHref({ ...emptySearchState, tags: [tag.replace(/\s+/g, " ").toLowerCase()] }));
+  }
+  return chips;
 }

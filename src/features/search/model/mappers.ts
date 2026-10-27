@@ -1,10 +1,11 @@
 import { consultationCard } from "@/features/consultation-detail/model/mappers";
 import { isPublishable } from "@/features/landing/model/mappers";
-import { courseCard, packageCard } from "@/features/product-detail/model/mappers";
+import { courseCard, packageCard, productHref } from "@/features/product-detail/model/mappers";
 import type { RailCardVM } from "@/features/product-detail/model/types";
 import type { InstructorNames } from "@/lib/api/instructor-names";
 import type { SearchOptionsResponse, SearchResponse } from "@/lib/api/search";
 import { cleanText } from "@/lib/format";
+import { toPricing } from "@/lib/pricing";
 
 import { skillName, tagName, typeLabel } from "../content/copy";
 import {
@@ -50,7 +51,13 @@ export const emptyCatalog: SearchCatalog = {
 export function mapCatalog(options: SearchOptionsResponse): SearchCatalog {
   const names = (items: OptionDto[], name: (item: OptionDto) => string) =>
     new Map(items.map((item) => [item.code.toLowerCase(), name(item)]));
-  const categoryNames = names(options.categories, (item) => cleanText(item.name) ?? item.code);
+  const ownNames = names(options.categories, (item) => cleanText(item.name) ?? item.code);
+  // A sub-category reads "المجال › التصنيف", so the one المجال row shows the hierarchy.
+  const categoryNames = names(options.categories, (item) => {
+    const own = ownNames.get(item.code.toLowerCase()) ?? item.code;
+    const parent = item.parent ? ownNames.get(item.parent.toLowerCase()) : null;
+    return parent ? `${parent} › ${own}` : own;
+  });
   const trainers = options.instructors
     .filter((trainer) => trainer.product_count > 0)
     .flatMap((trainer) => {
@@ -257,8 +264,42 @@ function resultCard(item: SearchItemDto, catalog: SearchCatalog): ResultCardVM |
     card = packageCard(item.package);
   } else if (item.consultation && isPublishable(item.consultation)) {
     card = consultationCard(item.consultation);
+  } else {
+    card = b2cCard(item);
   }
   return card ? { ...card, tags: cardTags(item, catalog) } : null;
+}
+
+const B2C_SLUG = /^(course|diploma)-([1-9]\d{0,9})$/;
+
+/**
+ * A course/diploma created in the admin catalog has no legacy record, only B2C data; its card is
+ * built from the search row itself so a newly published course lists like the others.
+ */
+function b2cCard(item: SearchItemDto): RailCardVM | null {
+  const match = B2C_SLUG.exec(item.slug ?? "");
+  const title = cleanText(item.title);
+  if (!match || !title || item.status !== "published") return null;
+  const kind = match[1] as "course" | "diploma";
+  const id = Number(match[2]);
+  const names = [...new Set(item.instructors.map((name) => cleanText(name)).filter((name): name is string => !!name))];
+  const amount = item.price_amount != null ? Number(item.price_amount) : null;
+  return {
+    key: `${kind}:${id}`,
+    kind,
+    id,
+    title,
+    summary: cleanText(item.description),
+    image: item.image ?? null,
+    href: productHref(kind, id),
+    tag: kind === "diploma" ? "دبلوم" : (cleanText(item.categories[0]) ?? null),
+    duration: null,
+    courseCount: null,
+    instructor: names.length > 1 ? `${names[0]} وآخرون` : (names[0] ?? null),
+    instructorAvatar: null,
+    price: toPricing(amount, null, item.currency_code),
+    priceAmount: amount,
+  };
 }
 
 export function mapResults(response: SearchResponse, catalog: SearchCatalog): SearchResultsVM {

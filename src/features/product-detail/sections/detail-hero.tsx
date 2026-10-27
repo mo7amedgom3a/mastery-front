@@ -59,8 +59,26 @@ export function DetailHero({ product, share }: { product: ProductDetailVM; share
               <span className={product.kind === "diploma" ? "ma-tag ma-tag--yellow" : "ma-tag ma-tag--coral"}>
                 {kindLabel[product.kind]}
               </span>
-              {product.category ? <span className="ma-tag ma-tag--soft">{product.category}</span> : null}
+              {product.category && !product.topics?.length ? (
+                <span className="ma-tag ma-tag--soft">{product.category}</span>
+              ) : null}
             </div>
+            {product.topics?.length ? (
+              <ul className="ma-cluster m-0 mt-3 list-none gap-2 p-0" aria-label="المجال والمهارات والوسوم">
+                {product.topics.map((topic) => (
+                  <li key={`${topic.kind}:${topic.label}`}>
+                    <AppLink
+                      href={topic.href}
+                      className="ma-tag ma-tag--soft"
+                      dir="auto"
+                      data-topic={topic.kind}
+                    >
+                      {topic.kind === "tag" ? `#${topic.label}` : topic.label}
+                    </AppLink>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             {/* Share sits beside the title (below it on phones), where the decision to share is made. */}
             <div className="mt-6 flex w-full flex-col items-start gap-4 sm:flex-row sm:justify-between sm:gap-8">
               <h1
