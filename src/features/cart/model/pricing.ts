@@ -9,7 +9,7 @@ import type {
   ResolvedItem,
 } from "@/lib/shop/contract";
 
-import { addonsFor } from "./addons";
+import type { AddonOfferDef } from "./addons";
 import { findCoupon, normalizeCouponCode, type CouponDef } from "./coupons";
 import { PAYMENT_METHODS } from "./payment-methods";
 
@@ -31,6 +31,8 @@ export type QuoteInput = {
   items: ReadonlyMap<string, ResolvedItem>;
   coupon?: string | null;
   currency: string;
+  /** Certificate add-ons each key's product offers (from the backend); absent keys offer none. */
+  offers?: ReadonlyMap<string, readonly AddonOfferDef[]>;
   /** Epoch ms; injectable for tests. */
   now?: number;
 };
@@ -160,7 +162,7 @@ function paymentOptions(total: number): PaymentMethodOption[] {
   return PAYMENT_METHODS.map((method) => ({ id: method.id, eligible: total > 0, reason: null, installments: null }));
 }
 
-export function buildQuote({ lines: requested, items, coupon, currency, now = Date.now() }: QuoteInput): Quote {
+export function buildQuote({ lines: requested, items, coupon, currency, offers, now = Date.now() }: QuoteInput): Quote {
   const unavailable: Quote["unavailable"] = [];
   const working: Working[] = [];
   const seen = new Set<string>();
@@ -177,13 +179,14 @@ export function buildQuote({ lines: requested, items, coupon, currency, now = Da
     }
 
     const chosen = new Set<AddonCode>(request.addons);
-    const addons = addonsFor(item.kind).map(({ def, amount }) => ({
-      code: def.code,
-      title: def.title,
-      description: def.description,
-      amount,
-      selected: chosen.has(def.code),
-      minor: toMinor(amount),
+    const addons = (offers?.get(request.key) ?? []).map((offer) => ({
+      code: offer.code,
+      title: offer.title,
+      description: offer.description,
+      amount: offer.amount,
+      selected: chosen.has(offer.code),
+      requiresShipping: offer.requiresShipping,
+      minor: toMinor(offer.amount),
     }));
     const unit = toMinor(item.priceAmount);
     const original = item.originalAmount !== null ? toMinor(item.originalAmount) : null;
@@ -210,12 +213,13 @@ export function buildQuote({ lines: requested, items, coupon, currency, now = Da
     item: line.item,
     unitAmount: toMajor(line.unit),
     originalAmount: line.original !== null ? toMajor(line.original) : null,
-    addons: line.addons.map(({ code, title, description, amount, selected }) => ({
+    addons: line.addons.map(({ code, title, description, amount, selected, requiresShipping }) => ({
       code,
       title,
       description,
       amount,
       selected,
+      requiresShipping,
     })),
     addonsAmount: toMajor(line.addonsTotal),
     discountAmount: toMajor(line.discount),

@@ -111,6 +111,9 @@ export const routes = {
   marketersApply: (step?: string) => route(step ? `/marketers/apply/${encodeURIComponent(step)}` : "/marketers/apply"),
   marketersApplyDone: route("/marketers/apply/done"),
   cart: route("/cart"),
+  /** Public certificate verification: the lookup form, and one certificate by its ID No. */
+  verify: route("/verify"),
+  verifyCertificate: (code: string) => route(`/verify/${encodeURIComponent(code)}`),
   wishlist: route("/wishlist"),
   /** Stripe sends the buyer back here; the backend appends `order_id` and `payment_intent_id`. */
   checkoutSuccess: route("/checkout/success"),
@@ -132,6 +135,9 @@ export const routes = {
   studentNotifications: route("/students/notifications"),
   studentOrder: (orderId: string) => route(`/students/orders/${encodeURIComponent(orderId)}`),
   studentAccess: route("/students/access"),
+  /** Certificates the student earned, and one certificate (view, download, share, printed-copy tracking). */
+  studentCertificates: route("/students/certificates"),
+  studentCertificate: (certificateId: string) => route(`/students/certificates/${encodeURIComponent(certificateId)}`),
   /** The customer's subscription: plan, renewal, included programs and Choose-X picks. */
   studentSubscription: route("/students/subscription"),
   /** Booked consultations; Stripe returns here after paying for one. */

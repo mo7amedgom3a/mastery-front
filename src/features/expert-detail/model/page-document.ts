@@ -1,9 +1,9 @@
 import type { Route } from "next";
 
 import type { BrandColor } from "@/components/ui/brand-colors";
-import { routes } from "@/config/routes";
 import type { StudioBlock } from "@/features/product-detail/model/studio-content";
-import { parseCardSlug, type CatalogCard } from "@/lib/api/browse";
+import type { CatalogCard } from "@/lib/api/browse";
+import { productHref } from "@/lib/catalog/product-href";
 import { cleanText, toPlainText } from "@/lib/format";
 import { toPricing, type Pricing } from "@/lib/pricing";
 
@@ -34,23 +34,12 @@ const KIND: Record<string, { tag: string; color: BrandColor }> = {
   live_diploma: { tag: "برنامج مباشر", color: "sky" },
 };
 
-function hrefOf(card: CatalogCard, title: string): Route | null {
-  if (card.product_type === "bundle") return routes.bundle(card.slug);
-  if (card.product_type === "live_diploma") return routes.liveTraining(card.slug);
-  const parsed = parseCardSlug(card.slug);
-  if (!parsed) return null;
-  if (parsed.kind === "course") return routes.course(parsed.id, title);
-  if (parsed.kind === "diploma") return routes.diploma(parsed.id, title);
-  if (parsed.kind === "package") return routes.package(parsed.id);
-  return routes.consultation(parsed.id);
-}
-
 /** The expert's own items by slug, as program cards. */
 export function programCardIndex(cards: readonly CatalogCard[]): Map<string, ProgramCardVM> {
   const index = new Map<string, ProgramCardVM>();
   for (const card of cards) {
     const title = cleanText(card.title) ?? card.slug;
-    const href = hrefOf(card, title);
+    const href = productHref(card, title);
     const kind = KIND[card.product_type] ?? KIND.course;
     if (!href) continue;
     index.set(card.slug, {

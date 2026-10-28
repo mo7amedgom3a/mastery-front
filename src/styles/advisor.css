@@ -1,0 +1,79 @@
+/* AI advisor: the agent's moods (features/advisor/components/advisor-agent.tsx) and the widget shell. */
+
+/* ---------- Agent ---------- */
+.ma-agent { display: block; user-select: none; overflow: visible; }
+.ma-agent__float,
+.ma-agent__blink,
+.ma-agent__pulse { transform-origin: 120px 118px; }
+.ma-agent__led { transform-box: fill-box; transform-origin: center; }
+.ma-agent__mouth { opacity: .65; transition: stroke .2s, opacity .2s; }
+.ma-agent.is-speaking .ma-agent__mouth,
+.ma-agent.is-joy .ma-agent__mouth { stroke: #ff6555; opacity: 1; stroke-width: 2.5; }
+.ma-agent.is-joy .ma-agent__mouth { stroke-width: 3; }
+/* Advising / speaking: the vocal arc glows while the agent works on an answer. */
+.ma-agent.is-speaking .ma-agent__mouth { filter: drop-shadow(0 0 2px #ff6555) drop-shadow(0 0 5px rgb(255 101 85 / .65)); }
+.ma-agent.is-joy .ma-agent__blink { transform: translateY(4px) scaleY(.7); }
+.ma-agent.is-sleep .ma-agent__blink { transform: scaleY(.08); }
+.ma-agent.is-sleep .ma-agent__pulse { opacity: .45; }
+.ma-agent.is-sleep .ma-agent__scan { display: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .ma-agent__float { animation: ma-agent-float 4s ease-in-out infinite; }
+  .ma-agent__blink { animation: ma-agent-blink 4.2s cubic-bezier(.77, 0, .175, 1) infinite; }
+  .ma-agent__gaze { animation: ma-agent-gaze 7s ease-in-out infinite; }
+  .ma-agent__pulse { animation: ma-agent-pulse 2.8s ease-in-out infinite; }
+  .ma-agent__led { animation: ma-agent-led 2s ease-in-out infinite; }
+  .ma-agent__scan { animation: ma-agent-scan 4.5s linear infinite; }
+
+  .ma-agent.is-thinking .ma-agent__gaze { animation-duration: 2.5s; }
+  .ma-agent.is-thinking .ma-agent__pulse { animation-duration: 1.2s; }
+  .ma-agent.is-thinking .ma-agent__scan { animation-duration: 2s; }
+  /* Acoustic undulation on the wave eyes. */
+  .ma-agent.is-speaking .ma-agent__pulse { animation: ma-agent-speak .6s ease-in-out infinite alternate; }
+  .ma-agent.is-speaking .ma-agent__mouth { animation: ma-agent-voice .6s ease-in-out infinite alternate; }
+  .ma-agent.is-speaking .ma-agent__led { animation-duration: .5s; }
+  .ma-agent.is-joy .ma-agent__float { animation: ma-agent-joy 1s ease-in-out infinite alternate; }
+  .ma-agent.is-joy .ma-agent__blink,
+  .ma-agent.is-sleep .ma-agent__blink { animation: none; }
+  .ma-agent.is-sleep .ma-agent__float { animation-duration: 7s; }
+  .ma-agent.is-sleep .ma-agent__gaze,
+  .ma-agent.is-sleep .ma-agent__pulse { animation: none; }
+}
+
+@keyframes ma-agent-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes ma-agent-blink { 0%, 40%, 48%, 78%, 86%, 100% { transform: scaleY(1); } 44%, 82% { transform: scaleY(.08); } }
+@keyframes ma-agent-gaze { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4.5px); } 75% { transform: translateX(4.5px); } }
+@keyframes ma-agent-pulse { 0%, 100% { opacity: .95; } 50% { opacity: 1; } }
+@keyframes ma-agent-led { 0%, 100% { opacity: .55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
+@keyframes ma-agent-scan { 0% { transform: translateY(-80px); opacity: 0; } 15%, 85% { opacity: 1; } 100% { transform: translateY(80px); opacity: 0; } }
+@keyframes ma-agent-speak {
+  0%, 100% { transform: scaleX(1) scaleY(1); }
+  25% { transform: scaleX(.95) scaleY(1.3); }
+  50% { transform: scaleX(1.05) scaleY(.75); }
+  75% { transform: scaleX(.98) scaleY(1.25); }
+}
+@keyframes ma-agent-voice { from { opacity: .75; } to { opacity: 1; } }
+@keyframes ma-agent-joy { from { transform: scale(1) rotate(0); } to { transform: scale(1.04) rotate(-2deg); } }
+
+/* ---------- Widget ---------- */
+/* Above the sticky nav (50), below dialogs (70) and toasts (80): docs/04-layout.md. */
+.ma-advisor-launcher {
+  position: fixed; z-index: 60; inset-block-end: 16px; inset-inline-end: 16px;
+  display: grid; place-items: center; width: 64px; height: 64px; padding: 4px;
+  border: 0; border-radius: var(--radius-full); background: var(--surface-alt); color: var(--text); cursor: pointer;
+  outline: 1px solid var(--line-strong); transition: background var(--dur) var(--ease);
+}
+.ma-advisor-launcher:hover { background: var(--surface); }
+.ma-advisor-launcher:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.ma-advisor-panel {
+  position: fixed; z-index: 60; inset-block-end: 92px; inset-inline-end: 16px;
+  display: flex; flex-direction: column; overflow: hidden;
+  width: min(400px, calc(100vw - 32px)); height: min(640px, calc(100dvh - 112px));
+  border: 1px solid var(--line-strong); border-radius: var(--radius-card); background: var(--surface); color: var(--text);
+}
+.ma-advisor-panel.is-expanded { width: min(960px, calc(100vw - 32px)); height: min(860px, calc(100dvh - 112px)); }
+@media (max-width: 599px) {
+  .ma-advisor-panel,
+  .ma-advisor-panel.is-expanded { inset: 0; width: 100%; height: 100dvh; border: 0; border-radius: 0; }
+}

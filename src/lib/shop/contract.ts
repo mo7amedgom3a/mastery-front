@@ -20,8 +20,8 @@ export function parseShopKey(key: string): { kind: ShopItemKind; id: number } | 
   return match ? { kind: match[1] as ShopItemKind, id: Number(match[2]) } : null;
 }
 
-/** Paid extras attached to one cart line. */
-export type AddonCode = "unlimited_access" | "cpd_certificate";
+/** Paid certificate extras attached to one cart line (offered per product by the backend). */
+export type AddonCode = "cpd_certificate" | "physical_certificate";
 
 export type PaymentMethodId = "card" | "tamara";
 
@@ -76,6 +76,8 @@ export type QuoteAddon = {
   description: string;
   amount: number;
   selected: boolean;
+  /** A printed copy: checkout asks for a shipping address. */
+  requiresShipping: boolean;
 };
 
 export type QuoteLine = {

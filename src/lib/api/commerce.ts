@@ -11,6 +11,7 @@ import type { PathParams, QueryParams, RequestBody, SuccessResponse } from "@/li
 type GetCartOperation = "get_cart_api_v1_cart_get";
 type AddCartItemOperation = "add_cart_item_api_v1_cart_items_post";
 type UpdateCartItemOperation = "update_cart_item_api_v1_cart_items__cart_item_id__patch";
+type SetCartItemAddonsOperation = "set_cart_item_addons_api_v1_cart_items__cart_item_id__addons_put";
 type QuoteOperation = "checkout_quote_api_v1_checkout_quote_post";
 type ProductQuoteOperation = "product_quote_api_v1_checkout_product_quote_post";
 type MyVouchersOperation = "my_vouchers_api_v1_me_vouchers_get";
@@ -30,6 +31,8 @@ type ExtensionCheckoutOperation = "access_extension_checkout_api_v1_access_exten
 export type CartResponse = SuccessResponse<GetCartOperation>;
 export type CartLineResponse = NonNullable<CartResponse["lines"]>[number];
 export type CartItemRequest = RequestBody<AddCartItemOperation>;
+export type CartAddonCode = NonNullable<CartItemRequest["addons"]>[number];
+export type ShippingAddress = NonNullable<RequestBody<CreateCheckoutOperation>["shipping_address"]>;
 export type CheckoutQuoteResponse = SuccessResponse<QuoteOperation>;
 export type ProductQuoteRequest = RequestBody<ProductQuoteOperation>;
 export type ProductQuoteResponse = SuccessResponse<ProductQuoteOperation>;
@@ -67,6 +70,7 @@ const commercePaths = {
   cart: "/api/v1/cart",
   cartItems: "/api/v1/cart/items",
   cartItem: "/api/v1/cart/items/{cart_item_id}",
+  cartItemAddons: "/api/v1/cart/items/{cart_item_id}/addons",
   quote: "/api/v1/checkout/quote",
   productQuote: "/api/v1/checkout/product-quote",
   myVouchers: "/api/v1/me/vouchers",
@@ -112,8 +116,14 @@ export function addCartItem(
   productId: CartItemRequest["product_id"],
   quantity: number,
   options?: AuthenticatedRequestOptions,
+  addons?: CartAddonCode[],
 ): Promise<CartResponse> {
-  const body: CartItemRequest = { product_id: productId, quantity, currency_code: CHECKOUT_CURRENCY };
+  const body: CartItemRequest = {
+    product_id: productId,
+    quantity,
+    currency_code: CHECKOUT_CURRENCY,
+    ...(addons?.length ? { addons } : {}),
+  };
   return customerRequest<CartResponse>("POST", commercePaths.cartItems, {
     ...withAuthCookies(options),
     body,
@@ -129,6 +139,19 @@ export function updateCartItem(
     ...withAuthCookies(options),
     path: { cart_item_id: cartItemId },
     body: { quantity },
+  });
+}
+
+/** Replaces the line's certificate add-ons; 409 when the product doesn't offer one of them. */
+export function setCartItemAddons(
+  cartItemId: PathParams<SetCartItemAddonsOperation>["cart_item_id"],
+  addons: CartAddonCode[],
+  options?: AuthenticatedRequestOptions,
+): Promise<CartResponse> {
+  return customerRequest<CartResponse>("PUT", commercePaths.cartItemAddons, {
+    ...withAuthCookies(options),
+    path: { cart_item_id: cartItemId },
+    body: { addons },
   });
 }
 

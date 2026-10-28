@@ -5,6 +5,7 @@ import { useId, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { isQaLoginEnabled } from "@/config/env";
 import { requestLoginCode } from "@/lib/auth/client";
+import type { AuthCustomer } from "@/lib/auth/contract";
 import { trackAuth } from "@/lib/observability/behavior";
 
 import { authErrorMessage } from "../model/messages";
@@ -17,11 +18,18 @@ type PendingLogin = { loginName: string; resendAfter: number };
 
 const EMAIL_HINT = "سنرسل إليه رمز تحقق لإتمام الدخول.";
 
+type LoginFormProps = {
+  /** Where to go once signed in. */
+  next: string;
+  /** Signed in where the visitor already is (a dialog): called instead of leaving for `next`. */
+  onSignedIn?: (customer: AuthCustomer) => void;
+};
+
 /**
  * Sign-in in two steps, as the API defines it: the email, then the code emailed to it. There is
  * no password step.
  */
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, onSignedIn }: LoginFormProps) {
   const id = useId();
   const [pendingLogin, setPendingLogin] = useState<PendingLogin | null>(null);
   const [loginName, setLoginName] = useState("");
@@ -31,7 +39,7 @@ export function LoginForm({ next }: { next: string }) {
   const [qaMode, setQaMode] = useState(false);
 
   if (pendingLogin) {
-    return <CodeStep {...pendingLogin} next={next} onBack={() => setPendingLogin(null)} />;
+    return <CodeStep {...pendingLogin} next={next} onSignedIn={onSignedIn} onBack={() => setPendingLogin(null)} />;
   }
 
   // Development only: the QA accounts sign in with the shared QA key instead of an emailed code.
@@ -44,7 +52,7 @@ export function LoginForm({ next }: { next: string }) {
   if (qaMode) {
     return (
       <div className="flex flex-col gap-5">
-        <QALoginForm next={next} />
+        <QALoginForm next={next} onSignedIn={onSignedIn} />
         {qaToggle}
       </div>
     );

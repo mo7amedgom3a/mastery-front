@@ -115,7 +115,7 @@ export function ExpertVideosSection() {
         <SectionHeader
           id={titleId}
           label="من إنتاج ماستري أكاديمي"
-          title="بودكاست كورسي ماستري"
+          title="بودكاست كرسي ماستري"
           lead="أكثر من ثلاثين حلقة من «كرسي ماستري» مع خبراء المبيعات والتسويق والمالية والإدارة والفنون. اختر المجال الذي يهمك، تنقّل بين الحلقات، ثم اضغط تشغيل لمشاهدة اللقاء كاملاً."
         />
 
@@ -147,7 +147,7 @@ export function ExpertVideosSection() {
       <div
         role="region"
         aria-roledescription="carousel"
-        aria-label="بودكاست كورسي ماستري. استخدم الأسهم للتنقل بين الحلقات."
+        aria-label="بودكاست كرسي ماستري. استخدم الأسهم للتنقل بين الحلقات."
         className="ma-vs-stage mt-12 short:mt-6"
         onKeyDown={onStageKeyDown}
       >

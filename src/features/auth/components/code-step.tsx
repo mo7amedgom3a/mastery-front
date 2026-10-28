@@ -9,6 +9,7 @@ import { routes } from "@/config/routes";
 import { isOnboardingSkipped } from "@/features/onboarding/model/skip";
 import { getLearningProfile } from "@/lib/api/customers";
 import { resendLoginCode } from "@/lib/auth/client";
+import type { AuthCustomer } from "@/lib/auth/contract";
 import { useAuthStore } from "@/lib/auth/store";
 import { trackAuth } from "@/lib/observability/behavior";
 
@@ -23,6 +24,8 @@ type CodeStepProps = {
   resendAfter: number;
   /** Where to go once signed in (already checked to be a path on this site). */
   next: string;
+  /** Signed in where the visitor already is (a dialog): called instead of leaving for `next`. */
+  onSignedIn?: (customer: AuthCustomer) => void;
   onBack: () => void;
 };
 
@@ -42,7 +45,7 @@ export async function landingPath(next: string, customerId: string): Promise<str
 }
 
 /** Step two of signing in: the code that was emailed. Signs in and leaves for `next`. */
-export function CodeStep({ loginName, resendAfter, next, onBack }: CodeStepProps) {
+export function CodeStep({ loginName, resendAfter, next, onSignedIn, onBack }: CodeStepProps) {
   const router = useRouter();
   const id = useId();
   const [pending, setPending] = useState(false);
@@ -73,6 +76,10 @@ export function CodeStep({ loginName, resendAfter, next, onBack }: CodeStepProps
     try {
       const customer = await useAuthStore.getState().verifyCode(parsed.data.code);
       trackAuth("signed_in");
+      if (onSignedIn) {
+        onSignedIn(customer);
+        return;
+      }
       destination = await landingPath(next, customer.customer_id);
     } catch (error) {
       setFormError(authErrorMessage(error));

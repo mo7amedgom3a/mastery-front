@@ -71,6 +71,7 @@ function mapProduct(card: MenuProductDto): MenuProductVM | null {
 function mapCategory(group: ProductType, dto: MenuCategoryDto): MenuCategoryVM {
   return {
     id: dto.category_id,
+    slug: dto.slug,
     name: dto.name,
     href: routes.categoryOf(group, dto.slug),
     count: dto.product_count,

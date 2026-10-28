@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/cn";
 
 /** Only https and site-relative URLs are rendered; anything else is dropped. */
-function safeHref(url: string | undefined): string {
+export function safeHref(url: string | undefined): string {
   const value = (url ?? "").trim();
   return value.startsWith("https://") || (value.startsWith("/") && !value.startsWith("//")) ? value : "";
 }

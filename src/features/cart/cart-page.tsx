@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShoppingCart } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { UndoNotice } from "@/components/shop/undo-notice";
 import { ButtonLink } from "@/components/ui/button";
@@ -13,14 +13,14 @@ import { incentivesRequest, useCheckoutIncentives } from "@/features/checkout/mo
 import { AuthGateDialog } from "@/features/checkout/components/auth-gate-dialog";
 import { CheckoutRedirectOverlay } from "@/features/checkout/components/checkout-redirect-overlay";
 import { RecommendationRail } from "@/features/search/components/recommendation-rail";
-import { commerceKeys, commerceQueries, type CartResponse } from "@/lib/api/commerce";
+import { commerceKeys, commerceQueries, setCartItemAddons, type CartResponse } from "@/lib/api/commerce";
 import { useAuthStore } from "@/lib/auth/store";
 import { formatCount } from "@/lib/format";
 import { readStoredReferralInfo } from "@/lib/referral";
 import { shopKeyFromSlug } from "@/lib/shop/product-links";
 import { useShopRoutes } from "@/lib/shop/use-shop-routes";
 import { mirrorAccountCart } from "@/lib/shop/cart-sync";
-import type { Quote, QuoteRequest } from "@/lib/shop/contract";
+import type { AddonCode, Quote, QuoteRequest } from "@/lib/shop/contract";
 import { PRODUCT_FORMS } from "@/lib/shop/labels";
 import { useShopHydrated, useShopStore, type CartLine } from "@/lib/shop/store";
 import { addToCart, removeFromCart, saveToWishlist } from "@/lib/shop/use-shop-actions";
@@ -31,6 +31,7 @@ import { CartLineRow } from "./components/cart-line";
 import { IncentivesPanel, ReferralDiscountBadge } from "./components/incentives-panel";
 import { OrderSummary } from "./components/order-summary";
 import { PaymentMethodPicker } from "./components/payment-method-picker";
+import { EMPTY_SHIPPING, shippingAddress, ShippingAddressForm, type ShippingDraft } from "./components/shipping-address-form";
 import { TamaraWidget } from "./components/tamara-widget";
 import { usePaymentChoice } from "./components/use-payment-choice";
 import { WishlistSuggestions } from "./components/wishlist-suggestions";
@@ -105,7 +106,10 @@ function useCartQuote(hydrated: boolean, signedIn: boolean, cart: CartLine[]): C
     shop.replaceCart(mirrorAccountCart(account.data as CartResponse, shop.cart));
   }, [account.data]);
 
-  const request = useMemo<QuoteRequest>(() => ({ lines: cart.map((line) => ({ key: line.key, addons: [] })) }), [cart]);
+  const request = useMemo<QuoteRequest>(
+    () => ({ lines: cart.map((line) => ({ key: line.key, addons: line.addons ?? [] })) }),
+    [cart],
+  );
   const guest = useQuery({ ...shopQueries.quote(request), enabled: hydrated && !signedIn && cart.length > 0 });
 
   const accountView = useMemo(
@@ -157,6 +161,35 @@ export function CartPage() {
   const payment = usePaymentChoice(quote && { amount: quote.totals.total, currency: quote.totals.currency });
   const shopRoutes = useShopRoutes();
   const storedReferral = useMemo(() => (hydrated ? readStoredReferralInfo() : null), [hydrated]);
+
+  const queryClient = useQueryClient();
+  const [addonsBusy, setAddonsBusy] = useState(false);
+  const [shipping, setShipping] = useState<ShippingDraft>(EMPTY_SHIPPING);
+  /**
+   * Certificate add-ons on a line. Guests keep the choice in the browser (it moves to the account
+   * cart at sign-in); signed in, the account cart is updated and its quote re-read.
+   */
+  const toggleAddon = async (line: CartLine, code: AddonCode, selected: boolean) => {
+    checkout.clearError();
+    const current = new Set(line.addons ?? []);
+    if (selected) current.add(code);
+    else current.delete(code);
+    const next = [...current];
+    useShopStore.getState().setCartLineAddons(line.key, next);
+    if (!signedIn || !line.cartItemId) return;
+    setAddonsBusy(true);
+    try {
+      const cart = await setCartItemAddons(line.cartItemId, next);
+      useShopStore.getState().replaceCart(mirrorAccountCart(cart, useShopStore.getState().cart));
+      await queryClient.invalidateQueries({ queryKey: commerceKeys.quote() });
+    } catch (error) {
+      console.error("[cart] add-on update failed", line.key, error);
+      useShopStore.getState().setCartLineAddons(line.key, line.addons ?? []);
+      setCartNotice("تعذّر تحديث إضافات الشهادة. حاول مجدداً.");
+    } finally {
+      setAddonsBusy(false);
+    }
+  };
 
   const undo = useUndo<Removed>();
   const remove = (line: CartLine) => {
@@ -229,6 +262,8 @@ export function CartPage() {
   }
 
   const quotedLines = new Map(quote?.lines.map((line) => [line.key, line]));
+  const needsShipping = (quote?.lines ?? []).some((line) => line.addons.some((addon) => addon.selected && addon.requiresShipping));
+  const address = needsShipping ? shippingAddress(shipping) : null;
   const unavailable = new Map(quote?.unavailable.map((entry) => [entry.key, entry.reason]));
   const saved = new Set(wishlist.map((entry) => entry.key));
 
@@ -250,10 +285,13 @@ export function CartPage() {
                   saved={saved.has(line.key)}
                   onSaveForLater={saveForLater}
                   onRemove={remove}
+                  onToggleAddon={(entry, code, selected) => void toggleAddon(entry, code, selected)}
+                  addonsBusy={addonsBusy || checkout.busy}
                 />
               </li>
             ))}
           </ul>
+          {needsShipping ? <ShippingAddressForm value={shipping} onChange={setShipping} disabled={checkout.busy} /> : null}
           <WishlistSuggestions />
         </div>
 
@@ -268,9 +306,15 @@ export function CartPage() {
             paying={checkout.busy}
             payError={checkout.error}
             // An order the coupon and vouchers fully cover has no payment page.
-            onPay={() => void checkout.start({ mode: "cart", payment: quote?.totals.total === 0 ? undefined : payment.payment })}
+            onPay={() =>
+              void checkout.start({
+                mode: "cart",
+                payment: quote?.totals.total === 0 ? undefined : payment.payment,
+                shippingAddress: address,
+              })
+            }
             provider={payment.payment.provider}
-            methodIncomplete={quote?.totals.total !== 0 && payment.incomplete}
+            methodIncomplete={(quote?.totals.total !== 0 && payment.incomplete) || (needsShipping && address === null)}
             incentives={
               signedIn ? (
                 <IncentivesPanel

@@ -41,6 +41,10 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^cart$/, session: true },
   { methods: ["POST"], pattern: /^cart\/items$/, session: true },
   { methods: ["PATCH", "DELETE"], pattern: /^cart\/items\/[A-Za-z0-9-]+$/, session: true },
+  // Certificate add-ons on a cart line (CPD mark, printed copy).
+  { methods: ["PUT"], pattern: /^cart\/items\/[A-Za-z0-9-]+\/addons$/, session: true },
+  // Public: certificate verification by ID No (PDF downloads go through /api/certificates/[id]/pdf).
+  { methods: ["GET"], pattern: /^certificates\/verify\/[A-Za-z0-9-]{1,40}$/, session: false },
   { methods: ["POST"], pattern: /^checkout\/(quote|sessions|free-enrollments)$/, session: true },
   // Buying more access time for an entitlement (options are read under `me/`).
   { methods: ["POST"], pattern: /^access-extensions\/checkout$/, session: true },
@@ -66,6 +70,8 @@ const RULES: readonly Rule[] = [
   { methods: ["POST"], pattern: /^subscriptions\/team-leads$/, session: true },
   { methods: ["GET"], pattern: /^subscriptions\/me(\/[A-Za-z0-9-]+(\/selections)?)?$/, session: true },
   { methods: ["POST"], pattern: /^subscriptions\/me\/[A-Za-z0-9-]+\/(cancel|resume|selections|selections\/replace)$/, session: true },
+  // AI advisor's suggested questions (public). The answer stream has its own handler: this door buffers.
+  { methods: ["GET"], pattern: /^advisor\/suggestions$/, session: false },
   // Recommendations for the signed-in customer (dashboard, after onboarding).
   { methods: ["GET"], pattern: /^recommendations\/me$/, session: true },
   // Consultations: public free slots, then booking, the meeting room and its recording.

@@ -7,9 +7,11 @@ import { AppLink } from "@/components/ui/app-link";
 import { brandBg, type BrandColor } from "@/components/ui/brand-colors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/cn";
-import type { Quote, QuoteLine, ShopItemKind } from "@/lib/shop/contract";
+import type { AddonCode, Quote, QuoteLine, ShopItemKind } from "@/lib/shop/contract";
 import { kindLabel } from "@/lib/shop/labels";
 import type { CartLine } from "@/lib/shop/store";
+
+import { CartLineAddons } from "./cart-line-addons";
 
 const kindColor: Record<ShopItemKind, BrandColor> = {
   course: "coral",
@@ -38,6 +40,10 @@ type CartLineRowProps = {
   saved: boolean;
   onSaveForLater: (line: CartLine) => void;
   onRemove: (line: CartLine) => void;
+  /** Ticks or unticks a certificate add-on; absent hides the add-ons. */
+  onToggleAddon?: (line: CartLine, code: AddonCode, selected: boolean) => void;
+  /** An add-on change is being saved. */
+  addonsBusy?: boolean;
 };
 
 /**
@@ -45,7 +51,16 @@ type CartLineRowProps = {
  * struck through). Titles, artwork and prices come from the quote once it arrives; until then the
  * row shows what was saved with the item.
  */
-export function CartLineRow({ line, quoted, unavailable, saved, onSaveForLater, onRemove }: CartLineRowProps) {
+export function CartLineRow({
+  line,
+  quoted,
+  unavailable,
+  saved,
+  onSaveForLater,
+  onRemove,
+  onToggleAddon,
+  addonsBusy = false,
+}: CartLineRowProps) {
   const item = quoted?.item;
   const title = item?.title ?? line.title;
   const image = item?.image ?? line.image;
@@ -109,6 +124,19 @@ export function CartLineRow({ line, quoted, unavailable, saved, onSaveForLater, 
         </p>
       ) : null}
 
+      {quoted && !unavailable && onToggleAddon ? (
+        <CartLineAddons
+          // The line's own choice answers at once; the quote catches up with the prices.
+          addons={quoted.addons.map((addon) => ({
+            ...addon,
+            selected: line.addons ? line.addons.includes(addon.code) : addon.selected,
+          }))}
+          lineTitle={title}
+          disabled={addonsBusy}
+          onToggle={(code, selected) => onToggleAddon(line, code, selected)}
+        />
+      ) : null}
+
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-line pt-3">
         <div className="flex flex-wrap items-center gap-x-2">
           <button type="button" onClick={() => onSaveForLater(line)} className="ma-btn ma-btn--ghost ma-btn--sm min-h-11 gap-1.5">
@@ -125,6 +153,14 @@ export function CartLineRow({ line, quoted, unavailable, saved, onSaveForLater, 
 
         {quoted && (quoted.addonsAmount > 0 || quoted.discountAmount > 0) ? (
           <dl className="m-0 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
+            {quoted.addonsAmount > 0 ? (
+              <div className="flex items-baseline gap-1.5">
+                <dt className="text-fg-muted">إضافات الشهادة</dt>
+                <dd className="m-0 font-bold">
+                  <Money amount={quoted.addonsAmount} />
+                </dd>
+              </div>
+            ) : null}
             {quoted.discountAmount > 0 ? (
               <div className="flex items-baseline gap-1.5">
                 <dt className="text-fg-muted">خصم القسيمة</dt>

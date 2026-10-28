@@ -40,12 +40,21 @@ const catalog = new Map<string, ResolvedItem>(
   ].map((entry) => [entry.key, entry]),
 );
 
+// Certificate add-ons as the backend offers them: course 1 offers both, the package none.
+const cpd = { code: "cpd_certificate" as const, title: "CPD", description: "", amount: 35, requiresShipping: false };
+const printed = { code: "physical_certificate" as const, title: "Printed", description: "", amount: 29, requiresShipping: true };
+const offers = new Map([
+  ["course:1", [cpd, printed]],
+  ["diploma:3", [cpd]],
+]);
+
 const quote = (keys: string[], coupon?: string | null, addons: Record<string, string[]> = {}) =>
   buildQuote({
     lines: keys.map((key) => ({ key, addons: (addons[key] ?? []) as never })),
     items: catalog,
     coupon,
     currency: "USD",
+    offers,
     now: Date.parse("2026-01-01T00:00:00Z"),
   });
 
@@ -61,19 +70,17 @@ const tests: [string, () => void][] = [
     },
   ],
   [
-    "add-ons add to the line, only when the kind supports them",
+    "add-ons add to the line, only when the product offers them",
     () => {
       const q = quote(["course:1", "package:4"], null, {
-        "course:1": ["unlimited_access", "cpd_certificate"],
+        "course:1": ["physical_certificate", "cpd_certificate"],
         "package:4": ["cpd_certificate"],
       });
       assert.equal(q.lines[0].addonsAmount, 64);
       assert.equal(q.lines[0].totalAmount, 164);
-      // Packages take lifetime access only: the CPD request is ignored.
-      assert.deepEqual(
-        q.lines[1].addons.map((addon) => addon.code),
-        ["unlimited_access"],
-      );
+      assert.equal(q.lines[0].addons.find((addon) => addon.code === "physical_certificate")?.requiresShipping, true);
+      // The package offers no certificate add-ons: the CPD request is ignored.
+      assert.deepEqual(q.lines[1].addons, []);
       assert.equal(q.lines[1].addonsAmount, 0);
       assert.equal(q.totals.subtotal, 197.33);
     },
@@ -81,7 +88,7 @@ const tests: [string, () => void][] = [
   [
     "cart coupon discounts every product, not the add-ons",
     () => {
-      const q = quote(["course:1", "diploma:3"], "mastery10", { "course:1": ["unlimited_access"] });
+      const q = quote(["course:1", "diploma:3"], "mastery10", { "course:1": ["physical_certificate"] });
       assert.equal(q.coupon?.status, "applied");
       assert.equal(q.coupon?.scope, "cart");
       assert.equal(q.lines[0].discountAmount, 10);

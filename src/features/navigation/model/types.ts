@@ -17,6 +17,8 @@ export type MenuProductVM = {
 
 export type MenuCategoryVM = {
   id: string;
+  /** Search category code (`legacy-category-27`, `marketing/sales`). */
+  slug: string;
   name: string;
   href: Route;
   count: number;

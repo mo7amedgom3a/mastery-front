@@ -291,3 +291,12 @@ export function trackCoupon(coupon: { code: string; status: string; discountAmou
 export function trackPaymentMethod(method: string, total?: number, currency?: string): void {
   captureEvent("payment_method_selected", { route: currentRoute(), payment_method: method, total, currency });
 }
+
+export type AdvisorEvent = "ai_advisor_opened" | "ai_recommendation_clicked";
+
+/** The AI advisor widget: opened, or one of its recommended products clicked. */
+export function trackAdvisor(eventType: AdvisorEvent, metadata?: Record<string, unknown>): void {
+  const route = currentRoute();
+  const payload = { route, ...metadata };
+  send(eventType, eventType, payload, { entityType: "advisor", metadata: { ...payload, route: route ?? null } });
+}

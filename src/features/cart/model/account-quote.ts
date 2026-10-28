@@ -5,6 +5,7 @@ import {
   parseShopKey,
   type CouponStatus,
   type Quote,
+  type QuoteAddon,
   type QuoteCoupon,
   type QuoteLine,
   type QuoteVoucher,
@@ -87,10 +88,19 @@ export function accountQuote(quote: CheckoutQuoteResponse, items: ReadonlyMap<st
         unitAmount,
         // The catalog's pre-offer price, shown struck through only while it is above what is charged.
         originalAmount: resolved?.originalAmount && resolved.originalAmount > unitAmount ? resolved.originalAmount : null,
-        addons: [],
-        addonsAmount: 0,
+        addons: (line.addons ?? []).map((addon) => ({
+          code: addon.code as QuoteAddon["code"],
+          title: addon.title,
+          description: addon.description ?? "",
+          amount: fromMinor(addon.amount_minor),
+          selected: addon.selected,
+          requiresShipping: addon.requires_shipping ?? false,
+        })),
+        addonsAmount: fromMinor(line.addons_amount_minor ?? 0),
         discountAmount: fromMinor(line.discount_amount_minor ?? 0),
-        totalAmount: fromMinor(line.total_amount_minor - (line.discount_amount_minor ?? 0)),
+        totalAmount: fromMinor(
+          line.total_amount_minor + (line.addons_amount_minor ?? 0) - (line.discount_amount_minor ?? 0),
+        ),
       },
     ];
   });

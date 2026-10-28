@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mastery Academy · AI Advisor Agent SVG & Animation System</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              coral: '#ff6555',
+              coralHover: '#ff4c38',
+              coralLight: '#ffebe8',
+              ink: '#0b0f19',
+              inkSurface: '#121826',
+              inkBorder: '#1f293d',
+              cream: '#faf8f5',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            arabic: ['"IBM Plex Sans Arabic"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0f19; }
+    ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #ff6555; }
+
+    /* SVG Animation Keyframes */
+    @keyframes maFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes maBlink {
+      0%, 42%, 46%, 80%, 84%, 100% { transform: scaleY(1); }
+      44%, 82% { transform: scaleY(0.08); }
+    }
+    @keyframes maGaze {
+      0%, 35%, 100% { transform: translateX(0px); }
+      40%, 60% { transform: translateX(-4.5px); }
+      65%, 85% { transform: translateX(4.5px); }
+      90% { transform: translateX(0px); }
+    }
+    @keyframes maPulse {
+      0%, 100% {
+        filter: drop-shadow(0 0 3px rgba(255, 101, 85, 0.75)) drop-shadow(0 0 8px rgba(255, 101, 85, 0.35));
+        opacity: 0.95;
+      }
+      50% {
+        filter: drop-shadow(0 0 6px rgba(255, 101, 85, 1)) drop-shadow(0 0 16px rgba(255, 101, 85, 0.75));
+        opacity: 1;
+      }
+    }
+    @keyframes maLed {
+      0%, 100% { opacity: 0.55; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+    @keyframes maScan {
+      0% { transform: translateY(-80px); opacity: 0; }
+      20% { opacity: 0.8; }
+      80% { opacity: 0.8; }
+      100% { transform: translateY(80px); opacity: 0; }
+    }
+    @keyframes maSpeak {
+      0%, 100% { transform: scaleY(1) scaleX(1); }
+      25% { transform: scaleY(1.3) scaleX(0.95); }
+      50% { transform: scaleY(0.75) scaleX(1.05); }
+      75% { transform: scaleY(1.25) scaleX(0.98); }
+    }
+    @keyframes maJoy {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.08) rotate(-2deg); }
+    }
+
+    /* Animation Classes Applied to Live SVG */
+    .anim-float { animation: maFloat var(--speed-float, 4s) ease-in-out infinite; transform-origin: 120px 118px; }
+    .anim-blink { animation: maBlink var(--speed-blink, 4.2s) cubic-bezier(0.77, 0, 0.175, 1) infinite; transform-origin: 120px 118px; }
+    .anim-gaze { animation: maGaze var(--speed-gaze, 7s) ease-in-out infinite; }
+    .anim-pulse { animation: maPulse 2.8s ease-in-out infinite; }
+    .anim-led { animation: maLed 2s ease-in-out infinite; transform-origin: center; }
+    .anim-scan { animation: maScan 4.5s linear infinite; }
+    
+    /* State: Thinking */
+    .state-thinking .anim-gaze { animation: maGaze 2.5s ease-in-out infinite; }
+    .state-thinking .anim-pulse { animation: maPulse 1.2s ease-in-out infinite; }
+    .state-thinking .anim-scan { animation: maScan 2s linear infinite; }
+
+    /* State: Speaking */
+    .state-speaking .ocular-unit { animation: maSpeak 0.6s ease-in-out infinite alternate !important; transform-origin: 120px 118px; }
+    .state-speaking .anim-led { animation: maLed 0.5s ease-in-out infinite; }
+    .state-speaking .mouth-arc { stroke: #ff6555 !important; opacity: 1 !important; stroke-width: 2.5 !important; }
+
+    /* State: Joy */
+    .state-joy .agent-floating-group { animation: maJoy 2s ease-in-out infinite alternate; }
+    .state-joy .ocular-unit { transform: scaleY(0.7) translateY(4px); }
+    .state-joy .mouth-arc { d: path("M 108 164 Q 120 174 132 164") !important; stroke: #ff6555 !important; stroke-width: 3 !important; }
+
+    /* State: Sleep */
+    .state-sleep .ocular-unit { transform: scaleY(0.08) !important; animation: none !important; }
+    .state-sleep .anim-pulse { opacity: 0.4 !important; filter: drop-shadow(0 0 2px rgba(255, 101, 85, 0.3)) !important; }
+    .state-sleep .anim-scan { display: none; }
+    .state-sleep .anim-float { animation-duration: 7s; }
+  </style>
+</head>
+<body class="bg-brand-ink text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-brand-coral selection:text-white">
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-brand-inkBorder bg-brand-ink/95 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Mastery Academy Coral Mark -->
+        <div class="bg-brand-inkSurface border border-brand-inkBorder rounded-lg p-1.5 flex items-center justify-center shadow-sm">
+          <svg class="w-8 h-auto" viewBox="0 0 140.9 58.72" fill="#ff6555">
+            <path d="M 23.48 0.00 L 23.48 31.04 C 29.89 31.04 35.69 33.59 39.93 37.75 C 40.04 37.86 40.15 37.96 40.25 38.08 L 54.02 51.84 C 58.23 56.05 64.03 58.67 70.45 58.71 L 70.45 27.68 C 64.03 27.64 58.23 25.02 54.02 20.81 L 52.96 19.77 L 39.87 6.67 C 35.64 2.54 29.86 0.00 23.48 0.00 Z" />
+            <path d="M 70.45 0.00 L 70.45 31.04 C 76.85 31.04 82.66 33.59 86.89 37.75 C 87.01 37.86 87.12 37.96 87.21 38.08 L 100.98 51.84 C 105.19 56.05 111.00 58.67 117.41 58.71 L 117.41 27.68 C 111.00 27.64 105.19 25.02 100.98 20.81 L 99.93 19.77 L 86.83 6.67 C 82.61 2.54 76.83 0.00 70.45 0.00 Z" />
+            <path d="M 0.00 55.36 L 23.48 55.36 L 23.48 27.68 L 0.00 27.68 Z" />
+            <path d="M 117.41 31.04 L 140.90 31.04 L 140.90 3.35 L 117.41 3.35 Z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-white text-base tracking-tight">Mastery Academy</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-brand-coral/15 text-brand-coral border border-brand-coral/30 font-semibold">AI Advisor</span>
+          </div>
+          <p class="text-xs text-slate-400 font-arabic">ماستري أكاديمي · مستشار الذكاء الاصطناعي</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs & Actions -->
+      <div class="flex items-center gap-3">
+        <nav class="hidden md:flex items-center gap-1 bg-brand-inkSurface border border-brand-inkBorder rounded-lg p-1 text-xs">
+          <button id="nav-tab-agent" class="nav-tab active px-3 py-1.5 rounded-md font-semibold text-white bg-brand-coral transition-colors shadow-sm">AI Agent Icon</button>
+          <button id="nav-tab-brand" class="nav-tab px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-white transition-colors">Brand Logo Mark</button>
+          <button id="nav-tab-code" class="nav-tab px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-white transition-colors">SVG Code & Export</button>
+        </nav>
+        <button id="btn-quick-download" class="px-3.5 py-1.5 rounded-lg bg-brand-coral hover:bg-brand-coralHover text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all transform active:scale-95">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>Download SVG</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Showcase Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Hero Value Banner -->
+    <div class="bg-gradient-to-r from-brand-inkSurface via-brand-inkSurface to-brand-coral/10 border border-brand-inkBorder rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+      <div class="absolute -right-10 -bottom-10 opacity-5 pointer-events-none">
+        <svg class="w-96 h-auto" viewBox="0 0 140.9 58.72" fill="#ff6555">
+          <path d="M 23.48 0.00 L 23.48 31.04 C 29.89 31.04 35.69 33.59 39.93 37.75 C 40.04 37.86 40.15 37.96 40.25 38.08 L 54.02 51.84 C 58.23 56.05 64.03 58.67 70.45 58.71 L 70.45 27.68 C 64.03 27.64 58.23 25.02 54.02 20.81 L 52.96 19.77 L 39.87 6.67 C 35.64 2.54 29.86 0.00 23.48 0.00 Z" />
+          <path d="M 70.45 0.00 L 70.45 31.04 C 76.85 31.04 82.66 33.59 86.89 37.75 C 87.01 37.86 87.12 37.96 87.21 38.08 L 100.98 51.84 C 105.19 56.05 111.00 58.67 117.41 58.71 L 117.41 27.68 C 111.00 27.64 105.19 25.02 100.98 20.81 L 99.93 19.77 L 86.83 6.67 C 82.61 2.54 76.83 0.00 70.45 0.00 Z" />
+          <path d="M 0.00 55.36 L 23.48 55.36 L 23.48 27.68 L 0.00 27.68 Z" />
+          <path d="M 117.41 31.04 L 140.90 31.04 L 140.90 3.35 L 117.41 3.35 Z" />
+        </svg>
+      </div>
+      <div class="space-y-2 max-w-2xl relative z-10">
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-brand-coral/10 border border-brand-coral/30 text-brand-coral text-xs font-semibold">
+          <span class="w-2 h-2 rounded-full bg-brand-coral animate-ping"></span>
+          <span>Brand-Grounded Vector Identity</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          Mastery Academy AI Advisor Agent
+        </h1>
+        <p class="text-slate-300 text-sm leading-relaxed">
+          Crafted directly from the geometry of Mastery Academy's signature mark. The advisor's ocular system mirrors the brand's iconic dual waves in vibrant coral (<code class="text-brand-coral font-mono font-medium">#ff6555</code>), animated with lifelike blinking, attentive gaze, and cognitive state awareness.
+        </p>
+      </div>
+
+      <!-- Quick Metrics -->
+      <div class="grid grid-cols-3 gap-3 w-full md:w-auto text-center relative z-10">
+        <div class="bg-brand-ink/80 border border-brand-inkBorder rounded-xl p-3">
+          <div class="text-brand-coral font-bold text-lg font-mono">2.40:1</div>
+          <div class="text-[11px] text-slate-400">Mark Ratio</div>
+        </div>
+        <div class="bg-brand-ink/80 border border-brand-inkBorder rounded-xl p-3">
+          <div class="text-emerald-400 font-bold text-lg font-mono">60 FPS</div>
+          <div class="text-[11px] text-slate-400">CSS Native</div>
+        </div>
+        <div class="bg-brand-ink/80 border border-brand-inkBorder rounded-xl p-3">
+          <div class="text-sky-400 font-bold text-lg font-mono">&lt; 4 KB</div>
+          <div class="text-[11px] text-slate-400">SVG Payload</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 1: AI AGENT INTERACTIVE STUDIO (Default) -->
+    <div id="view-agent" class="space-y-8">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Left: Live Interactive SVG Canvas -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="bg-brand-inkSurface border border-brand-inkBorder rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-xl transition-all" id="svg-canvas-container">
+            
+            <!-- Background Canvas Controls -->
+            <div class="absolute top-4 left-4 flex items-center gap-1.5 bg-brand-ink/90 border border-brand-inkBorder rounded-lg p-1 z-20">
+              <span class="text-[10px] text-slate-400 font-medium px-2">Stage:</span>
+              <button id="stage-ink" class="stage-btn active w-6 h-6 rounded bg-brand-ink border-2 border-brand-coral flex items-center justify-center text-[10px] text-white" title="Ink Dark Stage"></button>
+              <button id="stage-white" class="stage-btn w-6 h-6 rounded bg-white border border-slate-300 flex items-center justify-center text-[10px] text-slate-800" title="Studio White Stage"></button>
+              <button id="stage-coral" class="stage-btn w-6 h-6 rounded bg-brand-coral border border-brand-coralHover flex items-center justify-center text-[10px] text-white" title="Brand Coral Stage"></button>
+            </div>
+
+            <!-- Eye Gaze Alignment Mode -->
+            <div class="absolute top-4 right-4 flex items-center gap-1.5 bg-brand-ink/90 border border-brand-inkBorder rounded-lg p-1 z-20">
+              <span class="text-[10px] text-slate-400 font-medium px-2">Ocular:</span>
+              <button id="btn-mode-parallel" class="ocular-btn active px-2 py-0.5 rounded text-[11px] font-semibold bg-brand-coral text-white">Parallel (Logo)</button>
+              <button id="btn-mode-mirror" class="ocular-btn px-2 py-0.5 rounded text-[11px] font-medium text-slate-400 hover:text-white">Mirrored</button>
+            </div>
+
+            <!-- The Live SVG Component -->
+            <div class="py-8 my-4 transition-transform duration-300" id="live-svg-wrapper">
+              <svg id="live-advisor-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" class="w-64 h-64 sm:w-80 sm:h-80 select-none drop-shadow-2xl">
+                <defs>
+                  <linearGradient id="liveChassisGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="100%" stop-color="#edf2f7"/>
+                  </linearGradient>
+
+                  <linearGradient id="liveVisorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#0c121e"/>
+                    <stop offset="50%" stop-color="#070b13"/>
+                    <stop offset="100%" stop-color="#020408"/>
+                  </linearGradient>
+
+                  <linearGradient id="liveCoralGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ff7b6d"/>
+                    <stop offset="100%" stop-color="#ff5442"/>
+                  </linearGradient>
+
+                  <linearGradient id="liveScanGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="rgba(255,101,85,0)"/>
+                    <stop offset="50%" stop-color="rgba(255,101,85,0.22)"/>
+                    <stop offset="100%" stop-color="rgba(255,101,85,0)"/>
+                  </linearGradient>
+
+                  <filter id="liveCoralGlow" x="-60%" y="-60%" width="220%" height="220%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#ff6555" flood-opacity="0.95"/>
+                    <feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#ff6555" flood-opacity="0.6"/>
+                  </filter>
+
+                  <filter id="liveChassisShadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#070b13" flood-opacity="0.25"/>
+                  </filter>
+
+                  <clipPath id="liveVisorClip">
+                    <rect x="64" y="81" width="112" height="74" rx="26" ry="26"/>
+                  </clipPath>
+
+                  <!-- Left Wave Eye Component (Normalized 46.97 x 58.71) -->
+                  <g id="live-wave-shape">
+                    <path d="M 0 0 L 0 31.04 C 6.41 31.04 12.21 33.59 16.45 37.75 C 16.56 37.86 16.67 37.96 16.77 38.08 L 30.54 51.84 C 34.75 56.05 40.55 58.67 46.97 58.71 L 46.97 27.68 C 40.55 27.64 34.75 25.02 30.54 20.81 L 29.48 19.77 L 16.39 6.67 C 12.16 2.54 6.38 0 0 0 Z" fill="url(#liveCoralGrad)"/>
+                  </g>
+                </defs>
+
+                <!-- Floating Group -->
+                <g class="agent-floating-group anim-float">
+                  
+                  <!-- Floating Collar -->
+                  <path d="M 86 182 C 86 176 154 176 154 182 L 160 196 C 160 200 80 200 80 196 Z" fill="#94a3b8" opacity="0.35"/>
+                  <ellipse cx="120" cy="195" rx="34" ry="4" fill="#64748b" opacity="0.25"/>
+
+                  <!-- Ear Modules -->
+                  <g class="ear-pod">
+                    <!-- Left -->
+                    <rect x="30" y="96" width="16" height="44" rx="8" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+                    <rect x="35" y="103" width="6" height="30" rx="3" fill="#0f172a"/>
+                    <circle class="anim-led" cx="38" cy="118" r="3" fill="#ff6555" filter="url(#liveCoralGlow)"/>
+                    <!-- Right -->
+                    <rect x="194" y="96" width="16" height="44" rx="8" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+                    <rect x="199" y="103" width="6" height="30" rx="3" fill="#0f172a"/>
+                    <circle class="anim-led" cx="202" cy="118" r="3" fill="#ff6555" filter="url(#liveCoralGlow)"/>
+                  </g>
+
+                  <!-- Top Neural Crest -->
+                  <path d="M 115 56 L 115 44 C 115 41 125 41 125 44 L 125 56 Z" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+                  <circle cx="120" cy="40" r="3.5" fill="#ff6555" filter="url(#liveCoralGlow)"/>
+
+                  <!-- Chassis Squircle -->
+                  <rect x="46" y="54" width="148" height="128" rx="42" ry="42" fill="url(#liveChassisGrad)" stroke="#e2e8f0" stroke-width="2" filter="url(#liveChassisShadow)"/>
+                  
+                  <!-- Visor Bezel Frame -->
+                  <rect x="61" y="78" width="118" height="80" rx="29" ry="29" fill="#1e293b"/>
+
+                  <!-- Visor Screen -->
+                  <rect x="64" y="81" width="112" height="74" rx="26" ry="26" fill="url(#liveVisorGrad)"/>
+
+                  <!-- Screen Interior Elements -->
+                  <g clip-path="url(#liveVisorClip)">
+                    <!-- Grid Lines -->
+                    <line x1="64" y1="105" x2="176" y2="105" stroke="#334155" stroke-width="0.5" stroke-dasharray="2 3" opacity="0.3"/>
+                    <line x1="64" y1="131" x2="176" y2="131" stroke="#334155" stroke-width="0.5" stroke-dasharray="2 3" opacity="0.3"/>
+                    
+                    <!-- Scanline -->
+                    <rect class="anim-scan" x="64" y="81" width="112" height="26" fill="url(#liveScanGrad)"/>
+
+                    <!-- Logo Corner Square Accents on Visor -->
+                    <rect x="72" y="137" width="4.5" height="4.5" fill="#ff6555" opacity="0.5"/>
+                    <rect x="163.5" y="90" width="4.5" height="4.5" fill="#ff6555" opacity="0.5"/>
+
+                    <!-- Eye Gaze & Blink Group -->
+                    <g class="ocular-gaze anim-gaze" id="ocular-gaze-group">
+                      <g class="ocular-unit anim-blink anim-pulse" id="ocular-unit-group" filter="url(#liveCoralGlow)">
+                        
+                        <!-- Left Eye Wave (Centered around x=93, y=118) -->
+                        <g id="left-eye-container" transform="translate(81, 102.5) scale(0.52)">
+                          <use href="#live-wave-shape"/>
+                        </g>
+
+                        <!-- Right Eye Wave (Centered around x=147, y=118) -->
+                        <g id="right-eye-container" transform="translate(135, 102.5) scale(0.52)">
+                          <use href="#live-wave-shape"/>
+                        </g>
+
+                      </g>
+                    </g>
+
+                    <!-- Glossy Visor Highlight -->
+                    <path d="M 70 85 C 92 82 148 82 170 85 C 160 97 80 97 70 85 Z" fill="#ffffff" opacity="0.12"/>
+                    <circle cx="166" cy="88" r="1.5" fill="#ffffff" opacity="0.4"/>
+                  </g>
+
+                  <!-- Vocal Comms Arc -->
+                  <path id="mouth-arc-el" class="mouth-arc" d="M 112 165 Q 120 169 128 165" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.65"/>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Live State Indicator Badge -->
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-ink/90 border border-brand-inkBorder text-xs text-slate-300">
+              <span id="active-state-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span id="active-state-label" class="font-medium">Active State: Idle / Attentive</span>
+            </div>
+          </div>
+
+          <!-- Multi-Scale Preview Row -->
+          <div class="bg-brand-inkSurface border border-brand-inkBorder rounded-xl p-4 flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Scale Testing</span>
+            <div class="flex items-center gap-6">
+              <!-- 64px Chat Avatar -->
+              <div class="flex flex-col items-center gap-1">
+                <div class="w-12 h-12 rounded-xl bg-brand-ink border border-brand-inkBorder flex items-center justify-center p-1 overflow-hidden shadow-inner">
+                  <svg class="w-10 h-10" viewBox="0 0 240 240"><use href="#live-advisor-svg"/></svg>
+                </div>
+                <span class="text-[10px] text-slate-500 font-mono">48px</span>
+              </div>
+              <!-- 40px Nav Icon -->
+              <div class="flex flex-col items-center gap-1">
+                <div class="w-10 h-10 rounded-lg bg-brand-ink border border-brand-inkBorder flex items-center justify-center p-1 overflow-hidden">
+                  <svg class="w-8 h-8" viewBox="0 0 240 240"><use href="#live-advisor-svg"/></svg>
+                </div>
+                <span class="text-[10px] text-slate-500 font-mono">32px</span>
+              </div>
+              <!-- 24px Inline Icon -->
+              <div class="flex flex-col items-center gap-1">
+                <div class="w-8 h-8 rounded-md bg-brand-ink border border-brand-inkBorder flex items-center justify-center p-0.5 overflow-hidden">
+                  <svg class="w-6 h-6" viewBox="0 0 240 240"><use href="#live-advisor-svg"/></svg>
+                </div>
+                <span class="text-[10px] text-slate-500 font-mono">24px</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: AI Advisor Controls & States -->
+        <div class="lg:col-span-5 space-y-6">
+          
+          <!-- AI Advisory Behavioral States -->
+          <div class="bg-brand-inkSurface border border-brand-inkBorder rounded-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-4 h-4 text-brand-coral" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                Advisor States
+              </h2>
+              <span class="text-[11px] text-slate-400">Click to preview</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              
+              <!-- State 1: Idle -->
+              <button class="state-selector-btn active p-3 rounded-xl border border-brand-coral bg-brand-coral/10 text-left transition-all flex flex-col justify-between hover:border-brand-coral" data-state="idle">
+                <div class="flex items-center justify-between w-full">
+                  <span class="font-bold text-xs text-white">1. Idle / Attentive</span>
+                  <span class="w-2 h-2 rounded-full bg-brand-coral"></span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Calm breathing pulse, 4s blink cycle, gentle saccade gaze.</p>
+              </button>
+
+              <!-- State 2: Thinking -->
+              <button class="state-selector-btn p-3 rounded-xl border border-brand-inkBorder bg-brand-ink/50 text-left transition-all flex flex-col justify-between hover:border-slate-500" data-state="thinking">
+                <div class="flex items-center justify-between w-full">
+                  <span class="font-bold text-xs text-white">2. Thinking / Analyzing</span>
+                  <span class="w-2 h-2 rounded-full bg-amber-400 opacity-60"></span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Rapid cognitive pulse, fast scanline sweep, focused gaze.</p>
+              </button>
+
+              <!-- State 3: Advising / Speaking -->
+              <button class="state-selector-btn p-3 rounded-xl border border-brand-inkBorder bg-brand-ink/50 text-left transition-all flex flex-col justify-between hover:border-slate-500" data-state="speaking">
+                <div class="flex items-center justify-between w-full">
+                  <span class="font-bold text-xs text-white">3. Advising / Speaking</span>
+                  <span class="w-2 h-2 rounded-full bg-sky-400 opacity-60"></span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Acoustic undulation on wave eyes, vocal arc glow.</p>
+              </button>
+
+              <!-- State 4: Joy / Approved -->
+              <button class="state-selector-btn p-3 rounded-xl border border-brand-inkBorder bg-brand-ink/50 text-left transition-all flex flex-col justify-between hover:border-slate-500" data-state="joy">
+                <div class="flex items-center justify-between w-full">
+                  <span class="font-bold text-xs text-white">4. Joy / Success</span>
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 opacity-60"></span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Smiling arched eyes, cheerful head tilt, warm aura.</p>
+              </button>
+
+              <!-- State 5: Standby / Sleep -->
+              <button class="state-selector-btn sm:col-span-2 p-3 rounded-xl border border-brand-inkBorder bg-brand-ink/50 text-left transition-all flex flex-col justify-between hover:border-slate-500" data-state="sleep">
+                <div class="flex items-center justify-between w-full">
+                  <span class="font-bold text-xs text-white">5. Standby / Sleep Mode</span>
+                  <span class="w-2 h-2 rounded-full bg-slate-500 opacity-60"></span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Eyes compressed to horizontal power slit, dimmed glow, slow float.</p>
+              </button>
+
+            </div>
+          </div>
+
+          <!-- Animation Fine-Tuning Sliders -->
+          <div class="bg-brand-inkSurface border border-brand-inkBorder rounded-2xl p-6 space-y-4">
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <svg class="w-4 h-4 text-brand-coral" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+              Animation Physics
+            </h2>
+
+            <div class="space-y-4 text-xs">
+              <!-- Float Motion -->
+              <div class="space-y-1.5">
+                <div class="flex justify-between text-slate-300">
+                  <span>Head Float Speed</span>
+                  <span id="label-float-speed" class="font-mono text-brand-coral">4.0s</span>
+                </div>
+                <input id="slider-float" type="range" min="1.5" max="8.0" step="0.5" value="4.0" class="w-full accent-brand-coral bg-brand-ink rounded-lg h-1.5 cursor-pointer">
+              </div>
+
+              <!-- Blink Frequency -->
+              <div class="space-y-1.5">
+                <div class="flex justify-between text-slate-300">
+                  <span>Blink Cycle Interval</span>
+                  <span id="label-blink-speed" class="font-mono text-brand-coral">4.2s</span>
+                </div>
+                <input id="slider-blink" type="range" min="2.0" max="8.0" step="0.2" value="4.2" class="w-full accent-brand-coral bg-brand-ink rounded-lg h-1.5 cursor-pointer">
+              </div>
+
+              <!-- Manual Trigger Actions -->
+              <div class="pt-2 flex items-center gap-2">
+                <button id="btn-trigger-blink" class="flex-1 py-2 px-3 rounded-lg bg-brand-ink border border-brand-inkBorder hover:border-brand-coral text-slate-200 text-xs font-medium transition-colors">
+                  Trigger Blink
+                </button>
+                <button id="btn-trigger-speak" class="flex-1 py-2 px-3 rounded-lg bg-brand-ink border border-brand-inkBorder hover:border-brand-coral text-slate-200 text-xs font-medium transition-colors">
+                  Speak Sample
+                </button>
+                <button id="btn-reset-sliders" class="py-2 px-3 rounded-lg bg-brand-ink border border-brand-inkBorder hover:text-white text-slate-400 text-xs transition-colors" title="Reset defaults">
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Brand Philosophy Callout -->
+          <div class="p-4 rounded-xl bg-brand-ink/60 border border-brand-inkBorder space-y-1.5 text-xs text-slate-400">
+            <div class="font-semibold text-slate-200 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-brand-coral" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Brand Alignment (01-brand.md)</span>
+            </div>
+            <p>
+              "Brand character: <strong class="text-white">confident, modern, direct, colourful</strong>. Classic academy with a sharp contemporary face." The agent avoids playful cartoon emoji tropes, delivering executive poise.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: BRAND LOGO MARK PICK & GEOMETRY (Hidden by default) -->
+    <div id="view-brand" class="space-y-8 hidden">
+      
+      <div class="bg-brand-inkSurface border border-brand-inkBorder rounded-2xl p-6 sm:p-8 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-inkBorder pb-6">
+          <div>
+            <div class="inline-flex items-center gap-1.5 text-xs text-brand-coral font-semibold uppercase tracking-wider mb-1">
+              Official Identification
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white">The Mastery Academy Mark</h2>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">Clean SVG extraction with 1:1 mathematical fidelity to <code class="text-slate-300 font-mono">ma-mark-coral.svg</code>.</p>
+          </div>
+          <button id="btn-copy-mark-svg" class="px-4 py-2 rounded-lg bg-brand-coral hover:bg-brand-coralHover text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            <span>Copy Mark SVG</span>
+          </button>
+        </div>
+
+        <!-- 3 Brand Variants Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          <!-- Card 1: Coral Hero Mark -->
+          <div class="rounded-xl border border-brand-inkBorder bg-brand-ink p-6 flex flex-col items-center justify-between space-y-6 text-center">
+            <div class="w-full flex justify-between items-center text-[11px] text-slate-400">
+              <span class="font-mono text-brand-coral font-bold">ma-mark-coral.svg</span>
+              <span class="px-2 py-0.5 rounded bg-brand-coral/15 text-brand-coral font-medium">Hero / Avatar</span>
+            </div>
+            <div class="py-6 flex items-center justify-center">
+              <svg class="w-48 h-auto" viewBox="0 0 140.9 58.72" fill="#ff6555">
+                <path d="M 23.48 0.00 L 23.48 31.04 C 29.89 31.04 35.69 33.59 39.93 37.75 C 40.04 37.86 40.15 37.96 40.25 38.08 L 54.02 51.84 C 58.23 56.05 64.03 58.67 70.45 58.71 L 70.45 27.68 C 64.03 27.64 58.23 25.02 54.02 20.81 L 52.96 19.77 L 39.87 6.67 C 35.64 2.54 29.86 0.00 23.48 0.00 Z" />
+                <path d="M 70.45 0.00 L 70.45 31.04 C 76.85 31.04 82.66 33.59 86.89 37.75 C 87.01 37.86 87.12 37.96 87.21 38.08 L 100.98 51.84 C 105.19 56.05 111.00 58.67 117.41 58.71 L 117.41 27.68 C 111.00 27.64 105.19 25.02 100.98 20.81 L 99.93 19.77 L 86.83 6.67 C 82.61 2.54 76.83 0.00 70.45 0.00 Z" />
+                <path d="M 0.00 55.36 L 23.48 55.36 L 23.48 27.68 L 0.00 27.68 Z" />
+                <path d="M 117.41 31.04 L 140.90 31.04 L 140.90 3.35 L 117.41 3.35 Z" />
+              </svg>
+            </div>
+            <div class="text-xs text-slate-400">
+              Used on <strong class="text-slate-200">Ink fields, dark photos, favicons</strong>, and app icons.
+            </div>
+          </div>
+
+          <!-- Card 2: All Ink Mark -->
+          <div class="rounded-xl border border-slate-200 bg-white p-6 flex flex-col items-center justify-between space-y-6 text-center text-slate-800">
+            <div class="w-full flex justify-between items-center text-[11px] text-slate-500">
+              <span class="font-mono font-bold text-slate-900">ma-mark-ink.svg</span>
+              <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium">Light Surface</span>
+            </div>
+            <div class="py-6 flex items-center justify-center">
+              <svg class="w-48 h-auto" viewBox="0 0 140.9 58.72" fill="#0b0f19">
+                <path d="M 23.48 0.00 L 23.48 31.04 C 29.89 31.04 35.69 33.59 39.93 37.75 C 40.04 37.86 40.15 37.96 40.25 38.08 L 54.02 51.84 C 58.23 56.05 64.03 58.67 70.45 58.71 L 70.45 27.68 C 64.03 27.64 58.23 25.02 54.02 20.81 L 52.96 19.77 L 39.87 6.67 C 35.64 2.54 29.86 0.00 23.48 0.00 Z" />
+                <path d="M 70.45 0.00 L 70.45 31.04 C 76.85 31.04 82.66 33.59 86.89 37.75 C 87.01 37.86 87.12 37.96 87.21 38.08 L 100.98 51.84 C 105.19 56.05 111.00 58.67 117.41 58.71 L 117.41 27.68 C 111.00 27.64 105.19 25.02 100.98 20.81 L 99.93 19.77 L 86.83 6.67 C 82.61 2.54 76.83 0.00 70.45 0.00 Z" />
+                <path d="M 0.00 55.36 L 23.48 55.36 L 23.48 27.68 L 0.00 27.68 Z" />
+                <path d="M 117.41 31.04 L 140.90 31.04 L 140.90 3.35 L 117.41 3.35 Z" />
+              </svg>
+            </div>
+            <div class="text-xs text-slate-500">
+              Used on <strong class="text-slate-900">Coral, cream, teal, sky, yellow</strong> fields.
+            </div>
+          </div>
+
+          <!-- Card 3: All White Mark -->
+          <div class="rounded-xl border border-brand-inkBorder bg-brand-coral p-6 flex flex-col items-center justify-between space-y-6 text-center text-white">
+            <div class="w-full flex justify-between items-center text-[11px] text-white/80">
+              <span class="font-mono font-bold">ma-mark-white.svg</span>
+              <span class="px-2 py-0.5 rounded bg-white/20 font-medium">Hero Contrast</span>
+            </div>
+            <div class="py-6 flex items-center justify-center">
+              <svg class="w-48 h-auto" viewBox="0 0 140.9 58.72" fill="#ffffff">
+                <path d="M 23.48 0.00 L 23.48 31.04 C 29.89 31.04 35.69 33.59 39.93 37.75 C 40.04 37.86 40.15 37.96 40.25 38.08 L 54.02 51.84 C 58.23 56.05 64.03 58.67 70.45 58.71 L 70.45 27.68 C 64.03 27.64 58.23 25.02 54.02 20.81 L 52.96 19.77 L 39.87 6.67 C 35.64 2.54 29.86 0.00 23.48 0.00 Z" />
+                <path d="M 70.45 0.00 L 70.45 31.04 C 76.85 31.04 82.66 33.59 86.89 37.75 C 87.01 37.86 87.12 37.96 87.21 38.08 L 100.98 51.84 C 105.19 56.05 111.00 58.67 117.41 58.71 L 117.41 27.68 C 111.00 27.64 105.19 25.02 100.98 20.81 L 99.93 19.77 L 86.83 6.67 C 82.61 2.54 76.83 0.00 70.45 0.00 Z" />
+                <path d="M 0.00 55.36 L 23.48 55.36 L 23.48 27.68 L 0.00 27.68 Z" />
+                <path d="M 117.41 31.04 L 140.90 31.04 L 140.90 3.35 L 117.41 3.35 Z" />
+              </svg>
+            </div>
+            <div class="text-xs text-white/90">
+              Used on <strong class="text-white">Purple, deep ink, dark photographic</strong> headers.
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Geometry Blueprint -->
+        <div class="bg-brand-ink/90 border border-brand-inkBorder rounded-xl p-6 space-y-4">
+          <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-coral" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Anatomy &amp; Eye Translation Map
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+            <div class="p-3 bg-brand-inkSurface rounded-lg border border-brand-inkBorder">
+              <span class="text-brand-coral font-bold block mb-1">Left Wave Module</span>
+              <p class="text-slate-400">Dimensions: 46.97 &times; 58.71. Transformed into the <strong class="text-slate-200">Left Advisor Eye</strong>.</p>
+            </div>
+            <div class="p-3 bg-brand-inkSurface rounded-lg border border-brand-inkBorder">
+              <span class="text-brand-coral font-bold block mb-1">Right Wave Module</span>
+              <p class="text-slate-400">Identical twin wave offset by +46.97px. Transformed into the <strong class="text-slate-200">Right Advisor Eye</strong>.</p>
+            </div>
+            <div class="p-3 bg-brand-inkSurface rounded-lg border border-brand-inkBorder">
+              <span class="text-brand-coral font-bold block mb-1">Corner Anchor Squares</span>
+              <p class="text-slate-400">Dimensions: 23.48 &times; 27.68. Transformed into the <strong class="text-slate-200">Visor HUD micro-indicators</strong>.</p>
+            </div>
+            <div class="p-3 bg-brand-inkSurface rounded-lg border border-brand-inkBorder">
+              <span class="text-brand-coral font-bold block mb-1">Clear Space Module</span>
+              <p class="text-slate-400">One anchor square unit clearance preserved on all sides across the visor chassis.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VIEW 3: SVG CODE & EXPORT STUDIO (Hidden by default) -->
+    <div id="view-code" class="space-y-6 hidden">
+      
+      <div class="bg-brand-inkSurface border border-brand-inkBorder rounded-2xl p-6 sm:p-8 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-inkBorder pb-4">
+          <div>
+            <h2 class="text-xl font-bold text-white">Production SVG Assets &amp; Code</h2>
+            <p class="text-xs text-slate-400 mt-1">Ready for copy-paste into Web Apps, React, Vue, mobile apps, or Figma.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="code-tab-agent" class="code-tab-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-coral text-white">AI Advisor SVG</button>
+            <button id="code-tab-mark" class="code-tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white bg-brand-ink">Logo Mark SVG</button>
+          </div>
+        </div>
+
+        <!-- Code Block Container -->
+        <div class="relative rounded-xl border border-brand-inkBorder bg-brand-ink p-4 font-mono text-xs overflow-hidden">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-brand-inkBorder text-slate-400">
+            <span id="code-filename-label" class="text-brand-coral font-semibold">ai-advisor-agent-animated.svg</span>
+            <button id="btn-copy-active-code" class="px-3 py-1 rounded bg-brand-inkSurface hover:bg-brand-inkBorder text-white text-[11px] font-sans font-medium flex items-center gap-1.5 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              <span>Copy Code</span>
+            </button>
+          </div>
+          <pre id="code-display" class="overflow-x-auto max-h-96 text-slate-300 leading-relaxed"></pre>
+        </div>
+
+        <!-- Integration Guide -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+          <div class="p-4 bg-brand-ink rounded-xl border border-brand-inkBorder space-y-2">
+            <span class="font-bold text-white flex items-center gap-1.5">
+              <span class="text-brand-coral font-mono">&lt;img&gt;</span> or SVG Embed
+            </span>
+            <p class="text-slate-400 leading-relaxed">
+              Drop <code class="text-brand-coral">ai-advisor-agent-animated.svg</code> directly into an <code class="text-slate-200">&lt;img src="..."&gt;</code> or inline SVG. All animations run automatically via native self-contained CSS keyframes without any JavaScript required.
+            </p>
+          </div>
+          <div class="p-4 bg-brand-ink rounded-xl border border-brand-inkBorder space-y-2">
+            <span class="font-bold text-white flex items-center gap-1.5">
+              Dynamic State Control
+            </span>
+            <p class="text-slate-400 leading-relaxed">
+              Add class <code class="text-brand-coral">.state-thinking</code>, <code class="text-brand-coral">.state-speaking</code>, or <code class="text-brand-coral">.state-joy</code> to the SVG element to trigger state animations in your chat interface or frontend framework.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-12 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2 bg-brand-coral text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="toast-msg">Copied to clipboard!</span>
+  </div>
+
+  <script>
+    // State Store
+    const state = {
+      activeView: 'agent',
+      currentState: 'idle',
+      ocularMode: 'parallel',
+      stageTheme: 'ink',
+      codeTab: 'agent',
+      floatSpeed: 4.0,
+      blinkSpeed: 4.2,
+      rawAgentSvg: '',
+      rawMarkSvg: ''
+    };
+
+    // Elements
+    const views = {
+      agent: document.getElementById('view-agent'),
+      brand: document.getElementById('view-brand'),
+      code: document.getElementById('view-code'),
+    };
+    const navTabs = {
+      agent: document.getElementById('nav-tab-agent'),
+      brand: document.getElementById('nav-tab-brand'),
+      code: document.getElementById('nav-tab-code'),
+    };
+    const svgCanvas = document.getElementById('svg-canvas-container');
+    const liveSvg = document.getElementById('live-advisor-svg');
+    const rightEyeContainer = document.getElementById('right-eye-container');
+    const ocularGaze = document.getElementById('ocular-gaze-group');
+    const ocularUnit = document.getElementById('ocular-unit-group');
+    const stateDot = document.getElementById('active-state-dot');
+    const stateLabel = document.getElementById('active-state-label');
+    const codeDisplay = document.getElementById('code-display');
+    const codeFilenameLabel = document.getElementById('code-filename-label');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-msg');
+
+    // Show Toast Notification
+    function showToast(message) {
+      toastMsg.textContent = message;
+      toast.classList.remove('translate-y-12', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.add('translate-y-12', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2500);
+    }
+
+    // Switch Main Views
+    function switchView(viewName) {
+      state.activeView = viewName;
+      Object.keys(views).forEach(key => {
+        if (key === viewName) {
+          views[key].classList.remove('hidden');
+          navTabs[key].classList.add('bg-brand-coral', 'text-white', 'font-semibold', 'shadow-sm');
+          navTabs[key].classList.remove('text-slate-400');
+        } else {
+          views[key].classList.add('hidden');
+          navTabs[key].classList.remove('bg-brand-coral', 'text-white', 'font-semibold', 'shadow-sm');
+          navTabs[key].classList.add('text-slate-400');
+        }
+      });
+      if (viewName === 'code') renderCode();
+    }
+
+    navTabs.agent.addEventListener('click', () => switchView('agent'));
+    navTabs.brand.addEventListener('click', () => switchView('brand'));
+    navTabs.code.addEventListener('click', () => switchView('code'));
+
+    // Switch Advisor Behavioral States
+    const stateDescriptions = {
+      idle: { label: 'Active State: Idle / Attentive', color: 'bg-emerald-400' },
+      thinking: { label: 'Active State: Thinking / Deep Analysis', color: 'bg-amber-400' },
+      speaking: { label: 'Active State: Advising / Speaking Voice Output', color: 'bg-sky-400' },
+      joy: { label: 'Active State: Joy / Success & Agreement', color: 'bg-emerald-400' },
+      sleep: { label: 'Active State: Standby / Sleep Mode', color: 'bg-slate-400' },
+    };
+
+    document.querySelectorAll('.state-selector-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetState = btn.getAttribute('data-state');
+        state.currentState = targetState;
+
+        // Update Buttons UI
+        document.querySelectorAll('.state-selector-btn').forEach(b => {
+          b.classList.remove('active', 'border-brand-coral', 'bg-brand-coral/10');
+          b.classList.add('border-brand-inkBorder', 'bg-brand-ink/50');
+        });
+        btn.classList.add('active', 'border-brand-coral', 'bg-brand-coral/10');
+        btn.classList.remove('border-brand-inkBorder', 'bg-brand-ink/50');
+
+        // Apply state classes to SVG wrapper
+        liveSvg.classList.remove('state-idle', 'state-thinking', 'state-speaking', 'state-joy', 'state-sleep');
+        liveSvg.classList.add('state-' + targetState);
+
+        // Update Status Badge
+        const meta = stateDescriptions[targetState];
+        stateLabel.textContent = meta.label;
+        stateDot.className = 'w-2 h-2 rounded-full ' + meta.color + ' animate-pulse';
+
+        showToast('Switched to: ' + targetState.toUpperCase() + ' state');
+      });
+    });
+
+    // Ocular Alignment Toggle: Parallel (Exact Logo) vs Mirrored Symmetrical
+    const btnModeParallel = document.getElementById('btn-mode-parallel');
+    const btnModeMirror = document.getElementById('btn-mode-mirror');
+
+    btnModeParallel.addEventListener('click', () => {
+      state.ocularMode = 'parallel';
+      btnModeParallel.classList.add('active', 'bg-brand-coral', 'text-white');
+      btnModeParallel.classList.remove('text-slate-400');
+      btnModeMirror.classList.remove('active', 'bg-brand-coral', 'text-white');
+      btnModeMirror.classList.add('text-slate-400');
+
+      // Right eye: Parallel exact logo translation
+      rightEyeContainer.setAttribute('transform', 'translate(135, 102.5) scale(0.52)');
+      showToast('Ocular mode: Parallel (Signature Brand Mark)');
+    });
+
+    btnModeMirror.addEventListener('click', () => {
+      state.ocularMode = 'mirror';
+      btnModeMirror.classList.add('active', 'bg-brand-coral', 'text-white');
+      btnModeMirror.classList.remove('text-slate-400');
+      btnModeParallel.classList.remove('active', 'bg-brand-coral', 'text-white');
+      btnModeParallel.classList.add('text-slate-400');
+
+      // Right eye: Symmetrical horizontal mirror
+      // Center is around x=147 -> flip scale(-0.52, 0.52)
+      rightEyeContainer.setAttribute('transform', 'translate(159.5, 102.5) scale(-0.52, 0.52)');
+      showToast('Ocular mode: Symmetrical Inward Gaze');
+    });
+
+    // Stage Theme Selector
+    const stageBtns = {
+      ink: document.getElementById('stage-ink'),
+      white: document.getElementById('stage-white'),
+      coral: document.getElementById('stage-coral'),
+    };
+
+    stageBtns.ink.addEventListener('click', () => {
+      svgCanvas.className = 'bg-brand-inkSurface border border-brand-inkBorder rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-xl transition-all';
+      updateStageButtons('ink');
+    });
+
+    stageBtns.white.addEventListener('click', () => {
+      svgCanvas.className = 'bg-slate-100 border border-slate-300 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-xl transition-all';
+      updateStageButtons('white');
+    });
+
+    stageBtns.coral.addEventListener('click', () => {
+      svgCanvas.className = 'bg-brand-coral border border-brand-coralHover rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-xl transition-all';
+      updateStageButtons('coral');
+    });
+
+    function updateStageButtons(theme) {
+      state.stageTheme = theme;
+      Object.keys(stageBtns).forEach(k => {
+        if (k === theme) stageBtns[k].classList.add('border-2', 'border-brand-coral');
+        else stageBtns[k].classList.remove('border-2', 'border-brand-coral');
+      });
+    }
+
+    // Sliders for Physics
+    const sliderFloat = document.getElementById('slider-float');
+    const sliderBlink = document.getElementById('slider-blink');
+    const labelFloat = document.getElementById('label-float-speed');
+    const labelBlink = document.getElementById('label-blink-speed');
+
+    sliderFloat.addEventListener('input', (e) => {
+      const val = e.target.value;
+      labelFloat.textContent = val + 's';
+      document.documentElement.style.setProperty('--speed-float', val + 's');
+    });
+
+    sliderBlink.addEventListener('input', (e) => {
+      const val = e.target.value;
+      labelBlink.textContent = val + 's';
+      document.documentElement.style.setProperty('--speed-blink', val + 's');
+    });
+
+    document.getElementById('btn-reset-sliders').addEventListener('click', () => {
+      sliderFloat.value = 4.0;
+      sliderBlink.value = 4.2;
+      labelFloat.textContent = '4.0s';
+      labelBlink.textContent = '4.2s';
+      document.documentElement.style.setProperty('--speed-float', '4s');
+      document.documentElement.style.setProperty('--speed-blink', '4.2s');
+      showToast('Reset physics sliders to default');
+    });
+
+    // Manual Triggers
+    document.getElementById('btn-trigger-blink').addEventListener('click', () => {
+      ocularUnit.style.animation = 'none';
+      void ocularUnit.offsetWidth;
+      ocularUnit.style.animation = 'maBlink 0.35s ease-in-out';
+      setTimeout(() => {
+        ocularUnit.style.animation = '';
+      }, 400);
+      showToast('Manual Blink triggered');
+    });
+
+    document.getElementById('btn-trigger-speak').addEventListener('click', () => {
+      liveSvg.classList.add('state-speaking');
+      stateLabel.textContent = stateDescriptions.speaking.label;
+      stateDot.className = 'w-2 h-2 rounded-full bg-sky-400 animate-pulse';
+      showToast('Speaking speech synthesis simulation');
+      setTimeout(() => {
+        liveSvg.classList.remove('state-speaking');
+        liveSvg.classList.add('state-' + state.currentState);
+        stateLabel.textContent = stateDescriptions[state.currentState].label;
+        stateDot.className = 'w-2 h-2 rounded-full ' + stateDescriptions[state.currentState].color + ' animate-pulse';
+      }, 2400);
+    });
+
+    // Code & Downloads Management
+    const markSvgCode = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140.9 58.72" width="140.9" height="58.72" role="img" aria-label="Mastery Academy mark">
+  <title>Mastery Academy Mark</title>
+  <desc>Official Mastery Academy geometric wave mark in brand coral #ff6555</desc>
+  <g fill="var(--logo-mark, #ff6555)">
+    <!-- Left Wave Module -->
+    <path d="M 23.48 0.00 L 23.48 31.04 C 29.89 31.04 35.69 33.59 39.93 37.75 C 40.04 37.86 40.15 37.96 40.25 38.08 L 54.02 51.84 C 58.23 56.05 64.03 58.67 70.45 58.71 L 70.45 27.68 C 64.03 27.64 58.23 25.02 54.02 20.81 L 52.96 19.77 L 39.87 6.67 C 35.64 2.54 29.86 0.00 23.48 0.00 Z" />
+    <!-- Right Wave Module -->
+    <path d="M 70.45 0.00 L 70.45 31.04 C 76.85 31.04 82.66 33.59 86.89 37.75 C 87.01 37.86 87.12 37.96 87.21 38.08 L 100.98 51.84 C 105.19 56.05 111.00 58.67 117.41 58.71 L 117.41 27.68 C 111.00 27.64 105.19 25.02 100.98 20.81 L 99.93 19.77 L 86.83 6.67 C 82.61 2.54 76.83 0.00 70.45 0.00 Z" />
+    <!-- Bottom-Left Anchor Square -->
+    <path d="M 0.00 55.36 L 23.48 55.36 L 23.48 27.68 L 0.00 27.68 Z" />
+    <!-- Top-Right Anchor Square -->
+    <path d="M 117.41 31.04 L 140.90 31.04 L 140.90 3.35 L 117.41 3.35 Z" />
+  </g>
+</svg>`;
+
+    const agentSvgCode = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="Mastery Academy AI Advisor Agent">
+  <title>Mastery Academy - AI Advisor Agent</title>
+  <defs>
+    <linearGradient id="chassisGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#edf2f7"/>
+    </linearGradient>
+    <linearGradient id="visorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0c121e"/>
+      <stop offset="50%" stop-color="#070b13"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </linearGradient>
+    <linearGradient id="coralGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff7b6d"/>
+      <stop offset="100%" stop-color="#ff5442"/>
+    </linearGradient>
+    <linearGradient id="scanGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,101,85,0)"/>
+      <stop offset="50%" stop-color="rgba(255,101,85,0.2)"/>
+      <stop offset="100%" stop-color="rgba(255,101,85,0)"/>
+    </linearGradient>
+    <filter id="coralGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#ff6555" flood-opacity="0.95"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#ff6555" flood-opacity="0.5"/>
+    </filter>
+    <clipPath id="visorClip">
+      <rect x="64" y="81" width="112" height="74" rx="26" ry="26"/>
+    </clipPath>
+    <g id="ma-wave-eye">
+      <path d="M 0 0 L 0 31.04 C 6.41 31.04 12.21 33.59 16.45 37.75 C 16.56 37.86 16.67 37.96 16.77 38.08 L 30.54 51.84 C 34.75 56.05 40.55 58.67 46.97 58.71 L 46.97 27.68 C 40.55 27.64 34.75 25.02 30.54 20.81 L 29.48 19.77 L 16.39 6.67 C 12.16 2.54 6.38 0 0 0 Z" fill="url(#coralGrad)"/>
+    </g>
+  </defs>
+  <style>
+    .agent-head { animation: maFloat 4s ease-in-out infinite; transform-origin: 120px 118px; }
+    .ocular-unit { animation: maBlink 4.2s cubic-bezier(0.77, 0, 0.175, 1) infinite; transform-origin: 120px 118px; }
+    .ocular-gaze { animation: maGaze 7s ease-in-out infinite; }
+    .coral-pulse { animation: maPulse 2.8s ease-in-out infinite; }
+    .ear-led { animation: maLed 2s ease-in-out infinite; }
+    .scanline { animation: maScan 4.5s linear infinite; }
+    @keyframes maFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    @keyframes maBlink { 0%, 42%, 46%, 80%, 84%, 100% { transform: scaleY(1); } 44%, 82% { transform: scaleY(0.08); } }
+    @keyframes maGaze { 0%, 35%, 100% { transform: translateX(0); } 40%, 60% { transform: translateX(-4px); } 65%, 85% { transform: translateX(4px); } 90% { transform: translateX(0); } }
+    @keyframes maPulse { 0%, 100% { opacity: 0.95; } 50% { opacity: 1; filter: drop-shadow(0 0 5px #ff6555); } }
+    @keyframes maLed { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+    @keyframes maScan { 0% { transform: translateY(-75px); opacity: 0; } 20%, 80% { opacity: 0.7; } 100% { transform: translateY(75px); opacity: 0; } }
+  </style>
+  <g class="agent-head">
+    <path d="M 86 182 C 86 176 154 176 154 182 L 160 196 C 160 200 80 200 80 196 Z" fill="#94a3b8" opacity="0.35"/>
+    <ellipse cx="120" cy="195" rx="34" ry="4" fill="#64748b" opacity="0.25"/>
+    <g class="ear-pod">
+      <rect x="30" y="96" width="16" height="44" rx="8" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+      <rect x="35" y="103" width="6" height="30" rx="3" fill="#0f172a"/>
+      <circle class="ear-led" cx="38" cy="118" r="3" fill="#ff6555" filter="url(#coralGlow)"/>
+      <rect x="194" y="96" width="16" height="44" rx="8" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+      <rect x="199" y="103" width="6" height="30" rx="3" fill="#0f172a"/>
+      <circle class="ear-led" cx="202" cy="118" r="3" fill="#ff6555" filter="url(#coralGlow)"/>
+    </g>
+    <path d="M 115 56 L 115 44 C 115 41 125 41 125 44 L 125 56 Z" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1"/>
+    <circle cx="120" cy="40" r="3.5" fill="#ff6555" filter="url(#coralGlow)"/>
+    <rect x="46" y="54" width="148" height="128" rx="42" fill="url(#chassisGrad)" stroke="#e2e8f0" stroke-width="2"/>
+    <rect x="61" y="78" width="118" height="80" rx="29" fill="#1e293b"/>
+    <rect x="64" y="81" width="112" height="74" rx="26" fill="url(#visorGrad)"/>
+    <g clip-path="url(#visorClip)">
+      <line x1="64" y1="105" x2="176" y2="105" stroke="#334155" stroke-width="0.5" stroke-dasharray="2 3" opacity="0.3"/>
+      <line x1="64" y1="131" x2="176" y2="131" stroke="#334155" stroke-width="0.5" stroke-dasharray="2 3" opacity="0.3"/>
+      <rect class="scanline" x="64" y="81" width="112" height="24" fill="url(#scanGrad)"/>
+      <rect x="72" y="137" width="4.5" height="4.5" fill="#ff6555" opacity="0.5"/>
+      <rect x="163.5" y="90" width="4.5" height="4.5" fill="#ff6555" opacity="0.5"/>
+      <g class="ocular-gaze">
+        <g class="ocular-unit coral-pulse" filter="url(#coralGlow)">
+          <g transform="translate(81, 102.5) scale(0.52)"><use href="#ma-wave-eye"/></g>
+          <g transform="translate(135, 102.5) scale(0.52)"><use href="#ma-wave-eye"/></g>
+        </g>
+      </g>
+      <path d="M 70 85 C 92 82 148 82 170 85 C 160 97 80 97 70 85 Z" fill="#ffffff" opacity="0.12"/>
+      <circle cx="166" cy="88" r="1.5" fill="#ffffff" opacity="0.4"/>
+    </g>
+    <path d="M 112 165 Q 120 169 128 165" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.65"/>
+  </g>
+</svg>`;
+
+    function renderCode() {
+      if (state.codeTab === 'agent') {
+        codeDisplay.textContent = agentSvgCode;
+        codeFilenameLabel.textContent = 'ai-advisor-agent-animated.svg (4.1 KB)';
+      } else {
+        codeDisplay.textContent = markSvgCode;
+        codeFilenameLabel.textContent = 'mastery-academy-mark.svg (1.4 KB)';
+      }
+    }
+
+    const codeTabAgent = document.getElementById('code-tab-agent');
+    const codeTabMark = document.getElementById('code-tab-mark');
+
+    codeTabAgent.addEventListener('click', () => {
+      state.codeTab = 'agent';
+      codeTabAgent.classList.add('bg-brand-coral', 'text-white', 'font-semibold');
+      codeTabAgent.classList.remove('text-slate-400', 'bg-brand-ink');
+      codeTabMark.classList.remove('bg-brand-coral', 'text-white', 'font-semibold');
+      codeTabMark.classList.add('text-slate-400', 'bg-brand-ink');
+      renderCode();
+    });
+
+    codeTabMark.addEventListener('click', () => {
+      state.codeTab = 'mark';
+      codeTabMark.classList.add('bg-brand-coral', 'text-white', 'font-semibold');
+      codeTabMark.classList.remove('text-slate-400', 'bg-brand-ink');
+      codeTabAgent.classList.remove('bg-brand-coral', 'text-white', 'font-semibold');
+      codeTabAgent.classList.add('text-slate-400', 'bg-brand-ink');
+      renderCode();
+    });
+
+    // Copy Handlers
+    function copyText(txt, label) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => showToast(label + ' copied to clipboard!'))
+          .catch(() => fallbackCopy(txt, label));
+      } else {
+        fallbackCopy(txt, label);
+      }
+    }
+
+    function fallbackCopy(txt, label) {
+      const ta = document.createElement('textarea');
+      ta.value = txt;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast(label + ' copied to clipboard!');
+      } catch (err) {
+        showToast('Failed to copy. Please manually select code.');
+      }
+      document.body.removeChild(ta);
+    }
+
+    document.getElementById('btn-copy-active-code').addEventListener('click', () => {
+      copyText(state.codeTab === 'agent' ? agentSvgCode : markSvgCode, state.codeTab === 'agent' ? 'AI Advisor SVG' : 'Brand Mark SVG');
+    });
+
+    document.getElementById('btn-copy-mark-svg').addEventListener('click', () => {
+      copyText(markSvgCode, 'Mastery Academy Mark SVG');
+    });
+
+    // Download SVG Handlers
+    function triggerDownload(content, filename) {
+      const blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Downloaded: ' + filename);
+    }
+
+    document.getElementById('btn-quick-download').addEventListener('click', () => {
+      triggerDownload(agentSvgCode, 'ai-advisor-agent-animated.svg');
+    });
+
+    // Initial render
+    renderCode();
+  </script>
+</body>
+</html>

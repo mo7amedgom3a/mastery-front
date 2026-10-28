@@ -6,7 +6,7 @@ import { fromMinor } from "@/lib/format";
 
 import { resolveCatalogProductId } from "./catalog-ids";
 import { shopItemHref, shopKeyFromSlug } from "./product-links";
-import { parseShopKey } from "./contract";
+import { parseShopKey, type AddonCode } from "./contract";
 import { useShopStore, type CartLine } from "./store";
 
 /**
@@ -32,9 +32,14 @@ export function mirrorAccountCart(cart: CartResponse, previous: readonly CartLin
         addedAt: before?.addedAt ?? index,
         productId: line.product_id,
         cartItemId: line.cart_item_id,
+        addons: selectedAddons(line),
       },
     ];
   });
+}
+
+function selectedAddons(line: NonNullable<CartResponse["lines"]>[number]): AddonCode[] {
+  return (line.addons ?? []).filter((addon) => addon.selected).map((addon) => addon.code as AddonCode);
 }
 
 /** 404: not a priced catalog product. 409: not purchasable. Neither is worth logging. */
@@ -65,7 +70,7 @@ export function syncAccountCart(): Promise<void> {
       // One at a time: the backend replaces a line's quantity, so parallel writes gain nothing.
       for (const line of guestLines) {
         try {
-          cart = await addCartItem(await resolveCatalogProductId(line), 1);
+          cart = await addCartItem(await resolveCatalogProductId(line), 1, undefined, line.addons);
         } catch (error) {
           if (!expected(error)) console.error("[cart] merge failed", line.key, error);
           failed.push(line);
@@ -91,7 +96,7 @@ export async function pushCartLine(line: CartLine): Promise<void> {
   const shop = useShopStore.getState();
   try {
     const productId = await resolveCatalogProductId(line);
-    const cart = await addCartItem(productId, 1);
+    const cart = await addCartItem(productId, 1, undefined, line.addons);
     const added = cart.lines?.find((entry) => entry.product_id === productId);
     shop.setCartLineAccount(line.key, productId, added?.cart_item_id);
     shop.bumpAccountCart();

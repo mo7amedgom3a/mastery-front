@@ -10,6 +10,7 @@ import {
   quoteCart,
   type CheckoutSessionRequest,
   type CheckoutSessionResponse,
+  type ShippingAddress,
 } from "@/lib/api/commerce";
 import { createSubscriptionCheckout, type SubscriptionCheckoutResponse } from "@/lib/api/subscriptions";
 import { trackAuth, trackCheckout } from "@/lib/observability/behavior";
@@ -26,7 +27,8 @@ import { incentivesRequest, useCheckoutIncentives } from "../model/incentives-st
 export type CheckoutPayment = { provider: "stripe" } | { provider: "tamara"; phone: string };
 
 export type CheckoutTarget =
-  | { mode: "cart"; payment?: CheckoutPayment }
+  /** `shippingAddress`: required when the cart holds a printed certificate. */
+  | { mode: "cart"; payment?: CheckoutPayment; shippingAddress?: ShippingAddress | null }
   | { mode: "product"; item: ShopItem; payment?: CheckoutPayment }
   /** A live diploma bought straight from its detail page: known product + cohort, no legacy item. */
   | { mode: "diploma"; productId: string; cohortId: string; payment?: CheckoutPayment }
@@ -113,7 +115,10 @@ function paymentFields(payment: CheckoutPayment) {
   };
 }
 
-async function prepareCart(payment: CheckoutPayment): Promise<{ body: CheckoutSessionRequest; fingerprint: string }> {
+async function prepareCart(
+  payment: CheckoutPayment,
+  shippingAddress?: ShippingAddress | null,
+): Promise<{ body: CheckoutSessionRequest; fingerprint: string }> {
   // Lines added as a guest, or on another tab, reach the account cart before it is charged.
   await syncAccountCart();
   const quote = await quoteCart(undefined, incentivesRequest(useCheckoutIncentives.getState()));
@@ -121,6 +126,10 @@ async function prepareCart(payment: CheckoutPayment): Promise<{ body: CheckoutSe
   if (lines.length === 0) throw new CheckoutProblem("سلتك فارغة.");
   if (quote.unavailable_product_ids.length > 0) {
     throw new CheckoutProblem("بعض المنتجات في سلتك لم تعد متاحة للشراء. أزلها ثم أكمل الدفع.");
+  }
+  const needsShipping = lines.some((line) => (line.addons ?? []).some((addon) => addon.selected && addon.requires_shipping));
+  if (needsShipping && !shippingAddress) {
+    throw new CheckoutProblem("أدخل عنوان شحن الشهادة المطبوعة ثم أكمل الدفع.");
   }
   // Only what the quote accepted is sent: a rejected code stays on screen but never fails the payment.
   const couponCode = quote.coupon?.status === "applied" ? quote.coupon.code : null;
@@ -130,11 +139,19 @@ async function prepareCart(payment: CheckoutPayment): Promise<{ body: CheckoutSe
   const fingerprint = [
     "cart",
     payment.provider,
-    lines.map((line) => `${line.product_id}x${line.quantity}`).toSorted().join(","),
+    lines
+      .map((line) => {
+        const addons = (line.addons ?? []).filter((addon) => addon.selected).map((addon) => addon.code).toSorted();
+        return `${line.product_id}x${line.quantity}${addons.length ? `+${addons.join("+")}` : ""}`;
+      })
+      .toSorted()
+      .join(","),
     quote.total_amount_minor,
     quote.currency_code,
     couponCode ?? "",
     voucherIds.toSorted().join(","),
+    // Another address is another request for the same key: it must open its own session.
+    needsShipping && shippingAddress ? JSON.stringify(shippingAddress) : "",
   ].join("|");
   return {
     body: {
@@ -143,6 +160,7 @@ async function prepareCart(payment: CheckoutPayment): Promise<{ body: CheckoutSe
       ...paymentFields(payment),
       ...(couponCode ? { coupon_code: couponCode } : {}),
       ...(voucherIds.length ? { voucher_ids: voucherIds } : {}),
+      ...(needsShipping && shippingAddress ? { shipping_address: shippingAddress } : {}),
     },
     fingerprint,
   };
@@ -272,7 +290,7 @@ export function useStartCheckout() {
       } else {
         const prepared =
           target.mode === "cart"
-            ? await prepareCart(payment)
+            ? await prepareCart(payment, target.shippingAddress)
             : target.mode === "product"
               ? await prepareProduct(target.item, payment)
               : await prepareDiploma(target.productId, target.cohortId, payment);

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import type { AuthCustomer } from "@/lib/auth/contract";
 import { useAuthStore } from "@/lib/auth/store";
 
 import { authErrorMessage } from "../model/messages";
@@ -18,7 +19,7 @@ type FieldErrors = Partial<Record<keyof QALoginInput, string>>;
  * Development-only sign-in for the QA customer and expert accounts with the shared QA key; no
  * emailed code. Shown only when `NEXT_PUBLIC_QA_LOGIN_ENABLED=true`.
  */
-export function QALoginForm({ next }: { next: string }) {
+export function QALoginForm({ next, onSignedIn }: { next: string; onSignedIn?: (customer: AuthCustomer) => void }) {
   const router = useRouter();
   const emailId = useId();
   const keyId = useId();
@@ -45,6 +46,10 @@ export function QALoginForm({ next }: { next: string }) {
     let destination: string;
     try {
       const customer = await useAuthStore.getState().qaLogin(parsed.data.email, parsed.data.key);
+      if (onSignedIn) {
+        onSignedIn(customer);
+        return;
+      }
       destination = await landingPath(next, customer.customer_id);
     } catch (error) {
       setFormError(authErrorMessage(error));

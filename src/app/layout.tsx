@@ -8,6 +8,7 @@ import { ShopAuthBridge } from "@/components/shop/shop-auth-bridge";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { getSiteUrl, isIndexable } from "@/config/env";
 import { baseOpenGraph, siteConfig } from "@/config/site";
+import { AdvisorWidget } from "@/features/advisor/components/advisor-widget";
 import { getExploreMenu } from "@/features/navigation/api/get-menu-data";
 import { ExploreMenuProvider } from "@/features/navigation/components/menu-context";
 
@@ -108,6 +109,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
           <ExploreMenuProvider menu={menu}>
             {children}
             <ShopAuthBridge />
+            <AdvisorWidget />
             <ReferralTracking />
           </ExploreMenuProvider>
         </MotionProvider>

@@ -4,7 +4,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { ShopItemKind } from "./contract";
+import type { AddonCode, ShopItemKind } from "./contract";
 
 export type { ShopItemKind } from "./contract";
 
@@ -36,6 +36,8 @@ export type CartLine = ShopItem & {
   productId?: string;
   /** The account cart's line id (`b2c.cart_items`); set once the line is on the account. */
   cartItemId?: string;
+  /** Certificate add-ons chosen on the line (CPD mark, printed copy). */
+  addons?: AddonCode[];
 };
 
 type PersistedShop = {
@@ -66,6 +68,7 @@ type ShopState = PersistedShop & {
   /** Signed in: the account cart is the truth, and this mirror is replaced by it. */
   replaceCart: (lines: CartLine[]) => void;
   setCartLineAccount: (key: string, productId: string, cartItemId?: string) => void;
+  setCartLineAddons: (key: string, addons: AddonCode[]) => void;
   clearCart: () => void;
   setCartNotice: (notice: string | null) => void;
   bumpAccountCart: () => void;
@@ -109,7 +112,8 @@ type PersistedV3 = {
  * v1/v2 → v3: v2 kept a guest's cart item aside (`pendingCart`) until they signed in; guests now
  * add to the cart directly, so that item simply joins the cart.
  * v3 → v4: the mock checkout's coupon, payment method, order and per-line add-ons are gone; payment
- * happens on Stripe, and orders live on the account.
+ * happens on Stripe, and orders live on the account. (v4 lines may carry certificate `addons` again;
+ * codes a product no longer offers are ignored by the quote.)
  */
 function migrate(persisted: unknown, version: number): PersistedShop {
   if (version >= 4) return persisted as PersistedShop;
@@ -189,6 +193,10 @@ export const useShopStore = create<ShopState>()(
           cart: state.cart.map((line) =>
             line.key === key ? { ...line, productId, cartItemId: cartItemId ?? line.cartItemId } : line,
           ),
+        })),
+      setCartLineAddons: (key, addons) =>
+        set((state) => ({
+          cart: state.cart.map((line) => (line.key === key ? { ...line, addons } : line)),
         })),
       clearCart: () => set({ cart: [] }),
       setCartNotice: (cartNotice) => set({ cartNotice }),
