@@ -86,7 +86,9 @@ export function AdvisorMessage({ message, expanded }: { message: ChatMessage; ex
 
         {followUps.length ? (
           <div className="flex flex-col gap-2">
-            <p className="m-0 text-xs font-medium text-fg-muted">{advisorCopy.followUpsTitle}</p>
+            <p className="m-0 text-xs font-medium text-fg-muted">
+              {message.clarification ? advisorCopy.clarificationTitle : advisorCopy.followUpsTitle}
+            </p>
             <div className="flex flex-wrap gap-2">
               {followUps.map((question) => (
                 <button

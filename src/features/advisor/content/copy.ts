@@ -16,6 +16,7 @@ export const advisorCopy = {
   rateLimited: "وصلت للحد المسموح من الأسئلة، حاول بعد شوي.",
   retry: "أعد المحاولة",
   followUpsTitle: "تقدر تسأل كمان",
+  clarificationTitle: "اختر إجابة أو اكتبها بنفسك",
   openProduct: "عرض التفاصيل",
   priceOnRequest: "السعر عند الطلب",
   free: "مجاناً",

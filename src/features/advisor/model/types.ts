@@ -24,6 +24,14 @@ export type AdvisorProduct = {
   skills: string[];
 };
 
+/** A question the advisor needs answered before it recommends; `options` are quick replies. */
+export type AdvisorClarification = {
+  question: string;
+  options: string[];
+  slots: string[];
+  allow_free_text: boolean;
+};
+
 export type AdvisorAnswer = {
   conversation_id: string;
   message_id: string | null;
@@ -34,6 +42,7 @@ export type AdvisorAnswer = {
   products: AdvisorProduct[];
   follow_up_questions: string[];
   clarification_needed: boolean;
+  clarification?: AdvisorClarification | null;
 };
 
 export type AdvisorSuggestion = {
@@ -48,6 +57,8 @@ export type AdvisorEvent =
   | { type: "run_started"; conversation_id: string }
   | { type: "step"; stage: string; status?: string }
   | { type: "tool_call" | "tool_result"; name: string }
+  | { type: "thought"; text: string }
+  | ({ type: "ask_user" } & AdvisorClarification)
   | { type: "token"; text: string }
   | { type: "final"; answer: AdvisorAnswer }
   | { type: "error"; message: string };
@@ -66,6 +77,8 @@ export type ChatMessage =
       question: string;
       products?: AdvisorProduct[];
       followUps?: string[];
+      /** The advisor asked a question: the chips are answers to it, not new questions. */
+      clarification?: boolean;
       /** Nothing in the catalog matched (or no answer came back): the panel shows what the platform offers instead. */
       showCatalog?: boolean;
       /** Why it failed; `rate_limited` reads differently from a broken connection. */

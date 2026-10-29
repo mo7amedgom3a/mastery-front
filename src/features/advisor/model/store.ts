@@ -103,7 +103,8 @@ export const useAdvisorStore = create<AdvisorState>()(
           text: answer.answer,
           status: "done",
           products: answer.products,
-          followUps: answer.follow_up_questions,
+          followUps: answer.clarification?.options ?? answer.follow_up_questions,
+          clarification: Boolean(answer.clarification),
           showCatalog: needsCatalogGuide(answer),
         });
         set({ conversationId: answer.conversation_id, mood: "joy" });
