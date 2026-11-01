@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
+import { getAllBlogPosts } from "@/features/blog/api/get-blog-posts";
+import { authorProfiles } from "@/features/blog/data/author-profiles";
 import { getLiveTrainingSlugs } from "@/features/live-training/api/get-live-trainings";
 import { emptySearchState, PRODUCT_TYPES, searchHref } from "@/features/search/model/params";
 import { getAllCatalogCards, getCatalogExperts, parseCardSlug } from "@/lib/api/browse";
@@ -18,13 +20,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const home = `${siteUrl}/`;
 
-  const [cards, experts, searchOptions, liveSlugs] = await Promise.allSettled([
+  const [cards, experts, searchOptions, liveSlugs, blogPosts] = await Promise.allSettled([
     // Every published course, diploma, package, consultation and bundle, with its slug and update time.
     getAllCatalogCards({ product_type: ["course", "diploma", "package", "consultation", "bundle"] }, read),
     // Only experts with something to offer.
     getCatalogExperts({ limit: 500 }, read),
     getSearchOptions({ limit: 500 }, read),
     getLiveTrainingSlugs(),
+    getAllBlogPosts(),
   ]);
 
   // The listings: the search page as a whole, per product type and per category that has products.
@@ -44,6 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     listing(routes.live, 0.8),
     listing(routes.experts, 0.8),
     page(routes.business, 0.8),
+    { url: `${siteUrl}${routes.blog}`, changeFrequency: "weekly" as const, priority: 0.8 },
     page(routes.trainers, 0.7),
     page(routes.terms, 0.3),
     page(routes.privacy, 0.3),
@@ -94,6 +98,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${siteUrl}${routes.liveTraining(slug)}`,
       changeFrequency: "weekly",
       priority: 0.8,
+    })),
+    ...(valueOf(blogPosts, "sitemap blog") ?? []).map((post): MetadataRoute.Sitemap[number] => ({
+      url: `${siteUrl}${routes.blogPost(post.slug)}`,
+      lastModified: post.published_at ? new Date(post.published_at) : undefined,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
+    { url: `${siteUrl}${routes.blogAuthors}`, changeFrequency: "monthly" as const, priority: 0.7 },
+    ...authorProfiles.map((profile): MetadataRoute.Sitemap[number] => ({
+      url: `${siteUrl}${routes.blogAuthor(profile.slug)}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
   ];
 }

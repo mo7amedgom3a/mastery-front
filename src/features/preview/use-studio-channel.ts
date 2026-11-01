@@ -37,6 +37,12 @@ export function useStudioChannel(onMessage: (message: StudioMessage) => void) {
       // Only the framing admin may drive the preview.
       if (event.source !== window.parent || event.data?.source !== "mastery-studio") return;
       if (parentOrigin !== "*" && event.origin !== parentOrigin) return;
+      // The admin pings as soon as its iframe reports `load`: answer at once, in case every early
+      // `ready` was posted before the admin's message listener existed.
+      if (event.data.type === "hello") {
+        sendReady();
+        return;
+      }
       if (event.data.type === "render") {
         clearTimeout(timeout);
         clearInterval(interval);

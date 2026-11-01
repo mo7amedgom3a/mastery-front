@@ -37,6 +37,8 @@ const RULES: readonly Rule[] = [
   { methods: ["GET", "DELETE"], pattern: /^catalog\/live-diplomas\/[A-Za-z0-9-]+\/waitlist\/me$/, session: true },
   // Behavior events from the browser; open to guests too (identified by X-Client-Fingerprint).
   { methods: ["POST"], pattern: /^analytics\/events$/, session: false },
+  // The public blog newsletter: subscribe, and one-click unsubscribe from an email link.
+  { methods: ["POST"], pattern: /^blog\/(subscribe|unsubscribe)$/, session: false },
   // The signed-in customer's cart, checkout and purchases.
   { methods: ["GET"], pattern: /^cart$/, session: true },
   { methods: ["POST"], pattern: /^cart\/items$/, session: true },

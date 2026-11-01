@@ -122,6 +122,7 @@ export const navigationColumns: readonly FooterNavColumn[] = [
     links: [
       { label: "حول ماستري أكاديمي", href: routes.section("about") },
       { label: "نخبة الخبراء والمدربين", href: routes.section("experts") },
+      { label: "المدونة", href: routes.blog },
       { label: "انضم لنا كمدرب", href: routes.trainers },
       { label: "التسويق بالعمولة", href: routes.marketers },
       { label: "الأسئلة الشائعة", href: routes.section("faq") },

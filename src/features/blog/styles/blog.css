@@ -1,0 +1,2196 @@
+/*
+ * مدونة ماستري — the blog sub-brand.
+ *
+ * Ported from the blog design demo, scoped under `.blog-theme` so it never touches the storefront.
+ * The theme lives on that one wrapper: `data-blog-theme="light"` is the paper look (default) and
+ * `data-blog-theme="dark"` is the cinema look. Tokens and type values are copied verbatim.
+ */
+
+/* ============================================================
+   الخطوط — نفس ملفات الثمانية Sans على CDN
+   ============================================================ */
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Bold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Thmanyah Sans Unscoped";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans Unscoped";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans Unscoped";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans Unscoped";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Bold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans Unscoped";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Thmanyah Sans Unscoped";
+  src: url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================================
+   الرموز والثيمان: ورقي (افتراضي) / سينما
+   ============================================================ */
+.blog-theme {
+  /* طباعة */
+  --font-thmanyah-sans-unscoped: "Thmanyah Sans Unscoped", "Thmanyah Sans", sans-serif;
+  --font-thmanyah-sans: "Thmanyah Sans", "Segoe UI", Tahoma, sans-serif;
+  --text-10: 10px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-20: 20px;
+  --text-24: 24px;
+  --text-36: 36px;
+  --tracking-neg-0-792: -0.792px;
+  --tracking-neg-0-48: -0.48px;
+
+  /* لوحة الورقي */
+  --bg: #f5f6fc;
+  --bg-soft: #eceefa;
+  --surface: #ffffff;
+  --fg: #14174f;
+  --muted: #55598a;
+  --line: rgba(20, 23, 79, 0.15);
+  --line-strong: rgba(20, 23, 79, 0.32);
+  --accent-gold: #ffd23f;
+  --on-accent: #211d0d;
+  --crimson: #e32652;
+  --danger: #c81e46;
+  --focus: #14174f;
+
+  color-scheme: light;
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-17);
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.blog-theme[data-blog-theme="dark"] {
+  /* لوحة السينما */
+  --bg: #000000;
+  --bg-soft: #0b0b0d;
+  --surface: #141518;
+  --fg: #ffffff;
+  --muted: #9ea0a9;
+  --line: rgba(255, 255, 255, 0.12);
+  --line-strong: rgba(255, 255, 255, 0.24);
+  --accent-gold: #dcff00;
+  --on-accent: #211d0d;
+  --crimson: #e32652;
+  --danger: #ff6d8d;
+  --focus: #dcff00;
+
+  color-scheme: dark;
+}
+
+.blog-theme ::selection {
+  background: var(--crimson);
+  color: #fff;
+}
+.blog-theme :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   الأنماط الدلالية
+   ============================================================ */
+.blog-theme .type-h1 {
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: var(--text-36);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: var(--tracking-neg-0-792);
+}
+.blog-theme .type-h2 {
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: var(--text-24);
+  font-weight: 600;
+  line-height: 1.8;
+  letter-spacing: var(--tracking-neg-0-48);
+}
+.blog-theme .type-subheading {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-20);
+  font-weight: 400;
+  line-height: 1.5;
+}
+.blog-theme .type-link {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-17);
+  font-weight: 500;
+  line-height: 1.8;
+}
+.blog-theme .type-body {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-17);
+  font-weight: 400;
+  line-height: 1.8;
+}
+.blog-theme .type-body-16 {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-16);
+  font-weight: 400;
+  line-height: 1.5;
+}
+.blog-theme .type-link-14 {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-14);
+  font-weight: 600;
+  line-height: 1.8;
+}
+.blog-theme .type-h3 {
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: var(--text-14);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.blog-theme .type-button {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-14);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.blog-theme .type-link-14-400 {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-14);
+  font-weight: 400;
+  line-height: 2.3;
+}
+.blog-theme .type-caption {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-13);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.blog-theme .type-caption-13 {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-13);
+  font-weight: 400;
+  line-height: 1.5;
+}
+.blog-theme .type-caption-12 {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-12);
+  font-weight: 500;
+  line-height: 1.45;
+}
+.blog-theme .type-caption-12-400 {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-12);
+  font-weight: 400;
+  line-height: 1.45;
+}
+.blog-theme .type-small {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-10);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+/* ============================================================
+   الأساس
+   ============================================================ */
+.blog-theme .blog-main {
+  flex: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .blog-theme {
+    scroll-behavior: smooth;
+  }
+}
+
+.blog-theme .wrap {
+  max-width: 1248px;
+  margin-inline: auto;
+  padding-inline: clamp(20px, 4vw, 24px);
+}
+.blog-theme .wrap-read {
+  max-width: 728px;
+  margin-inline: auto;
+  padding-inline: clamp(20px, 4vw, 24px);
+}
+
+.blog-theme .skip {
+  position: absolute;
+  inset-inline-start: 16px;
+  top: -96px;
+  background: var(--accent-gold);
+  color: var(--on-accent);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 100;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+.blog-theme .skip:focus {
+  top: 16px;
+}
+
+/* ============================================================
+   الترويسة
+   ============================================================ */
+.blog-theme .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.blog-theme .site-header[data-scrolled="true"] {
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom-color: var(--line);
+}
+.blog-theme .header-link {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-14);
+  color: var(--muted);
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+.blog-theme .header-link:hover {
+  color: var(--fg);
+}
+.blog-theme .header-link[data-active="true"] {
+  color: var(--fg);
+  font-weight: 500;
+}
+.blog-theme .brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--crimson);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+  flex: none;
+}
+.blog-theme .brand-name {
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: var(--tracking-neg-0-48);
+  color: var(--fg);
+}
+.blog-theme .brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+.blog-theme .site-header-bar {
+  position: relative;
+  z-index: 2;
+  gap: 12px;
+}
+.blog-theme .site-header-bar .brand-link {
+  flex: none;
+}
+
+/* Tapping the dimmed page behind the drawer closes it. */
+.blog-theme .mobile-nav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  border: 0;
+  padding: 0;
+  background: rgba(8, 8, 10, 0.42);
+  cursor: pointer;
+}
+.blog-theme .mobile-nav-panel {
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  z-index: 2;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.45);
+  padding: 12px clamp(20px, 4vw, 24px) 22px;
+}
+.blog-theme .mobile-nav-panel ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.blog-theme .mobile-nav-panel .header-link {
+  display: block;
+  font-size: var(--text-17);
+  padding: 12px 8px;
+}
+
+/* ============================================================
+   الأزرار
+   ============================================================ */
+.blog-theme .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-14);
+  font-weight: 500;
+  line-height: 1.5;
+  padding: 11px 22px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.2s, background-color 0.25s ease, color 0.25s ease,
+    border-color 0.25s ease, transform 0.15s ease;
+}
+.blog-theme .btn:active {
+  transform: scale(0.97);
+}
+.blog-theme .btn-accent {
+  background: var(--accent-gold);
+  color: var(--on-accent);
+}
+.blog-theme .btn-accent:hover {
+  filter: brightness(1.07);
+}
+.blog-theme .btn-ink {
+  background: var(--fg);
+  color: var(--bg);
+}
+.blog-theme .btn-ink:hover {
+  opacity: 0.88;
+}
+.blog-theme .btn-ghost {
+  background: transparent;
+  color: var(--fg);
+  border-color: var(--line-strong);
+}
+.blog-theme .btn-ghost:hover {
+  border-color: var(--fg);
+}
+.blog-theme .btn-sm {
+  padding: 7px 16px;
+  font-size: var(--text-13);
+  border-radius: 8px;
+}
+
+.blog-theme .icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--fg);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+  flex: none;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.blog-theme .icon-btn:hover {
+  background: var(--fg);
+  color: var(--bg);
+}
+.blog-theme .icon-btn svg {
+  width: 17px;
+  height: 17px;
+}
+.blog-theme .icon-btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* ============================================================
+   الشارات والوسوم
+   ============================================================ */
+.blog-theme .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-12);
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--fg);
+  background: transparent;
+  text-decoration: none;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.blog-theme a.pill:hover,
+.blog-theme button.pill:hover {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+.blog-theme .pill[data-active="true"] {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+.blog-theme .pill-accent {
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
+  color: var(--on-accent);
+}
+.blog-theme .tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.blog-theme .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-13);
+  font-weight: 500;
+  color: var(--muted);
+}
+.blog-theme .eyebrow::before {
+  content: "";
+  width: 22px;
+  height: 2px;
+  background: var(--crimson);
+  flex: none;
+}
+
+/* ============================================================
+   الأفاتار
+   ============================================================ */
+.blog-theme .avatar {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--crimson);
+  color: #fff;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-weight: 600;
+  line-height: 1;
+  flex: none;
+  user-select: none;
+  overflow: hidden;
+}
+.blog-theme .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ============================================================
+   الغلاف
+   ============================================================ */
+.blog-theme .cover {
+  position: relative;
+  aspect-ratio: 2 / 1;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  margin: 0;
+}
+.blog-theme .cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.88) contrast(1.03);
+}
+.blog-theme .cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   شريط تقدم القراءة
+   ============================================================ */
+.blog-theme .progress {
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  height: 3px;
+  z-index: 80;
+  pointer-events: none;
+}
+
+/* ============================================================
+   نص القراءة الطويلة
+   ============================================================ */
+.blog-theme .prose {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-17);
+  line-height: 1.8;
+}
+.blog-theme .prose-lead {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-20);
+  font-weight: 400;
+  line-height: 1.9;
+}
+.blog-theme .prose p + p {
+  margin-top: 1.1em;
+}
+.blog-theme .prose h2 {
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: var(--text-24);
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: var(--tracking-neg-0-48);
+  margin-top: 2.2em;
+  margin-bottom: 0.4em;
+  scroll-margin-top: 92px;
+}
+.blog-theme .prose h3 {
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: var(--text-17);
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: var(--tracking-neg-0-48);
+  margin-top: 1.8em;
+  margin-bottom: 0.3em;
+  scroll-margin-top: 92px;
+}
+.blog-theme .prose .prose-h1 {
+  font-size: 28px;
+}
+.blog-theme .prose strong {
+  font-weight: 600;
+  color: var(--fg);
+}
+.blog-theme .prose a {
+  color: var(--crimson);
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-thickness: 1px;
+}
+.blog-theme .prose ul,
+.blog-theme .prose ol {
+  display: grid;
+  gap: 10px;
+  margin-block: 1.1em;
+  padding-inline-start: 1.6em;
+}
+.blog-theme .prose ul {
+  list-style: disc;
+}
+.blog-theme .prose ol {
+  list-style: arabic-indic;
+}
+.blog-theme .prose li::marker {
+  color: var(--crimson);
+  font-weight: 600;
+}
+/* The custom tags block is a pill row inside .prose; keep it from inheriting list spacing. */
+.blog-theme .prose .tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.blog-theme .prose blockquote {
+  position: relative;
+  margin-block: 2em;
+  padding: 24px 28px 20px;
+  border-inline-start: 3px solid var(--crimson);
+  background: var(--bg-soft);
+  border-radius: 14px;
+  font-size: var(--text-20);
+  font-weight: 500;
+  line-height: 1.9;
+}
+.blog-theme .prose blockquote::before {
+  content: "«»";
+  position: absolute;
+  inset-inline-start: 20px;
+  top: -17px;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 2px;
+  color: var(--crimson);
+  background: var(--bg);
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+.blog-theme .prose blockquote cite {
+  display: block;
+  margin-top: 12px;
+  font-style: normal;
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-13);
+  font-weight: 500;
+  color: var(--muted);
+}
+.blog-theme .prose blockquote cite::before {
+  content: "— ";
+  color: var(--crimson);
+}
+.blog-theme .prose hr {
+  margin-block: 2.4em;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+.blog-theme .prose code {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.92em;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+.blog-theme .prose img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* صور داخل المقال */
+.blog-theme .prose figure {
+  margin-block: 2em;
+}
+.blog-theme .prose figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  filter: saturate(0.9) contrast(1.02);
+}
+.blog-theme .prose figcaption {
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-12);
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.blog-theme .prose video {
+  display: block;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: #000;
+}
+
+/* البانر العريض داخل المقال */
+.blog-theme .prose .banner {
+  margin-block: 2.4em;
+}
+.blog-theme .prose .banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  filter: saturate(0.9) contrast(1.02);
+}
+.blog-theme .banner-caption {
+  padding: 16px 4px 0;
+}
+.blog-theme .banner-caption h2,
+.blog-theme .banner-caption h3 {
+  margin: 0;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: var(--text-20);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-neg-0-48);
+}
+.blog-theme .banner-caption p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: var(--text-14);
+  line-height: 1.7;
+}
+
+/* شريط الأرقام */
+.blog-theme .stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-block: 1.8em;
+}
+.blog-theme .stat {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 18px 14px 16px;
+  text-align: center;
+}
+.blog-theme .stat .v {
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: var(--text-24);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: var(--tracking-neg-0-48);
+  color: var(--fg);
+}
+.blog-theme .stat .l {
+  margin-top: 6px;
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-12);
+  line-height: 1.6;
+  color: var(--muted);
+}
+@media (max-width: 560px) {
+  .blog-theme .stats-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* عناوين البطاقات (أهم النقاط / أسئلة شائعة) */
+.blog-theme .tk-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: var(--text-14);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--fg);
+}
+.blog-theme .tk-title::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  flex: none;
+}
+
+/* بطاقة أهم النقاط */
+.blog-theme .takeaways {
+  margin-block: 2em;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.blog-theme .takeaways ul {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 0;
+}
+.blog-theme .takeaways li {
+  position: relative;
+  padding-inline-start: 30px;
+  font-size: var(--text-14);
+  line-height: 1.8;
+  color: var(--fg);
+}
+.blog-theme .takeaways li::before {
+  content: "✓";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent-gold) 24%, transparent);
+  color: var(--fg);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+
+/* الأسئلة الشائعة — every FAQ block is its own <details> */
+.blog-theme .faq {
+  margin-block: 1.4em;
+  padding: 4px 20px 4px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.blog-theme .faq summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-radius: 10px;
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-14);
+  font-weight: 600;
+  line-height: 1.8;
+  color: var(--fg);
+  transition: background-color 0.25s ease;
+}
+.blog-theme .faq summary::-webkit-details-marker {
+  display: none;
+}
+.blog-theme .faq summary:hover {
+  background: var(--bg-soft);
+}
+.blog-theme .faq summary .fx {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease,
+    border-color 0.25s ease;
+}
+.blog-theme .faq[open] summary .fx {
+  transform: rotate(45deg);
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+.blog-theme .faq .fa {
+  padding: 0 0 15px;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 13px;
+  font-size: var(--text-14);
+  line-height: 1.9;
+  color: var(--muted);
+}
+
+/* صندوق الاشتراك */
+.blog-theme .cta-box {
+  margin-top: 56px;
+  padding: 36px 28px 30px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  text-align: center;
+  background:
+    radial-gradient(70% 100% at 50% 0%, color-mix(in srgb, var(--accent-gold) 12%, transparent), transparent 70%),
+    var(--surface);
+}
+.blog-theme .cta-desc {
+  max-width: 52ch;
+  margin: 12px auto 0;
+  color: var(--muted);
+}
+.blog-theme .cta-form {
+  display: flex;
+  gap: 10px;
+  max-width: 460px;
+  margin: 22px auto 0;
+}
+.blog-theme .cta-input {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-14);
+  transition: border-color 0.25s ease;
+}
+.blog-theme .cta-input::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+.blog-theme .cta-input:focus {
+  outline: none;
+  border-color: var(--fg);
+}
+.blog-theme .cta-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent-gold) 20%, transparent);
+  color: var(--fg);
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-14);
+  font-weight: 600;
+}
+.blog-theme .cta-success svg {
+  color: var(--crimson);
+  flex: none;
+}
+.blog-theme .cta-note {
+  margin-top: 14px;
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-12);
+  color: var(--muted);
+}
+.blog-theme .cta-error {
+  margin: 14px auto 0;
+  max-width: 46ch;
+  color: var(--danger);
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-13);
+  font-weight: 500;
+}
+@media (max-width: 560px) {
+  .blog-theme .cta-form {
+    flex-direction: column;
+  }
+  .blog-theme .cta-form .btn {
+    width: 100%;
+  }
+}
+
+/* التنبيهات داخل المقال */
+.blog-theme .note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-block: 1.4em;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: var(--text-14);
+  line-height: 1.9;
+  color: var(--muted);
+}
+.blog-theme .note strong {
+  color: var(--fg);
+}
+.blog-theme .note .note-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  margin-top: 10px;
+  flex: none;
+}
+.blog-theme .note-warn {
+  border-color: color-mix(in srgb, var(--crimson) 35%, transparent);
+  background: color-mix(in srgb, var(--crimson) 6%, var(--surface));
+}
+.blog-theme .note-warn .note-dot {
+  background: var(--crimson);
+}
+.blog-theme .note-success {
+  border-color: color-mix(in srgb, var(--accent-gold) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent-gold) 9%, var(--surface));
+}
+.blog-theme .note-success .note-dot {
+  background: var(--accent-gold);
+}
+
+/* الجداول */
+.blog-theme .table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-block: 1.6em;
+  background: var(--surface);
+}
+.blog-theme .table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-16);
+  min-width: 420px;
+}
+.blog-theme .table-wrap thead th {
+  text-align: start;
+  padding: 12px 18px;
+  font-size: var(--text-13);
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.blog-theme .table-wrap tbody td {
+  padding: 12px 18px;
+  border-top: 1px solid var(--line);
+  line-height: 1.8;
+}
+.blog-theme .table-wrap tbody tr:first-child td {
+  border-top: 0;
+}
+
+/* فاصل نقطي */
+.blog-theme .dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-block: 40px;
+}
+.blog-theme .dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+
+/* ============================================================
+   صفوف «اقرأ التالي»
+   ============================================================ */
+.blog-theme .index-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 14px;
+  margin-inline: -14px;
+  border-radius: 12px;
+  border-top: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.25s ease;
+}
+.blog-theme .index-row:hover {
+  background: var(--bg-soft);
+}
+.blog-theme .index-row .t {
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: var(--tracking-neg-0-48);
+}
+.blog-theme .index-row .m {
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-13);
+  color: var(--muted);
+  margin-top: 2px;
+}
+.blog-theme .index-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  flex: none;
+}
+@media (max-width: 560px) {
+  .blog-theme .index-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+  }
+}
+.blog-theme .index-arrow {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  flex: none;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease,
+    transform 0.3s ease;
+}
+.blog-theme .index-row:hover .index-arrow {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .blog-theme .index-row:hover .index-arrow {
+    transform: translateX(-4px);
+  }
+}
+
+/* ============================================================
+   الصفحة الرئيسية للمدونة
+   ============================================================ */
+.blog-theme .blog-hero {
+  padding-block: clamp(44px, 6vw, 76px) 28px;
+}
+.blog-theme .blog-hero h1 {
+  margin: 18px 0 0;
+  max-width: 20ch;
+}
+.blog-theme .blog-hero p:not(.eyebrow) {
+  margin: 16px 0 0;
+  max-width: 58ch;
+  color: var(--muted);
+}
+.blog-theme .category-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 0 26px;
+  list-style: none;
+  border-bottom: 1px solid var(--line);
+}
+.blog-theme .featured {
+  display: grid;
+  gap: clamp(20px, 3.5vw, 38px);
+  align-items: center;
+  padding-block: clamp(28px, 4vw, 44px);
+  border-bottom: 1px solid var(--line);
+}
+@media (min-width: 900px) {
+  .blog-theme .featured {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  }
+}
+.blog-theme .featured .cover {
+  margin: 0;
+}
+.blog-theme .featured-title {
+  display: block;
+  margin-top: 14px;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: clamp(24px, 1.2rem + 1.4vw, 32px);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: var(--tracking-neg-0-48);
+  color: var(--fg);
+  text-decoration: none;
+  text-wrap: balance;
+}
+.blog-theme a.featured-title:hover {
+  color: var(--crimson);
+}
+.blog-theme .featured-summary {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: var(--text-16);
+  line-height: 1.8;
+}
+.blog-theme .featured-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 20px;
+  color: var(--muted);
+}
+.blog-theme .post-grid {
+  display: grid;
+  gap: 30px 26px;
+  padding-block: 32px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 700px) {
+  .blog-theme .post-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1100px) {
+  .blog-theme .post-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.blog-theme .post-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  color: inherit;
+  text-decoration: none;
+}
+.blog-theme .post-card .cover {
+  border-radius: 14px;
+}
+.blog-theme .post-card .t {
+  display: block;
+  margin-top: 14px;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-neg-0-48);
+  color: var(--fg);
+  text-wrap: balance;
+  transition: color 0.2s ease;
+}
+.blog-theme .post-card:hover .t {
+  color: var(--crimson);
+}
+.blog-theme .post-card .m {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: var(--text-13);
+}
+.blog-theme .pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-block: 26px;
+  border-top: 1px solid var(--line);
+}
+.blog-theme .page-link {
+  display: inline-grid;
+  min-width: 40px;
+  height: 40px;
+  place-items: center;
+  padding-inline: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--fg);
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-13);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.blog-theme .page-link:hover,
+.blog-theme .page-link[aria-current="page"] {
+  background: var(--fg);
+  border-color: var(--fg);
+  color: var(--bg);
+}
+.blog-theme .page-link[aria-disabled="true"] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.blog-theme .empty-state {
+  padding: 56px 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ============================================================
+   المقال
+   ============================================================ */
+.blog-theme .article-head {
+  padding-block: clamp(36px, 5vw, 56px) 8px;
+}
+.blog-theme .article-head h1 {
+  margin: 20px 0 0;
+  text-wrap: balance;
+}
+.blog-theme .article-summary {
+  margin: 16px 0 0;
+  max-width: 56ch;
+  color: var(--muted);
+}
+.blog-theme .author-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 30px;
+}
+.blog-theme .meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin-top: 24px;
+  padding-block: 12px;
+  border-block: 1px solid var(--line);
+}
+.blog-theme .meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-family: var(--font-thmanyah-sans);
+  font-size: var(--text-13);
+}
+.blog-theme .article-cover {
+  margin: 32px 0 0;
+}
+
+/* المحتويات */
+.blog-theme .toc {
+  margin-block: 2.4em 2.8em;
+  padding: 20px 24px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.blog-theme .toc ol {
+  display: grid;
+  gap: 9px;
+  margin: 14px 0 0;
+  padding: 0 0 0 0;
+  list-style: none;
+  counter-reset: toc;
+  /* Imported posts can carry many level-2 headings; keep the card from taking over the page. */
+  max-height: min(48vh, 420px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.blog-theme .toc li {
+  counter-increment: toc;
+  position: relative;
+  padding-inline-start: 26px;
+  font-size: var(--text-14);
+  line-height: 1.7;
+}
+.blog-theme .toc li::before {
+  content: counter(toc, arabic-indic) ".";
+  position: absolute;
+  inset-inline-start: 0;
+  color: var(--crimson);
+  font-weight: 600;
+}
+.blog-theme .toc a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.blog-theme .toc a:hover {
+  color: var(--fg);
+}
+
+/* بطاقة الكاتب */
+.blog-theme .author-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  padding: 24px;
+}
+@media (min-width: 600px) {
+  .blog-theme .author-card {
+    padding: 32px;
+  }
+}
+.blog-theme .author-card .bio {
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: var(--text-16);
+  line-height: 1.9;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* تأكيد إلغاء الاشتراك */
+.blog-theme .unsubscribe-card {
+  width: 100%;
+  max-width: 560px;
+  margin: clamp(40px, 8vw, 96px) auto;
+  padding: 40px 28px 34px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  text-align: center;
+}
+.blog-theme .unsubscribe-card .icon-wrap {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--accent-gold) 20%, transparent);
+  color: var(--fg);
+}
+.blog-theme .unsubscribe-card h1 {
+  margin: 0;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: var(--text-24);
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-neg-0-48);
+}
+.blog-theme .unsubscribe-card p {
+  margin: 14px auto 0;
+  max-width: 44ch;
+  color: var(--muted);
+  font-size: var(--text-14);
+  line-height: 1.8;
+}
+.blog-theme .unsubscribe-card .actions {
+  margin-top: 26px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.blog-theme .spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--line-strong);
+  border-top-color: var(--fg);
+  animation: blog-spin 0.8s linear infinite;
+}
+@keyframes blog-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================
+   الظهور عند التمرير
+   ============================================================ */
+@media (prefers-reduced-motion: no-preference) {
+  html.js .blog-theme [data-reveal] {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.7s ease var(--d, 0s),
+      transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0s);
+  }
+  html.js .blog-theme [data-reveal].in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================================
+   بروفايل الخبير السينمائي — ثابت حجازي وسهل مهدي
+   ============================================================ */
+
+/* The band is deliberately dark in both blog themes: a stage, not a page section. */
+.blog-theme .spot {
+  --spot-bg: #08080a;
+  --spot-fg: #ffffff;
+  --spot-muted: rgba(255, 255, 255, 0.72);
+  --spot-line: rgba(255, 255, 255, 0.16);
+  background: var(--spot-bg);
+  color: var(--spot-fg);
+  overflow: hidden;
+  isolation: isolate;
+}
+.blog-theme .spot-grid {
+  display: grid;
+  gap: 2.5rem;
+  align-items: end;
+  padding-block: clamp(2rem, 5vh, 3.5rem) clamp(2.5rem, 7vh, 5rem);
+}
+@media (min-width: 900px) {
+  .blog-theme .spot-grid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 3rem;
+  }
+}
+.blog-theme .spot-copy {
+  order: 1;
+}
+.blog-theme .spot-stage {
+  order: 0;
+}
+@media (min-width: 900px) {
+  .blog-theme .spot-copy {
+    order: 0;
+  }
+  .blog-theme .spot-stage {
+    order: 1;
+  }
+}
+
+.blog-theme .spot-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 210, 63, 0.35);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: var(--text-12);
+  font-weight: 500;
+  color: var(--accent-gold);
+}
+.blog-theme .spot-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-gold);
+  animation: spot-pulse 2s ease-in-out infinite;
+}
+@keyframes spot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .blog-theme .spot-dot { animation: none; }
+}
+
+.blog-theme .spot-name {
+  margin: 1.15rem 0 0;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: clamp(2.75rem, 6.6vw, 5rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--spot-fg);
+}
+.blog-theme .spot-name-en {
+  margin: 0.55rem 0 0;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+}
+.blog-theme .spot-title {
+  margin: 1.1rem 0 0;
+  font-size: var(--text-16);
+  font-weight: 500;
+  color: var(--spot-muted);
+}
+.blog-theme .spot-lead {
+  margin: 0.65rem 0 0;
+  max-width: 34rem;
+  font-size: var(--text-17);
+  line-height: 1.85;
+  color: var(--spot-muted);
+}
+.blog-theme .spot-facts {
+  list-style: none;
+  margin: 1.75rem 0 0;
+  padding: 1.2rem 0 0;
+  border-top: 1px solid var(--spot-line);
+  display: grid;
+  gap: 0.7rem 1.5rem;
+  font-size: var(--text-14);
+  color: rgba(255, 255, 255, 0.82);
+}
+@media (min-width: 640px) {
+  .blog-theme .spot-facts {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.blog-theme .spot-facts li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.blog-theme .spot-facts svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--accent-gold);
+}
+.blog-theme .spot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1.75rem;
+}
+.blog-theme .spot-actions .btn-ghost {
+  border-color: rgba(255, 255, 255, 0.32);
+  color: var(--spot-fg);
+}
+.blog-theme .spot-actions .btn-ghost:hover {
+  background: var(--spot-fg);
+  color: #111114;
+}
+.blog-theme .spot-social {
+  display: inline-flex;
+  gap: 0.5rem;
+  margin-inline-start: 0.25rem;
+}
+.blog-theme .spot-social .icon-btn {
+  border-color: rgba(255, 255, 255, 0.28);
+  color: var(--spot-fg);
+}
+.blog-theme .spot-social .icon-btn:hover {
+  background: var(--spot-fg);
+  color: #111114;
+}
+
+/* The portrait stage: poster watermark, offset outline, solid field, cutout. */
+.blog-theme .spot-stage {
+  position: relative;
+  height: min(24rem, 46svh);
+}
+@media (min-width: 640px) {
+  .blog-theme .spot-stage {
+    height: min(30rem, 54svh);
+  }
+}
+@media (min-width: 900px) {
+  .blog-theme .spot-stage {
+    height: min(38rem, calc(100svh - 8rem));
+  }
+}
+.blog-theme .spot-watermark {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-align: center;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 7.4vw, 4.1rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.07);
+  user-select: none;
+  pointer-events: none;
+}
+.blog-theme .spot-frame {
+  position: absolute;
+  inset-inline: 14%;
+  bottom: 0;
+  height: 74%;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 24px 24px 0 0;
+  transform: translate(14px, -14px);
+}
+.blog-theme .spot-field {
+  position: absolute;
+  inset-inline: 14%;
+  bottom: 0;
+  height: 74%;
+  z-index: 2;
+  border-radius: 24px 24px 0 0;
+  background: var(--accent-gold);
+}
+.blog-theme .spot[data-field="crimson"] .spot-field {
+  background: var(--crimson);
+}
+.blog-theme .spot-portrait {
+  z-index: 3;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 26px 42px rgba(0, 0, 0, 0.45));
+}
+
+/* Numbers strip, below the stage on the page's paper/cinema surface. */
+.blog-theme .spot-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+}
+@media (min-width: 720px) {
+  .blog-theme .spot-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.blog-theme .spot-stat {
+  padding: 1.6rem 0.5rem 1.6rem 0;
+  border-inline-start: 1px solid var(--line);
+  padding-inline-start: 1.25rem;
+}
+.blog-theme .spot-stat:first-child {
+  border-inline-start: 0;
+  padding-inline-start: 0;
+}
+.blog-theme .spot-stat .v {
+  display: block;
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: clamp(1.8rem, 2.6vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--fg);
+}
+.blog-theme .spot-stat .l {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: var(--text-13);
+  color: var(--muted);
+}
+
+/* The story column keeps the 728px reading measure. */
+.blog-theme .author-about {
+  padding-block: clamp(2.75rem, 7vh, 4.5rem) clamp(1.5rem, 4vh, 2.5rem);
+}
+.blog-theme .author-story {
+  margin-top: 2rem;
+}
+.blog-theme .author-story h3 {
+  margin: 0 0 0.75rem;
+}
+.blog-theme .author-story p {
+  margin: 0 0 1.1em;
+  line-height: 1.9;
+}
+
+/* Milestones: a flat timeline with year chips on the inline-start edge. */
+.blog-theme .author-milestones {
+  padding-block: clamp(1.5rem, 4vh, 2.5rem) clamp(2.5rem, 6vh, 3.5rem);
+}
+.blog-theme .timeline {
+  list-style: none;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+@media (min-width: 800px) {
+  .blog-theme .timeline {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 2.5rem;
+  }
+}
+.blog-theme .timeline li {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+  padding: 1.1rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.blog-theme .timeline .year {
+  flex: none;
+  align-self: flex-start;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-gold);
+  color: var(--on-accent);
+  font-size: var(--text-12);
+  font-weight: 700;
+}
+.blog-theme .timeline .body {
+  display: grid;
+  gap: 0.25rem;
+  font-size: var(--text-14);
+  color: var(--muted);
+  line-height: 1.7;
+}
+.blog-theme .timeline .body strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* Focus, credentials and trained organisations. */
+.blog-theme .author-detail-grid {
+  display: grid;
+  gap: 1.25rem;
+  padding-block: clamp(1rem, 3vh, 2rem) clamp(2.5rem, 6vh, 3.5rem);
+}
+@media (min-width: 900px) {
+  .blog-theme .author-detail-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.blog-theme .author-detail-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md, 12px);
+  background: var(--surface);
+  padding: 1.4rem 1.35rem;
+}
+.blog-theme .author-detail-card h3 {
+  margin: 0 0 1rem;
+  color: var(--fg);
+}
+.blog-theme .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.blog-theme .check-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+  font-size: var(--text-14);
+  line-height: 1.65;
+  color: var(--muted);
+}
+.blog-theme .check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.blog-theme .check-list svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--crimson);
+}
+
+/* What peers say. */
+.blog-theme .author-testimonials {
+  padding-block: clamp(1rem, 3vh, 2rem) clamp(2.5rem, 6vh, 3.5rem);
+}
+.blog-theme .quote-grid {
+  margin-top: 1.75rem;
+  display: grid;
+  gap: 1.25rem;
+}
+@media (min-width: 860px) {
+  .blog-theme .quote-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.blog-theme .quote-card {
+  margin: 0;
+  padding: 1.5rem 1.5rem 1.35rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md, 12px);
+  background: var(--bg-soft);
+}
+.blog-theme .quote-card blockquote {
+  margin: 0;
+  font-size: var(--text-16);
+  line-height: 1.9;
+  color: var(--fg);
+}
+.blog-theme .quote-card blockquote::before {
+  content: "«";
+  color: var(--crimson);
+  font-weight: 700;
+}
+.blog-theme .quote-card blockquote::after {
+  content: "»";
+  color: var(--crimson);
+  font-weight: 700;
+}
+.blog-theme .quote-card figcaption {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.15rem;
+}
+.blog-theme .quote-card .name {
+  font-size: var(--text-14);
+  font-weight: 700;
+  color: var(--fg);
+}
+.blog-theme .quote-card .role {
+  font-size: var(--text-12);
+  color: var(--muted);
+}
+
+.blog-theme .author-articles-block {
+  padding-block: clamp(1rem, 3vh, 2rem) clamp(2rem, 5vh, 3rem);
+}
+.blog-theme .author-cta-wrap {
+  padding-block: clamp(1rem, 3vh, 2rem) clamp(3rem, 8vh, 4.5rem);
+}
+.blog-theme .author-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.blog-theme .author-cta .type-body {
+  max-width: 36rem;
+  color: var(--muted);
+}
+
+/* ------------------------------- الخبراء (index) ------------------------------- */
+.blog-theme .author-index-head {
+  padding-block: clamp(2.5rem, 8vh, 4.5rem) clamp(1.5rem, 4vh, 2.5rem);
+}
+.blog-theme .author-index-head .type-subheading {
+  max-width: 40rem;
+  color: var(--muted);
+}
+.blog-theme .author-index-grid {
+  display: grid;
+  gap: 1.5rem;
+  padding-block: clamp(1rem, 3vh, 2rem) clamp(2.5rem, 6vh, 3.5rem);
+}
+@media (min-width: 900px) {
+  .blog-theme .author-index-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+.blog-theme .author-card-lg {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: stretch;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--surface);
+  color: var(--fg);
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+@media (min-width: 640px) {
+  .blog-theme .author-card-lg {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+}
+.blog-theme .author-card-lg:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+}
+.blog-theme .author-card-lg .portrait {
+  position: relative;
+  display: block;
+  min-height: 190px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--accent-gold);
+  overflow: hidden;
+}
+.blog-theme .author-card-lg[data-field="crimson"] .portrait {
+  background: var(--crimson);
+}
+.blog-theme .author-card-lg .portrait-img {
+  object-fit: contain;
+  object-position: center bottom;
+  padding-top: 0.75rem;
+}
+.blog-theme .author-card-lg .body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.blog-theme .author-card-lg .name {
+  font-family: var(--font-thmanyah-sans-unscoped);
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+.blog-theme .author-card-lg .en {
+  margin-top: 0.3rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--crimson);
+}
+.blog-theme .author-card-lg .title {
+  margin-top: 0.75rem;
+  font-size: var(--text-14);
+  font-weight: 600;
+}
+.blog-theme .author-card-lg .tagline {
+  margin-top: 0.5rem;
+  font-size: var(--text-14);
+  line-height: 1.75;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.blog-theme .author-card-lg .stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+.blog-theme .author-card-lg .stats span {
+  display: grid;
+  gap: 0.1rem;
+}
+.blog-theme .author-card-lg .stats strong {
+  font-size: var(--text-16);
+  color: var(--fg);
+}
+.blog-theme .author-card-lg .stats small {
+  font-size: var(--text-12);
+  color: var(--muted);
+}
+.blog-theme .author-card-lg .more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: var(--text-13);
+  font-weight: 600;
+  color: var(--crimson);
+}
+.blog-theme .author-index-foot .cta-box {
+  margin-bottom: clamp(3rem, 8vh, 4.5rem);
+}
+
+/* ============================================================
+   التمرير الناعم (GSAP ScrollSmoother)
+   ============================================================ */
+
+/* The header lives outside the smoothed content so it stays exactly where it was. */
+.blog-theme .blog-fixed-header {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 60;
+}
+.blog-theme .blog-fixed-header .site-header {
+  position: relative;
+  top: auto;
+}
+/* ScrollSmoother begins the page below the fixed header, exactly like the sticky bar did. */
+.blog-theme #blog-smooth-content {
+  padding-top: 64px;
+}
+
+/* The smoothed wrapper is a fixed, full-height pane; the document keeps the content's height so the
+   browser scrollbar, the reading-progress line and the anchor offsets all keep working. */
+.blog-theme #blog-smooth-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  /* The fixed pane paints the page surface; the storefront's dark body must never show through. */
+  background: var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-theme #blog-smooth-content {
+    padding-top: 64px;
+  }
+}
+
+/* المحتويات as an authored block: same card as the derived contents, in the article flow. */
+.blog-theme .toc--block {
+  margin-block: 2em;
+}
+.blog-theme .toc--block .tk-title {
+  margin: 0;
+}
+
+
+/* ============================================================
+   تبديل تنقل الهيدر: روابط على الشاشات الواسعة، قائمة جانبية دونها
+   ============================================================ */
+/* Declared last on purpose: `.icon-btn` and `.btn` set their own display at the same
+   specificity, so these breakpoint rules must come after them. */
+.blog-theme .site-header-nav {
+  display: none;
+}
+.blog-theme .blog-menu-toggle {
+  display: inline-grid;
+}
+@media (min-width: 1080px) {
+  .blog-theme .site-header-nav {
+    display: flex;
+  }
+  .blog-theme .blog-menu-toggle,
+  .blog-theme .mobile-nav-panel,
+  .blog-theme .mobile-nav-backdrop {
+    display: none;
+  }
+}
+@media (max-width: 639.98px) {
+  .blog-theme .blog-header-subscribe {
+    display: none;
+  }
+}
+
+
+/* ============================================================
+   شعار الشركة في هيدر المدونة (نفس شعار الصفحة الرئيسية)
+   ============================================================ */
+.blog-theme .brand-link {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+.blog-theme .blog-logo {
+  display: block;
+  width: 146px;
+  height: auto;
+}
+@media (min-width: 640px) {
+  .blog-theme .blog-logo {
+    width: 172px;
+  }
+}
+/* Paper theme shows the ink word mark; cinema shows the white one. */
+.blog-theme .blog-logo-light {
+  display: none;
+}
+.blog-theme .blog-logo-dark {
+  display: block;
+}
+.blog-theme[data-blog-theme="light"] .blog-logo-light {
+  display: block;
+}
+.blog-theme[data-blog-theme="light"] .blog-logo-dark {
+  display: none;
+}

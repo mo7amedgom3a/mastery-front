@@ -86,6 +86,14 @@ export const routes = {
   expert: expertRoute,
   /** A trainer's profile is their expert page: the trainer id is the expert key. */
   instructor: (id: number, name?: string | null) => expertRoute(id, name),
+  /** The public blog (مدونة ماستري) and one post. */
+  blog: route("/blog"),
+  blogPost: (slug: string) => route(`/blog/${encodeURIComponent(slug)}`),
+  /** The blog's curated author profiles (cinematic expert pages), and one profile. */
+  blogAuthors: route("/blog/authors"),
+  blogAuthor: (slug: string) => route(`/blog/authors/${encodeURIComponent(slug)}`),
+  /** The unsubscribe link carried by every newsletter email. */
+  blogUnsubscribe: (token: string) => route(`/blog/unsubscribe?token=${encodeURIComponent(token)}`),
   live: route("/live"),
   liveTraining: (slug: string) => route(`/live/${encodeURIComponent(slug)}`),
   packages: route("/search?type=package"),
