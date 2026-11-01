@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   const tag = request.nextUrl.searchParams.get("tag");
   const tags =
     tag &&
-    /^(?:catalog|landing|live-trainings|experts|blog|(?:course|diploma|package|consultation|expert|bundle)-[a-z0-9-]{1,200}|blog-post-[a-z0-9-]{1,200})$/.test(tag)
+    /^(?:catalog|landing|live-trainings|experts|blog|sitemap|(?:course|diploma|package|consultation|expert|bundle)-[a-z0-9-]{1,200}|blog-post-[a-z0-9-]{1,200})$/.test(tag)
       ? [tag]
       : [LANDING_CACHE_TAG, CATALOG_CACHE_TAG];
   // Called by the admin right after an edit: expire at once so the very next visit shows it.
