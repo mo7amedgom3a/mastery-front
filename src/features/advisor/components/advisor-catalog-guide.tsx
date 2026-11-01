@@ -5,6 +5,7 @@ import type { Route } from "next";
 import { AppLink } from "@/components/ui/app-link";
 import { routes } from "@/config/routes";
 import { useExploreMenu } from "@/features/navigation/components/menu-context";
+import { mapSolutionsMenu } from "@/features/navigation/model/mappers";
 
 import { advisorCopy } from "../content/copy";
 import { closeAdvisorOnSmallScreen } from "../model/store";
@@ -13,16 +14,6 @@ import { closeAdvisorOnSmallScreen } from "../model/store";
 const MAX_SECTORS = 10;
 
 type GuideLink = { key: string; label: string; href: Route; count?: number };
-
-/** Without the header menu's data (a failed read), the product types still have their listings. */
-const FALLBACK_OFFER: GuideLink[] = [
-  { key: "course", label: "الدورات", href: routes.courses },
-  { key: "diploma", label: "الدبلومات", href: routes.diplomas },
-  { key: "package", label: "الباقات", href: routes.packages },
-  { key: "consultation", label: "الاستشارات", href: routes.consultations },
-];
-
-const searchCategory = (slug: string) => `${routes.search}?category=${encodeURIComponent(slug)}` as Route;
 
 function GuideChip({ link }: { link: GuideLink }) {
   return (
@@ -40,27 +31,14 @@ function GuideChip({ link }: { link: GuideLink }) {
  */
 export function AdvisorCatalogGuide({ failed }: { failed?: boolean }) {
   const menu = useExploreMenu();
-  const groups = menu?.groups ?? [];
+  const { categories, types } = mapSolutionsMenu(menu?.groups ?? []);
 
-  const offer: GuideLink[] = groups.length
-    ? groups.map((group) => ({ key: group.type, label: group.label, href: group.href, count: group.count }))
-    : FALLBACK_OFFER;
+  const offer: GuideLink[] = types.map(({ type, label, href, count }) => ({ key: type, label, href, count }));
   offer.push({ key: "live", label: advisorCopy.guideLive, href: routes.live });
 
-  // The same sector appears under each product type; list it once, across all of them.
-  const sectors = new Map<string, GuideLink>();
-  for (const group of groups) {
-    for (const category of group.categories) {
-      const existing = sectors.get(category.slug);
-      sectors.set(category.slug, {
-        key: category.slug,
-        label: category.name,
-        href: searchCategory(category.slug),
-        count: (existing?.count ?? 0) + category.count,
-      });
-    }
-  }
-  const topSectors = [...sectors.values()].sort((a, b) => (b.count ?? 0) - (a.count ?? 0)).slice(0, MAX_SECTORS);
+  const topSectors: GuideLink[] = categories
+    .slice(0, MAX_SECTORS)
+    .map(({ slug, name, href, count }) => ({ key: slug, label: name, href, count }));
 
   return (
     <section aria-label={advisorCopy.guideOffer} className="flex flex-col gap-3 rounded-panel border border-line p-3">

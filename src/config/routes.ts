@@ -77,6 +77,9 @@ export const routes = {
   /** One product type inside a catalog category slug (`legacy-category-27`, `marketing/sales`). */
   categoryOf: (type: "course" | "diploma" | "package" | "consultation", slug: string) =>
     route(`/search?type=${type}&category=${encodeURIComponent(slug)}`),
+  /** Every product type inside a catalog category slug; slashes stay readable, as in `searchHref`. */
+  searchCategory: (slug: string) =>
+    route(`/search?category=${encodeURIComponent(slug).replaceAll("%2F", "/")}`),
   diplomas: route("/search?type=diploma"),
   diploma: (id: number, linkName?: string | null) =>
     route(`/diplomas/${encodeURIComponent(productSlug(id, linkName))}`),
@@ -103,6 +106,8 @@ export const routes = {
   consultations: route("/search?type=consultation"),
   consultation: (id: number | string) => route(`/consultations/${encodeURIComponent(String(id))}`),
   business: route("/business"),
+  /** Sales-team training landing page. Mock content, noindexed and left out of the sitemap for now. */
+  businessSales: route("/business/sales"),
   /** The company training request, one page per step (`/business/request/company`, …). */
   businessRequest: (step?: string) => route(step ? `/business/request/${encodeURIComponent(step)}` : "/business/request"),
   businessRequestDone: route("/business/request/done"),

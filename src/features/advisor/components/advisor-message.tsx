@@ -8,6 +8,7 @@ import type { ChatMessage } from "../model/types";
 import { AdvisorAgent } from "./advisor-agent";
 import { AdvisorCatalogGuide } from "./advisor-catalog-guide";
 import { AdvisorMarkdown } from "./advisor-markdown";
+import { AdvisorNeedsAnalysis } from "./advisor-needs-analysis";
 import { AdvisorProductCard } from "./advisor-product-card";
 
 const LIST_ITEM = /^\s*([-*•]|\d+[.)])\s/;
@@ -74,10 +75,12 @@ export function AdvisorMessage({ message, expanded }: { message: ChatMessage; ex
           )}
         </div>
 
+        {message.needsAnalysis ? <AdvisorNeedsAnalysis analysis={message.needsAnalysis} products={products} /> : null}
+
         {products.length ? (
           <div className={cn("grid gap-2", expanded && "sm:grid-cols-2")}>
             {products.map((product, index) => (
-              <AdvisorProductCard key={product.product_id} product={product} position={index + 1} />
+              <AdvisorProductCard key={product.product_id} product={product} position={index + 1} mode={message.mode} />
             ))}
           </div>
         ) : null}

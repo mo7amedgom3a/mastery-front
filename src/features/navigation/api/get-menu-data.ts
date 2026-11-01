@@ -18,7 +18,8 @@ const read = cachedRead(MENU_REVALIDATE_SECONDS, []);
  */
 export const getExploreMenu = cache(async (): Promise<ExploreMenuVM | null> => {
   try {
-    return mapExploreMenu(await getCatalogMenu({ per_category: 4 }, read));
+    // The header shows no products; 1 is the lowest value the API accepts.
+    return mapExploreMenu(await getCatalogMenu({ per_category: 1 }, read));
   } catch (error) {
     console.error("[menu] catalog menu request failed", error);
     return null;

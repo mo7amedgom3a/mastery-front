@@ -6,13 +6,13 @@ import { trackAdvisor, trackProductClickFromHref } from "@/lib/observability/beh
 
 import { advisorCopy, productTypeLabel } from "../content/copy";
 import { closeAdvisorOnSmallScreen } from "../model/store";
-import type { AdvisorProduct } from "../model/types";
+import type { AdvisorMode, AdvisorProduct } from "../model/types";
 
 /**
  * A product the advisor recommended, linking to its detail page in the same tab: the widget lives in
  * the root layout, so the chat is still there on the product page.
  */
-export function AdvisorProductCard({ product, position }: { product: AdvisorProduct; position: number }) {
+export function AdvisorProductCard({ product, position, mode = "fast" }: { product: AdvisorProduct; position: number; mode?: AdvisorMode }) {
   const href = productHref(product, product.title);
   if (!href) return null;
   const amount = product.price_amount === null ? null : Number(product.price_amount);
@@ -23,7 +23,7 @@ export function AdvisorProductCard({ product, position }: { product: AdvisorProd
     <AppLink
       href={href}
       onClick={() => {
-        trackAdvisor("ai_recommendation_clicked", { slug: product.slug, product_type: product.product_type, position });
+        trackAdvisor("ai_recommendation_clicked", { slug: product.slug, product_type: product.product_type, position, mode });
         trackProductClickFromHref(href, product.title, { surface: "ai_advisor", position });
         closeAdvisorOnSmallScreen();
       }}

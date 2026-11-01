@@ -1,17 +1,22 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import { trackAdvisor } from "@/lib/observability/behavior";
+
 import { ApiError } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/auth/store";
 
 import { streamAdvisor } from "./stream";
-import type { AdvisorAnswer, AdvisorSuggestion, AgentMood, ChatMessage } from "./types";
+import type { AdvisorAnswer, AdvisorSuggestion, AdvisorMode, AgentMood, ChatMessage } from "./types";
 
 const EXPANDED_KEY = "ma-advisor-expanded";
 /** How long the face smiles after an answer lands. */
 const JOY_MS = 1600;
 
 type AdvisorState = {
+  mode: AdvisorMode;
+  pendingAction: "recommend_now" | undefined;
+  setMode: (mode: AdvisorMode) => void;
   open: boolean;
   expanded: boolean;
   messages: ChatMessage[];
@@ -29,7 +34,7 @@ type AdvisorState = {
   toggleExpanded: () => void;
   setSuggestions: (suggestions: AdvisorSuggestion[]) => void;
   /** `suggested`: picked from the suggestions list, so a guest may ask it without signing in. */
-  ask: (question: string, options?: { suggested?: boolean }) => Promise<void>;
+  ask: (question: string, options?: { suggested?: boolean; analysisAction?: "recommend_now" }) => Promise<void>;
   /** Asks the held question again, in a new conversation; called once the guest has signed in. */
   resumePending: () => void;
   closeLogin: () => void;
@@ -62,7 +67,7 @@ function writeExpanded(expanded: boolean): void {
 const CATALOG_INTENTS = new Set(["course_search", "product_details", "study_plan", "career_advice", "off_topic"]);
 
 function needsCatalogGuide(answer: AdvisorAnswer): boolean {
-  if (answer.clarification_needed) return false;
+  if (answer.mode === "reasoning" || answer.clarification_needed || answer.needs_analysis) return false;
   if (!answer.answer.trim() || answer.source === "degraded") return true;
   return answer.products.length === 0 && CATALOG_INTENTS.has(answer.intent);
 }
@@ -101,20 +106,22 @@ export const useAdvisorStore = create<AdvisorState>()(
       const finish = (id: string, answer: AdvisorAnswer) => {
         patch(id, {
           text: answer.answer,
+          mode: answer.mode,
+          needsAnalysis: answer.needs_analysis ?? undefined,
           status: "done",
           products: answer.products,
           followUps: answer.clarification?.options ?? answer.follow_up_questions,
           clarification: Boolean(answer.clarification),
           showCatalog: needsCatalogGuide(answer),
         });
-        set({ conversationId: answer.conversation_id, mood: "joy" });
+        set({ conversationId: answer.conversation_id, mode: answer.mode ?? get().mode, mood: "joy" });
         clearTimeout(joyTimer);
         joyTimer = setTimeout(() => {
           if (get().mood === "joy") set({ mood: "idle" });
         }, JOY_MS);
       };
 
-      const send = async (question: string) => {
+      const send = async (question: string, analysisAction?: "recommend_now") => {
         controller?.abort();
         const current = new AbortController();
         controller = current;
@@ -132,9 +139,11 @@ export const useAdvisorStore = create<AdvisorState>()(
         let finished = false;
         try {
           await streamAdvisor(
-            { question, conversationId: get().conversationId, locale: "ar" },
+            { question, conversationId: get().conversationId, locale: "ar", mode: get().mode, analysisAction },
             (event) => {
-              if (event.type === "token") {
+              if (event.type === "run_started") {
+                set({ conversationId: event.conversation_id });
+              } else if (event.type === "token") {
                 const message = get().messages.find((item) => item.id === answerId);
                 patch(answerId, { text: (message?.text ?? "") + event.text });
               } else if (event.type === "final") {
@@ -166,6 +175,13 @@ export const useAdvisorStore = create<AdvisorState>()(
       };
 
       return {
+        mode: "fast",
+        pendingAction: undefined,
+        setMode: (mode) => {
+          if (get().busy) return;
+          if (get().mode !== mode) trackAdvisor("advisor_mode_switched", { mode });
+          set({ mode });
+        },
         open: false,
         expanded: false,
         messages: [],
@@ -187,21 +203,22 @@ export const useAdvisorStore = create<AdvisorState>()(
         ask: async (raw, options) => {
           const question = raw.trim();
           if (!question || get().busy) return;
-          const suggested = options?.suggested || get().suggestions.some((item) => sameQuestion(item.question, question));
+          const suggested = get().mode === "fast" && (options?.suggested || get().suggestions.some((item) => sameQuestion(item.question, question)));
           if (!suggested && !(await isSignedIn())) {
-            set({ pendingQuestion: question, loginOpen: true });
+            set({ pendingQuestion: question, pendingAction: options?.analysisAction, loginOpen: true });
             return;
           }
-          await send(question);
+          await send(question, options?.analysisAction);
         },
 
         resumePending: () => {
           const question = get().pendingQuestion;
-          set({ loginOpen: false, pendingQuestion: null });
+          const action = get().pendingAction;
+          set({ loginOpen: false, pendingQuestion: null, pendingAction: undefined });
           if (!question) return;
           // A new session for the signed-in visitor, starting with the question they asked.
           set({ conversationId: null });
-          void send(question);
+          void send(question, action);
         },
         closeLogin: () => set({ loginOpen: false }),
         openLogin: () => set({ loginOpen: true }),
@@ -209,7 +226,7 @@ export const useAdvisorStore = create<AdvisorState>()(
         startNewChat: () => {
           controller?.abort();
           controller = null;
-          set({ messages: [], conversationId: null, busy: false, mood: "idle", pendingQuestion: null, loginOpen: false });
+          set({ messages: [], conversationId: null, busy: false, mood: "idle", pendingQuestion: null, pendingAction: undefined, loginOpen: false });
         },
       };
     },
@@ -218,7 +235,9 @@ export const useAdvisorStore = create<AdvisorState>()(
       version: 1,
       // Per tab and session: the chat follows the visitor around the site, not into tomorrow.
       storage: createJSONStorage(() => sessionStorage),
-      partialize: ({ open, messages, conversationId, pendingQuestion }) => ({
+      partialize: ({ open, messages, conversationId, pendingQuestion, pendingAction, mode }) => ({
+        mode,
+        pendingAction,
         open,
         conversationId,
         pendingQuestion,

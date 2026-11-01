@@ -19,6 +19,7 @@ import { AppLink } from "@/components/ui/app-link";
 import { brandBg, brandColorAt } from "@/components/ui/brand-colors";
 import { buttonClass } from "@/components/ui/button";
 import { ContinueLearningButton } from "@/features/student-dashboard/components/continue-learning-button";
+import { LearningProgress } from "@/features/student-dashboard/components/learning-progress";
 import { routes } from "@/config/routes";
 import { productTypeLabel } from "@/features/student-dashboard/model/products";
 import { LMS_PRODUCT_TYPES } from "@/lib/api/lms";
@@ -273,6 +274,8 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
   const remaining = daysLeft(entitlement.expires_at, now);
   const used = active ? elapsedPercent(entitlement.starts_at, entitlement.expires_at, now) : null;
   const suspended = entitlement.status === "suspended";
+  // A course can leave the catalog while learners keep it: its page no longer exists.
+  const inCatalog = !entitlement.product_status || entitlement.product_status === "published";
   // A failed renewal pauses subscription access without freezing days (admin suspensions always do).
   const paymentHold =
     suspended && entitlement.source_type === "subscription" && entitlement.suspended_remaining_days == null && Boolean(entitlement.expires_at);
@@ -341,6 +344,7 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
             </div>
           </div>
         ) : null}
+        <LearningProgress percent={entitlement.progress_pct} lastActivity={entitlement.last_activity_at} />
         {used !== null && remaining !== null ? (
           <div className="ma-progress">
             <div className="ma-progress__row">
@@ -373,7 +377,7 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
         <div className="ma-card__foot">
           <ExtendAccessButton entitlementId={entitlement.entitlement_id} title={title} primary />
         </div>
-      ) : suspended || revoked ? null : link ? (
+      ) : suspended || revoked ? null : link && inCatalog ? (
         <div className="ma-card__foot">
           <AppLink
             href={link.href}

@@ -15150,6 +15150,15 @@ export interface components {
              * @description While `suspended`: days of access given back when it is resumed.
              */
             suspended_remaining_days?: number | null;
+            /** Product Status */
+            product_status?: string | null;
+            /**
+             * Progress Pct
+             * @description LMS progress; null when not started.
+             */
+            progress_pct?: number | null;
+            /** Last Activity At */
+            last_activity_at?: string | null;
             /**
              * Fulfillments
              * @default []
@@ -15277,6 +15286,15 @@ export interface components {
              * @description While `suspended`: days of access given back when it is resumed.
              */
             suspended_remaining_days?: number | null;
+            /** Product Status */
+            product_status?: string | null;
+            /**
+             * Progress Pct
+             * @description LMS progress; null when not started.
+             */
+            progress_pct?: number | null;
+            /** Last Activity At */
+            last_activity_at?: string | null;
         };
         /** EventStreamPageResponse */
         EventStreamPageResponse: {
@@ -16942,6 +16960,12 @@ export interface components {
              * @default 1
              */
             entitlement_count: number;
+            /** Product Status */
+            product_status?: string | null;
+            /** Progress Pct */
+            progress_pct?: number | null;
+            /** Last Activity At */
+            last_activity_at?: string | null;
         };
         /** PackageCourse */
         PackageCourse: {

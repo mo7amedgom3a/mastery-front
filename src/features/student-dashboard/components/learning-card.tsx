@@ -13,13 +13,14 @@ import { cn } from "@/lib/cn";
 
 import { productTypeLabel } from "../model/products";
 import { ContinueLearningButton } from "./continue-learning-button";
+import { LearningProgress } from "./learning-progress";
 
 const CARD_SIZES = "(min-width: 1200px) 320px, (min-width: 600px) 50vw, 100vw";
 
 /**
- * A product the customer has access to. The LMS doesn't report progress to this site yet, so the
- * card shows how long access lasts instead of a progress bar. "Continue learning" opens the LMS
- * itself for LMS-delivered products; anything else opens its catalog page.
+ * A product the customer has access to: its LMS progress and how long access lasts. "Continue
+ * learning" opens the LMS itself for LMS-delivered products; anything else opens its catalog page,
+ * when the product is still in the catalog.
  */
 type LearningCardProps = {
   product: OwnedProductResponse;
@@ -37,6 +38,9 @@ export function LearningCard({ product, index, image, fallbackTitle, instructor 
       ? product.title
       : (fallbackTitle ?? productTypeLabel(product.product_type));
   const active = product.access_status === "active";
+  const launchable = active && Boolean(product.entitlement_id) && LMS_PRODUCT_TYPES.has(product.product_type ?? "");
+  // A course can leave the catalog while learners keep it: its page no longer exists.
+  const inCatalog = !product.product_status || product.product_status === "published";
 
   return (
     <article className="ma-card relative h-full">
@@ -59,6 +63,7 @@ export function LearningCard({ product, index, image, fallbackTitle, instructor 
         {product.short_description ? (
           <p className="m-0 line-clamp-2 text-sm leading-6 text-fg-muted">{product.short_description}</p>
         ) : null}
+        <LearningProgress percent={product.progress_pct} lastActivity={product.last_activity_at} />
         <p className="m-0 mt-auto flex items-center gap-2 text-sm text-fg-muted">
           {product.expires_at ? (
             <>
@@ -73,20 +78,22 @@ export function LearningCard({ product, index, image, fallbackTitle, instructor 
           )}
         </p>
       </div>
-      <div className="ma-card__foot">
-        {active && product.entitlement_id && LMS_PRODUCT_TYPES.has(product.product_type ?? "") ? (
-          <ContinueLearningButton
-            entitlementId={product.entitlement_id}
-            fulfillmentStatus={product.fulfillment_status}
-            title={title}
-          />
-        ) : (
-          <AppLink href={href} className={cn(buttonClass({ variant: active ? "primary" : "soft", block: true }), "gap-2")}>
-            <PlayCircle aria-hidden="true" className="size-5 fill-none" />
-            {active ? "كمّل التعلّم" : "عرض البرنامج"}
-          </AppLink>
-        )}
-      </div>
+      {launchable || inCatalog ? (
+        <div className="ma-card__foot">
+          {launchable ? (
+            <ContinueLearningButton
+              entitlementId={product.entitlement_id}
+              fulfillmentStatus={product.fulfillment_status}
+              title={title}
+            />
+          ) : (
+            <AppLink href={href} className={cn(buttonClass({ variant: active ? "primary" : "soft", block: true }), "gap-2")}>
+              <PlayCircle aria-hidden="true" className="size-5 fill-none" />
+              {active ? "كمّل التعلّم" : "عرض البرنامج"}
+            </AppLink>
+          )}
+        </div>
+      ) : null}
     </article>
   );
 }

@@ -1,3 +1,19 @@
+export type AdvisorMode = "fast" | "reasoning";
+export type NeedsAnalysis = {
+  status: "discovering" | "complete" | "provisional";
+  customer_type: "individual" | "company" | null;
+  question_count: number;
+  needs_summary: string;
+  pain_points: string[];
+  reported_gaps: string[];
+  skills_to_assess: string[];
+  possible_non_training_causes: string[];
+  recommended_actions: string[];
+  product_matches: { product_id: string; rationale: string; sequence: number }[];
+  success_measures: string[];
+  uncertainties: string[];
+};
+
 /** The backend's advisor contract (`app/modules/advisor/presentation/schemas.py`). */
 
 export type AdvisorIntent =
@@ -33,6 +49,8 @@ export type AdvisorClarification = {
 };
 
 export type AdvisorAnswer = {
+  mode?: AdvisorMode;
+  needs_analysis?: NeedsAnalysis | null;
   conversation_id: string;
   message_id: string | null;
   answer: string;
@@ -54,7 +72,7 @@ export type AdvisorSuggestion = {
 
 /** Server-sent events of `POST /advisor/stream`; `step`, `tool_call` and `tool_result` are pipeline detail. */
 export type AdvisorEvent =
-  | { type: "run_started"; conversation_id: string }
+  | { type: "run_started"; conversation_id: string; mode?: AdvisorMode }
   | { type: "step"; stage: string; status?: string }
   | { type: "tool_call" | "tool_result"; name: string }
   | { type: "thought"; text: string }
@@ -76,6 +94,8 @@ export type ChatMessage =
       /** The question this answers, so a failed one can be asked again. */
       question: string;
       products?: AdvisorProduct[];
+      mode?: AdvisorMode;
+      needsAnalysis?: NeedsAnalysis;
       followUps?: string[];
       /** The advisor asked a question: the chips are answers to it, not new questions. */
       clarification?: boolean;

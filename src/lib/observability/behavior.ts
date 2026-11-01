@@ -45,6 +45,7 @@ export type ProductEvent =
   | "subscription_cancelled"
   | "lesson_started"
   | "lesson_completed"
+  | "advisor_mode_switched"
   | "ai_advisor_opened"
   | "ai_recommendation_clicked";
 
@@ -292,7 +293,7 @@ export function trackPaymentMethod(method: string, total?: number, currency?: st
   captureEvent("payment_method_selected", { route: currentRoute(), payment_method: method, total, currency });
 }
 
-export type AdvisorEvent = "ai_advisor_opened" | "ai_recommendation_clicked";
+export type AdvisorEvent = "ai_advisor_opened" | "ai_recommendation_clicked" | "advisor_mode_switched";
 
 /** The AI advisor widget: opened, or one of its recommended products clicked. */
 export function trackAdvisor(eventType: AdvisorEvent, metadata?: Record<string, unknown>): void {

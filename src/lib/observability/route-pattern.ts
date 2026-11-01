@@ -30,6 +30,7 @@ const STATIC_ROUTES: Record<string, string> = {
   "/login": "/login",
   "/register": "/register",
   "/business": "/business",
+  "/business/sales": "/business/sales",
   "/trainers": "/trainers",
   "/privacy": "/privacy",
   "/terms": "/terms",

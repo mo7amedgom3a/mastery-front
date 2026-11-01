@@ -73,7 +73,7 @@ const RULES: readonly Rule[] = [
   { methods: ["GET"], pattern: /^subscriptions\/me(\/[A-Za-z0-9-]+(\/selections)?)?$/, session: true },
   { methods: ["POST"], pattern: /^subscriptions\/me\/[A-Za-z0-9-]+\/(cancel|resume|selections|selections\/replace)$/, session: true },
   // AI advisor's suggested questions (public). The answer stream has its own handler: this door buffers.
-  { methods: ["GET"], pattern: /^advisor\/suggestions$/, session: false },
+  { methods: ["GET"], pattern: /^advisor\/(suggestions|capabilities)$/, session: false },
   // Recommendations for the signed-in customer (dashboard, after onboarding).
   { methods: ["GET"], pattern: /^recommendations\/me$/, session: true },
   // Consultations: public free slots, then booking, the meeting room and its recording.

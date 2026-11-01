@@ -2,27 +2,14 @@ import type { Route } from "next";
 
 import type { ProductType } from "@/features/search/model/params";
 
-/** View models for the header's explore menu; the API cards are mapped in `mappers.ts`. */
-
-export type MenuProductVM = {
-  key: string;
-  title: string;
-  href: Route;
-  image: string | null;
-  /** Formatted current price, or "مجاني" for a free product. */
-  price: string;
-  /** Formatted pre-offer price, only while an offer undercuts it. */
-  originalPrice: string | null;
-};
+/** View models for the header's solutions menu; the API response is mapped in `mappers.ts`. */
 
 export type MenuCategoryVM = {
   id: string;
   /** Search category code (`legacy-category-27`, `marketing/sales`). */
   slug: string;
   name: string;
-  href: Route;
   count: number;
-  products: MenuProductVM[];
 };
 
 export type MenuGroupVM = {
@@ -35,4 +22,26 @@ export type MenuGroupVM = {
 
 export type ExploreMenuVM = {
   groups: MenuGroupVM[];
+};
+
+/** One field across every product type, linking to all of its programs. */
+export type SolutionsCategoryVM = {
+  slug: string;
+  name: string;
+  href: Route;
+  count: number;
+};
+
+export type SolutionsTypeVM = {
+  type: ProductType;
+  label: string;
+  href: Route;
+  /** Missing when the catalog could not be read. */
+  count?: number;
+};
+
+export type SolutionsMenuVM = {
+  /** Largest first. */
+  categories: SolutionsCategoryVM[];
+  types: SolutionsTypeVM[];
 };
