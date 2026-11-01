@@ -25,6 +25,10 @@ export const metadata: Metadata = {
 };
 
 export default async function LiveTrainingsPage() {
-  const trainings = await getLiveTrainings();
+  // A failed read must not fail the build; the page refills on its next revalidation.
+  const trainings = await getLiveTrainings().catch((error: unknown) => {
+    console.error("[api] live trainings request failed", error);
+    return [];
+  });
   return <LivePage trainings={trainings} />;
 }
