@@ -3,6 +3,8 @@ import { getApiBaseUrl } from "@/config/env";
 const API_PREFIX = "/api/v1";
 /** This app's same-origin door to the backend (`app/api/b2c/[...path]`). */
 const APP_PROXY_PREFIX = "/api/b2c";
+/** Short enough that a stalled backend fails a read, not the build's 60-second page limit. */
+const BUILD_READ_TIMEOUT_MS = 10_000;
 
 type QueryValue = string | number | boolean | null | undefined;
 type QueryParams = Record<string, QueryValue | QueryValue[]>;
@@ -73,6 +75,7 @@ export async function apiRequest<T>(
 
   const response = await fetch(url, {
     ...requestOptions,
+    signal: withBuildTimeout(requestOptions.signal),
     method,
     headers,
     body: body === undefined ? undefined : serializeBody(body),
@@ -95,6 +98,15 @@ export async function apiRequest<T>(
 
 export function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   return apiRequest<T>("GET", path, options);
+}
+
+/** Runtime requests keep the caller's signal; only `next build` bounds how long a read may stall. */
+function withBuildTimeout(signal: AbortSignal | null | undefined): AbortSignal | null | undefined {
+  if (process.env.NEXT_PHASE !== "phase-production-build") {
+    return signal;
+  }
+  const timeout = AbortSignal.timeout(BUILD_READ_TIMEOUT_MS);
+  return signal ? AbortSignal.any([signal, timeout]) : timeout;
 }
 
 function buildHeaders(headers: HeadersInit | undefined, context: ApiRequestContext | undefined): Headers {
