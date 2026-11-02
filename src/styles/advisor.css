@@ -77,3 +77,20 @@
   .ma-advisor-panel,
   .ma-advisor-panel.is-expanded { inset: 0; width: 100%; height: 100dvh; border: 0; border-radius: 0; }
 }
+
+/* Streaming answer: a blinking caret after the text that is still arriving. */
+.ma-advisor-caret {
+  display: inline-block;
+  inline-size: 0.5ch;
+  block-size: 1em;
+  margin-inline-start: 2px;
+  vertical-align: text-bottom;
+  background: currentColor;
+  opacity: 0.6;
+  animation: ma-advisor-caret 1s steps(2, start) infinite;
+}
+@keyframes ma-advisor-caret { to { visibility: hidden; } }
+.ma-advisor-trace summary::-webkit-details-marker { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .ma-advisor-caret { animation: none; }
+}

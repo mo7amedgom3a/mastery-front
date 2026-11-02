@@ -1,5 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
+/**
+ * One advisor, no mode toggle: the backend agent picks a direct answer or a needs diagnosis for
+ * every turn. The widget never sends a mode and follows whatever each answer was.
+ */
 const errors = new WeakMap<Page, string[]>();
 test.beforeEach(async ({ page }) => {
   const found: string[] = [];
@@ -16,8 +20,37 @@ const analysis = {
   product_matches: [], success_measures: ["قارن وقت إعداد التقارير"], uncertainties: [],
 };
 
+/** A stand-in for the backend router: a described team need is diagnosed, a named topic is answered. */
+function reply(body: Record<string, unknown>) {
+  const question = String(body.question);
+  const diagnose = Boolean(body.analysis_action) || question.includes("فريق") || question === "تأخر التقارير";
+  const discovering = diagnose && !body.analysis_action;
+  return {
+    conversation_id: id, answer: discovering ? "ما أكبر عائق؟" : diagnose ? "تحسين تقارير الفريق" : "هذه دورات تحليل البيانات.",
+    intent: diagnose ? "study_plan" : "course_search", source: discovering ? "clarification" : "llm", cached: false,
+    mode: diagnose ? "reasoning" : "fast", products: [], follow_up_questions: discovering ? ["تأخر التقارير", "أخطاء البيانات"] : [],
+    clarification_needed: discovering,
+    clarification: discovering ? { question: "ما أكبر عائق؟", options: ["تأخر التقارير", "أخطاء البيانات"], slots: ["pain_points"], allow_free_text: true } : null,
+    needs_analysis: diagnose ? { ...analysis, status: discovering ? "discovering" : "complete" } : null,
+  };
+}
+
+async function mockStream(page: Page) {
+  const requests: Record<string, unknown>[] = [];
+  await page.route("**/api/advisor/stream", async (route) => {
+    const body = route.request().postDataJSON();
+    requests.push(body);
+    const answer = reply(body);
+    await route.fulfill({ contentType: "text/event-stream", body: [
+      { type: "run_started", conversation_id: id },
+      { type: "step", stage: "route", status: "done", public: { mode: answer.mode } },
+      { type: "final", answer },
+    ].map((event) => `data: ${JSON.stringify(event)}\n\n`).join("") });
+  });
+  return requests;
+}
+
 async function prepare(page: Page, { signedIn = true } = {}) {
-  // Availability of both modes must not depend on a capability request.
   await page.route("**/api/b2c/advisor/capabilities*", (route) => route.abort());
   await page.route("**/api/b2c/advisor/suggestions*", (route) => route.fulfill({ json: { items: [] } }));
   await page.route("**/api/auth/session", (route) => route.fulfill({ json: { customer: signedIn ? { customer_id: id, email: "test@example.test", full_name: "Test" } : null, refreshable: false } }));
@@ -25,94 +58,83 @@ async function prepare(page: Page, { signedIn = true } = {}) {
   await page.locator("#ma-advisor-launcher").click();
 }
 
-test("reasoning discovery, switching, early result and session restoration", async ({ page }) => {
-  const requests: Record<string, unknown>[] = [];
-  let releaseFirst: (() => void) | undefined;
-  await page.route("**/api/advisor/stream", async (route) => {
-    const body = route.request().postDataJSON();
-    requests.push(body);
-    if (requests.length === 1) await new Promise<void>((resolve) => { releaseFirst = resolve; });
-    const discovering = body.mode === "reasoning" && !body.analysis_action;
-    const response = {
-      conversation_id: id, answer: discovering ? "ما أكبر عائق؟" : "تحسين تقارير الفريق", intent: "study_plan", source: "llm", cached: false,
-      mode: body.mode, products: [], follow_up_questions: [], clarification_needed: discovering,
-      clarification: discovering ? { question: "ما أكبر عائق؟", options: ["تأخر التقارير"], slots: ["pain_points"], allow_free_text: true } : null,
-      needs_analysis: body.mode === "reasoning" ? { ...analysis, status: discovering ? "discovering" : "complete" } : null,
-    };
-    await route.fulfill({ contentType: "text/event-stream", body: [
-      { type: "run_started", conversation_id: id, mode: body.mode }, { type: "final", answer: response },
-    ].map((event) => `data: ${JSON.stringify(event)}\n\n`).join("") });
-  });
+async function send(page: Page, text: string) {
+  await page.locator("#ma-advisor-input").fill(text);
+  await page.locator("#ma-advisor-input").press("Enter");
+}
+
+test("there is no mode toggle and no mode is sent; each answer follows the agent's choice", async ({ page }) => {
+  const requests = await mockStream(page);
   await prepare(page);
-  const reasoning = page.getByRole("button", { name: "تحليل الاحتياجات", exact: true });
-  await reasoning.click();
-  await expect(reasoning).toHaveAttribute("aria-pressed", "true");
-  expect(requests).toHaveLength(0);
-  await page.locator("#ma-advisor-input").fill("فريقنا يحتاج إلى تحسين التقارير");
-  await page.locator("#ma-advisor-input").press("Enter");
-  await expect(reasoning).toBeDisabled();
-  await expect.poll(() => Boolean(releaseFirst)).toBe(true);
-  releaseFirst!();
-  await expect(page.getByRole("status").filter({ hasText: "اكتشاف الاحتياجات" })).toBeVisible();
-  await page.getByRole("button", { name: "سريع", exact: true }).click();
-  await page.locator("#ma-advisor-input").fill("دورات تحليل البيانات");
-  await page.locator("#ma-advisor-input").press("Enter");
-  await expect.poll(() => requests.length).toBe(2);
-  expect(requests[1]).toMatchObject({ conversation_id: id, mode: "fast" });
-  await expect(page.locator("#ma-advisor-input")).toBeEnabled();
-  await expect(reasoning).toBeEnabled();
-  await reasoning.click();
-  await page.getByRole("button", { name: "اعرض التوصيات الآن", exact: true }).click();
+  await expect(page.getByRole("group", { name: "أسلوب المستشار" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "سريع", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "تحليل الاحتياجات", exact: true })).toHaveCount(0);
+
+  // A named topic: a direct answer, no "recommend now".
+  await send(page, "دورات تحليل البيانات");
+  await expect(page.getByText("هذه دورات تحليل البيانات.")).toBeVisible();
+  expect(requests[0]).not.toHaveProperty("mode");
+  await expect(page.getByRole("button", { name: "اعرض التوصيات الآن", exact: true })).toHaveCount(0);
+
+  // A described team need: the agent starts a diagnosis with a closed question.
+  await send(page, "فريقنا يحتاج إلى تحسين التقارير");
+  const group = page.getByRole("group", { name: "اختر إجابة أو اكتبها بنفسك" }).last();
+  await expect(group.getByRole("button", { name: "تأخر التقارير", exact: true })).toBeVisible();
+  const recommendNow = group.getByRole("button", { name: "اعرض التوصيات الآن", exact: true });
+  await expect(recommendNow).toBeVisible();
+  // The timeline says which way the agent went.
+  await expect(page.getByTestId("advisor-trace").nth(0)).toContainText("قرّرت أجاوبك مباشرة");
+  await expect(page.getByTestId("advisor-trace").last()).toContainText("قرّرت أفهم احتياجك أولاً");
+  expect(requests[1]).toMatchObject({ conversation_id: id });
+  expect(requests[1]).not.toHaveProperty("mode");
+
+  // Skipping the remaining questions finishes the diagnosis.
+  await recommendNow.click();
   await expect(page.getByRole("heading", { name: "خطة عمل للفريق" })).toBeVisible();
-  expect(requests[2]).toMatchObject({ mode: "reasoning", analysis_action: "recommend_now", conversation_id: id });
+  expect(requests[2]).toMatchObject({ analysis_action: "recommend_now", conversation_id: id });
+  expect(requests[2]).not.toHaveProperty("mode");
   await expect(page.getByText("راجع سير إعداد التقارير", { exact: true })).toBeVisible();
+  // Only the latest diagnosis question offers it.
+  await expect(page.getByRole("button", { name: "اعرض التوصيات الآن", exact: true })).toHaveCount(0);
+
   await page.reload();
   await expect(page.getByRole("heading", { name: "خطة عمل للفريق" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "تحليل الاحتياجات", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "محادثة جديدة", exact: true }).click();
   await expect(page.getByRole("heading", { name: "خطة عمل للفريق" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "تحليل الاحتياجات", exact: true })).toHaveAttribute("aria-pressed", "true");
 });
 
-test("reasoning is available by default and keeps the guest sign-in gate", async ({ page }) => {
+test("a guest's described need waits for sign-in, then the agent diagnoses it", async ({ page }) => {
+  const requests = await mockStream(page);
   await prepare(page, { signedIn: false });
-  await expect(page.getByRole("group", { name: "أسلوب المستشار" })).toBeVisible();
-  await page.getByRole("button", { name: "تحليل الاحتياجات", exact: true }).click();
-  await page.getByRole("button", { name: "اعرض التوصيات الآن", exact: true }).click();
+  await send(page, "فريقنا يحتاج إلى تحسين التقارير");
   await expect(page.locator("#ma-advisor-login-title")).toBeVisible();
+  expect(requests).toHaveLength(0);
   await page.route("**/api/auth/login", (route) => route.fulfill({ json: { sent: true, resendAfter: 30 } }));
   await page.route("**/api/auth/verify", async (route) => {
     const customer = { customer_id: id, email: "test@example.test", full_name: "Test" };
-    // Subsequent session checks must reflect the successful mocked sign-in.
     await page.route("**/api/auth/session", (session) => session.fulfill({ json: { customer } }));
     await route.fulfill({ json: { customer } });
   });
-  let resumed: Record<string, unknown> | undefined;
-  await page.route("**/api/advisor/stream", (route) => {
-    resumed = route.request().postDataJSON();
-    return route.fulfill({ contentType: "text/event-stream", body: `data: ${JSON.stringify({ type: "final", answer: {
-      conversation_id: id, answer: "تحسين تقارير الفريق", mode: "reasoning", intent: "study_plan", source: "llm", products: [], follow_up_questions: [],
-      clarification_needed: false, needs_analysis: analysis,
-    } })}\n\n` });
-  });
-  // Scope to the modal so background account controls never match the form.
   const modal = page.locator("dialog[open]");
   await modal.getByRole("textbox", { name: "البريد الإلكتروني" }).fill("test@example.test");
   await modal.getByRole("button", { name: "إرسال رمز التحقق", exact: true }).click();
   await modal.getByRole("textbox", { name: "رمز التحقق", exact: true }).fill("123456");
   await modal.getByRole("button", { name: "تأكيد الدخول", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "خطة عمل للفريق" })).toBeVisible();
-  expect(resumed).toMatchObject({ mode: "reasoning", analysis_action: "recommend_now" });
   await expect(modal).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "اعرض التوصيات الآن", exact: true })).toBeVisible();
+  expect(requests[0]).toMatchObject({ question: "فريقنا يحتاج إلى تحسين التقارير" });
+  expect(requests[0]).not.toHaveProperty("mode");
 });
 
-test("mobile RTL controls fit and remain keyboard accessible", async ({ page }) => {
+test("mobile RTL: the diagnosis choices fit and remain keyboard accessible", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  await mockStream(page);
   await prepare(page);
-  const reasoning = page.getByRole("button", { name: "تحليل الاحتياجات", exact: true });
-  await reasoning.focus();
+  await send(page, "فريقنا يحتاج إلى تحسين التقارير");
+  const recommendNow = page.getByRole("button", { name: "اعرض التوصيات الآن", exact: true });
+  await recommendNow.focus();
   await page.keyboard.press("Enter");
-  await expect(reasoning).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("heading", { name: "خطة عمل للفريق" })).toBeVisible();
   const box = await page.locator("#ma-advisor-panel").boundingBox();
   expect(box).not.toBeNull();
   expect(box!.x).toBeGreaterThanOrEqual(0);
@@ -120,9 +142,7 @@ test("mobile RTL controls fit and remain keyboard accessible", async ({ page }) 
   expect(await page.locator("#ma-advisor-panel").evaluate((node) => getComputedStyle(node).direction)).toBe("rtl");
 });
 
-test("stream proxy rejects invalid mode and analysis action", async ({ request }) => {
-  for (const extra of [{ mode: "invalid" }, { analysis_action: "invalid" }]) {
-    const response = await request.post("/api/advisor/stream", { headers: { "sec-fetch-site": "same-origin" }, data: { question: "help", ...extra } });
-    expect(response.status()).toBe(400);
-  }
+test("stream proxy rejects an invalid analysis action", async ({ request }) => {
+  const response = await request.post("/api/advisor/stream", { headers: { "sec-fetch-site": "same-origin" }, data: { question: "help", analysis_action: "invalid" } });
+  expect(response.status()).toBe(400);
 });

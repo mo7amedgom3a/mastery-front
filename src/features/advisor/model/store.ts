@@ -1,22 +1,19 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { trackAdvisor } from "@/lib/observability/behavior";
-
 import { ApiError } from "@/lib/api/client";
 import { useAuthStore } from "@/lib/auth/store";
 
 import { streamAdvisor } from "./stream";
-import type { AdvisorAnswer, AdvisorSuggestion, AdvisorMode, AgentMood, ChatMessage } from "./types";
+import { applyTraceEvent } from "./trace";
+import type { AdvisorAnswer, AdvisorSuggestion, AgentMood, ChatMessage } from "./types";
 
 const EXPANDED_KEY = "ma-advisor-expanded";
 /** How long the face smiles after an answer lands. */
 const JOY_MS = 1600;
 
 type AdvisorState = {
-  mode: AdvisorMode;
   pendingAction: "recommend_now" | undefined;
-  setMode: (mode: AdvisorMode) => void;
   open: boolean;
   expanded: boolean;
   messages: ChatMessage[];
@@ -66,8 +63,12 @@ function writeExpanded(expanded: boolean): void {
 /** Questions about the catalog that came back without a single product, or no usable answer at all. */
 const CATALOG_INTENTS = new Set(["course_search", "product_details", "study_plan", "career_advice", "off_topic"]);
 
+/** Answers that already say "I don't know" and offer their own choices. */
+const SELF_GUIDED_SOURCES = new Set(["unknown", "no_match"]);
+
 function needsCatalogGuide(answer: AdvisorAnswer): boolean {
   if (answer.mode === "reasoning" || answer.clarification_needed || answer.needs_analysis) return false;
+  if (SELF_GUIDED_SOURCES.has(answer.source)) return false;
   if (!answer.answer.trim() || answer.source === "degraded") return true;
   return answer.products.length === 0 && CATALOG_INTENTS.has(answer.intent);
 }
@@ -113,8 +114,9 @@ export const useAdvisorStore = create<AdvisorState>()(
           followUps: answer.clarification?.options ?? answer.follow_up_questions,
           clarification: Boolean(answer.clarification),
           showCatalog: needsCatalogGuide(answer),
+          source: answer.source,
         });
-        set({ conversationId: answer.conversation_id, mode: answer.mode ?? get().mode, mood: "joy" });
+        set({ conversationId: answer.conversation_id, mood: "joy" });
         clearTimeout(joyTimer);
         joyTimer = setTimeout(() => {
           if (get().mood === "joy") set({ mood: "idle" });
@@ -139,8 +141,14 @@ export const useAdvisorStore = create<AdvisorState>()(
         let finished = false;
         try {
           await streamAdvisor(
-            { question, conversationId: get().conversationId, locale: "ar", mode: get().mode, analysisAction },
+            // No mode: the agent picks a direct answer or a needs diagnosis for every turn.
+            { question, conversationId: get().conversationId, locale: "ar", analysisAction },
             (event) => {
+              const current = get().messages.find((item) => item.id === answerId);
+              if (current?.role === "assistant") {
+                const trace = applyTraceEvent(current.trace ?? [], event);
+                if (trace !== (current.trace ?? [])) patch(answerId, { trace });
+              }
               if (event.type === "run_started") {
                 set({ conversationId: event.conversation_id });
               } else if (event.type === "token") {
@@ -175,13 +183,7 @@ export const useAdvisorStore = create<AdvisorState>()(
       };
 
       return {
-        mode: "fast",
         pendingAction: undefined,
-        setMode: (mode) => {
-          if (get().busy) return;
-          if (get().mode !== mode) trackAdvisor("advisor_mode_switched", { mode });
-          set({ mode });
-        },
         open: false,
         expanded: false,
         messages: [],
@@ -203,7 +205,7 @@ export const useAdvisorStore = create<AdvisorState>()(
         ask: async (raw, options) => {
           const question = raw.trim();
           if (!question || get().busy) return;
-          const suggested = get().mode === "fast" && (options?.suggested || get().suggestions.some((item) => sameQuestion(item.question, question)));
+          const suggested = !options?.analysisAction && (options?.suggested || get().suggestions.some((item) => sameQuestion(item.question, question)));
           if (!suggested && !(await isSignedIn())) {
             set({ pendingQuestion: question, pendingAction: options?.analysisAction, loginOpen: true });
             return;
@@ -235,8 +237,7 @@ export const useAdvisorStore = create<AdvisorState>()(
       version: 1,
       // Per tab and session: the chat follows the visitor around the site, not into tomorrow.
       storage: createJSONStorage(() => sessionStorage),
-      partialize: ({ open, messages, conversationId, pendingQuestion, pendingAction, mode }) => ({
-        mode,
+      partialize: ({ open, messages, conversationId, pendingQuestion, pendingAction }) => ({
         pendingAction,
         open,
         conversationId,

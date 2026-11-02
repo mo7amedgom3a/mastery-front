@@ -1,4 +1,5 @@
 import { clsx as cn } from "clsx";
+import { Pencil, Sparkles } from "lucide-react";
 
 import { BidiText, isolateRuns, textDir } from "@/components/content/bidi";
 
@@ -10,6 +11,12 @@ import { AdvisorCatalogGuide } from "./advisor-catalog-guide";
 import { AdvisorMarkdown } from "./advisor-markdown";
 import { AdvisorNeedsAnalysis } from "./advisor-needs-analysis";
 import { AdvisorProductCard } from "./advisor-product-card";
+import { AdvisorTrace, traceLabel } from "./advisor-trace";
+
+function focusInput(): void {
+  const input = document.getElementById("ma-advisor-input");
+  if (input instanceof HTMLTextAreaElement) input.focus();
+}
 
 const LIST_ITEM = /^\s*([-*•]|\d+[.)])\s/;
 
@@ -35,6 +42,7 @@ function keepLineBreaks(text: string): string {
 export function AdvisorMessage({ message, expanded }: { message: ChatMessage; expanded: boolean }) {
   const busy = useAdvisorStore((state) => state.busy);
   const ask = useAdvisorStore((state) => state.ask);
+  const latest = useAdvisorStore((state) => state.messages.at(-1)?.id === message.id);
 
   if (message.role === "user") {
     const dir = textDir(message.text);
@@ -48,17 +56,28 @@ export function AdvisorMessage({ message, expanded }: { message: ChatMessage; ex
     );
   }
 
-  const thinking = message.status === "streaming" && !message.text;
+  const streaming = message.status === "streaming";
+  const thinking = streaming && !message.text;
   const products = message.products ?? [];
   const followUps = message.status === "done" ? (message.followUps ?? []) : [];
+  const trace = message.trace ?? [];
+  // While nothing is written yet, say what the agent is doing right now.
+  const active = [...trace].reverse().find((step) => step.status === "running") ?? trace.at(-1);
+  // A question (or an "I don't know" reply) is answered by picking a choice or typing one.
+  const choosing = Boolean(message.clarification) || message.source === "unknown" || message.source === "no_match";
+  // During a needs diagnosis the visitor may skip the remaining questions.
+  const canRecommendNow = latest && message.mode === "reasoning" && Boolean(message.clarification) && message.status === "done";
 
   return (
     <div className="flex items-start gap-2">
       <AdvisorAgent variant="compact" mood={message.status === "streaming" ? "speaking" : "idle"} className="mt-1 size-9 shrink-0" />
       <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <AdvisorTrace steps={trace} running={streaming} />
         <div className="max-w-full self-start rounded-panel rounded-ss-chip border border-line bg-surface-alt px-3.5 py-2.5" aria-busy={message.status === "streaming"}>
           {thinking ? (
-            <p className="m-0 animate-pulse text-sm leading-7 text-fg-muted">{advisorCopy.thinking}</p>
+            <p className="m-0 animate-pulse text-sm leading-7 text-fg-muted" role="status">
+              {active ? `${traceLabel(active)}…` : advisorCopy.thinking}
+            </p>
           ) : message.status === "error" ? (
             <div className="flex flex-col items-start gap-2">
               <p role="alert" className="m-0 text-sm leading-7">
@@ -71,7 +90,10 @@ export function AdvisorMessage({ message, expanded }: { message: ChatMessage; ex
               ) : null}
             </div>
           ) : (
-            <AdvisorMarkdown source={keepLineBreaks(message.text)} dir={textDir(message.text)} />
+            <>
+              <AdvisorMarkdown source={keepLineBreaks(message.text)} dir={textDir(message.text)} />
+              {streaming ? <span className="ma-advisor-caret" aria-hidden /> : null}
+            </>
           )}
         </div>
 
@@ -90,9 +112,9 @@ export function AdvisorMessage({ message, expanded }: { message: ChatMessage; ex
         {followUps.length ? (
           <div className="flex flex-col gap-2">
             <p className="m-0 text-xs font-medium text-fg-muted">
-              {message.clarification ? advisorCopy.clarificationTitle : advisorCopy.followUpsTitle}
+              {choosing ? advisorCopy.clarificationTitle : advisorCopy.followUpsTitle}
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2" role={choosing ? "group" : undefined} aria-label={choosing ? advisorCopy.clarificationTitle : undefined}>
               {followUps.map((question) => (
                 <button
                   key={question}
@@ -104,6 +126,28 @@ export function AdvisorMessage({ message, expanded }: { message: ChatMessage; ex
                   <BidiText text={question} />
                 </button>
               ))}
+              {choosing ? (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={focusInput}
+                  className="ma-btn ma-btn--ghost ma-btn--sm h-auto min-h-11 gap-1.5 py-2 leading-6"
+                >
+                  <Pencil className="size-3.5" aria-hidden />
+                  {advisorCopy.typeOwnAnswer}
+                </button>
+              ) : null}
+              {canRecommendNow ? (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void ask(advisorCopy.recommendNow, { analysisAction: "recommend_now" })}
+                  className="ma-btn ma-btn--ghost ma-btn--sm h-auto min-h-11 gap-1.5 py-2 leading-6"
+                >
+                  <Sparkles className="size-3.5" aria-hidden />
+                  {advisorCopy.recommendNow}
+                </button>
+              ) : null}
             </div>
           </div>
         ) : null}

@@ -2,9 +2,9 @@ import { ApiError } from "@/lib/api/client";
 import { refreshOnce } from "@/lib/auth/client";
 import { createRequestId, getClientFingerprint } from "@/lib/customer-tracking";
 
-import type { AdvisorEvent, AdvisorMode } from "./types";
+import type { AdvisorEvent } from "./types";
 
-export type StreamRequest = { question: string; conversationId: string | null; locale: "ar" | "en"; mode?: AdvisorMode; analysisAction?: "recommend_now" };
+export type StreamRequest = { question: string; conversationId: string | null; locale: "ar" | "en"; analysisAction?: "recommend_now" };
 
 function post(request: StreamRequest, signal: AbortSignal): Promise<Response> {
   const headers = new Headers({ "Content-Type": "application/json", Accept: "text/event-stream" });
@@ -14,7 +14,7 @@ function post(request: StreamRequest, signal: AbortSignal): Promise<Response> {
   return fetch("/api/advisor/stream", {
     method: "POST",
     headers,
-    body: JSON.stringify({ question: request.question, conversation_id: request.conversationId, locale: request.locale, mode: request.mode, analysis_action: request.analysisAction }),
+    body: JSON.stringify({ question: request.question, conversation_id: request.conversationId, locale: request.locale, analysis_action: request.analysisAction }),
     signal,
   });
 }

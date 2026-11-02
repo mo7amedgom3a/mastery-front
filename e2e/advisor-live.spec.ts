@@ -29,7 +29,8 @@ async function signIn(page: Page, baseURL: string) {
   expect((await session.json()).customer, "Development token must authenticate a real customer").toBeTruthy();
   await page.goto("/");
   await page.locator("#ma-advisor-launcher").click();
-  await page.getByRole("button", { name: "تحليل الاحتياجات", exact: true }).click();
+  // One advisor: there is no mode toggle, the agent picks a direct answer or a diagnosis per turn.
+  await expect(page.getByRole("button", { name: "تحليل الاحتياجات", exact: true })).toHaveCount(0);
 }
 
 async function ask(page: Page, question: string): Promise<AdvisorAnswer & { factors: Record<string, unknown> }> {
@@ -62,7 +63,8 @@ test("real marketing conversation retains answers and progresses", async ({ page
   const transcript: unknown[] = [];
   let previousCount = 0;
   const seen = new Set<string>();
-  let answer = await ask(page, "عايز اتعلم التسويق");
+  let answer = await ask(page, "عايز اتعلم التسويق بس مش عارف أبدأ منين");
+  expect(answer.mode, "a described need starts a diagnosis").toBe("reasoning");
   expect(answer.answer).not.toMatch(/المحاسبة|المحاسبه|الإدارة المالية/);
   try {
     for (let turn = 0; turn < 6; turn++) {
@@ -118,7 +120,8 @@ test("real complaints discovery adapts to an individual beginner on mobile", asy
   await signIn(page, baseURL!);
   const transcript: unknown[] = [];
   try {
-    const first = await ask(page, "عايز اتعلم التعامل مع شكاوي العملاء");
+    const first = await ask(page, "عايز اتعلم التعامل مع شكاوي العملاء ومش عارف أبدأ منين");
+    expect(first.mode).toBe("reasoning");
     const result = await finishDiscovery(page, first, {
       customer_type: "لنفسي", current_situation: "ليس لدي اي خبره", pain_points: "الوقت ومش عارف أختار مصادر مناسبة",
       weekly_availability: "ثلاث ساعات أسبوعيا", goal: "عايز أعرف أتعامل مع العميل الغاضب بطريقة مهنية",
@@ -170,12 +173,11 @@ test("real corrections, FAQ and mode switching preserve the same analysis", asyn
     expect(corrected.conversation_id).toBe(id);
     expect(String((corrected.factors.needs_profile as Record<string, unknown>).weekly_availability)).toMatch(/4|٤|أربع|اربع/);
     expect((corrected.factors.needs_profile as Record<string, unknown>).question_count).toBe(count);
-    await page.getByRole("button", { name: "سريع", exact: true }).click();
+    // A named topic mid-diagnosis is answered directly by the agent's own choice.
     const fast = await ask(page, "عايز أشوف دورات تسويق المحتوى");
     transcript.push(fast);
     expect(fast.mode).toBe("fast");
     expect(fast.conversation_id).toBe(id);
-    await page.getByRole("button", { name: "تحليل الاحتياجات", exact: true }).click();
     const resumed = await ask(page, "كمل نفس التحليل مع الأربع ساعات الأسبوعية");
     transcript.push(resumed);
     expect(resumed.mode).toBe("reasoning");
@@ -189,7 +191,8 @@ test("real skipped answers and early recommendations do not repeat questions", a
   await signIn(page, baseURL!);
   const transcript: unknown[] = [];
   try {
-    const first = await ask(page, "عايز اتعلم تحليل البيانات لنفسي");
+    const first = await ask(page, "عايز اتعلم تحليل البيانات لنفسي بس مش عارف أبدأ منين");
+    expect(first.mode).toBe("reasoning");
     transcript.push(first);
     let answer = first;
     if (answer.clarification_needed) {
@@ -217,4 +220,98 @@ test("real skipped answers and early recommendations do not repeat questions", a
     }
     expect(final.needs_analysis.status).toBe("provisional");
   } finally { await saveTranscript(testInfo, transcript); }
+});
+
+type LiveEvent = { type: string; stage?: string; public?: Record<string, unknown>; answer?: AdvisorAnswer };
+
+/** Sends a message through the real widget and returns every SSE event of the real stream. */
+async function askEvents(page: Page, question: string): Promise<LiveEvent[]> {
+  const pending = page.waitForResponse((response) => response.url().endsWith("/api/advisor/stream") && response.request().method() === "POST", { timeout: 180_000 });
+  await page.locator("#ma-advisor-input").fill(question);
+  await page.locator("#ma-advisor-input").press("Enter");
+  const response = await pending;
+  expect(response.status(), "Real streaming endpoint").toBe(200);
+  const events = (await response.text()).split("\n").filter((line) => line.startsWith("data: ")).map((line) => JSON.parse(line.slice(6)) as LiveEvent);
+  expect(events.find((event) => event.type === "error"), "Real SSE stream must finish without errors").toBeUndefined();
+  expect(events.at(-1)?.type).toBe("final");
+  await expect(page.locator("#ma-advisor-input")).toBeEnabled({ timeout: 30_000 });
+  return events;
+}
+
+const finalOf = (events: LiveEvent[]) => events.at(-1)!.answer as AdvisorAnswer;
+
+test("real gibberish from the issue samples gets 'I don't know', never a question or product", async ({ page, baseURL }, testInfo) => {
+  await signIn(page, baseURL!);
+  const transcript: unknown[] = [];
+  // Twice: on a fresh conversation, then after a diagnosis question is pending.
+  for (const mode of ["fresh", "diagnosing"]) {
+    if (mode === "diagnosing") {
+      const start = finalOf(await askEvents(page, "فريقي عنده مشاكل في التعامل مع شكاوي العملاء"));
+      expect(start.mode).toBe("reasoning");
+    }
+    for (const message of ["عايز اتعلم بتنببنتنتب", "dkdndlk"]) {
+      const events = await askEvents(page, message);
+      const answer = finalOf(events);
+      transcript.push({ mode, message, answer: answer.answer, source: answer.source, options: answer.follow_up_questions });
+      expect(answer.source).toBe("unknown");
+      expect(answer.answer).toContain("ما فهمت");
+      expect(answer.products).toEqual([]);
+      expect(answer.clarification_needed).toBe(false);
+      expect(answer.follow_up_questions.length).toBeGreaterThan(1);
+      expect(events.filter((event) => event.type === "token").length).toBeGreaterThan(1);
+      await expect(page.locator("#ma-advisor-panel")).not.toContainText("هل تبحث عن تطوير نفسك أم تدريب فريق");
+    }
+  }
+  await saveTranscript(testInfo, transcript);
+});
+
+test("real diagnosis asks closed questions, streams and shows its steps", async ({ page, baseURL }, testInfo) => {
+  await signIn(page, baseURL!);
+  const transcript: unknown[] = [];
+  let events = await askEvents(page, "عايز اتعلم تحليل البيانات بس مش عارف أبدأ منين");
+  expect(finalOf(events).mode, "the agent chose a diagnosis").toBe("reasoning");
+  expect(events.find((event) => event.stage === "route")?.public).toEqual({ mode: "reasoning" });
+  for (let turn = 0; turn < 5; turn += 1) {
+    const answer = finalOf(events);
+    transcript.push({ answer: answer.answer, source: answer.source, clarification: answer.clarification, steps: events.filter((e) => e.type !== "token").map((e) => e.stage ?? e.type) });
+    expect(events.filter((event) => event.type === "token").length, "the answer streams in pieces").toBeGreaterThan(1);
+    expect(events.some((event) => event.type === "thought"), "reasoning shows a thought").toBeTruthy();
+    expect(answer.clarification?.slots ?? []).not.toContain("customer_type");
+    const trace = page.getByTestId("advisor-trace").last();
+    await expect(trace).toBeVisible();
+    await expect(trace.locator("summary")).toContainText("فكّرت في");
+    if (!answer.clarification_needed) break;
+    const options = answer.clarification!.options;
+    expect(options.length, "closed question with 2-4 options").toBeGreaterThanOrEqual(2);
+    expect(options.length).toBeLessThanOrEqual(4);
+    await expect(page.getByRole("button", { name: "اكتب إجابتك بنفسك" }).last()).toBeVisible();
+    // Answer with the first choice, like a visitor tapping a chip.
+    const pending = page.waitForResponse((response) => response.url().endsWith("/api/advisor/stream"), { timeout: 180_000 });
+    await page.locator("#ma-advisor-panel").getByRole("button", { name: options[0], exact: true }).last().click();
+    const response = await pending;
+    events = (await response.text()).split("\n").filter((line) => line.startsWith("data: ")).map((line) => JSON.parse(line.slice(6)) as LiveEvent);
+    expect(events.find((event) => event.type === "error")).toBeUndefined();
+    await expect(page.locator("#ma-advisor-input")).toBeEnabled({ timeout: 30_000 });
+  }
+  await saveTranscript(testInfo, transcript);
+  expect(finalOf(events).clarification_needed, "discovery ends within the question budget").toBe(false);
+});
+
+test("real direct answer streams a catalog answer with visible steps and says 'I don't know' off-catalog", async ({ page, baseURL }, testInfo) => {
+  await signIn(page, baseURL!);
+  const python = await askEvents(page, "عايز اتعلم بايثن من الصفر");
+  expect(finalOf(python).mode, "a named topic is answered directly").toBe("fast");
+  const understand = python.find((event) => event.type === "step" && event.stage === "understand");
+  expect(understand?.public, "understanding is visible to the widget").toBeTruthy();
+  expect(python.filter((event) => event.type === "token").length).toBeGreaterThan(1);
+  const trace = page.getByTestId("advisor-trace").last();
+  await trace.locator("summary").click();
+  await expect(trace).toContainText("فهم الطلب");
+  await expect(trace).toContainText("البحث في الكتالوج");
+  const cooking = await askEvents(page, "عايز كورس طبخ");
+  const answer = finalOf(cooking);
+  await saveTranscript(testInfo, [finalOf(python), answer]);
+  expect(answer.source).toBe("no_match");
+  expect(answer.products).toEqual([]);
+  await expect(page.locator("#ma-advisor-panel")).not.toContainText("ما لقيت لك نتيجة مطابقة");
 });

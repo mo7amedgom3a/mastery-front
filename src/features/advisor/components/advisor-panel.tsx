@@ -19,7 +19,6 @@ const MAX_QUESTION_CHARS = 1000;
 
 /** The chat: greeting, suggested questions, the conversation and the composer. */
 export function AdvisorPanel() {
-  const mode = useAdvisorStore((state) => state.mode);
   const expanded = useAdvisorStore((state) => state.expanded);
   const messages = useAdvisorStore((state) => state.messages);
   const busy = useAdvisorStore((state) => state.busy);
@@ -27,7 +26,7 @@ export function AdvisorPanel() {
   const suggestions = useAdvisorStore((state) => state.suggestions);
   const pendingQuestion = useAdvisorStore((state) => state.pendingQuestion);
   const loginOpen = useAdvisorStore((state) => state.loginOpen);
-  const { setOpen, toggleExpanded, setSuggestions, ask, startNewChat, openLogin, setMode } = useAdvisorStore.getState();
+  const { setOpen, toggleExpanded, setSuggestions, ask, startNewChat, openLogin } = useAdvisorStore.getState();
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -114,17 +113,6 @@ export function AdvisorPanel() {
           <X aria-hidden="true" className="size-5 fill-none" />
         </button>
       </header>
-
-      <div className="border-b border-line px-4 py-3">
-        <div role="group" aria-label="أسلوب المستشار" className="flex gap-2">
-          <button type="button" aria-pressed={mode === "fast"} disabled={busy} onClick={() => setMode("fast")} className={cn("ma-btn ma-btn--sm min-h-11 flex-1", mode === "fast" ? "ma-btn--primary" : "ma-btn--soft")}>سريع</button>
-          <button type="button" aria-pressed={mode === "reasoning"} disabled={busy} onClick={() => setMode("reasoning")} className={cn("ma-btn ma-btn--sm min-h-11 flex-1", mode === "reasoning" ? "ma-btn--primary" : "ma-btn--soft")}>تحليل الاحتياجات</button>
-        </div>
-        <p className="mt-2 text-xs leading-5 text-fg-muted">{mode === "fast" ? "ابحث عن الدورات واحصل على اقتراحات سريعة." : "نفهم تحدياتك أولاً، ثم نقترح خطوات وتدريباً مناسباً لك أو لفريقك."}</p>
-        {mode === "reasoning" ? (
-          <button type="button" disabled={busy} onClick={() => void ask("اعرض التوصيات الآن", { analysisAction: "recommend_now" })} className="ma-btn ma-btn--bare ma-btn--sm min-h-11">اعرض التوصيات الآن</button>
-        ) : null}
-      </div>
 
       <div ref={listRef} className="flex flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 py-4" aria-live="polite">
         <AdvisorMessage message={{ id: "greeting", role: "assistant", text: advisorCopy.greeting, status: "done", question: "" }} expanded={expanded} />

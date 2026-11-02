@@ -12,18 +12,18 @@ const MAX_QUESTION_CHARS = 1000;
 const CONNECT_TIMEOUT_MS = 20_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-type StreamBody = { question: string; conversation_id: string | null; locale: "ar" | "en"; mode?: "fast" | "reasoning"; analysis_action?: "recommend_now" };
+type StreamBody = { question: string; conversation_id: string | null; locale: "ar" | "en"; analysis_action?: "recommend_now" };
 
 function parseBody(raw: unknown): StreamBody | null {
   if (!raw || typeof raw !== "object") return null;
-  const { question, conversation_id: conversationId, locale, mode, analysis_action: action } = raw as Record<string, unknown>;
+  const { question, conversation_id: conversationId, locale, analysis_action: action } = raw as Record<string, unknown>;
   if (typeof question !== "string") return null;
   const text = question.trim();
   if (!text || text.length > MAX_QUESTION_CHARS) return null;
   if (conversationId != null && (typeof conversationId !== "string" || !UUID_PATTERN.test(conversationId))) return null;
-  if (mode !== undefined && mode !== "fast" && mode !== "reasoning") return null;
   if (action !== undefined && action !== "recommend_now") return null;
-  return { mode, analysis_action: action, question: text, conversation_id: conversationId ?? null, locale: locale === "en" ? "en" : "ar" };
+  // No mode is forwarded (an old tab's is ignored): the backend agent picks it for every turn.
+  return { analysis_action: action, question: text, conversation_id: conversationId ?? null, locale: locale === "en" ? "en" : "ar" };
 }
 
 /**
