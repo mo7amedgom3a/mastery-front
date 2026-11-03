@@ -14,7 +14,7 @@ export function YouStep() {
   const id = useId();
   const { fullName, email, phone, errors, update } = useApplyStore();
   return (
-    <ApplyFrame step="you" title="لنبدأ ببياناتك" lead="يستغرق الطلب دقائق قليلة، ونراجعه خلال 48 ساعة.">
+    <ApplyFrame step="you" title="لنبدأ ببياناتك" lead="يستغرق الطلب دقائق قليلة، ويُفعَّل حسابك فور إرساله.">
       <div className="flex flex-col gap-5">
         <Field id={`${id}-name`} label="الاسم الثلاثي" error={errors.fullName} required>
           <input

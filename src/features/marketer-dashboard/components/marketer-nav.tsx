@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Banknote,
   LayoutDashboard,
   Percent,
   ReceiptText,
@@ -30,7 +29,6 @@ const groups: readonly NavGroup[] = [
       { href: routes.marketerSales, label: "المبيعات", icon: ReceiptText },
       { href: routes.marketerCommissions, label: "العمولات", icon: Percent },
       { href: routes.marketerCoupons, label: "الكوبونات", icon: TicketPercent },
-      { href: routes.marketerPayouts, label: "الرصيد والصرف", icon: Banknote },
     ],
   },
   {

@@ -106,7 +106,7 @@ export const routes = {
   consultations: route("/search?type=consultation"),
   consultation: (id: number | string) => route(`/consultations/${encodeURIComponent(String(id))}`),
   business: route("/business"),
-  /** Sales-team training landing page. Mock content, noindexed and left out of the sitemap for now. */
+  /** Sales-team training landing page; noindexed pending final offer and copy approval. */
   businessSales: route("/business/sales"),
   /** The company training request, one page per step (`/business/request/company`, …). */
   businessRequest: (step?: string) => route(step ? `/business/request/${encodeURIComponent(step)}` : "/business/request"),
@@ -175,7 +175,6 @@ export const routes = {
   marketerSales: route("/marketer/sales"),
   marketerCommissions: route("/marketer/commissions"),
   marketerCoupons: route("/marketer/coupons"),
-  marketerPayouts: route("/marketer/payouts"),
   marketerProfile: route("/marketer/profile"),
   privacy: route("/privacy"),
   terms: route("/terms"),

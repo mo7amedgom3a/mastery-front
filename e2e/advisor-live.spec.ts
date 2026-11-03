@@ -203,14 +203,19 @@ test("real skipped answers and early recommendations do not repeat questions", a
       answer = await ask(page, "مش مهم");
       transcript.push(answer);
     }
-    const pending = page.waitForResponse((response) => response.url().endsWith("/api/advisor/stream") && response.request().method() === "POST");
-    await page.getByRole("button", { name: "اعرض التوصيات الآن", exact: true }).click();
-    const response = await pending;
-    expect(response.status()).toBe(200);
-    const events = (await response.text()).split("\n").filter((line) => line.startsWith("data: ")).map((line) => JSON.parse(line.slice(6)));
-    const final = events.find((event) => event.type === "final")?.answer;
-    expect(final).toBeTruthy();
-    transcript.push(final);
+    // Adaptive discovery may already have enough; otherwise skip the rest with the chip.
+    type Final = { clarification_needed: boolean; factors: { needs_profile: { question_count: number; declined: string[]; current_situation: string | null } }; needs_analysis: { needs_summary: string; status: string } };
+    let final = answer as unknown as Final;
+    if (answer.clarification_needed) {
+      const pending = page.waitForResponse((response) => response.url().endsWith("/api/advisor/stream") && response.request().method() === "POST");
+      await page.getByRole("button", { name: "اعرض التوصيات الآن", exact: true }).click();
+      const response = await pending;
+      expect(response.status()).toBe(200);
+      const events = (await response.text()).split("\n").filter((line) => line.startsWith("data: ")).map((line) => JSON.parse(line.slice(6)));
+      final = events.find((event) => event.type === "final")?.answer as Final;
+      expect(final).toBeTruthy();
+      transcript.push(final);
+    }
     expect(final.clarification_needed).toBe(false);
     expect(final.factors.needs_profile.question_count).toBeLessThanOrEqual(5);
     expect(final.factors.needs_profile.declined.length).toBeGreaterThan(0);

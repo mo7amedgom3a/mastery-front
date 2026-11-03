@@ -34,7 +34,7 @@ export function MarketerGate({ children }: { children: ReactNode }) {
           <Megaphone aria-hidden="true" className="size-8 text-accent" />
           <h1 className="m-0 text-2xl font-bold">هذا الحساب غير مسجّل كمسوّق</h1>
           <p className="m-0 max-w-[60ch] text-fg-muted">
-            سجّل الدخول بالبريد الذي قدّمت به طلب الانضمام لبرنامج المسوقين، أو قدّم طلبًا جديدًا وسنراجعه خلال 48 ساعة.
+            سجّل الدخول بالبريد الذي قدّمت به طلب الانضمام لبرنامج المسوقين، أو قدّم طلبًا جديدًا ليُفعَّل حسابك فورًا.
           </p>
           <ButtonLink href={routes.marketers} variant="primary">انضم لبرنامج المسوقين</ButtonLink>
         </div>

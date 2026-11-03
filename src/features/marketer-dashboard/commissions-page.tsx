@@ -29,7 +29,7 @@ export function MarketerCommissionsPage() {
     <div className="flex flex-col gap-4">
       <div className="ma-alert ma-alert--info m-0 text-sm" role="note">
         <p className="ma-alert__text m-0">
-          تُنشأ العمولة عند كل عملية شراء وتكون «بانتظار الاعتماد» خلال فترة الاسترداد، ثم تُعتمد وتُضاف إلى رصيدك المتاح للصرف. العمولة المستردة تُخصم من رصيدك.
+          تُنشأ العمولة عند كل عملية شراء وتكون «بانتظار الاعتماد» خلال فترة الاسترداد، ثم يعتمدها Tolt تلقائيًا ويحوّلها لك حسب شروط الدفع. الطلب المسترد يلغي عمولته.
         </p>
       </div>
       <div role="group" aria-label="تصفية حسب الحالة" className="flex flex-wrap gap-2">

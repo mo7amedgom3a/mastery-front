@@ -19,8 +19,9 @@ import {
 import { useState } from "react";
 
 import { Money } from "@/components/shop/money";
-import { ButtonLink } from "@/components/ui/button";
+import { ButtonLink, buttonClass } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getToltPortalUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { ApiError } from "@/lib/api/client";
 import { joinReferrals, referralKeys, referralQueries, type MyReferralsResponse } from "@/lib/api/referrals";
@@ -123,7 +124,7 @@ function PendingApplication() {
       <Hourglass aria-hidden="true" className="size-8 text-accent" />
       <h2 className="m-0 text-2xl font-bold">طلب انضمامك كمسوّق قيد المراجعة</h2>
       <p className="m-0 max-w-[60ch] text-fg-muted">
-        سنراجع طلبك ونرسل لك بريداً عند الموافقة. بعدها يظهر هنا رابطك وأرباحك ويمكنك طلب صرف عمولاتك.
+        سنرسل لك بريداً عند تفعيل حسابك، وبعدها يظهر هنا رابطك وعمولاتك.
       </p>
     </div>
   );
@@ -132,6 +133,7 @@ function PendingApplication() {
 function Joined({ data }: { data: MyReferralsResponse }) {
   const invites = useQuery(referralQueries.invites());
   const marketer = data.partner_type === "marketer";
+  const portalUrl = getToltPortalUrl();
 
   return (
     <div className="flex flex-col gap-6">
@@ -149,7 +151,7 @@ function Joined({ data }: { data: MyReferralsResponse }) {
         </div>
         <p className="m-0 text-fg-muted text-sm sm:text-base">
           {marketer
-            ? "شارك رابطك أو كودك مع جمهورك. تُحسب عمولتك عن كل عملية شراء، وتُضاف إلى رصيدك بعد اعتمادها لتطلب صرفها."
+            ? "شارك رابطك أو كودك مع جمهورك. تُحسب عمولتك عن كل عملية شراء، ويعتمدها Tolt بعد فترة الاسترداد ثم يحوّلها لك."
             : `شارك رابطك مع أصدقائك. يحصل صديقك على خصم ${Number(data.friend_discount_percent)}% على أول شراء، وتحصل أنت على رصيد يُخصم من مشترياتك القادمة.`}
         </p>
         {data.link ? <ShareLink link={data.link} /> : null}
@@ -206,9 +208,14 @@ function Joined({ data }: { data: MyReferralsResponse }) {
       {marketer ? (
         <section className="flex flex-wrap items-center justify-between gap-4 rounded-panel border border-accent/30 bg-accent/5 p-4 sm:p-5">
           <p className="m-0 text-sm sm:text-base">
-            <strong>لوحة المسوّق</strong> — إحصاءاتك ورسومك البيانية وعملاؤك وكوبوناتك وطلبات الصرف في مكان واحد.
+            <strong>لوحة المسوّق</strong> — إحصاءاتك وعملاؤك وعمولاتك وبيانات الدفع في مكان واحد.
           </p>
-          <ButtonLink href={routes.marketerDashboard} variant="primary" className="text-sm">افتح لوحة المسوّق</ButtonLink>
+          {portalUrl ? (
+            // A full navigation: the Tolt portal is another site.
+            <a href={portalUrl} className={cn(buttonClass({ variant: "primary" }), "text-sm")}>افتح لوحة المسوّق</a>
+          ) : (
+            <ButtonLink href={routes.marketerDashboard} variant="primary" className="text-sm">افتح لوحة المسوّق</ButtonLink>
+          )}
         </section>
       ) : (
         <StudentCredit data={data} />

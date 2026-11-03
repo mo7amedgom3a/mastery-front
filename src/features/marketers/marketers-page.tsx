@@ -6,6 +6,7 @@ import { AppLink } from "@/components/ui/app-link";
 import { buttonClass, ButtonLink } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
+import { getToltPortalUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/cn";
 
@@ -25,6 +26,7 @@ const pad = (index: number) => String(index + 1).padStart(2, "0");
 
 export function MarketersPage({ terms }: { terms: ProgramTerms }) {
   const commission = Math.round(Number(terms.commission_percent) || 20);
+  const portalUrl = getToltPortalUrl();
 
   return (
     <>
@@ -97,9 +99,15 @@ export function MarketersPage({ terms }: { terms: ProgramTerms }) {
               <a href="#how-it-works" className={cn(buttonClass({ variant: "secondary", size: "lg" }))}>
                 كيف يعمل البرنامج؟
               </a>
-              <AppLink href={routes.loginThen(routes.marketerDashboard)} className={cn(buttonClass({ variant: "soft", size: "lg" }))}>
-                دخول المسوقين
-              </AppLink>
+              {portalUrl ? (
+                <a href={portalUrl} className={cn(buttonClass({ variant: "soft", size: "lg" }))}>
+                  دخول المسوقين
+                </a>
+              ) : (
+                <AppLink href={routes.loginThen(routes.marketerDashboard)} className={cn(buttonClass({ variant: "soft", size: "lg" }))}>
+                  دخول المسوقين
+                </AppLink>
+              )}
             </div>
           </div>
         </header>
@@ -181,7 +189,7 @@ export function MarketersPage({ terms }: { terms: ProgramTerms }) {
                       ابدأ طلب الانضمام
                       <ArrowLeft aria-hidden="true" className="size-5 fill-none" />
                     </ButtonLink>
-                    <span className="text-sm text-fg-muted">يستغرق نحو 5 دقائق، ونراجعه خلال 48 ساعة.</span>
+                    <span className="text-sm text-fg-muted">يستغرق نحو 5 دقائق، ويُفعَّل حسابك فورًا.</span>
                   </div>
                 </>
               ) : (

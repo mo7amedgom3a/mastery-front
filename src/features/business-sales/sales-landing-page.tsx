@@ -1,379 +1,250 @@
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, ArrowUpLeft, Check, MoveUpLeft, Quote } from "lucide-react";
 import Image from "next/image";
-import type { ReactNode } from "react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AppLink } from "@/components/ui/app-link";
+import { ButtonLink } from "@/components/ui/button";
+import { Section } from "@/components/ui/section";
+import { SectionHeader } from "@/components/ui/section-header";
 import { routes } from "@/config/routes";
+import type { CatalogChipVM } from "@/features/business/api/get-business-catalog";
+import { FaqSection } from "@/features/landing/sections/faq-section";
+import { testimonials } from "@/features/landing/content/testimonials";
 
 import { SalesLandingMotion } from "./components/sales-landing-motion";
 import { salesLanding as copy } from "./content/sales-landing";
 
-const BOOK_HREF = "#book";
+const salesTestimonials = testimonials.filter((item) =>
+  ["idris-mohammed", "mohammed-arslan", "abdullatif-adnan"].includes(item.id),
+);
 
-const pad = (index: number) => String(index + 1).padStart(2, "0");
-
-/** Dark full-bleed band. Photo placeholders until the shoot: the design only specifies their slots. */
-function Cinema({
-  id,
-  labelledBy,
-  className,
-  parallax,
-  scrim,
-  children,
-}: {
-  id?: string;
-  labelledBy: string;
-  className: string;
-  parallax: string;
-  scrim: "hero" | "band";
-  children: ReactNode;
-}) {
-  return (
-    <section id={id} aria-labelledby={labelledBy} className={`cinema grain ${className}`}>
-      <div className="layer-bg ph" data-parallax={parallax} />
-      <span className={`layer-scrim scrim-${scrim}`} aria-hidden="true" />
-      {children}
-    </section>
-  );
-}
-
-function SectionIntro({
-  id,
-  eyebrow,
-  title,
-  lead,
-  action,
-}: {
-  id: string;
-  eyebrow: string;
-  title: string;
-  lead?: string;
-  action?: ReactNode;
-}) {
-  return (
-    <div className="sec-head" data-reveal="">
-      <div>
-        <p className="eyebrow">{eyebrow}</p>
-        <h2 id={id}>{title}</h2>
-        {lead ? <p className="sec-sub">{lead}</p> : null}
-      </div>
-      {action}
-    </div>
-  );
-}
-
-function SectionLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <a className="sec-link" href={href}>
-      {children}
-      <ArrowLeft aria-hidden="true" />
-    </a>
-  );
-}
-
-function Person({ initial, name, role }: { initial: string; name: string; role: string }) {
-  return (
-    <div className="q-who">
-      <span className="q-av" aria-hidden="true">
-        {initial}
-      </span>
-      <span>
-        <span className="q-name">{name}</span>
-        <span className="q-role">{role}</span>
-      </span>
-    </div>
-  );
-}
-
-function Quote({ item }: { item: { quote: string; name: string; role: string } }) {
-  return (
-    <li>
-      <blockquote>{item.quote}</blockquote>
-      <Person initial={item.name[0]} name={item.name} role={item.role} />
-    </li>
-  );
-}
-
-/** `/business/sales`: the sales-team training landing page, static with mock content for now. */
-export function SalesLandingPage() {
-  const { hero, method, deliverables, trust, experts, steps, audience, cta, voices, faq, closing } = copy;
-
+/** Sales training for companies. Course links come only from the public catalog's eligible facets. */
+export function SalesLandingPage({ salesCategory }: { salesCategory?: CatalogChipVM }) {
   return (
     <>
       <SiteHeader brand="business" />
       <main id="main" tabIndex={-1} className="outline-none">
         <SalesLandingMotion>
-          <Cinema labelledBy="hero-title" className="hero" parallax="hero" scrim="hero">
-            <div className="container layer-body hero-body">
-              <p className="eyebrow">{hero.eyebrow}</p>
-              <h1 id="hero-title">
-                <span className="ln">
-                  <span>{hero.title}</span>
-                </span>{" "}
-                <span className="ln dim">
-                  <span>{hero.titleDim}</span>
-                </span>
-              </h1>
-              <p className="lead">{hero.lead}</p>
-              <div className="hero-ctas">
-                <a className="btn btn-accent" href={BOOK_HREF}>
-                  {hero.primary}
-                </a>
-                <a className="btn btn-ghost" href="#method">
-                  {hero.secondary}
-                  <ArrowLeft aria-hidden="true" />
-                </a>
+          <header className="sales-hero" aria-labelledby="sales-title">
+            <div className="ma-container sales-hero__grid">
+              <div className="sales-hero__copy">
+                <span className="ma-tag ma-tag--coral">{copy.hero.eyebrow}</span>
+                <h1 id="sales-title" className="sales-hero__title">{copy.hero.title}</h1>
+                <p className="sales-hero__lead">{copy.hero.lead}</p>
+                <div className="sales-hero__actions">
+                  <ButtonLink href={routes.businessRequest()} size="lg">
+                    {copy.hero.action} <ArrowUpLeft aria-hidden="true" className="size-5" />
+                  </ButtonLink>
+                  <a href="#skills" className="ma-btn ma-btn--soft ma-btn--lg">
+                    {copy.hero.secondary} <ArrowLeft aria-hidden="true" className="size-5" />
+                  </a>
+                </div>
+                <p className="sales-hero__note"><Check aria-hidden="true" className="size-4" />{copy.hero.note}</p>
               </div>
-              <ul className="stats" aria-label="أرقام السوق">
-                {hero.stats.map((stat) => (
-                  <li key={stat.value} className="stat">
-                    <div className="stat-num">
-                      <span data-count={stat.value}>{stat.value}</span>%
-                    </div>
-                    <p>{stat.body}</p>
-                  </li>
-                ))}
-              </ul>
+              <div className="sales-hero__art" aria-hidden="true">
+                <div className="sales-hero__art-head"><span>رحلة البيع</span><span dir="ltr">01 — 05</span></div>
+                <div className="sales-hero__art-orbit">
+                  <span className="sales-hero__art-core">من المهارة<br />إلى التطبيق</span>
+                  <span className="sales-hero__art-point sales-hero__art-point--one">افهم</span>
+                  <span className="sales-hero__art-point sales-hero__art-point--two">قدّم</span>
+                  <span className="sales-hero__art-point sales-hero__art-point--three">تابع</span>
+                </div>
+                <div className="sales-hero__art-foot"><span>فريق أوضح في كل خطوة</span><MoveUpLeft className="size-6" /></div>
+              </div>
             </div>
-          </Cinema>
+            <div className="sales-hero__rail" aria-hidden="true"><span>افهم العميل</span><span>قدّم القيمة</span><span>ابنِ العلاقة</span></div>
+          </header>
 
-          <section id="method" aria-labelledby="method-title" className="section">
-            <div className="container">
-              <SectionIntro id="method-title" eyebrow={method.eyebrow} title={method.title} lead={method.lead} />
-              <ol className="feats" data-stagger="">
-                {method.items.map((item, index) => (
-                  <li key={item.title} className="feat">
-                    <span className="feat-num" aria-hidden="true">
-                      {pad(index)}
-                    </span>
-                    <div>
-                      <h3>{item.title}</h3>
-                      <p>{item.body}</p>
-                    </div>
+          <Section id="friction" aria-labelledby="friction-title">
+            <SectionHeader id="friction-title" label={copy.friction.label} index="01" title={copy.friction.title} lead={copy.friction.lead} />
+            <div className="sales-friction" data-sales-stagger>
+              {copy.friction.items.map((item, index) => (
+                <article key={item.issue} className="sales-friction__item">
+                  <span className="sales-friction__index">0{index + 1}</span>
+                  <h3>{item.issue}</h3>
+                  <p>{item.response}</p>
+                  <ArrowUpLeft aria-hidden="true" className="sales-friction__arrow" />
+                </article>
+              ))}
+            </div>
+          </Section>
+
+          <section id="vision" className="sales-vision" aria-labelledby="vision-title">
+            <div className="ma-container">
+              <p className="sales-overline">{copy.vision.label} / 02</p>
+              <h2 id="vision-title" className="sales-vision__title">{copy.vision.title}</h2>
+              <p className="sales-vision__lead">{copy.vision.lead}</p>
+              <ol className="sales-journey">
+                {copy.vision.stages.map((stage, index) => (
+                  <li key={stage.number} className="sales-journey__step">
+                    <span className="sales-journey__number">{stage.number}</span>
+                    <span className="sales-journey__dot" aria-hidden="true" />
+                    {index < copy.vision.stages.length - 1 ? (
+                      <span className="sales-journey__connector" aria-hidden="true">
+                        <span className="sales-journey__fill" />
+                      </span>
+                    ) : null}
+                    <h3>{stage.title}</h3>
+                    <p>{stage.detail}</p>
                   </li>
                 ))}
               </ol>
             </div>
           </section>
 
-          <section id="get" aria-labelledby="get-title" className="section soft">
-            <div className="container">
-              <SectionIntro
-                id="get-title"
-                eyebrow={deliverables.eyebrow}
-                title={deliverables.title}
-                action={<SectionLink href={BOOK_HREF}>{deliverables.action}</SectionLink>}
-              />
-              <ul className="get-grid" data-stagger="">
-                {deliverables.items.map((item, index) => (
-                  <li key={item.title} className="get">
-                    <span className="get-line" aria-hidden="true" />
-                    <div className="get-top">
-                      <span className="get-idx">{pad(index)}</span>
-                      <item.icon aria-hidden="true" />
-                    </div>
-                    <h3>{item.title}</h3>
-                    <p>{item.body}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
+          <Section id="skills" aria-labelledby="skills-title" tone="alt">
+            <SectionHeader id="skills-title" label={copy.skills.label} index="03" title={copy.skills.title} lead={copy.skills.lead} />
+            <ol className="sales-skills" data-sales-stagger>
+              {copy.skills.items.map((skill) => (
+                <li key={skill.number} className={`sales-skill sales-skill--${skill.color}`}>
+                  <span className="sales-skill__number" dir="ltr">{skill.number} / {String(copy.skills.items.length).padStart(2, "0")}</span>
+                  <span className="sales-skill__field" aria-hidden="true" />
+                  <h3>{skill.title}</h3>
+                  <p>{skill.detail}</p>
+                  <span className="sales-skill__outcome">{skill.outcome}</span>
+                </li>
+              ))}
+            </ol>
+            {salesCategory ? (
+              <AppLink href={salesCategory.href} className="ma-link sales-catalog-link">
+                استكشف البرامج المنشورة في {salesCategory.label} <ArrowLeft aria-hidden="true" className="size-5" />
+              </AppLink>
+            ) : null}
+          </Section>
 
-          <Cinema labelledBy="trust-title" className="band" parallax="band" scrim="band">
-            <div className="container layer-body band-in">
-              <div className="big-num" aria-hidden="true">
-                <span data-count={trust.value}>{trust.value}</span>%
+          <Section id="approach" aria-labelledby="approach-title">
+            <div className="sales-value">
+              <div className="sales-value__intro">
+                <SectionHeader id="approach-title" label={copy.value.label} index="04" title={copy.value.title} lead={copy.value.lead} />
+                <ButtonLink href={routes.businessRequest()} variant="secondary" className="mt-8">ناقش احتياج فريقك <ArrowUpLeft aria-hidden="true" className="size-4" /></ButtonLink>
               </div>
-              <div data-reveal="">
-                <p className="eyebrow">{trust.eyebrow}</p>
-                <h2 id="trust-title">{trust.title}</h2>
-                <p className="lead">{trust.lead}</p>
-              </div>
-            </div>
-          </Cinema>
-
-          <section id="experts" aria-labelledby="experts-title" className="section">
-            <div className="container">
-              <SectionIntro
-                id="experts-title"
-                eyebrow={experts.eyebrow}
-                title={experts.title}
-                action={<SectionLink href={routes.experts}>{experts.action}</SectionLink>}
-              />
-              <div className="exp-wrap">
-                <ul className="exp-grid">
-                  {experts.people.map((person) => (
-                    <li key={person.name}>
-                      <AppLink className="exp-card" href={routes.experts}>
-                        <Image
-                          src={`/business/sales/experts/${person.image}`}
-                          alt={person.name}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 960px) 33vw, 220px"
-                        />
-                        <span className="layer-scrim scrim-card" aria-hidden="true" />
-                        <div className="exp-info">
-                          <h3>{person.name}</h3>
-                          <p className="exp-field">{person.field}</p>
-                        </div>
-                      </AppLink>
-                    </li>
-                  ))}
-                </ul>
-                <ul className="vals" data-stagger="">
-                  {experts.values.map((value) => (
-                    <li key={value.title}>
-                      <h3>{value.title}</h3>
-                      <p>{value.body}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </section>
-
-          <section id="start" aria-labelledby="start-title" className="section soft">
-            <div className="container">
-              <SectionIntro id="start-title" eyebrow={steps.eyebrow} title={steps.title} lead={steps.lead} />
-              <div className="steps-wrap">
-                <span className="draw-line" aria-hidden="true" />
-                <ol className="steps3">
-                  {steps.items.map((step, index) => (
-                    <li key={step.title} className="step">
-                      <span className="feat-num" aria-hidden="true">
-                        {pad(index)}
+              <ol className="sales-value__steps">
+                {copy.value.items.map((item, index) => (
+                  <li key={item.number}>
+                    <span className="sales-value__number">{item.number}</span>
+                    {index < copy.value.items.length - 1 ? (
+                      <span className="sales-value__connector" aria-hidden="true">
+                        <span className="sales-value__fill" />
                       </span>
-                      <h3>{step.title}</h3>
-                      <p>{step.body}</p>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-          </section>
-
-          <section id="who" aria-labelledby="who-title" className="section">
-            <div className="container aud-wrap">
-              <div data-reveal="">
-                <p className="eyebrow">{audience.eyebrow}</p>
-                <h2 id="who-title">{audience.title}</h2>
-              </div>
-              <ul className="checklist" data-stagger="">
-                {audience.items.map((item) => (
-                  <li key={item}>
-                    <Check aria-hidden="true" />
-                    <span>{item}</span>
+                    ) : null}
+                    <div><h3>{item.title}</h3><p>{item.detail}</p></div>
                   </li>
                 ))}
-              </ul>
+              </ol>
+            </div>
+          </Section>
+
+          <Section id="tracks" aria-labelledby="tracks-title" tone="alt">
+            <SectionHeader id="tracks-title" label={copy.tracks.label} index="05" title={copy.tracks.title} lead="أمثلة لمسارات يمكن بناؤها بعد فهم أهداف الشركة ونطاق التدريب." />
+            <div className="sales-tracks" data-sales-stagger>
+              {copy.tracks.items.map((track, index) => (
+                <article key={track.role} className="sales-track">
+                  <div className="sales-track__top"><span>مسار 0{index + 1}</span><ArrowUpLeft aria-hidden="true" className="size-5" /></div>
+                  <h3>{track.role}</h3>
+                  <p className="sales-track__focus">{track.focus}</p>
+                  <div className="sales-track__practice"><span>تطبيق مقترح</span><p>{track.practice}</p></div>
+                </article>
+              ))}
+            </div>
+          </Section>
+
+          <Section id="experts" aria-labelledby="sales-experts-title">
+            <SectionHeader
+              id="sales-experts-title"
+              label={copy.experts.label}
+              index="06"
+              title={copy.experts.title}
+              lead={copy.experts.lead}
+              action={<AppLink href={routes.experts} className="ma-link sales-experts__all">كل المدربين والخبراء <ArrowLeft aria-hidden="true" className="size-5" /></AppLink>}
+            />
+            <div className="sales-experts" data-sales-experts>
+              {copy.experts.people.map((expert) => (
+                <AppLink key={expert.key} href={routes.expert(expert.key, expert.profileName)} className="sales-expert">
+                  <span className="sales-expert__photo">
+                    <Image
+                      src={`/business/sales/experts/${expert.image}`}
+                      alt={`صورة ${expert.name}`}
+                      fill
+                      sizes="(min-width: 1200px) 380px, (min-width: 700px) 33vw, (min-width: 450px) 50vw, 100vw"
+                      className="sales-expert__image"
+                    />
+                  </span>
+                  <span className="sales-expert__body">
+                    <span className="sales-expert__field">{expert.field}</span>
+                    <span className="sales-expert__name">{expert.name}</span>
+                    <ArrowUpLeft aria-hidden="true" className="sales-expert__arrow" />
+                  </span>
+                </AppLink>
+              ))}
+            </div>
+            <p className="sales-experts__note">{copy.experts.note}</p>
+          </Section>
+
+          <section id="measurement" className="sales-measure" aria-labelledby="measure-title">
+            <div className="ma-container sales-measure__grid">
+              <div>
+                <p className="sales-overline">{copy.measure.label} / 07</p>
+                <h2 id="measure-title">{copy.measure.title}</h2>
+                <p className="sales-measure__lead">{copy.measure.lead}</p>
+                <p className="sales-measure__note">تختار شركتك مؤشرات البيع المناسبة وتزوّدنا بخط الأساس. لا تُعد نتائج المبيعات وعداً من منصة التدريب.</p>
+              </div>
+              <ol className="sales-measure__layers">
+                {copy.measure.layers.map((layer, index) => (
+                  <li key={layer.title} data-sales-reveal>
+                    <span>0{index + 1}</span><div><h3>{layer.title}</h3><p>{layer.detail}</p></div>
+                  </li>
+                ))}
+              </ol>
             </div>
           </section>
 
-          <Cinema labelledBy="cta-title" className="band" parallax="cta" scrim="band">
-            <div className="container layer-body" data-reveal="">
-              <h2 id="cta-title" className="cta-title">
-                {cta.title}
-              </h2>
-              <p className="lead">{cta.lead}</p>
-              <div className="hero-ctas">
-                <a className="btn btn-accent" href={BOOK_HREF}>
-                  {cta.action}
-                </a>
-              </div>
-            </div>
-          </Cinema>
-
-          <section id="voices" aria-labelledby="voices-title" className="section">
-            <div className="container">
-              <SectionIntro id="voices-title" eyebrow={voices.eyebrow} title={voices.title} />
-              <div className="q-wrap">
-                <figure className="q-feature" data-reveal="">
-                  <span className="q-mark" aria-hidden="true">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" />
-                      <path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z" />
-                    </svg>
-                  </span>
-                  <blockquote>{voices.feature.quote}</blockquote>
+          <Section id="testimonials" aria-labelledby="sales-testimonials-title" tone="alt">
+            <SectionHeader
+              id="sales-testimonials-title"
+              label={copy.testimonials.label}
+              index="08"
+              title={copy.testimonials.title}
+              lead={copy.testimonials.lead}
+            />
+            <div className="sales-testimonials" data-sales-stagger>
+              {salesTestimonials.map((review) => (
+                <figure key={review.id} className="sales-testimonial">
+                  <Quote aria-hidden="true" className="sales-testimonial__mark" />
+                  <blockquote>«{review.quote}»</blockquote>
                   <figcaption>
-                    <Person initial={voices.feature.name[0]} name={voices.feature.name} role={voices.feature.role} />
+                    <span className="sales-testimonial__avatar" aria-hidden="true">{review.name.charAt(0)}</span>
+                    <span>{review.name}</span>
                   </figcaption>
                 </figure>
-                <ul className="q-side" data-stagger="">
-                  {voices.side.map((item) => (
-                    <Quote key={item.name} item={item} />
-                  ))}
-                </ul>
+              ))}
+            </div>
+            <p className="sales-testimonials__note">{copy.testimonials.note}</p>
+          </Section>
+
+          <Section id="start" aria-labelledby="start-title">
+            <SectionHeader id="start-title" label={copy.steps.label} index="09" title={copy.steps.title} />
+            <ol className="sales-start" data-sales-stagger>
+              {copy.steps.items.map((step, index) => (
+                <li key={step.title}><span>0{index + 1}</span><h3>{step.title}</h3><p>{step.detail}</p></li>
+              ))}
+            </ol>
+          </Section>
+
+          <FaqSection faqs={copy.faq} id="sales-faq" title="أسئلة تسبق القرار" tone="alt" />
+
+          <section className="sales-closing" aria-labelledby="closing-title">
+            <div className="ma-container sales-closing__inner">
+              <div>
+                <p className="sales-overline">{copy.closing.label}</p>
+                <h2 id="closing-title">{copy.closing.title}</h2>
+                <p>{copy.closing.lead}</p>
               </div>
-              <ul className="q-row" data-stagger="">
-                {voices.row.map((item) => (
-                  <Quote key={item.name} item={item} />
-                ))}
-              </ul>
+              <ButtonLink href={routes.businessRequest()} variant="on-color" size="lg">
+                {copy.hero.action} <ArrowUpLeft aria-hidden="true" className="size-5" />
+              </ButtonLink>
             </div>
           </section>
-
-          <section id="faq" aria-labelledby="faq-title" className="section soft">
-            <div className="container faq-wrap">
-              <div data-reveal="">
-                <p className="eyebrow">{faq.eyebrow}</p>
-                <h2 id="faq-title">{faq.title}</h2>
-                <p className="sec-sub">{faq.lead}</p>
-              </div>
-              <div className="faq" data-stagger="">
-                {faq.items.map((item, index) => (
-                  <details key={item.question} open={index === 0}>
-                    <summary>
-                      <span>{item.question}</span>
-                      <span className="fx" aria-hidden="true" />
-                    </summary>
-                    <p className="faq-body">{item.answer}</p>
-                  </details>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <Cinema id="book" labelledBy="book-title" className="section" parallax="close" scrim="hero">
-            <div className="container layer-body close-in">
-              <div data-reveal="">
-                <p className="eyebrow">{closing.eyebrow}</p>
-                <h2 id="book-title">{closing.title}</h2>
-                <p className="lead">{closing.lead}</p>
-              </div>
-              {/* Static for now: the fields have no `name`, so nothing is sent or put in the URL, and
-                  submitting opens the real company request flow. */}
-              <form className="form" action={routes.businessRequest()} aria-label="طلب استشارة مجانية" data-reveal="">
-                <div className="field">
-                  <label htmlFor="f-company">اسم الشركة</label>
-                  <input id="f-company" type="text" placeholder="اسم المنشأة" autoComplete="organization" />
-                </div>
-                <div className="field">
-                  <label htmlFor="f-name">الاسم الكامل للمسؤول</label>
-                  <input id="f-name" type="text" placeholder="الاسم الكامل" autoComplete="name" />
-                </div>
-                <div className="field">
-                  <label htmlFor="f-email">البريد الإلكتروني للعمل</label>
-                  <input id="f-email" type="email" placeholder="name@company.com" dir="ltr" autoComplete="email" />
-                </div>
-                <div className="field">
-                  <label htmlFor="f-size">عدد الموظفين</label>
-                  <select id="f-size">
-                    {closing.sizes.map((size) => (
-                      <option key={size}>{size}</option>
-                    ))}
-                  </select>
-                </div>
-                <button className="btn btn-accent form-full" type="submit">
-                  {closing.submit}
-                </button>
-                <p className="form-note form-full">{closing.note}</p>
-              </form>
-            </div>
-          </Cinema>
         </SalesLandingMotion>
       </main>
       <SiteFooter />

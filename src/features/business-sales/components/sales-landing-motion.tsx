@@ -4,10 +4,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useEffect, useRef, type ReactNode } from "react";
 
-/**
- * The page root and its scroll choreography. The sections stay server-rendered and fully visible;
- * this only adds motion on top, and reduced-motion visitors get the static page.
- */
+/** Progressive motion: the server-rendered page is readable before JS and with reduced motion. */
 export function SalesLandingMotion({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
 
@@ -17,99 +14,93 @@ export function SalesLandingMotion({ children }: { children: ReactNode }) {
 
     gsap.registerPlugin(ScrollTrigger);
     const media = gsap.matchMedia(scope);
+    const q = gsap.utils.selector(scope);
+    const coral = getComputedStyle(scope).getPropertyValue("--coral").trim();
+
+    /** Each segment fills before the next marker activates; scrubbing reverses the path naturally. */
+    const connectSteps = (
+      steps: Element[],
+      markerSelector: string,
+      fillSelector: string,
+      axis: "scaleX" | "scaleY",
+      start: string,
+      end: string,
+    ) => {
+      if (steps.length === 0) return;
+      const timeline = gsap.timeline({
+        scrollTrigger: { trigger: steps[0].parentElement, start, end, scrub: .7, invalidateOnRefresh: true },
+      });
+      steps.forEach((step) => {
+        const marker = step.querySelector(markerSelector);
+        const fill = step.querySelector(fillSelector);
+        if (marker) timeline.to(marker, { backgroundColor: coral, borderColor: coral, scale: 1.12, duration: .22, ease: "power1.out" });
+        if (fill) timeline.to(fill, { [axis]: 1, duration: .78, ease: "none" });
+      });
+    };
+
     media.add("(prefers-reduced-motion: no-preference)", () => {
-      const q = gsap.utils.selector(scope);
-      const enter = { y: 26, opacity: 0, duration: 0.7, ease: "power3.out", clearProps: "transform,opacity" };
+      gsap.timeline({ defaults: { ease: "power3.out" } })
+        .from(q(".sales-hero__copy > *"), { y: 20, opacity: 0, duration: .6, stagger: .09 })
+        .from(q(".sales-hero__art"), { y: 30, opacity: 0, duration: .7 }, "-=.35")
+        .from(q(".sales-hero__art-point"), { scale: .7, opacity: 0, duration: .4, stagger: .1 }, "-=.25");
 
-      gsap.to(q(".progress"), { scaleX: 1, ease: "none", scrollTrigger: { start: 0, end: "max", scrub: 0.3 } });
-
-      gsap
-        .timeline({ defaults: { ease: "power3.out", duration: 0.9 } })
-        .from(q(".hero .eyebrow"), { y: 26, opacity: 0 })
-        .from(q(".hero h1 .ln > span"), { yPercent: 110, duration: 1.1, stagger: 0.12, ease: "expo.out" }, "-=0.6")
-        .from(q(".hero .lead"), { y: 26, opacity: 0 }, "-=0.75")
-        .from(q(".hero-ctas > *"), { y: 26, opacity: 0, stagger: 0.08 }, "-=0.7")
-        .from(q(".stats .stat"), { y: 26, opacity: 0, stagger: 0.08 }, "-=0.6");
-
-      gsap.to(q(".hero-body"), {
-        yPercent: -6,
-        opacity: 0.4,
-        ease: "none",
-        scrollTrigger: { trigger: q(".hero")[0], start: "top top", end: "bottom top", scrub: true },
+      gsap.to(q(".sales-hero__art-point"), {
+        y: -6, duration: 2.5, stagger: .25, delay: 1.4, repeat: -1, yoyo: true, ease: "sine.inOut",
       });
 
-      q("[data-parallax]").forEach((element) => {
-        gsap.fromTo(
-          element,
-          { yPercent: -7 },
-          {
-            yPercent: 7,
-            ease: "none",
-            scrollTrigger: { trigger: element.parentElement, start: "top bottom", end: "bottom top", scrub: true },
-          },
-        );
+      q(".ma-sechead").forEach((header) => {
+        gsap.from(header, {
+          y: 18, opacity: 0, duration: .6, ease: "power2.out",
+          scrollTrigger: { trigger: header, start: "top 88%", once: true },
+          clearProps: "transform,opacity",
+        });
       });
 
-      q("[data-reveal]").forEach((element) => {
-        gsap.from(element, { ...enter, scrollTrigger: { trigger: element, start: "top 88%", once: true } });
+      q("[data-sales-stagger]").forEach((group) => {
+        gsap.from(group.children, {
+          y: 26, opacity: 0, duration: .55, stagger: .07, ease: "power2.out",
+          scrollTrigger: { trigger: group, start: "top 85%", once: true },
+          clearProps: "transform,opacity",
+        });
       });
-      q("[data-stagger]").forEach((list) => {
-        gsap.from(list.children, { ...enter, stagger: 0.08, scrollTrigger: { trigger: list, start: "top 85%", once: true } });
-      });
-
-      q(".feat").forEach((element) => {
-        ScrollTrigger.create({ trigger: element, start: "top 62%", end: "bottom 38%", toggleClass: "is-on" });
-      });
-
-      gsap.from(q(".exp-card"), {
-        clipPath: "inset(100% 0% 0% 0%)",
-        duration: 1.1,
-        stagger: 0.08,
-        ease: "expo.out",
-        clearProps: "clipPath",
-        scrollTrigger: { trigger: q(".exp-grid")[0], start: "top 80%", once: true },
+      q("[data-sales-reveal]").forEach((item) => {
+        gsap.from(item, {
+          y: 18, opacity: 0, duration: .55, ease: "power2.out",
+          scrollTrigger: { trigger: item, start: "top 88%", once: true },
+          clearProps: "transform,opacity",
+        });
       });
 
-      gsap
-        .timeline({ scrollTrigger: { trigger: q(".steps3")[0], start: "top 80%", once: true } })
-        .from(q(".draw-line"), { scaleX: 0, duration: 1.1, ease: "power3.inOut" })
-        .from(q(".step"), { ...enter, stagger: 0.12 }, "-=0.6");
-
-      gsap.fromTo(
-        q(".big-num"),
-        { scale: 0.92, opacity: 0.4 },
-        { scale: 1, opacity: 1, ease: "none", scrollTrigger: { trigger: q(".big-num")[0], start: "top 90%", end: "top 45%", scrub: true } },
+      connectSteps(
+        q(".sales-value__steps li"), ".sales-value__number", ".sales-value__fill",
+        "scaleY", "top 80%", "bottom 35%",
       );
 
-      const counters = q("[data-count]").map((element) => {
-        const final = element.textContent;
-        const count = { value: 0 };
-        element.textContent = "0";
-        gsap.to(count, {
-          value: Number(final),
-          duration: 1.6,
-          ease: "power2.out",
-          delay: element.closest(".hero") ? 0.9 : 0,
-          scrollTrigger: { trigger: element, start: "top 90%", once: true },
-          onUpdate: () => {
-            element.textContent = String(Math.round(count.value));
-          },
-        });
-        return () => {
-          element.textContent = final;
-        };
+      gsap.from(q("[data-sales-experts] > *"), {
+        y: 32, opacity: 0, duration: .65, stagger: .08, ease: "power2.out",
+        scrollTrigger: { trigger: q("[data-sales-experts]")[0], start: "top 82%", once: true },
+        clearProps: "transform,opacity",
       });
-
-      return () => counters.forEach((restore) => restore());
+      gsap.from(q(".sales-expert__photo"), {
+        clipPath: "inset(0 0 100% 0)", duration: .8, stagger: .08, ease: "power3.out",
+        scrollTrigger: { trigger: q("[data-sales-experts]")[0], start: "top 82%", once: true },
+        clearProps: "clipPath",
+      });
     });
-
+    media.add("(prefers-reduced-motion: no-preference) and (min-width: 851px)", () => {
+      connectSteps(
+        q(".sales-journey__step"), ".sales-journey__dot", ".sales-journey__fill",
+        "scaleX", "top 82%", "bottom 42%",
+      );
+    });
+    media.add("(prefers-reduced-motion: no-preference) and (max-width: 850px)", () => {
+      connectSteps(
+        q(".sales-journey__step"), ".sales-journey__dot", ".sales-journey__fill",
+        "scaleY", "top 82%", "bottom 42%",
+      );
+    });
     return () => media.revert();
   }, []);
 
-  return (
-    <div ref={root} className="sales-lp">
-      <div className="progress" aria-hidden="true" />
-      {children}
-    </div>
-  );
+  return <div ref={root} className="sales-page">{children}</div>;
 }

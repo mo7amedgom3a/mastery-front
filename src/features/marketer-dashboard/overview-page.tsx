@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import {
-  Banknote,
   CheckCircle2,
   Clock,
   Link2,
@@ -54,7 +53,7 @@ export function MarketerOverviewPage() {
   }
   if (overview.isError) return <LoadError />;
 
-  const { partner, program, stats, balance, tolt, series } = overview.data;
+  const { partner, program, stats, tolt, series } = overview.data;
   const totals = series.reduce(
     (sum, d) => ({
       revenue: sum.revenue + d.revenue_minor,
@@ -71,7 +70,7 @@ export function MarketerOverviewPage() {
     <div className={cn("flex flex-col gap-6", overview.isPlaceholderData && "opacity-70")}>
       <ReferralLinkCard link={partner.link} code={partner.referral_code} />
 
-      {stats && balance ? (
+      {stats ? (
         <section aria-labelledby="kpi-title" className="flex flex-col gap-3">
           <h2 id="kpi-title" className="m-0 text-lg font-bold">الأداء منذ انضمامك</h2>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -83,9 +82,9 @@ export function MarketerOverviewPage() {
             <StatTile label="عمولات بانتظار الاعتماد" value={<Money amount={fromMinor(stats.commission_pending_minor)} />} icon={Clock} />
             <StatTile label="عمولات صُرفت لك" value={<Money amount={fromMinor(stats.commission_paid_minor)} />} icon={CheckCircle2} />
             <StatTile
-              label="الرصيد المتاح للصرف"
-              value={<Money amount={fromMinor(balance.available_minor)} />}
-              note={balance.held_minor > 0 ? `${money(balance.held_minor)} في طلب صرف` : undefined}
+              label="عمولات معتمدة"
+              value={<Money amount={fromMinor(stats.commission_approved_minor)} />}
+              note="يحوّلها لك Tolt حسب شروط الدفع"
               icon={Wallet}
               tone="green"
             />
@@ -146,15 +145,15 @@ export function MarketerOverviewPage() {
             <dd className="m-0 font-bold">{program.minimum_payout_minor > 0 ? money(program.minimum_payout_minor) : "بدون حد أدنى"}</dd>
           </dl>
           <p className="m-0 text-xs text-fg-muted">
-            يحتسب Tolt العمولة لكل عملية شراء عبر رابطك أو كوبونك خلال مدة التتبع، وتُعتمد بعد انتهاء فترة الاسترداد.
+            يحتسب Tolt العمولة لكل عملية شراء عبر رابطك أو كوبونك خلال مدة التتبع، ويعتمدها تلقائيًا بعد انتهاء فترة الاسترداد ثم يحوّلها لك. أضف بيانات الدفع من بوابة Tolt.
           </p>
         </section>
 
         <section aria-labelledby="actions-title" className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-5">
           <h2 id="actions-title" className="m-0 text-lg font-bold">إجراءات سريعة</h2>
           <div className="grid gap-2 sm:grid-cols-2">
-            <ButtonLink href={routes.marketerPayouts} variant="primary" className="justify-start gap-2">
-              <Banknote aria-hidden="true" className="size-4 fill-none" /> طلب صرف العمولة
+            <ButtonLink href={routes.marketerCommissions} variant="primary" className="justify-start gap-2">
+              <Percent aria-hidden="true" className="size-4 fill-none" /> عمولاتي
             </ButtonLink>
             <ButtonLink href={routes.marketerCoupons} variant="soft" className="justify-start gap-2">
               <TicketPercent aria-hidden="true" className="size-4 fill-none" /> كوبوناتي للمشاركة

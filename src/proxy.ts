@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { getToltPortalUrl } from "@/config/env";
 import { safeNextPath } from "@/features/auth/model/next-path";
 import { SESSION_COOKIE } from "@/lib/auth/cookie-names";
 
@@ -13,6 +14,12 @@ const AUTH_PAGES = new Set(["/login", "/register"]);
 export function proxy(request: NextRequest) {
   const hasSession = request.cookies.has(SESSION_COOKIE);
   const { pathname, search, searchParams } = request.nextUrl;
+
+  // Marketers use Tolt's hosted portal when one is configured: no sign-in needed here, Tolt has its own.
+  const portal = getToltPortalUrl();
+  if (portal && (pathname === "/marketer" || pathname.startsWith("/marketer/"))) {
+    return NextResponse.redirect(portal);
+  }
 
   if (AUTH_PAGES.has(pathname)) {
     if (!hasSession) return NextResponse.next();

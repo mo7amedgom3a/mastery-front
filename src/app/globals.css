@@ -74,6 +74,13 @@ body {
 }
 
 @layer components {
+  /* The business lockup and mobile tools need a compact header at narrow phone widths. */
+  @media (max-width: 400px) {
+    .ma-nav .ma-logo-business__word {
+      display: none;
+    }
+  }
+
   /* ---------- Theme-scoped assets (logo files, icons) that can't follow colour tokens ---------- */
   [data-theme="dark"] .theme-light-only,
   [data-theme="light"] .theme-dark-only {
