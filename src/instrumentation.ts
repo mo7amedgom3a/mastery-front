@@ -1,5 +1,7 @@
 import type { Instrumentation } from "next";
 
+import { runtimeEnv } from "./config/runtime-env";
+
 /**
  * Next.js server instrumentation. `register` runs once per server instance, before it serves
  * requests; the OTel module is imported dynamically so its Node-only dependencies never reach the
@@ -7,6 +9,16 @@ import type { Instrumentation } from "next";
  */
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+
+  // Amplify Hosting provides the app's environment variables only during the
+  // build: its SSR runtime starts without them, and every server-side read
+  // would fall back to a development default. The build snapshots them into
+  // ./config/runtime-env (see scripts/generate-runtime-env.mjs); apply them
+  // before anything below reads process.env. Real environment variables, when
+  // present (local dev, other hosts), always win.
+  for (const [key, value] of Object.entries(runtimeEnv)) {
+    if (process.env[key] === undefined) process.env[key] = value;
+  }
 
   const { startOtel } = await import("./lib/observability/server/otel");
   startOtel();
