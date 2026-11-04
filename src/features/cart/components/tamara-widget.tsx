@@ -24,6 +24,9 @@ function scriptUrl(environment: string): string {
  * Tamara's official widget. It carries the guideline's messaging pillars (monthly amount, "or in
  * X payments", no late fees, "More options" with Tamara's pop-up, gradient logo), computed by
  * Tamara from the amount: the cart total in Tamara's currency, so it follows every cart change.
+ *
+ * Mount it only while Tamara is the selected method: mounting it loads Tamara's script, which
+ * fetches the merchant widget configuration from their CDN on every page that has this element.
  */
 export function TamaraWidget({
   options,

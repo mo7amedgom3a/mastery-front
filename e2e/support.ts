@@ -34,11 +34,20 @@ export async function adminApi(): Promise<APIRequestContext> {
   });
 }
 
-/** Signs the browser in as the QA customer: the storefront reads these cookies (see `src/lib/auth/cookie-names.ts`). */
-export async function signInCustomer(context: BrowserContext, baseURL: string): Promise<void> {
+/** The QA consultation expert's email, when the suite is configured with one. */
+export function qaExpertEmail(): string | null {
+  return process.env.QA_EXPERT_EMAIL ?? null;
+}
+
+/** Signs the browser in as the QA customer (or another QA email): the storefront reads these cookies. */
+export async function signInCustomer(
+  context: BrowserContext,
+  baseURL: string,
+  email: string = qa().customer,
+): Promise<void> {
   const anon = await playwrightRequest.newContext({ baseURL: API_URL, extraHTTPHeaders: fingerprint });
   const login = await json<{ tokens: { access_token: string; refresh_token: string } }>(
-    await anon.post("/api/v1/auth/qa/login", { data: { email: qa().customer, key: qa().key } }),
+    await anon.post("/api/v1/auth/qa/login", { data: { email, key: qa().key } }),
   );
   await anon.dispose();
   const url = new URL(baseURL);

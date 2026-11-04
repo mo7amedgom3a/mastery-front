@@ -4,17 +4,17 @@ import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { ApiError } from "@/lib/api/client";
 import { consultationQueries } from "@/lib/api/consultations";
 
 /**
- * Shows the dashboard only to customers linked to a consultant (`/experts/me` answers 403 for
- * everyone else). The backend checks every call anyway; this only avoids empty, failing pages.
+ * Shows the dashboard only to customers linked to a consultant. It asks the quiet capability
+ * endpoint (`/experts/me/capability`, 200 for everyone) rather than probing `/experts/me`, whose
+ * 403 for non-experts would surface as a console error. The backend checks every call anyway.
  */
 export function ExpertGate({ children }: { children: ReactNode }) {
-  const profile = useQuery(consultationQueries.expert());
+  const capability = useQuery(consultationQueries.expertCapability());
 
-  if (profile.isPending) {
+  if (capability.isPending) {
     return (
       <div role="status" className="flex flex-col gap-3">
         <span className="sr-only">جارٍ التحميل…</span>
@@ -23,15 +23,22 @@ export function ExpertGate({ children }: { children: ReactNode }) {
       </div>
     );
   }
-  if (profile.isError) {
-    const forbidden = profile.error instanceof ApiError && profile.error.status === 403;
+  if (capability.isError) {
     return (
       <div className="ma-alert ma-alert--warning" role="alert">
         <div>
-          <p className="ma-alert__title">{forbidden ? "هذا الحساب غير مرتبط بخبير" : "تعذّر التحميل"}</p>
-          <p className="ma-alert__text">
-            {forbidden ? "تواصل مع فريق ماستري لتفعيل حساب الخبير لهذا البريد." : "تحقّق من اتصالك ثم حدّث الصفحة."}
-          </p>
+          <p className="ma-alert__title">تعذّر التحميل</p>
+          <p className="ma-alert__text">تحقّق من اتصالك ثم حدّث الصفحة.</p>
+        </div>
+      </div>
+    );
+  }
+  if (!capability.data.is_expert) {
+    return (
+      <div className="ma-alert ma-alert--warning" role="alert">
+        <div>
+          <p className="ma-alert__title">هذا الحساب غير مرتبط بخبير</p>
+          <p className="ma-alert__text">تواصل مع فريق ماستري لتفعيل حساب الخبير لهذا البريد.</p>
         </div>
       </div>
     );

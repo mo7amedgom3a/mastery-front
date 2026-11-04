@@ -29,7 +29,7 @@ type OrderSummaryProps = {
   methodIncomplete: boolean;
   /** The payment method picker, above the pay button. */
   paymentMethods: ReactNode;
-  /** Tamara's cart widget, under the total; null when Tamara can't take this order. */
+  /** Tamara's cart widget, under the total; null unless Tamara is selected and can take this order. */
   instalmentsWidget: ReactNode;
   /** Coupon field and vouchers, above the totals (signed-in carts). */
   incentives?: ReactNode;

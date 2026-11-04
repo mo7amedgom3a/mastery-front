@@ -41,6 +41,8 @@ export type SessionAsset = SuccessResponse<SessionAssetsOperation>[number];
 export type SessionAssetKind = SessionAsset["kind"];
 export type SessionAssetLink = SuccessResponse<SessionAssetLinkOperation>;
 export type ExpertProfileResponse = SuccessResponse<ExpertProfileOperation>;
+/** Quiet expert flag for any signed-in customer; the backend answers 200 even for non-experts. */
+export type ExpertCapability = { is_expert: boolean; consultant_id: string | null };
 export type ExpertSlotsParams = QueryParams<ExpertSlotsOperation>;
 export type ExpertSlot = SuccessResponse<ExpertSlotsOperation>[number];
 export type CreateSlotsRequest = RequestBody<CreateSlotsOperation>;
@@ -71,6 +73,7 @@ const consultationPaths = {
   sessionAssets: "/api/v1/consultations/bookings/{booking_id}/assets",
   sessionAsset: "/api/v1/consultations/bookings/{booking_id}/assets/{asset_id}",
   expert: "/api/v1/experts/me",
+  expertCapability: "/api/v1/experts/me/capability",
   expertSlots: "/api/v1/experts/me/slots",
   expertSlot: "/api/v1/experts/me/slots/{slot_id}",
   expertBookings: "/api/v1/experts/me/bookings",
@@ -90,6 +93,7 @@ export const consultationKeys = {
   booking: (id: string) => [...consultationKeys.all, "booking", id] as const,
   sessionAssets: (id: string) => [...consultationKeys.all, "booking", id, "assets"] as const,
   expert: () => [...consultationKeys.all, "expert"] as const,
+  expertCapability: () => [...consultationKeys.all, "expert", "capability"] as const,
   expertSlots: (params?: ExpertSlotsParams) => [...consultationKeys.all, "expert", "slots", params ?? {}] as const,
   expertBookings: (params?: ExpertBookingsParams) => [...consultationKeys.all, "expert", "bookings", params ?? {}] as const,
   expertBooking: (id: string) => [...consultationKeys.all, "expert", "booking", id] as const,
@@ -202,6 +206,11 @@ export async function uploadSessionAsset(
 /** The signed-in customer's consultant record; 403 when they are not an expert. */
 export function getExpertProfile(options?: AuthenticatedRequestOptions): Promise<ExpertProfileResponse> {
   return customerRequest<ExpertProfileResponse>("GET", consultationPaths.expert, withAuthCookies(options));
+}
+
+/** Whether this customer is an expert; 200 for everyone, so the UI never probes the 403 route. */
+export function getExpertCapability(options?: AuthenticatedRequestOptions): Promise<ExpertCapability> {
+  return customerRequest<ExpertCapability>("GET", consultationPaths.expertCapability, withAuthCookies(options));
 }
 
 export function listExpertSlots(params?: ExpertSlotsParams, options?: AuthenticatedRequestOptions): Promise<ExpertSlot[]> {
@@ -369,6 +378,12 @@ export const consultationQueries = {
       staleTime: 5 * 60_000,
       // 403 means "not an expert": an answer, not a failure to retry.
       retry: false,
+    }),
+  expertCapability: (context?: ApiRequestContext) =>
+    queryOptions({
+      queryKey: consultationKeys.expertCapability(),
+      queryFn: ({ signal }) => getExpertCapability({ signal, context }),
+      staleTime: 5 * 60_000,
     }),
   expertSlots: (params?: ExpertSlotsParams, context?: ApiRequestContext) =>
     queryOptions({

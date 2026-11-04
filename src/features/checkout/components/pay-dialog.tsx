@@ -88,8 +88,9 @@ function PayDialog({ item, checkout, onClose }: PayDialogProps) {
             <p className="m-0 min-w-0 font-bold">{item.title}</p>
             {price !== null ? <Money amount={price} className="shrink-0 text-xl font-bold" /> : null}
           </div>
-          {/* Guidelines §2.1: Tamara's product widget directly below the price. */}
-          {payment.widgetOptions ? <TamaraWidget options={payment.widgetOptions} placement="cart" /> : null}
+          {/* Guidelines §2.1: once Tamara is chosen, its product widget sits directly below the price.
+              Loading it with the dialog would also load it for card payers, who never need it. */}
+          {tamara && payment.widgetOptions ? <TamaraWidget options={payment.widgetOptions} placement="cart" /> : null}
         </div>
 
         <PaymentMethodPicker

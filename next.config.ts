@@ -22,6 +22,17 @@ const s3Buckets = ["course", "curriculum", "consultant", "category", "instructor
   hostname: "s3.eu-west-1.amazonaws.com",
   pathname: `/${bucket}.emasteryacademy.com/**`,
 }));
+// Course Studio images on the new backend's bucket, served by public URL under catalog/assets/.
+// The prod bucket is the default; the dev bucket stays allowed while older rows still point at it.
+// Override with NEXT_ASSETS_S3_HOSTNAMES (comma-separated) for another environment.
+const assetBucketHostnames = (
+  process.env.NEXT_ASSETS_S3_HOSTNAMES?.trim() ||
+  "mastery-b2c-prod-app-844339186365.s3.us-east-1.amazonaws.com,mastery-bucket-1234.s3.us-east-1.amazonaws.com"
+)
+  .split(",")
+  .map((hostname) => hostname.trim())
+  .filter(Boolean)
+  .map((hostname) => ({ protocol: "https" as const, hostname, pathname: "/catalog/assets/**" }));
 // Opt-in while in development: the Vercel image-optimization quota is used up, and past it Vercel
 // stops serving some images. Set NEXT_ENABLE_IMAGE_OPTIMIZATION=true on the production deployment.
 const enableImageOptimization = process.env.NEXT_ENABLE_IMAGE_OPTIMIZATION === "true";
@@ -114,6 +125,7 @@ const nextConfig: NextConfig = {
     imageSizes: [160, 256, 384],
     remotePatterns: [
       ...s3Buckets,
+      ...assetBucketHostnames,
       { protocol: "https", hostname: "live.emasteryacademy.com", pathname: "/**" },
       { protocol: "https", hostname: "public.emasteryacademy.com", pathname: "/**" },
       ...(bunnyCdnHostname ? [{ protocol: "https" as const, hostname: bunnyCdnHostname, pathname: "/**" }] : []),

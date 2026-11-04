@@ -361,7 +361,9 @@ export function CartPage() {
               />
             }
             instalmentsWidget={
-              payment.widgetOptions ? <TamaraWidget options={payment.widgetOptions} placement="cart" /> : null
+              payment.method === "tamara" && payment.widgetOptions ? (
+                <TamaraWidget options={payment.widgetOptions} placement="cart" />
+              ) : null
             }
           />
         </div>

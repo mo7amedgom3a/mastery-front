@@ -86,7 +86,7 @@ export function StudentNav() {
   const wishlist = useShopStore((state) => state.wishlist.length);
   const cart = useShopStore((state) => state.cart.length);
   const counts = { wishlist: hydrated ? wishlist : 0, cart: hydrated ? cart : 0 };
-  const isExpert = useQuery(consultationQueries.expert()).isSuccess;
+  const isExpert = useQuery(consultationQueries.expertCapability()).data?.is_expert === true;
 
   return (
     <nav
