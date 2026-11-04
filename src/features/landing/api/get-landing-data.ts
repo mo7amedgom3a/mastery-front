@@ -142,8 +142,15 @@ export const getLandingData = cache(async (): Promise<LandingData> => {
     ]);
 
   const rawLanding = valueOf(landingResult, "landing");
+  const featuredPage = valueOf(featuredResult, "featured courses");
+  // Neither the landing aggregate nor the course list answered: the backend is down, not just
+  // missing a section. Fail the render so visitors get the error page's retry, not an empty
+  // storefront. The build keeps rendering empty data so it never depends on the API being up.
+  if (!rawLanding && !featuredPage && process.env.NEXT_PHASE !== "phase-production-build") {
+    throw new Error("Catalog unavailable: the landing and featured-course requests both failed");
+  }
   const landing = rawLanding && normalise(rawLanding);
-  const featured = valueOf(featuredResult, "featured courses") ?? { items: [], total: 0 };
+  const featured = featuredPage ?? { items: [], total: 0 };
   const diplomas = (valueOf(diplomasResult, "diplomas") ?? []).map(cardToCourseDto).filter(isDto);
   const packages = (valueOf(packagesResult, "packages") ?? []).map(cardToPackageDto).filter(isDto);
   const consultations = (valueOf(consultationsResult, "consultations") ?? []).map(cardToConsultationDto).filter(isDto);

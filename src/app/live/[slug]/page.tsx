@@ -1,22 +1,17 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { baseOpenGraph } from "@/config/site";
-import { getLiveTrainingDetail, getLiveTrainingSlugs } from "@/features/live-training/api/get-live-trainings";
+import { getLiveTrainingDetail } from "@/features/live-training/api/get-live-trainings";
 import { LiveTrainingDetailPage } from "@/features/live-training/live-training-detail-page";
 import { toPlainText } from "@/lib/format";
 
-// ISR, like the course pages: built ahead from the known slugs, refreshed at most every 5 minutes.
+// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
+// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
+// `revalidate` still sets how long this page's backend reads stay in the data cache, and
+// POST /api/revalidate still refreshes them.
 export const revalidate = 300;
-
-export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  // An unreachable backend must not fail the build; unknown slugs still render on demand.
-  const slugs = await getLiveTrainingSlugs().catch((error: unknown) => {
-    console.error("[api] live training static params request failed", error);
-    return [];
-  });
-  return slugs.map((slug) => ({ slug }));
-}
 
 export async function generateMetadata({ params }: PageProps<"/live/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -47,6 +42,7 @@ export async function generateMetadata({ params }: PageProps<"/live/[slug]">): P
 }
 
 export default async function LiveTrainingPage({ params }: PageProps<"/live/[slug]">) {
+  await connection();
   const { slug } = await params;
   const training = await getLiveTrainingDetail(slug);
   if (!training) {

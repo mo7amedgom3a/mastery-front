@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { routes } from "@/config/routes";
@@ -6,12 +7,11 @@ import { baseOpenGraph } from "@/config/site";
 import { loadPlan } from "@/features/subscriptions/api/load-plans";
 import { PlanDetailPage } from "@/features/subscriptions/plan-detail-page";
 
-// ISR: each plan page is built on its first visit, then refreshed at most every two minutes.
+// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
+// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
+// `revalidate` still sets how long this page's backend reads stay in the data cache, and
+// POST /api/revalidate still refreshes them.
 export const revalidate = 120;
-
-export function generateStaticParams(): { slug: string }[] {
-  return [];
-}
 
 export async function generateMetadata({ params }: PageProps<"/subscriptions/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: PageProps<"/subscriptions/[sl
 }
 
 export default async function SubscriptionPlanRoute({ params }: PageProps<"/subscriptions/[slug]">) {
+  await connection();
   const { slug } = await params;
   const plan = await loadPlan(slug);
   if (!plan) notFound();

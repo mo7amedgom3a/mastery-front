@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { connection } from "next/server";
 
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
@@ -10,13 +11,16 @@ import { getAllCatalogCards, getCatalogExperts, parseCardSlug } from "@/lib/api/
 import { getSearchOptions } from "@/lib/api/search";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
 
-// Regenerated with the catalog: new courses appear within the hour, or at once via /api/revalidate.
+// Built per request (`connection()` below), never prerendered: Amplify does not finish ISR background
+// regeneration, so a build-time copy would never pick up new products. The catalog reads stay in the
+// data cache for an hour, or until POST /api/revalidate refreshes them.
 export const revalidate = 3600;
 
 const read = cachedRead(revalidate, ["sitemap"]);
 
 // Cards carry the product's `updated_at`, used as `lastModified`.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  await connection();
   const siteUrl = getSiteUrl();
   const home = `${siteUrl}/`;
 
@@ -86,7 +90,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     {
       url: home,
-      // The landing page is rebuilt on every deploy and refreshed by ISR, so build time is honest.
+      // The landing page is rendered per request, so it is always current.
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1,

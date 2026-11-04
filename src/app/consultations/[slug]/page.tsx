@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { consultationMetadata, loadConsultationPage } from "@/features/consultation-detail/api/load-consultation-page";
 import { ConsultationDetailPage } from "@/features/consultation-detail/consultation-detail-page";
 
-// ISR: each consultation page is built on its first visit, then refreshed at most every 5 minutes or
-// on demand via POST /api/revalidate. Keep in sync with CONSULTATION_REVALIDATE_SECONDS.
+// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
+// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
+// `revalidate` still sets how long this page's backend reads stay in the data cache, and
+// POST /api/revalidate still refreshes them.
 export const revalidate = 300;
-
-export function generateStaticParams(): { slug: string }[] {
-  return [];
-}
 
 export async function generateMetadata({ params }: PageProps<"/consultations/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -17,6 +16,7 @@ export async function generateMetadata({ params }: PageProps<"/consultations/[sl
 }
 
 export default async function ConsultationPage({ params }: PageProps<"/consultations/[slug]">) {
+  await connection();
   const { slug } = await params;
   const data = await loadConsultationPage(slug);
   return <ConsultationDetailPage data={data} />;

@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { routes } from "@/config/routes";
 import { baseOpenGraph } from "@/config/site";
 import { loadPricingPage } from "@/features/subscriptions/api/load-plans";
 import { SubscriptionsPage } from "@/features/subscriptions/subscriptions-page";
 
-// ISR: plans and prices follow the admin within two minutes. Keep in sync with SUBSCRIPTIONS_REVALIDATE_SECONDS.
+// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
+// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
+// `revalidate` still sets how long this page's backend reads stay in the data cache, and
+// POST /api/revalidate still refreshes them.
 export const revalidate = 120;
 
 const title = "اشتراكات ماستري";
@@ -19,5 +23,6 @@ export const metadata: Metadata = {
 };
 
 export default async function SubscriptionsRoute() {
+  await connection();
   return <SubscriptionsPage data={await loadPricingPage()} />;
 }

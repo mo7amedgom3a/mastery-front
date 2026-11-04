@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { routes } from "@/config/routes";
 import { baseOpenGraph, siteConfig } from "@/config/site";
@@ -6,13 +7,11 @@ import { loadVerification } from "@/features/verify/api/load-verification";
 import { CertificateJsonLd } from "@/features/verify/seo/json-ld";
 import { VerifyPage } from "@/features/verify/verify-page";
 
-// ISR, short: a revoked certificate must stop reading as valid quickly. Keep in sync with
-// VERIFY_REVALIDATE_SECONDS.
+// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
+// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
+// `revalidate` still sets how long this page's backend reads stay in the data cache, and
+// POST /api/revalidate still refreshes them.
 export const revalidate = 60;
-
-export function generateStaticParams(): { code: string }[] {
-  return [];
-}
 
 export async function generateMetadata({ params }: PageProps<"/verify/[code]">): Promise<Metadata> {
   const { code } = await params;
@@ -37,6 +36,7 @@ export async function generateMetadata({ params }: PageProps<"/verify/[code]">):
 }
 
 export default async function Page({ params }: PageProps<"/verify/[code]">) {
+  await connection();
   const { code } = await params;
   const decoded = decodeURIComponent(code);
   const result = await loadVerification(code);

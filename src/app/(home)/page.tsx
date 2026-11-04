@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { baseOpenGraph, siteConfig } from "@/config/site";
 import { getExpertCards } from "@/features/experts-directory/api/get-expert-cards";
 import { getLandingData } from "@/features/landing/api/get-landing-data";
 import { LandingPage } from "@/features/landing/landing-page";
 
-// ISR: regenerate at most every 5 minutes, or on demand via POST /api/revalidate.
+// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
+// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
+// `revalidate` still sets how long this page's backend reads stay in the data cache, and
+// POST /api/revalidate still refreshes them.
 export const revalidate = 300;
 
 export const metadata: Metadata = {
@@ -25,6 +29,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
+  await connection();
   const [data, experts] = await Promise.all([
     getLandingData(),
     // The experts section keeps its curated line-up when the directory is unavailable.
