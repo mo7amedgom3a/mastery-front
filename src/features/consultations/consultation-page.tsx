@@ -9,27 +9,37 @@ import { ApiError } from "@/lib/api/client";
 import { consultationQueries, type ConsultationBooking } from "@/lib/api/consultations";
 import { formatDateTime } from "@/lib/format";
 
+import { CancelBooking } from "./components/cancel-booking";
 import { JoinPanel, RecordingPlayer } from "./components/session-actions";
 import { SessionAssets } from "./components/session-assets";
 import { bookingStatus } from "./model/status";
 
 const STATUS_NOTES: Record<string, string> = {
-  awaiting_approval: "تم الدفع، وننتظر تأكيد الخبير للموعد. يصلك بريد فور التأكيد، وإن لم يؤكّده يُردّ المبلغ كاملاً.",
+  awaiting_approval: "تم الدفع، وننتظر تأكيد الخبير للموعد. يصلك بريد فور التأكيد، وإن لم يؤكّده يُفتح طلب استرداد المبلغ.",
   confirmed: "الموعد مؤكّد. يُتاح الدخول قبل الموعد بخمس دقائق، وتنتهي الجلسة تلقائياً عند انتهاء المدة.",
   in_progress: "الجلسة جارية الآن.",
-  refund_pending: "لم يُؤكَّد هذا الموعد، وسيُردّ المبلغ المدفوع كاملاً.",
-  no_show_expert: "لم يحضر الخبير الجلسة، وسيُردّ المبلغ المدفوع كاملاً.",
+  refund_pending: "تم فتح طلب استرداد المبلغ المدفوع، وهو قيد المراجعة.",
+  no_show_expert: "لم يحضر الخبير الجلسة، وتم فتح طلب استرداد المبلغ المدفوع.",
   no_show_customer: "انتهت الجلسة دون حضورك. وفق الشروط لا يُردّ المبلغ عند غياب العميل.",
   completed: "اكتملت الجلسة. يمكنك مشاهدة تسجيلها أدناه متى شئت.",
 };
 
 /** Reasons the backend records itself; anything else is the expert's own words to the customer. */
-const SYSTEM_REASONS = new Set(["approval_timeout", "rejected_by_expert", "cancelled_by_expert", "slot_unavailable_after_payment"]);
+const SYSTEM_REASONS = new Set([
+  "approval_timeout",
+  "rejected_by_expert",
+  "cancelled_by_expert",
+  "cancelled_by_customer",
+  "slot_unavailable_after_payment",
+]);
 
 function statusNote(detail: ConsultationBooking): string | undefined {
   if (detail.status === "refund_pending" && detail.ended_reason === "cancelled_by_expert") {
     const message = detail.rejection_reason && !SYSTEM_REASONS.has(detail.rejection_reason) ? ` رسالته: «${detail.rejection_reason}».` : "";
-    return `ألغى الخبير هذا الموعد.${message} سيُردّ المبلغ المدفوع كاملاً، ويمكنك حجز موعد آخر متى شئت.`;
+    return `ألغى الخبير هذا الموعد.${message} تم فتح طلب استرداد المبلغ المدفوع، ويمكنك حجز موعد آخر متى شئت.`;
+  }
+  if (detail.status === "refund_pending" && detail.ended_reason === "cancelled_by_customer") {
+    return "ألغيت هذا الموعد. تم فتح طلب استرداد المبلغ المدفوع، وهو قيد المراجعة.";
   }
   return STATUS_NOTES[detail.status];
 }
@@ -86,6 +96,7 @@ export function ConsultationPage({ bookingId }: { bookingId: string }) {
 
       <section className="flex flex-col gap-3">
         <h2 className="m-0 text-lg font-bold">{detail.product_title ?? "الاستشارة"}</h2>
+        <CancelBooking booking={detail} />
         <JoinPanel booking={detail} />
         <RecordingPlayer booking={detail} />
         <SessionAssets booking={detail} />

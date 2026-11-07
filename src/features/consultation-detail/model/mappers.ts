@@ -1,6 +1,7 @@
 import { routes } from "@/config/routes";
 import {
   isPublishable,
+  isPublishableConsultation,
   mapConsultation,
   type ConsultationDto,
   type CourseDto,
@@ -26,10 +27,12 @@ import { cleanText, formatMinutes, stripHonorific, toPlainText, toTextBlocks } f
 import { sessionsLabel } from "./facts";
 import type { ConsultationDetailData, ConsultationDetailVM, ExpertVM } from "./types";
 
-type DetailDto = LegacyConsultationResponse;
+type DetailDto = LegacyConsultationResponse & {
+  consultation: LegacyConsultationResponse["consultation"] & { slug?: string };
+};
 /** The consultant's public profile (`/legacy/experts/{expert_key}`): who they are and what else they offer. */
 export type ExpertDto = LegacyExpertResponse;
-export type ConsultationIndex = Map<number, ConsultationDto>;
+export type ConsultationIndex = Map<string, ConsultationDto>;
 
 /** Below this, the consultations rail is topped up from the rest of the catalog. */
 const MIN_CONSULTATION_CARDS = 4;
@@ -67,8 +70,10 @@ export function mapConsultationDetail(
   // `body` is empty across the catalog; the intro block is the consultation's real description.
   const intro = consultation.body ?? info[0]?.body;
 
+  const slug = card.slug ?? String(card.id);
   return {
-    id: card.id,
+    id: slug,
+    slug,
     title: card.title,
     summary: toPlainText(intro, 240),
     description: toPlainText(intro, 160),
@@ -89,7 +94,7 @@ export function consultationCard(dto: ConsultationDto): RailCardVM {
   const card = mapConsultation(dto);
   const sessions = sessionsLabel(card.sessions);
   return {
-    key: `consultation:${card.id}`,
+    key: `consultation:${card.slug ?? card.id}`,
     kind: "consultation",
     id: card.id,
     title: card.title,
@@ -129,23 +134,23 @@ export function mapConsultationDetailData({
   instructors,
 }: ConsultationDetailSources): ConsultationDetailData {
   const consultation = mapConsultationDetail(detail, expert);
-  const seen = new Set([`consultation:${consultation.id}`]);
+  const seen = new Set([`consultation:${consultation.slug}`]);
   const recommended = recommendations?.items ?? [];
-  const all = [...(consultations?.values() ?? [])].filter(isPublishable);
+  const all = [...(consultations?.values() ?? [])].filter(isPublishableConsultation);
 
   // Consultations: this expert's other ones, then what the catalog and the engine link to it.
   const expertKey = detail.consultation.expert_key;
   // The profile lists them; if its request failed, the index still knows who shares the key.
   const sameExpert =
-    expert?.consultations.filter(isPublishable) ??
+    expert?.consultations.filter(isPublishableConsultation) ??
     (expertKey ? all.filter((dto) => dto.expert_key === expertKey) : []);
   const recommendedConsultations = recommended.flatMap((item) => {
     const id = item.slug.match(CONSULTATION_SLUG)?.[1];
-    const dto = id ? consultations?.get(Number(id)) : undefined;
-    return dto && isPublishable(dto) ? [dto] : [];
+    const dto = id ? consultations?.get(id) : undefined;
+    return dto && isPublishableConsultation(dto) ? [dto] : [];
   });
   const relatedConsultations = dedupe(
-    [...sameExpert, ...(related?.consultations ?? []).filter(isPublishable), ...recommendedConsultations].map(
+    [...sameExpert, ...(related?.consultations ?? []).filter(isPublishableConsultation), ...recommendedConsultations].map(
       consultationCard,
     ),
     seen,

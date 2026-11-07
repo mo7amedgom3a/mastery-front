@@ -6,7 +6,14 @@ import { ArrowLeft, ChevronDown } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useRef } from "react";
 
-import { isNavEntryActive, navEntries, type NavColumn, type NavEntry, type NavLink } from "@/components/layout/nav-items";
+import {
+  isNavEntryActive,
+  navEntries,
+  type NavColumn,
+  type NavEntry,
+  type NavFeaturePanel,
+  type NavLink,
+} from "@/components/layout/nav-items";
 import { AppLink } from "@/components/ui/app-link";
 import { routes } from "@/config/routes";
 
@@ -40,6 +47,32 @@ function CardLink({ link }: { link: NavLink }) {
       <span className="min-w-0">
         <span className="block font-semibold">{link.label}</span>
         {link.description ? <span className="mt-0.5 block text-sm text-fg-muted">{link.description}</span> : null}
+      </span>
+    </NavigationMenu.Link>
+  );
+}
+
+function ListLink({ link }: { link: NavLink }) {
+  const Icon = link.icon;
+  return (
+    <NavigationMenu.Link
+      render={<AppLink href={link.href} />}
+      closeOnClick
+      className={`${panelLinkClass} flex items-start gap-3 rounded-none border-b border-line px-3 py-3 last:border-b-0`}
+    >
+      {Icon ? (
+        <span
+          aria-hidden="true"
+          className="grid size-9 shrink-0 place-items-center rounded-full border border-line bg-surface-alt text-accent"
+        >
+          <Icon className="size-4" />
+        </span>
+      ) : null}
+      <span className="min-w-0">
+        <span className="block text-sm leading-6 font-semibold">{link.label}</span>
+        {link.description ? (
+          <span className="mt-0.5 block text-xs leading-5 text-fg-muted">{link.description}</span>
+        ) : null}
       </span>
     </NavigationMenu.Link>
   );
@@ -99,21 +132,84 @@ function SolutionsPanel() {
   );
 }
 
-function ColumnsPanel({ columns }: { columns: readonly NavColumn[] }) {
+function FeaturePanel({ feature }: { feature: NavFeaturePanel }) {
+  const PrimaryIcon = feature.primary?.icon;
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <aside aria-label={feature.title} className="flex min-w-0 flex-col gap-5 border-s border-line ps-6">
+      <div className="rounded-panel border border-white/15 bg-ink p-5 text-white">
+        <p className="m-0 text-base leading-6 font-bold">{feature.title}</p>
+        {feature.body ? <p className="m-0 mt-1.5 text-xs leading-6 text-white/70">{feature.body}</p> : null}
+        {feature.stats?.length ? (
+          <dl className="m-0 mt-4 grid grid-cols-3 gap-2 border-t border-white/15 pt-3">
+            {feature.stats.map((stat) => (
+              <div key={stat.label} className="min-w-0">
+                <dt className="text-[10px] leading-4 text-white/60">{stat.label}</dt>
+                <dd className="m-0 text-lg leading-6 font-bold tabular-nums">{stat.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+        {feature.primary ? (
+          <NavigationMenu.Link
+            render={<AppLink href={feature.primary.href} />}
+            closeOnClick
+            className="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-[10px] bg-coral px-3 text-sm font-bold text-ink no-underline transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            {PrimaryIcon ? <PrimaryIcon aria-hidden="true" className="size-4" /> : null}
+            {feature.primary.label}
+          </NavigationMenu.Link>
+        ) : null}
+      </div>
+      {feature.groups.map((group) => (
+        <div key={group.title} className="min-w-0">
+          <p className="m-0 mb-1 px-1 text-[11px] font-bold text-fg-muted">{group.title}</p>
+          {group.links.map((link) => (
+            <NavigationMenu.Link
+              key={`${link.href}-${link.label}`}
+              render={<AppLink href={link.href} />}
+              closeOnClick
+              className={`${panelLinkClass} flex min-h-9 items-center justify-between gap-2 rounded-none px-1 text-sm`}
+            >
+              <span>{link.label}</span>
+              <ArrowLeft aria-hidden="true" className="size-3.5 text-fg-muted" />
+            </NavigationMenu.Link>
+          ))}
+        </div>
+      ))}
+    </aside>
+  );
+}
+
+function ColumnsPanel({ columns, feature }: { columns: readonly NavColumn[]; feature?: NavFeaturePanel }) {
+  const grid = feature
+    ? "grid-cols-[minmax(0,1fr)_minmax(0,1fr)_15.5rem]"
+    : "grid-cols-2";
+  return (
+    <div className={`grid gap-6 ${grid}`}>
       {columns.map((column) => (
         <section key={column.title} aria-label={column.title} className="min-w-0">
-          <p aria-hidden="true" className={columnTitleClass}>
-            {column.title}
-          </p>
-          <div className="grid grid-cols-2 gap-1">
-            {column.links.map((link) => (
-              <CardLink key={link.href} link={link} />
-            ))}
+          <div className="mb-2 px-3">
+            <p aria-hidden="true" className="m-0 text-sm font-bold text-fg">
+              {column.title}
+            </p>
+            {column.subtitle ? <p className="m-0 mt-0.5 text-xs text-fg-muted">{column.subtitle}</p> : null}
           </div>
+          {column.variant === "list" ? (
+            <div className="flex flex-col">
+              {column.links.map((link) => (
+                <ListLink key={`${link.href}-${link.label}`} link={link} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-1">
+              {column.links.map((link) => (
+                <CardLink key={link.href} link={link} />
+              ))}
+            </div>
+          )}
         </section>
       ))}
+      {feature ? <FeaturePanel feature={feature} /> : null}
     </div>
   );
 }
@@ -126,7 +222,11 @@ function PanelItem({ entry, active }: { entry: Exclude<NavEntry, { kind: "link" 
         <ChevronDown aria-hidden="true" className="size-4 transition-transform motion-reduce:transition-none" />
       </NavigationMenu.Trigger>
       <NavigationMenu.Content className="w-[var(--anchor-width)] p-6 transition-opacity duration-150 ease-out data-[ending-style]:opacity-0 data-[starting-style]:opacity-0 motion-reduce:transition-none">
-        {entry.kind === "catalog" ? <SolutionsPanel /> : <ColumnsPanel columns={entry.columns} />}
+        {entry.kind === "catalog" ? (
+          <SolutionsPanel />
+        ) : (
+          <ColumnsPanel columns={entry.columns} feature={entry.feature} />
+        )}
       </NavigationMenu.Content>
     </NavigationMenu.Item>
   );

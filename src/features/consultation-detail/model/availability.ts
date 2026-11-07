@@ -3,13 +3,17 @@ import type { AvailableSlot } from "@/lib/api/consultations";
 import type { SlotVM } from "./types";
 
 /** sessionStorage key where a guest's chosen slot waits while they sign in. */
-export function pendingSlotKey(consultationId: number): string {
+export function pendingSlotKey(consultationId: number | string): string {
   return `consultation-booking:${consultationId}`;
 }
 
-/** The B2C catalog product of a legacy consultation: its slug is `consultation-<legacy id>`. */
-export function consultationProductRef(consultationId: number): string {
-  return `consultation-${consultationId}`;
+/**
+ * The catalog product ref: `consultation-<legacy id>` for legacy consultations, or the
+ * product's own slug for an expert-created one (`expert-consultation-…`).
+ */
+export function consultationProductRef(consultationId: number | string): string {
+  const value = String(consultationId);
+  return /^\d+$/.test(value) ? `consultation-${value}` : value;
 }
 
 /** Calendar-day key in the visitor's own timezone, e.g. "2026-10-03". */

@@ -22,7 +22,7 @@ export type CatalogLanding = SuccessResponse<LandingOperation>;
 
 type CourseDto = LandingPageResponse["courses"]["items"][number];
 type PackageDto = LandingPageResponse["packages"]["items"][number];
-type ConsultationDto = LandingPageResponse["consultations"]["items"][number];
+type ConsultationDto = LandingPageResponse["consultations"]["items"][number] & { slug?: string };
 
 const PAGE_SIZE = 200;
 /** Stops a misbehaving `total` from paging forever. */
@@ -122,9 +122,13 @@ export function cardToPackageDto(card: CatalogCard): PackageDto | null {
 
 export function cardToConsultationDto(card: CatalogCard): ConsultationDto | null {
   const parsed = parseCardSlug(card.slug);
-  if (!parsed || parsed.kind !== "consultation") return null;
+  // Expert-created consultations use `expert-consultation-<hex>` rather than a numeric id.
+  if ((!parsed && card.product_type !== "consultation") || (parsed && parsed.kind !== "consultation")) {
+    return null;
+  }
   return {
-    id: parsed.id,
+    id: parsed ? parsed.id : 0,
+    slug: parsed ? undefined : card.slug,
     name: card.title,
     body: card.short_description,
     image: card.image,

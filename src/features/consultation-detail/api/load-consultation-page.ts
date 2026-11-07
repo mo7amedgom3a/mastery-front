@@ -5,7 +5,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 
 import { parseProductSlug } from "@/config/routes";
 import { baseOpenGraph, siteConfig } from "@/config/site";
-import { isPublishable } from "@/features/landing/model/mappers";
+import { isPublishableConsultation } from "@/features/landing/model/mappers";
 
 import type { ConsultationDetailData } from "../model/types";
 import { getConsultationDetail } from "./get-consultation-detail";
@@ -22,16 +22,16 @@ function safeDecode(value: string): string {
 }
 
 async function consultationForSlug(slug: string): Promise<ConsultationDetailData | null> {
-  const id = parseProductSlug(safeDecode(slug));
-  const data = id === null ? null : await getConsultationDetail(id);
+  const decoded = safeDecode(slug);
+  // `{id}-{name}` fixes a legacy URL to its canonical id; B2C products are their whole slug.
+  const legacyId = parseProductSlug(decoded);
+  const id = legacyId !== null ? String(legacyId) : decoded;
+  const data = await getConsultationDetail(id);
   // Inactive and admin-test consultations are kept off the storefront, like their cards.
+  // Artwork is optional: an expert can publish a consultation before adding a cover.
   if (
     !data ||
-    !isPublishable({
-      active: data.consultation.indexable,
-      name: data.consultation.title,
-      image: data.consultation.image,
-    })
+    !isPublishableConsultation({ active: data.consultation.indexable, name: data.consultation.title })
   ) {
     return null;
   }

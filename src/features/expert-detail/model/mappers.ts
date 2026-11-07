@@ -2,7 +2,7 @@ import type { Route } from "next";
 
 import { routes } from "@/config/routes";
 import { consultationCard, type ConsultationIndex } from "@/features/consultation-detail/model/mappers";
-import { isPublishable, type CourseDto } from "@/features/landing/model/mappers";
+import { isPublishable, isPublishableConsultation, type CourseDto } from "@/features/landing/model/mappers";
 import {
   courseCard,
   dedupe,
@@ -91,8 +91,8 @@ function recommendedCard(
 ): RailCardVM | null {
   const consultationId = dto.slug.match(CONSULTATION_SLUG)?.[1];
   if (consultationId) {
-    const consultation = consultations?.get(Number(consultationId));
-    return consultation && isPublishable(consultation) ? consultationCard(consultation) : null;
+    const consultation = consultations?.get(consultationId);
+    return consultation && isPublishableConsultation(consultation) ? consultationCard(consultation) : null;
   }
   return recommendationCard(dto, catalog, instructors);
 }
@@ -120,7 +120,7 @@ export function mapExpertDetailData({
   const toCourseCard = (course: CourseDto) => courseCard(course, instructors ?? undefined);
 
   // The expert's own items: everything published, in the API's order.
-  const consultations = detail.consultations.filter(isPublishable).map(consultationCard);
+  const consultations = detail.consultations.filter(isPublishableConsultation).map(consultationCard);
   const courses = detail.courses.filter(isPublishable).map(toCourseCard);
   const diplomas = detail.diplomas.filter(isPublishable).map(toCourseCard);
   const packages = detail.packages.filter(isPublishable).map(packageCard);
@@ -139,7 +139,7 @@ export function mapExpertDetailData({
     seen,
   );
   const relatedConsultations = dedupe(
-    (related.consultations ?? []).filter(isPublishable).map(consultationCard),
+    (related.consultations ?? []).filter(isPublishableConsultation).map(consultationCard),
     seen,
   );
   const recommended = dedupe(

@@ -54,6 +54,7 @@ export function GET() {
     `- [من نحن](${siteUrl}/#about)`,
     `- [الخبراء](${siteUrl}/#experts)`,
     `- [حلول تدريب الشركات](${siteUrl}${routes.business})`,
+    `- [منصة ماستري للشركات (B2B)](${siteUrl}${routes.businessB2b})`,
     `- [انضم كمدرب](${siteUrl}${routes.trainers})`,
     `- [خريطة الموقع](${siteUrl}/sitemap.xml)`,
     "",

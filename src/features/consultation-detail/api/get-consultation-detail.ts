@@ -24,14 +24,23 @@ import { getConsultationIndex } from "./get-consultation-index";
 /** Keep in sync with the consultation page's `revalidate`. */
 const CONSULTATION_REVALIDATE_SECONDS = 300;
 
-const tagOf = (id: number) => `consultation-${id}`;
+const tagOf = (id: string) => `consultation-${id}`;
 
-/** The consultation in the shape the mapper reads, from the B2C product (`/catalog/products/consultation-<id>`). */
-function toLegacyConsultation(id: number, product: CatalogProductResponse): LegacyConsultationResponse {
+type ConsultationDetailResponse = LegacyConsultationResponse & {
+  consultation: LegacyConsultationResponse["consultation"] & { slug?: string };
+};
+
+/**
+ * The consultation in the shape the mapper reads, from the B2C product. Legacy consultations use
+ * `/catalog/products/consultation-<id>`; expert-created ones use their own catalog slug.
+ */
+function toLegacyConsultation(productRef: string, product: CatalogProductResponse): ConsultationDetailResponse {
   const info = product.consultation;
+  const legacyId = productRef.match(/^consultation-(\d+)$/)?.[1];
   return {
     consultation: {
-      id,
+      id: legacyId ? Number(legacyId) : 0,
+      slug: legacyId ? undefined : productRef,
       name: product.product.title ?? null,
       body: product.product.short_description ?? null,
       image: product.image ?? info?.consultant_avatar ?? null,
@@ -60,11 +69,12 @@ function toLegacyConsultation(id: number, product: CatalogProductResponse): Lega
  * Everything but the consultation itself fails independently and is simply left off the page. A failed
  * consultation request throws, so ISR keeps serving the last good page.
  */
-export const getConsultationDetail = cache(async (id: number): Promise<ConsultationDetailData | null> => {
+export const getConsultationDetail = cache(async (id: string): Promise<ConsultationDetailData | null> => {
+  const productRef = consultationProductRef(id);
   const options = cachedRead(CONSULTATION_REVALIDATE_SECONDS, [tagOf(id)]);
   let product: CatalogProductResponse;
   try {
-    product = await getCatalogProduct(tagOf(id), options);
+    product = await getCatalogProduct(productRef, options);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return null;
@@ -75,7 +85,7 @@ export const getConsultationDetail = cache(async (id: number): Promise<Consultat
     return null;
   }
 
-  let detail = toLegacyConsultation(id, product);
+  let detail = toLegacyConsultation(productRef, product);
   const expertKey = detail.consultation.expert_key;
   const [expert, consultations, catalog, instructors, booking, content] = await Promise.allSettled([
     expertKey ? getCatalogExpert(expertKey, cachedRead(CONSULTATION_REVALIDATE_SECONDS, [tagOf(id), expertCacheTag(expertKey)])) : null,

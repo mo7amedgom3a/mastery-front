@@ -12,7 +12,7 @@ import type { BookingVM } from "../model/types";
 const loadDialog = () => import("./booking-dialog");
 const BookingDialog = lazy(loadDialog);
 
-function takePendingSlot(consultationId: number): string | null {
+function takePendingSlot(consultationId: number | string): string | null {
   try {
     const key = pendingSlotKey(consultationId);
     const value = window.sessionStorage.getItem(key);

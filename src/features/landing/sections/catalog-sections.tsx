@@ -237,7 +237,7 @@ export function ConsultationsSection({
           });
         }
         return {
-          key: consultation.id,
+          key: consultation.slug ?? consultation.id,
           href: consultation.href,
           title: consultation.title,
           image: consultation.image,
@@ -250,7 +250,8 @@ export function ConsultationsSection({
             (consultation.consultant ? `جلسة فردية عبر اجتماع مرئي مع ${consultation.consultant}.` : null),
           meta,
           price: consultation.price,
-          actions: actionsFor("consultation", consultation),
+          // Saved by legacy numeric id; B2C-only consultations have no wishlist key.
+          actions: consultation.id > 0 ? actionsFor("consultation", consultation) : undefined,
           tracking: { surface: "landing-consultations", position },
         };
       })}

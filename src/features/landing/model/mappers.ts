@@ -33,7 +33,10 @@ import type {
 export type CourseDto = LandingPageResponse["courses"]["items"][number];
 export type PackageDto = LandingPageResponse["packages"]["items"][number];
 type SearchItemDto = SearchResponse["items"][number];
-export type ConsultationDto = LandingPageResponse["consultations"]["items"][number];
+/** Legacy consultations use a numeric id; B2C-created ones add their catalog slug (id 0). */
+export type ConsultationDto = LandingPageResponse["consultations"]["items"][number] & {
+  slug?: string;
+};
 type CategoryDto = LandingPageResponse["categories"][number];
 type FaqDto = LandingPageResponse["faqs"][number];
 type InsightsDto = LandingPageResponse["insights"];
@@ -49,6 +52,15 @@ export function positiveOrNull(value: number | null | undefined): number | null 
 export function isPublishable(item: { active: boolean; name?: string | null; image?: string | null }): boolean {
   const name = cleanText(item.name);
   return item.active && !!name && name.toLowerCase() !== "test" && !!item.image;
+}
+
+/**
+ * Consultations are text-first: an expert can publish one before uploading artwork, so only the
+ * title matters. A real "Software Testing" consultation stays; a bare "test"/"QA" row does not.
+ */
+export function isPublishableConsultation(item: { active: boolean; name?: string | null }): boolean {
+  const name = cleanText(item.name);
+  return item.active && !!name && !/^(?:test|qa)$/i.test(name) && !/\b(?:test|qa)\b/i.test(name);
 }
 
 /**
@@ -138,12 +150,14 @@ export function mapPackage(dto: PackageDto, entry?: IndexEntry): PackageCardVM {
 }
 
 export function mapConsultation(dto: ConsultationDto, filterKeys: string[] = []): ConsultationCardVM {
+  const slug = dto.slug ?? null;
   return {
     id: dto.id,
+    slug,
     title: cleanText(dto.name) ?? "",
     summary: toPlainText(dto.body, 140),
     image: dto.image ?? null,
-    href: routes.consultation(dto.id),
+    href: routes.consultation(slug ?? dto.id),
     consultant: cleanText(dto.consultant_name),
     sessions: dto.number_of_sessions,
     sessionLength: formatMinutes(dto.session_duration),
@@ -263,7 +277,7 @@ function mapConsultationRail(
     }
     return current;
   };
-  const consultations = leadExpertsFirst(items.filter(isPublishable)).map((dto) => {
+  const consultations = leadExpertsFirst(items.filter(isPublishableConsultation)).map((dto) => {
     const keys = [...new Set((dto.category_ids ?? []).map((id) => String(topLevel(id))))];
     return mapConsultation(dto, keys);
   });

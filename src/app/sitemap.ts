@@ -51,6 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     listing(routes.live, 0.8),
     listing(routes.experts, 0.8),
     page(routes.business, 0.8),
+    page(routes.businessB2b, 0.7),
     { url: `${siteUrl}${routes.blog}`, changeFrequency: "weekly" as const, priority: 0.8 },
     page(routes.trainers, 0.7),
     page(routes.terms, 0.3),

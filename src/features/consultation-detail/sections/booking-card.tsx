@@ -11,6 +11,9 @@ import type { BookingVM, ConsultationDetailVM } from "../model/types";
 /** Price, the booking button, wishlist and what the consultation includes. Sticky on large screens. */
 export function BookingCard({ consultation, share }: { consultation: ConsultationDetailVM; share?: ReactNode }) {
   const { price, expert } = consultation;
+  // The account wishlist is keyed by legacy numeric id; B2C-only consultations have no such id.
+  const wishlistId = Number(consultation.id);
+  const wishlistable = Number.isSafeInteger(wishlistId) && wishlistId > 0;
   const sessions = sessionsLabel(consultation.sessions);
   const booking: BookingVM = {
     id: consultation.id,
@@ -53,14 +56,16 @@ export function BookingCard({ consultation, share }: { consultation: Consultatio
           <BookingButton booking={booking} />
         </div>
         {/* Consultations can't go in the cart (they need a slot): this is the wishlist heart only. */}
-        {actionsFor("consultation", {
-          id: consultation.id,
-          title: consultation.title,
-          href: consultation.href,
-          image: consultation.image,
-          price: consultation.price,
-          priceAmount: consultation.priceAmount,
-        })}
+        {wishlistable
+          ? actionsFor("consultation", {
+              id: wishlistId,
+              title: consultation.title,
+              href: consultation.href,
+              image: consultation.image,
+              price: consultation.price,
+              priceAmount: consultation.priceAmount,
+            })
+          : null}
       </div>
       {share ? <div className="mt-3">{share}</div> : null}
 

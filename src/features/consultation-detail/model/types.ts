@@ -22,7 +22,10 @@ export type SlotVM = {
 };
 
 export type ConsultationDetailVM = {
-  id: number;
+  /** The URL segment: a legacy numeric id, or a B2C catalog slug (`expert-consultation-…`). */
+  id: string;
+  /** The B2C catalog product ref (slug) used by the booking API. */
+  slug: string;
   title: string;
   summary: string | null;
   /** Longer plain-text description for metadata. */

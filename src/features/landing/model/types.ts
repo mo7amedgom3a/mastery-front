@@ -46,7 +46,10 @@ export type PackageCardVM = {
 };
 
 export type ConsultationCardVM = {
+  /** Legacy numeric id where one exists; 0 for a B2C product addressed only by slug. */
   id: number;
+  /** Catalog slug for B2C products (`expert-consultation-…`); null for legacy consultations. */
+  slug: string | null;
   title: string;
   summary: string | null;
   image: string | null;

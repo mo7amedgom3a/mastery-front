@@ -33,7 +33,8 @@ export function toCard(card: RailCardVM, tracking?: { surface: string; position:
     summary: card.summary,
     meta,
     price: card.price,
-    actions: actionsFor(card.kind, card),
+    // B2C-only consultations have no legacy numeric id to key the wishlist by.
+    actions: card.id > 0 ? actionsFor(card.kind, card) : undefined,
     tracking,
   };
 }

@@ -17,11 +17,14 @@ const posthogHost = (process.env.NEXT_PUBLIC_POSTHOG_HOST?.trim() || "https://us
 const posthogAssetsHost = posthogHost.replace(".i.posthog.com", "-assets.i.posthog.com");
 
 // Buckets the legacy backend serves product imagery from, plus the site's own upload host.
-const s3Buckets = ["course", "curriculum", "consultant", "category", "instructor", "trainer"].map((bucket) => ({
-  protocol: "https" as const,
-  hostname: "s3.eu-west-1.amazonaws.com",
-  pathname: `/${bucket}.emasteryacademy.com/**`,
-}));
+// `b2blogos` holds the B2B trusted-company logos.
+const s3Buckets = ["course", "curriculum", "consultant", "category", "instructor", "trainer", "b2blogos"].map(
+  (bucket) => ({
+    protocol: "https" as const,
+    hostname: "s3.eu-west-1.amazonaws.com",
+    pathname: `/${bucket}.emasteryacademy.com/**`,
+  }),
+);
 // Course Studio images on the new backend's bucket, served by public URL under catalog/assets/.
 // The prod bucket is the default; the dev bucket stays allowed while older rows still point at it.
 // Override with NEXT_ASSETS_S3_HOSTNAMES (comma-separated) for another environment.
@@ -128,6 +131,8 @@ const nextConfig: NextConfig = {
       ...assetBucketHostnames,
       { protocol: "https", hostname: "live.emasteryacademy.com", pathname: "/**" },
       { protocol: "https", hostname: "public.emasteryacademy.com", pathname: "/**" },
+      // B2B success-story thumbnails (`img.youtube.com/vi/<id>/…`).
+      { protocol: "https", hostname: "img.youtube.com", pathname: "/vi/**" },
       ...(bunnyCdnHostname ? [{ protocol: "https" as const, hostname: bunnyCdnHostname, pathname: "/**" }] : []),
     ],
   },

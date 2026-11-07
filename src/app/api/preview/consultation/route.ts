@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "bad consultation id" }, { status: 400 });
   }
   try {
-    const data = await getConsultationDetail(id);
+    const data = await getConsultationDetail(String(id));
     if (!data) return NextResponse.json({ error: "consultation not found" }, { status: 404 });
     return NextResponse.json({ data }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

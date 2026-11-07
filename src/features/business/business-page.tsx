@@ -1,50 +1,31 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowUpLeft, Check } from "lucide-react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AppLink } from "@/components/ui/app-link";
 import { ButtonLink } from "@/components/ui/button";
-import { routes } from "@/config/routes";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
+import { routes } from "@/config/routes";
 import { FaqSection } from "@/features/landing/sections/faq-section";
 import { ContactSalesCard } from "@/features/subscriptions/components/contact-sales-card";
 import { PlanCard } from "@/features/subscriptions/components/plan-card";
 import type { PlanVM } from "@/features/subscriptions/model/plans";
+import { formatNumber } from "@/lib/format";
 
-import type { BusinessCatalogVM, CatalogChipVM } from "./api/get-business-catalog";
-import { b2bCopy, businessPageCopy as copy, corporatePrograms } from "./content/b2b";
+import { B2bMotion } from "./components/b2b-motion";
+import { FieldGrid } from "./components/field-grid";
+import { HeroStoryVideo } from "./components/hero-story-video";
+import { LogoMarquee } from "./components/logo-marquee";
+import { ServiceCards } from "./components/service-cards";
+import { StatBand } from "./components/stat-band";
+import { StoriesSpotlight } from "./components/stories-spotlight";
+import { businessPageCopy as copy } from "./content/b2b";
+import { b2bCta, b2bHero, b2bHeroVideo } from "./content/b2b-landing";
+import type { LandingVM } from "./model/b2b-view";
 
-const pad = (index: number) => String(index + 1).padStart(2, "0");
-
-function ChipList({ title, chips }: { title: string; chips: CatalogChipVM[] }) {
-  if (chips.length === 0) return null;
-  return (
-    <div className="flex flex-col gap-4">
-      <h3 className="m-0 text-lg font-bold">{title}</h3>
-      <ul className="m-0 flex list-none flex-wrap gap-2 p-0">
-        {chips.map((chip) => (
-          <li key={chip.code}>
-            <AppLink
-              href={chip.href}
-              className="ma-btn ma-btn--soft ma-btn--sm min-h-11 gap-2 font-bold no-underline"
-            >
-              {chip.label}
-              <span className="tabular-nums opacity-70" aria-label={`${chip.count} برنامج`}>
-                {chip.count}
-              </span>
-            </AppLink>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-/** `/business`: corporate training, the programmes companies need, and the way to request an offer. */
-export function BusinessPage({ catalog, plans }: { catalog: BusinessCatalogVM; plans: PlanVM[] }) {
-  const categoryHref = new Map(catalog.categories.map((category) => [category.code, category.href]));
-  // Teams above the largest self-serve plan talk to the business team instead of paying online.
+/** `/business`: the corporate entry page. The full platform story lives at `/business/b2b`. */
+export function BusinessPage({ data, plans }: { data: LandingVM; plans: PlanVM[] }) {
   const largestTeam = Math.max(0, ...plans.filter((plan) => plan.perSeat).map((plan) => plan.maxSeats));
   const contactFrom = largestTeam > 0 ? largestTeam + 1 : 50;
 
@@ -52,118 +33,208 @@ export function BusinessPage({ catalog, plans }: { catalog: BusinessCatalogVM; p
     <>
       <SiteHeader brand="business" />
       <main id="main" tabIndex={-1} className="outline-none">
-        <header data-theme="dark" className="bg-surface-alt text-fg">
-          <div className="ma-container flex flex-col items-start py-16 md:py-20">
-            <span className="ma-tag ma-tag--coral">{copy.kicker}</span>
-            <h1 className="t-hero m-0 mt-6">{copy.title}</h1>
-            <p className="t-lead m-0 mt-6 max-w-[40rem]">{copy.lead}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink href={routes.businessRequest()} variant="primary" size="lg">
-                {copy.primaryAction.label}
-              </ButtonLink>
-              {/* Smaller teams can subscribe online, priced per employee. */}
-              <ButtonLink href={routes.subscriptionsFor("company")} variant="secondary" size="lg">
-                اشترك لفريقك الآن
-              </ButtonLink>
+        <B2bMotion>
+          <header className="b2b-hero b2b-hero--compact" aria-labelledby="business-hero-title">
+            <div className="ma-container b2b-hero__grid">
+              <div className="b2b-hero__copy" data-b2b-hero>
+                <span className="ma-tag ma-tag--coral">{copy.kicker}</span>
+                <h1 id="business-hero-title" className="b2b-hero__title">
+                  {copy.title}
+                </h1>
+                <p className="b2b-hero__lead">{copy.lead}</p>
+                <div className="b2b-hero__actions">
+                  <ButtonLink href={routes.businessRequest()} size="lg">
+                    {copy.primaryAction.label}
+                    <ArrowUpLeft aria-hidden="true" className="size-5" />
+                  </ButtonLink>
+                  <AppLink href={copy.secondaryAction.href} className="ma-btn ma-btn--secondary ma-btn--lg">
+                    {copy.secondaryAction.label}
+                    <ArrowLeft aria-hidden="true" className="size-5" />
+                  </AppLink>
+                </div>
+                <ul className="b2b-hero__points">
+                  {copy.heroPoints.map((point) => (
+                    <li key={point}>
+                      <Check aria-hidden="true" className="size-4" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <HeroStoryVideo
+                youtubeId={b2bHeroVideo.youtubeId}
+                title={b2bHeroVideo.title}
+                eyebrow={b2bHeroVideo.eyebrow}
+                duration={b2bHeroVideo.duration}
+                steps={b2bHero.steps}
+              />
+            </div>
+          </header>
+
+          <div className="b2b-stats-band">
+            <div className="ma-container">
+              <StatBand stats={data.stats.slice(0, 4)} className="b2b-stats--compact" />
             </div>
           </div>
-        </header>
 
-        <Section aria-labelledby="steps-title">
-          <SectionHeader id="steps-title" label={copy.steps.label} title={copy.steps.title} />
-          <ol className="m-0 mt-10 grid list-none gap-px overflow-hidden rounded-panel border border-line bg-line p-0 sm:grid-cols-2 lg:grid-cols-4">
-            {copy.steps.items.map((step, index) => (
-              <li key={step.title} className="flex flex-col gap-3 bg-surface p-6">
-                <span className="text-sm font-bold text-accent" aria-hidden="true">
-                  {pad(index)}
-                </span>
-                <h3 className="m-0 text-xl font-bold">{step.title}</h3>
-                <p className="m-0 text-fg-muted">{step.body}</p>
-              </li>
-            ))}
-          </ol>
-        </Section>
-
-        <Section aria-labelledby="plans-title">
-          <SectionHeader id="plans-title" label={copy.plans.label} title={copy.plans.title} lead={copy.plans.lead} />
-          <div className="mt-10 grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {plans.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} />
-            ))}
-            <ContactSalesCard fromSeats={contactFrom} />
-          </div>
-          <div className="mt-8 flex justify-center">
-            <ButtonLink href={routes.subscriptionsFor("company")} variant="secondary">
-              {copy.plans.action}
-            </ButtonLink>
-          </div>
-        </Section>
-
-        <Section tone="alt" aria-labelledby="programs-title">
-          <SectionHeader id="programs-title" label={copy.programs.label} title={copy.programs.title} lead={copy.programs.lead} />
-          <ul className="m-0 mt-10 grid list-none gap-px overflow-hidden rounded-panel border border-line bg-line p-0 sm:grid-cols-2 lg:grid-cols-3">
-            {corporatePrograms.map((program) => {
-              const href = categoryHref.get(program.category);
-              return (
-                <li key={program.title} className="flex flex-col gap-3 bg-surface-alt p-6">
-                  <h3 className="m-0 text-xl font-bold">{program.title}</h3>
-                  <p className="m-0 flex-1 text-fg-muted">{program.body}</p>
-                  {href ? (
-                    <AppLink href={href} className="ma-link inline-flex items-center gap-1 self-start text-sm font-bold">
-                      تصفّح البرامج
-                      <ArrowLeft aria-hidden="true" className="size-4" />
-                    </AppLink>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-        </Section>
-
-        {catalog.categories.length > 0 || catalog.tags.length > 0 ? (
-          <Section aria-labelledby="catalog-title" deferRender>
-            <SectionHeader id="catalog-title" label={copy.catalog.label} title={copy.catalog.title} lead={copy.catalog.lead} />
-            <div className="mt-10 flex flex-col gap-10">
-              <ChipList title={copy.catalog.categoriesTitle} chips={catalog.categories} />
-              <ChipList title={copy.catalog.tagsTitle} chips={catalog.tags} />
+          <Section id="why" aria-labelledby="business-why-title">
+            <SectionHeader
+              id="business-why-title"
+              label={copy.pillars.label}
+              index="01"
+              title={copy.pillars.title}
+            />
+            <div className="b2b-pillars" data-b2b-stagger>
+              {copy.pillars.items.map((pillar, index) => (
+                <article key={pillar.title} className="b2b-pillar">
+                  <span className="b2b-pillar__num" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <h3>{pillar.title}</h3>
+                  <p>{pillar.body}</p>
+                </article>
+              ))}
             </div>
           </Section>
-        ) : null}
 
-        <Section id="request" tone="alt" aria-labelledby="request-title" className="scroll-mt-20">
-          <div className="grid gap-12 md:grid-cols-2 md:gap-16">
-            <div>
-              <SectionHeader id="request-title" label={copy.benefits.label} title={copy.benefits.title} lead={copy.form.lead} />
-              <dl className="m-0 mt-10 flex flex-col">
-                {b2bCopy.benefits.map((benefit) => (
-                  <div key={benefit.title} className="grid gap-2 border-t border-line py-5 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-6">
-                    <dt className="text-lg font-bold">{benefit.title}</dt>
-                    <dd className="m-0 text-fg-muted">{benefit.body}</dd>
-                  </div>
-                ))}
-              </dl>
+          <Section id="services" tone="alt" aria-labelledby="business-services-title">
+            <SectionHeader
+              id="business-services-title"
+              label={copy.services.label}
+              index="02"
+              title={copy.services.title}
+              lead={copy.services.lead}
+              action={
+                <AppLink href={routes.businessB2b} className="ma-link inline-flex items-center gap-2 font-bold">
+                  {copy.services.action}
+                  <ArrowLeft aria-hidden="true" className="size-4" />
+                </AppLink>
+              }
+            />
+            <ServiceCards items={copy.services.items} className="b2b-service-grid--flat" />
+          </Section>
+
+          <Section id="fields" aria-labelledby="business-fields-title">
+            <SectionHeader
+              id="business-fields-title"
+              label={copy.fields.label}
+              index="03"
+              title={copy.fields.title}
+              lead={copy.fields.lead}
+            />
+            <FieldGrid fields={data.fields} compact />
+          </Section>
+
+          <Section id="plans" aria-labelledby="business-plans-title">
+            <SectionHeader
+              id="business-plans-title"
+              label={copy.plans.label}
+              index="04"
+              title={copy.plans.title}
+              lead={copy.plans.lead}
+            />
+            <div className="mt-10 grid items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {plans.map((plan) => (
+                <PlanCard key={plan.id} plan={plan} />
+              ))}
+              <ContactSalesCard fromSeats={contactFrom} />
             </div>
-            <div className="flex flex-col items-start gap-5 self-start rounded-panel border border-line-strong bg-surface p-5 sm:p-8">
-              <h3 className="m-0 text-2xl font-bold">{copy.form.title}</h3>
-              <p className="m-0 leading-7 text-fg-muted">{copy.form.cta.body}</p>
-              <ol className="m-0 flex list-none flex-col gap-2 p-0">
-                {copy.form.cta.points.map((point, index) => (
-                  <li key={point} className="flex items-center gap-3">
-                    <span aria-hidden="true" className="text-sm font-bold text-accent tabular-nums">
-                      {pad(index)}
-                    </span>
-                    {point}
+            <div className="mt-8 flex justify-center">
+              <ButtonLink href={routes.subscriptionsFor("company")} variant="secondary">
+                {copy.plans.action}
+              </ButtonLink>
+            </div>
+          </Section>
+
+          {data.companies.length > 0 ? (
+            <Section id="companies" tone="alt" aria-labelledby="business-companies-title">
+              <SectionHeader
+                id="business-companies-title"
+                label={copy.companies.label}
+                index="05"
+                title={copy.companies.title}
+              />
+              <LogoMarquee companies={data.companies} />
+              <p className="b2b-companies-note">{copy.companies.note}</p>
+            </Section>
+          ) : null}
+
+          {data.stories.length > 0 ? (
+            <StoriesSpotlight
+              stories={data.stories}
+              label={copy.stories.label}
+              title={copy.stories.title}
+              lead={copy.stories.lead}
+              note={copy.stories.note}
+              watchLabel="شاهد على يوتيوب"
+            />
+          ) : null}
+
+          <section className="b2b-process" id="process" aria-labelledby="business-process-title">
+            <div className="ma-container">
+              <div className="b2b-process__head">
+                <div>
+                  <p className="b2b-process__overline">{copy.process.label} / 07</p>
+                  <h2 id="business-process-title" className="b2b-process__title">
+                    {copy.process.title}
+                  </h2>
+                </div>
+                <p className="b2b-process__lead">{copy.process.lead}</p>
+              </div>
+              <ol className="b2b-process__steps b2b-process__steps--four">
+                {copy.process.items.map((step, index) => (
+                  <li key={step.title} className="b2b-step" data-b2b-step>
+                    <span className="b2b-step__dot" aria-hidden="true" />
+                    {index < copy.process.items.length - 1 ? (
+                      <span className="b2b-step__connector" aria-hidden="true">
+                        <span className="b2b-step__fill" data-b2b-step-fill />
+                      </span>
+                    ) : null}
+                    <span className="b2b-step__number">0{index + 1}</span>
+                    <h3 className="b2b-step__title">{step.title}</h3>
+                    <p className="b2b-step__body">{step.body}</p>
                   </li>
                 ))}
               </ol>
-              <ButtonLink href={routes.businessRequest()} variant="primary" size="lg">
-                {copy.primaryAction.label}
-              </ButtonLink>
             </div>
-          </div>
-        </Section>
+          </section>
 
-        <FaqSection faqs={copy.faq.items} id="business-faq" title={copy.faq.title} />
+          <FaqSection faqs={copy.faq.items} id="business-faq" title={copy.faq.title} />
+
+          <section className="b2b-cta" id="request" aria-labelledby="business-cta-title">
+            <div className="ma-container b2b-cta__grid">
+              <div data-b2b-reveal>
+                <p className="b2b-process__overline">{b2bCta.label}</p>
+                <h2 id="business-cta-title" className="b2b-cta__title">
+                  {copy.cta.title}
+                </h2>
+                <p className="b2b-cta__lead">{copy.cta.lead}</p>
+                <div className="b2b-cta__actions">
+                  <ButtonLink href={routes.businessRequest()} size="lg">
+                    {copy.cta.primary}
+                    <ArrowUpLeft aria-hidden="true" className="size-5" />
+                  </ButtonLink>
+                  <AppLink href={routes.businessB2b} className="ma-btn ma-btn--soft ma-btn--lg">
+                    {copy.cta.secondary}
+                    <ArrowLeft aria-hidden="true" className="size-5" />
+                  </AppLink>
+                </div>
+              </div>
+              <div className="b2b-cta__card" data-b2b-reveal>
+                <span className="ma-tag">أرقام المكتبة</span>
+                <p className="b2b-cta__card-title">
+                  {formatNumber(data.totals.programs || 195)} برنامجاً و{formatNumber(data.fields.length)} مجالاً تدريبياً.
+                </p>
+                <p>محتوى قابل للتخصيص حسب أدوار فريقك، مع متابعة وتقارير وشهادات إتمام.</p>
+                <ButtonLink href={routes.businessB2b} variant="on-color">
+                  تعرّف على المنصة
+                  <ArrowLeft aria-hidden="true" className="size-4" />
+                </ButtonLink>
+              </div>
+            </div>
+          </section>
+        </B2bMotion>
       </main>
       <SiteFooter />
     </>

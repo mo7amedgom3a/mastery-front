@@ -1,5 +1,6 @@
+import { routes } from "@/config/routes";
 import { consultationCard } from "@/features/consultation-detail/model/mappers";
-import { isPublishable } from "@/features/landing/model/mappers";
+import { isPublishable, isPublishableConsultation } from "@/features/landing/model/mappers";
 import { courseCard, packageCard, productHref } from "@/features/product-detail/model/mappers";
 import type { RailCardVM } from "@/features/product-detail/model/types";
 import type { InstructorNames } from "@/lib/api/instructor-names";
@@ -262,7 +263,7 @@ function resultCard(item: SearchItemDto, catalog: SearchCatalog): ResultCardVM |
     card = courseCard(item.course, instructors);
   } else if (item.package && isPublishable(item.package)) {
     card = packageCard(item.package);
-  } else if (item.consultation && isPublishable(item.consultation)) {
+  } else if (item.consultation && isPublishableConsultation(item.consultation)) {
     card = consultationCard(item.consultation);
   } else {
     card = b2cCard(item);
@@ -277,13 +278,39 @@ const B2C_SLUG = /^(course|diploma)-([1-9]\d{0,9})$/;
  * built from the search row itself so a newly published course lists like the others.
  */
 function b2cCard(item: SearchItemDto): RailCardVM | null {
-  const match = B2C_SLUG.exec(item.slug ?? "");
   const title = cleanText(item.title);
+  const slug = item.slug ?? "";
+  const names = [...new Set(item.instructors.map((name) => cleanText(name)).filter((name): name is string => !!name))];
+  const amount = item.price_amount != null ? Number(item.price_amount) : null;
+  if (
+    item.product_type === "consultation" &&
+    slug &&
+    title &&
+    item.status === "published" &&
+    isPublishableConsultation({ active: true, name: title })
+  ) {
+    // Expert-created consultations have a catalog slug, not a legacy numeric id.
+    return {
+      key: `consultation:${slug}`,
+      kind: "consultation",
+      id: 0,
+      title,
+      summary: cleanText(item.description),
+      image: item.image ?? null,
+      href: routes.consultation(slug),
+      tag: "استشارة",
+      duration: null,
+      courseCount: null,
+      instructor: names.length > 1 ? `${names[0]} وآخرون` : (names[0] ?? null),
+      instructorAvatar: null,
+      price: toPricing(amount, null, item.currency_code),
+      priceAmount: amount,
+    };
+  }
+  const match = B2C_SLUG.exec(slug);
   if (!match || !title || item.status !== "published") return null;
   const kind = match[1] as "course" | "diploma";
   const id = Number(match[2]);
-  const names = [...new Set(item.instructors.map((name) => cleanText(name)).filter((name): name is string => !!name))];
-  const amount = item.price_amount != null ? Number(item.price_amount) : null;
   return {
     key: `${kind}:${id}`,
     kind,

@@ -12,6 +12,7 @@ import { routes } from "@/config/routes";
 import { consultationQueries, type ConsultationBooking } from "@/lib/api/consultations";
 import { formatDateTime } from "@/lib/format";
 
+import { CancelBooking } from "./components/cancel-booking";
 import { JoinPanel } from "./components/session-actions";
 import { bookingStatus, isUpcoming } from "./model/status";
 
@@ -102,15 +103,18 @@ export function BookingRow({ booking, href }: { booking: ConsultationBooking; hr
           {booking.duration_minutes ? `${booking.duration_minutes} دقيقة` : null}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 flex-col items-stretch gap-3 sm:items-end">
         <JoinPanel booking={booking} />
-        <AppLink
-          href={link}
-          aria-label="تفاصيل الحجز"
-          className="ma-btn ma-btn--bare ma-btn--icon size-10 min-h-10"
-        >
-          <ChevronLeft aria-hidden="true" className="size-5" />
-        </AppLink>
+        <div className="flex items-center gap-3">
+          <CancelBooking booking={booking} />
+          <AppLink
+            href={link}
+            aria-label="تفاصيل الحجز"
+            className="ma-btn ma-btn--bare ma-btn--icon size-10 min-h-10"
+          >
+            <ChevronLeft aria-hidden="true" className="size-5" />
+          </AppLink>
+        </div>
       </div>
     </article>
   );

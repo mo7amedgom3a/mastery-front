@@ -26,7 +26,9 @@ export function catalogProductHref(slug: string, productType: string): string {
   if (productType === "bundle") return routes.bundle(slug);
   const key = shopKeyFromSlug(slug);
   const parsed = key ? parseShopKey(key) : null;
-  return parsed ? shopItemHref(parsed.kind, parsed.id) : routes.search;
+  if (parsed) return shopItemHref(parsed.kind, parsed.id);
+  // Expert-created consultations (and any B2C product addressed only by slug).
+  return productType === "consultation" && slug ? routes.consultation(slug) : routes.search;
 }
 
 export function shopItemHref(kind: ShopItemKind, id: number): string {

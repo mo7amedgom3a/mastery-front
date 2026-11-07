@@ -74,6 +74,8 @@ export type SearchViewData = {
   /** False when the facet request failed: chips then list every option, without numbers. */
   countsKnown: boolean;
   activeFilters: ActiveFilterVM[];
+  /** Smart search was requested but semantic ranking was unavailable; results are lexical. */
+  semanticDegraded: boolean;
   /** Null when the search request failed. */
   results: SearchResultsVM | null;
 };

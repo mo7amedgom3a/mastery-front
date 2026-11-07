@@ -19,7 +19,7 @@ export const getConsultationIndex = cache(async (): Promise<ConsultationIndex> =
   const index: ConsultationIndex = new Map();
   for (const card of cards) {
     const dto = cardToConsultationDto(card);
-    if (dto) index.set(dto.id, dto);
+    if (dto) index.set(dto.slug ?? String(dto.id), dto);
   }
   return index;
 });

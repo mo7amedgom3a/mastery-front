@@ -33,7 +33,11 @@ export type AvailabilityParams = QueryParams<AvailabilityOperation>;
 export type AvailableSlot = AvailabilityResponse["slots"][number];
 export type BookingCheckoutRequest = RequestBody<CreateBookingOperation>;
 export type BookingCheckoutResponse = SuccessResponse<CreateBookingOperation>;
-export type ConsultationBooking = SuccessResponse<BookingOperation>;
+export type ConsultationBooking = SuccessResponse<BookingOperation> & {
+  /** Server-computed: this customer may still withdraw the booking. */
+  can_cancel?: boolean;
+  cancellation_deadline_at?: string | null;
+};
 export type MyBookingsResponse = SuccessResponse<MyBookingsOperation>;
 export type JoinResponse = SuccessResponse<JoinOperation>;
 export type RecordingResponse = SuccessResponse<RecordingOperation>;
@@ -68,6 +72,7 @@ const consultationPaths = {
   bookings: "/api/v1/consultations/bookings",
   myBookings: "/api/v1/consultations/bookings/me",
   booking: "/api/v1/consultations/bookings/{booking_id}",
+  cancelBooking: "/api/v1/consultations/bookings/{booking_id}/cancel",
   join: "/api/v1/consultations/bookings/{booking_id}/join",
   recording: "/api/v1/consultations/bookings/{booking_id}/recording",
   sessionAssets: "/api/v1/consultations/bookings/{booking_id}/assets",
@@ -135,6 +140,22 @@ export function getBooking(bookingId: string, options?: AuthenticatedRequestOpti
   return customerRequest<ConsultationBooking>("GET", consultationPaths.booking, {
     ...withAuthCookies(options),
     path: { booking_id: bookingId },
+  });
+}
+
+/**
+ * The customer withdraws a paid booking before the published cutoff (24h by default).
+ * 409 when the session started or the cutoff has passed; the refund then goes to review.
+ */
+export function cancelMyBooking(
+  bookingId: string,
+  body: { reason?: string | null } = {},
+  options?: AuthenticatedRequestOptions,
+): Promise<ConsultationBooking> {
+  return customerRequest<ConsultationBooking>("POST", consultationPaths.cancelBooking, {
+    ...withAuthCookies(options),
+    path: { booking_id: bookingId },
+    body,
   });
 }
 

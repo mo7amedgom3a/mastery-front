@@ -56,12 +56,24 @@ function PanelSection({ entry, close }: { entry: Extract<NavEntry, { kind: "pane
         <div key={column.title}>
           <p className={groupTitleClass}>{column.title}</p>
           {column.links.map((link) => (
-            <AppLink key={link.href} href={link.href} onClick={close} className={subLinkClass}>
+            <AppLink key={`${link.href}-${link.label}`} href={link.href} onClick={close} className={subLinkClass}>
               {link.label}
             </AppLink>
           ))}
         </div>
       ))}
+      {entry.feature ? (
+        <div>
+          <p className={groupTitleClass}>{entry.feature.title}</p>
+          {entry.feature.groups.flatMap((group) =>
+            group.links.map((link) => (
+              <AppLink key={`${link.href}-${link.label}`} href={link.href} onClick={close} className={subLinkClass}>
+                {link.label}
+              </AppLink>
+            )),
+          )}
+        </div>
+      ) : null}
     </Section>
   );
 }

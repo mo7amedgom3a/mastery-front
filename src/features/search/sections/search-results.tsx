@@ -209,6 +209,15 @@ export async function SearchResults({ state, catalog, heading, isRoot }: SearchR
 
         <PendingRegion className="mt-6 min-w-0">
           <section aria-labelledby="results-title">
+            {view.semanticDegraded ? (
+              <div className="ma-alert ma-alert--warning mb-4" role="status">
+                <TriangleAlert aria-hidden="true" className="fill-none" />
+                <div>
+                  <p className="ma-alert__title">البحث الذكي غير متاح مؤقتاً</p>
+                  <p className="ma-alert__text">تُعرض النتائج بالكلمات الآن. حاول مرة أخرى بعد قليل.</p>
+                </div>
+              </div>
+            ) : null}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-y border-line py-3">
               <h2 id="results-title" className="sr-only">
                 النتائج

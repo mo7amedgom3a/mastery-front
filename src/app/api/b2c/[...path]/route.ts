@@ -83,6 +83,7 @@ const RULES: readonly Rule[] = [
   // Whiteboard files of a session (uploads go through /api/consultations/[bookingId]/assets).
   { methods: ["GET"], pattern: /^consultations\/bookings\/[A-Za-z0-9-]+\/assets(\/[A-Za-z0-9-]+)?$/, session: true },
   { methods: ["POST"], pattern: /^consultations\/bookings\/[A-Za-z0-9-]+\/join$/, session: true },
+  { methods: ["POST"], pattern: /^consultations\/bookings\/[A-Za-z0-9-]+\/cancel$/, session: true },
   // The expert's own area (403 for customers who are not linked to a consultant); `capability` is
   // the quiet 200 answer the student nav uses instead of probing the 403 route.
   { methods: ["GET"], pattern: /^experts\/me(\/(slots|bookings|summary|services|capability))?$/, session: true },

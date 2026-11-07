@@ -3,7 +3,7 @@ import { connection } from "next/server";
 
 import { routes } from "@/config/routes";
 import { baseOpenGraph } from "@/config/site";
-import { getBusinessCatalog } from "@/features/business/api/get-business-catalog";
+import { getB2bLanding } from "@/features/business/api/get-b2b-landing";
 import { BusinessPage } from "@/features/business/business-page";
 import { businessPageCopy } from "@/features/business/content/b2b";
 import { loadPricingPage } from "@/features/subscriptions/api/load-plans";
@@ -15,8 +15,8 @@ import { loadPricingPage } from "@/features/subscriptions/api/load-plans";
 export const revalidate = 600;
 
 export const metadata: Metadata = {
-  title: businessPageCopy.kicker,
-  description: businessPageCopy.description,
+  title: businessPageCopy.meta.title,
+  description: businessPageCopy.meta.description,
   alternates: {
     canonical: routes.business,
     languages: { ar: routes.business, "x-default": routes.business },
@@ -24,14 +24,14 @@ export const metadata: Metadata = {
   openGraph: {
     ...baseOpenGraph,
     url: routes.business,
-    title: businessPageCopy.kicker,
-    description: businessPageCopy.description,
+    title: businessPageCopy.meta.title,
+    description: businessPageCopy.meta.description,
   },
 };
 
 export default async function BusinessRoute() {
   await connection();
-  const [catalog, pricing] = await Promise.all([getBusinessCatalog(), loadPricingPage()]);
+  const [data, pricing] = await Promise.all([getB2bLanding(), loadPricingPage()]);
   const plans = pricing.plans.filter((plan) => plan.audience === "company");
-  return <BusinessPage catalog={catalog} plans={plans} />;
+  return <BusinessPage data={data} plans={plans} />;
 }

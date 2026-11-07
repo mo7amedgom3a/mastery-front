@@ -106,6 +106,8 @@ export const routes = {
   consultations: route("/search?type=consultation"),
   consultation: (id: number | string) => route(`/consultations/${encodeURIComponent(String(id))}`),
   business: route("/business"),
+  /** The full B2B story: every corporate service, the training library, stories and the request flow. */
+  businessB2b: route("/business/b2b"),
   /** Sales-team training landing page; noindexed pending final offer and copy approval. */
   businessSales: route("/business/sales"),
   /** The company training request, one page per step (`/business/request/company`, …). */

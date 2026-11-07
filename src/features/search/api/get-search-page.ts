@@ -66,11 +66,14 @@ export async function getSearchView(state: SearchState, catalog: SearchCatalog):
 
   const response = valueOf(results, "search");
   const counts = valueOf(options, "search facet counts");
+  // The generated OpenAPI types predate this field; the API always sends it now.
+  const semanticUsed = (response as { semantic_used?: boolean } | null)?.semantic_used !== false;
   return {
     state,
     facets: mapFacets(state, catalog, counts),
     countsKnown: counts !== null,
     activeFilters: mapActiveFilters(state, catalog),
+    semanticDegraded: state.mode !== "lexical" && response !== null && !semanticUsed,
     results: response ? mapResults(response, catalog) : null,
   };
 }

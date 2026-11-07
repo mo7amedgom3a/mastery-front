@@ -85,7 +85,7 @@ export async function resolveItems(keys: readonly string[]): Promise<ResolveItem
   const items: ResolvedItem[] = [];
   for (const { key, kind, id } of wanted) {
     if (kind === "consultation") {
-      const dto = consultations?.get(id);
+      const dto = consultations?.get(String(id));
       if (dto) {
         items.push(toResolved(key, consultationCard(dto), isPublishable(dto), { current: dto.price ?? null, original: null }));
         continue;

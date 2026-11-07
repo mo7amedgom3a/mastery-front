@@ -100,6 +100,7 @@ export const navigationColumns: readonly FooterNavColumn[] = [
     title: "حلول الشركات والاشتراكات",
     links: [
       { label: "ماستري للأعمال (للشركات)", href: routes.business },
+      { label: "منصة ماستري للشركات", href: routes.businessB2b },
       { label: "خطط واشتراكات الأفراد", href: routes.subscriptionsFor("individual") },
       { label: "اشتراكات فرق العمل والشركات", href: routes.subscriptionsFor("company") },
       { label: "باقات التدريب الجاهزة", href: routes.packages },
