@@ -8,16 +8,16 @@
  * Amounts are numbers in major units of `currency`, with at most two decimals.
  */
 
-export type ShopItemKind = "course" | "diploma" | "package" | "consultation";
+export type ShopItemKind = "course" | "diploma" | "package" | "consultation" | "live_diploma";
 
 /** Stable item key: `${kind}:${legacyId}` (legacy ids collide across kinds). */
 export type ShopItemKey = string;
 
-export const SHOP_KEY_PATTERN = /^(course|diploma|package|consultation):([1-9]\d{0,9})$/;
+export const SHOP_KEY_PATTERN = /^(?:(course|diploma|package|consultation):([1-9]\d{0,9})|live_diploma:([a-z0-9-]+))$/;
 
 export function parseShopKey(key: string): { kind: ShopItemKind; id: number } | null {
   const match = key.match(SHOP_KEY_PATTERN);
-  return match ? { kind: match[1] as ShopItemKind, id: Number(match[2]) } : null;
+  return match ? { kind: match[3] ? "live_diploma" : match[1] as ShopItemKind, id: match[3] ? 1 : Number(match[2]) } : null;
 }
 
 /** Paid certificate extras attached to one cart line (offered per product by the backend). */
@@ -32,6 +32,13 @@ export type ResolvedItem = {
   key: ShopItemKey;
   kind: ShopItemKind;
   id: number;
+  slug?: string;
+  cohortId?: string | null;
+  cohortNumber?: number | null;
+  cohortStartsAt?: string | null;
+  cohortEndsAt?: string | null;
+  seatsAvailable?: number | null;
+  cohorts?: { cohortId: string; number: number; startsAt: string; endsAt: string; seatsAvailable: number; canEnroll: boolean }[];
   title: string;
   image: string | null;
   href: string;
@@ -63,7 +70,7 @@ export type ResolveItemsResponse = {
 
 /* ---------- Quote ---------- */
 
-export type QuoteLineRequest = { key: ShopItemKey; addons: AddonCode[] };
+export type QuoteLineRequest = { key: ShopItemKey; addons: AddonCode[]; cohortId?: string | null };
 
 export type QuoteRequest = {
   lines: QuoteLineRequest[];

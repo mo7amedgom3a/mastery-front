@@ -33,7 +33,7 @@ function draftBundle(base: AdminBundle): BundleDetailVM {
     const kind: BundleMemberKind = ["course", "diploma", "consultation", "package"].includes(item.product_type)
       ? item.product_type as BundleMemberKind : "other";
     return {
-      key: item.product_id, kind, position: index + 1, title: item.title || item.slug,
+      key: item.product_id, slug: item.slug, kind, position: index + 1, title: item.title || item.slug,
       summary: null, image: null, href: null, category: null, people: [], duration: null,
       lessonCount: 0, units: [], price: noPricing,
     };

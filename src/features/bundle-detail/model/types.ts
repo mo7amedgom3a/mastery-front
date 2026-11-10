@@ -36,6 +36,8 @@ export type BundleUnitVM = { id: number; title: string; lessonCount: number; dur
 /** One product inside the bundle, enriched from its own legacy detail when that loaded. */
 export type BundleMemberVM = {
   key: string;
+  /** Catalog slug (`course-12`, `package-3`, a bundle slug), for ownership lookups. */
+  slug: string;
   kind: BundleMemberKind;
   /** 1-based, in the bundle's own order. */
   position: number;

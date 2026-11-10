@@ -17,9 +17,12 @@ import { useAdvisorStore } from "../model/store";
 export function AdvisorLoginDialog() {
   const open = useAdvisorStore((state) => state.loginOpen);
   const pendingQuestion = useAdvisorStore((state) => state.pendingQuestion);
+  const loginReason = useAdvisorStore((state) => state.loginReason);
+  const supportEmail = useAdvisorStore((state) => state.supportEmail);
   const close = useAdvisorStore((state) => state.closeLogin);
   const resumePending = useAdvisorStore((state) => state.resumePending);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const isSupport = loginReason === "support";
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -44,19 +47,23 @@ export function AdvisorLoginDialog() {
         <div className="flex flex-col gap-5 p-5 sm:p-7">
           <div className="flex items-start justify-between gap-4">
             <h2 id="ma-advisor-login-title" className="m-0 text-xl leading-8 font-bold">
-              {advisorCopy.loginTitle}
+              {isSupport ? advisorCopy.supportLoginTitle : advisorCopy.loginTitle}
             </h2>
             <button type="button" onClick={close} aria-label={advisorCopy.close} className="ma-btn ma-btn--bare ma-btn--icon size-11 shrink-0">
               <X aria-hidden="true" className="size-5 fill-none" />
             </button>
           </div>
-          <p className="m-0 leading-7 text-fg-muted">{advisorCopy.loginBody}</p>
+          <p className="m-0 leading-7 text-fg-muted">{isSupport ? advisorCopy.supportLoginBody : advisorCopy.loginBody}</p>
           {pendingQuestion ? (
             <p className="m-0 rounded-photo bg-(--fill-soft) px-3.5 py-2.5 text-sm leading-7">
               «<BidiText text={pendingQuestion} />»
             </p>
           ) : null}
-          <LoginForm next="/" onSignedIn={resumePending} />
+          <LoginForm
+            next="/"
+            onSignedIn={resumePending}
+            initialLoginName={isSupport ? supportEmail : undefined}
+          />
         </div>
       ) : null}
     </dialog>

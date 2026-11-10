@@ -12,10 +12,14 @@ const EXPANDED_KEY = "ma-advisor-expanded";
 /** How long the face smiles after an answer lands. */
 const JOY_MS = 1600;
 
+export type AdvisorTab = "advisor" | "support";
+
 type AdvisorState = {
   pendingAction: "recommend_now" | undefined;
   open: boolean;
   expanded: boolean;
+  /** Which face of the widget is showing: the AI advisor or customer support. */
+  tab: AdvisorTab;
   messages: ChatMessage[];
   /** The backend conversation the next question continues; null starts a new one. */
   conversationId: string | null;
@@ -24,12 +28,20 @@ type AdvisorState = {
   /** A guest's own question, held until they sign in. */
   pendingQuestion: string | null;
   loginOpen: boolean;
+  /** Who opened the sign-in dialog, so it can speak about the right thing. */
+  loginReason: AdvisorTab;
+  /** The guest's email from the support form, pre-filled when they choose to sign in. */
+  supportEmail: string;
   /** The suggested questions; a guest may ask these (they are answered from cache). Not persisted. */
   suggestions: AdvisorSuggestion[];
 
   setOpen: (open: boolean) => void;
+  setTab: (tab: AdvisorTab) => void;
   toggleExpanded: () => void;
   setSuggestions: (suggestions: AdvisorSuggestion[]) => void;
+  setSupportEmail: (email: string) => void;
+  /** Opens sign-in from the customer-support tab, carrying the email they just used. */
+  openSupportLogin: (email: string) => void;
   /** `suggested`: picked from the suggestions list, so a guest may ask it without signing in. */
   ask: (question: string, options?: { suggested?: boolean; analysisAction?: "recommend_now" }) => Promise<void>;
   /** Asks the held question again, in a new conversation; called once the guest has signed in. */
@@ -186,15 +198,20 @@ export const useAdvisorStore = create<AdvisorState>()(
         pendingAction: undefined,
         open: false,
         expanded: false,
+        tab: "advisor",
         messages: [],
         conversationId: null,
         busy: false,
         mood: "idle",
         pendingQuestion: null,
         loginOpen: false,
+        loginReason: "advisor",
+        supportEmail: "",
         suggestions: [],
 
         setOpen: (open) => set(open ? { open, expanded: readExpanded() } : { open }),
+        setTab: (tab) => set({ tab }),
+        setSupportEmail: (supportEmail) => set({ supportEmail }),
         toggleExpanded: () => {
           const expanded = !get().expanded;
           writeExpanded(expanded);
@@ -207,7 +224,7 @@ export const useAdvisorStore = create<AdvisorState>()(
           if (!question || get().busy) return;
           const suggested = !options?.analysisAction && (options?.suggested || get().suggestions.some((item) => sameQuestion(item.question, question)));
           if (!suggested && !(await isSignedIn())) {
-            set({ pendingQuestion: question, pendingAction: options?.analysisAction, loginOpen: true });
+            set({ pendingQuestion: question, pendingAction: options?.analysisAction, loginOpen: true, loginReason: "advisor" });
             return;
           }
           await send(question, options?.analysisAction);
@@ -223,12 +240,23 @@ export const useAdvisorStore = create<AdvisorState>()(
           void send(question, action);
         },
         closeLogin: () => set({ loginOpen: false }),
-        openLogin: () => set({ loginOpen: true }),
+        openLogin: () => set({ loginOpen: true, loginReason: "advisor" }),
+        openSupportLogin: (email) => set({ loginOpen: true, loginReason: "support", supportEmail: email }),
 
         startNewChat: () => {
           controller?.abort();
           controller = null;
-          set({ messages: [], conversationId: null, busy: false, mood: "idle", pendingQuestion: null, pendingAction: undefined, loginOpen: false });
+          set({
+            messages: [],
+            conversationId: null,
+            busy: false,
+            mood: "idle",
+            pendingQuestion: null,
+            pendingAction: undefined,
+            loginOpen: false,
+            loginReason: "advisor",
+            supportEmail: "",
+          });
         },
       };
     },
@@ -237,9 +265,10 @@ export const useAdvisorStore = create<AdvisorState>()(
       version: 1,
       // Per tab and session: the chat follows the visitor around the site, not into tomorrow.
       storage: createJSONStorage(() => sessionStorage),
-      partialize: ({ open, messages, conversationId, pendingQuestion, pendingAction }) => ({
+      partialize: ({ open, tab, messages, conversationId, pendingQuestion, pendingAction }) => ({
         pendingAction,
         open,
+        tab,
         conversationId,
         pendingQuestion,
         // An answer still streaming when the page reloads never finishes; it comes back as failed, ready to retry.

@@ -103,7 +103,7 @@ export function MarketerProfilePage() {
           <div className="sm:col-span-2"><dt className="text-xs text-fg-muted">رابط الإحالة</dt><dd className="m-0 break-all font-mono text-xs"><bdi dir="ltr">{p.link}</bdi></dd></div>
           <div><dt className="text-xs text-fg-muted">عضو منذ</dt><dd className="m-0">{p.joined_at ? formatDate(p.joined_at) : "—"}</dd></div>
         </dl>
-        <p className="m-0 text-xs text-fg-muted">لتغيير البريد أو كود الإحالة تواصل مع فريق ماستري — فهما مرتبطان بروابطك وتتبّعك في Tolt.</p>
+        <p className="m-0 text-xs text-fg-muted">لتغيير البريد أو كود الإحالة تواصل مع فريق ماستري — فهما مرتبطان بروابطك وتتبّع عملائك. البلد مطلوب لربط حساب استلام الأرباح على Stripe.</p>
       </section>
       <ProfileForm key={p.partner_id} profile={profile.data} />
     </div>

@@ -271,6 +271,10 @@
 .blog-theme .blog-main {
   flex: 1;
 }
+/* A native hash jump (reduced motion, or arriving from another page) must clear the fixed header. */
+.blog-theme #subscribe {
+  scroll-margin-top: 92px;
+}
 @media (prefers-reduced-motion: no-preference) {
   .blog-theme {
     scroll-behavior: smooth;

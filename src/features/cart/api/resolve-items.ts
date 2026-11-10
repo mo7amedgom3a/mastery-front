@@ -13,8 +13,10 @@ import { getCatalogIndex } from "@/features/product-detail/api/get-catalog-index
 import { courseCard, packageCard } from "@/features/product-detail/model/mappers";
 import type { RailCardVM } from "@/features/product-detail/model/types";
 import { getInstructorNames } from "@/lib/api/instructor-names";
+import { getLiveDiploma } from "@/lib/api/live-diplomas";
+import { routes } from "@/config/routes";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
-import { toPricing, type PriceRow } from "@/lib/pricing";
+import { toPricing } from "@/lib/pricing";
 import { parseShopKey, type ResolveItemsResponse, type ResolvedItem } from "@/lib/shop/contract";
 
 /** Same freshness as the catalog index the prices come from. */
@@ -82,9 +84,33 @@ export async function resolveItems(keys: readonly string[]): Promise<ResolveItem
     throw new Error("catalog unavailable");
   }
   const instructors = valueOf(instructorsResult, "instructor names") ?? undefined;
+  const liveSlugs = wanted.filter((entry) => entry.kind === "live_diploma").map((entry) => entry.key.slice("live_diploma:".length));
+  const liveDiplomas = new Map(await Promise.all(liveSlugs.map(async (slug) =>
+    [slug, await getLiveDiploma(slug, { cache: "no-store" })] as const,
+  )));
   const items: ResolvedItem[] = [];
   for (const { key, kind, id } of wanted) {
-    if (kind === "consultation") {
+    if (kind === "live_diploma") {
+      const slug = key.slice("live_diploma:".length);
+      const diploma = liveDiplomas.get(slug);
+      if (diploma) {
+        const cohort = [...(diploma.cohorts ?? [])].filter((c) => c.can_enroll)
+          .sort((a, b) => b.cohort_number - a.cohort_number)[0];
+        const amount = Number(diploma.price_usd);
+        items.push({ key, kind, id, slug, title: diploma.title, image: diploma.image_url ?? null,
+          href: routes.liveTraining(slug), tag: "دبلوم مباشر", instructor: null, duration: null,
+          courseCount: null, available: diploma.status === "published", free: amount === 0,
+          priceAmount: Number.isFinite(amount) ? amount : null, originalAmount: null,
+          purchasable: diploma.status === "published" && Boolean(cohort) && amount > 0,
+          cohortId: cohort?.cohort_id ?? null, cohortNumber: cohort?.cohort_number ?? null,
+          cohortStartsAt: cohort?.starts_at ?? null, cohortEndsAt: cohort?.ends_at ?? null,
+          seatsAvailable: cohort?.seats_available ?? 0,
+          cohorts: (diploma.cohorts ?? []).map((c) => ({ cohortId: c.cohort_id, number: c.cohort_number,
+            startsAt: c.starts_at, endsAt: c.ends_at, seatsAvailable: c.seats_available,
+            canEnroll: c.can_enroll })) });
+        continue;
+      }
+    } else if (kind === "consultation") {
       const dto = consultations?.get(String(id));
       if (dto) {
         items.push(toResolved(key, consultationCard(dto), isPublishable(dto), { current: dto.price ?? null, original: null }));

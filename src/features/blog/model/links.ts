@@ -24,3 +24,16 @@ export function blogCategoryHref(slug: string): Route {
 export function blogAnchor(anchor: "categories" | "subscribe" | "about"): Route {
   return `${routes.blog}#${anchor}` as Route;
 }
+
+/**
+ * The header's «اشترك» target: the newsletter box on the current page when it has one (the index and
+ * a post), otherwise the box on the blog index. The author pages and the unsubscribe page have no
+ * `#subscribe` section of their own.
+ */
+export function blogSubscribeHref(pathname: string): Route {
+  const isAuthors = pathname === routes.blogAuthors || pathname.startsWith(`${routes.blogAuthors}/`);
+  const isUnsubscribe = pathname === "/blog/unsubscribe";
+  const hasSubscribeBox =
+    !isAuthors && !isUnsubscribe && (pathname === routes.blog || pathname.startsWith(`${routes.blog}/`));
+  return hasSubscribeBox ? (`${pathname}#subscribe` as Route) : blogAnchor("subscribe");
+}

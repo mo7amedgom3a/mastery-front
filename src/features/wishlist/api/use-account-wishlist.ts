@@ -13,6 +13,13 @@ const PAGE_SIZE = 100;
 
 /** Catalog slugs are `${kind}-${legacyId}`; items saved from another device arrive this way. */
 function toEntry(item: WishlistItemResponse): WishlistEntry | null {
+  if (item.product_type === "live_diploma") {
+    return { key: `live_diploma:${item.slug}`, kind: "live_diploma", id: 1,
+      slug: item.slug, cohortId: item.cohort_id,
+      title: item.title ?? item.slug, href: routes.liveTraining(item.slug), image: item.image ?? null,
+      priceAmount: null, productId: item.product_id, synced: true,
+      addedAt: Date.parse(item.added_at) || Date.now() };
+  }
   const parsed = parseShopKey(item.slug.replace("-", ":"));
   if (!parsed) return null;
   const { kind, id } = parsed;

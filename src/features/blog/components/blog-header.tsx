@@ -1,7 +1,6 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
-import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,18 +8,15 @@ import { useEffect, useState } from "react";
 
 import { routes } from "@/config/routes";
 
-import { blogAnchor } from "../model/links";
+import { blogSubscribeHref } from "../model/links";
 import { ThemeToggle } from "./theme-toggle";
 
 const NAV = [
   { label: "المقالات", href: routes.blog, match: "/blog", exclude: "/blog/authors" },
   { label: "الخبراء", href: routes.blogAuthors, match: "/blog/authors" },
-  { label: "التصنيفات", href: blogAnchor("categories"), match: null },
-  { label: "عن المدونة", href: blogAnchor("about"), match: null },
 ] as const;
 
 function isActive(item: (typeof NAV)[number], pathname: string): boolean {
-  if (!item.match) return false;
   if ("exclude" in item && item.exclude && pathname.startsWith(item.exclude)) return false;
   return pathname.startsWith(item.match);
 }
@@ -28,7 +24,7 @@ function isActive(item: (typeof NAV)[number], pathname: string): boolean {
 /** The blog's own header: a sub-brand of ماستري, not the storefront nav. */
 export function BlogHeader() {
   const pathname = usePathname() ?? routes.blog;
-  const subscribeHref = `${pathname}#subscribe` as Route;
+  const subscribeHref = blogSubscribeHref(pathname);
   const [scrolled, setScrolled] = useState(false);
   // The drawer remembers which page it was opened on, so a navigation closes it without an effect.
   const [openPath, setOpenPath] = useState<string | null>(null);

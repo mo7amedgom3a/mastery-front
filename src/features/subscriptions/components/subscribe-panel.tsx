@@ -10,6 +10,7 @@ import { CheckoutRedirectOverlay } from "@/features/checkout/components/checkout
 
 import type { PlanVM } from "../model/plans";
 import { clampSeats } from "../model/quote";
+import { PlanCoupon, usePlanCoupon } from "./plan-coupon";
 import { useTeamCheckoutStore } from "../model/team-checkout-store";
 import { PreviewNotice, teamRangeLabel } from "./plan-card";
 
@@ -25,6 +26,7 @@ export function SubscribePanel({ plan, preview = false }: { plan: PlanVM; previe
 
 function IndividualSubscribe({ plan, preview }: { plan: PlanVM; preview: boolean }) {
   const checkout = useStartCheckout();
+  const coupon = usePlanCoupon(plan.id);
   return (
     <div className="flex flex-col gap-4">
       {preview ? (
@@ -34,7 +36,7 @@ function IndividualSubscribe({ plan, preview }: { plan: PlanVM; preview: boolean
           variant="primary"
           size="lg"
           block
-          onClick={() => void checkout.start({ mode: "subscription", planId: plan.id })}
+          onClick={() => void checkout.start({ mode: "subscription", planId: plan.id, couponCode: coupon.appliedCode })}
           disabled={checkout.busy}
           className={checkout.busy ? "is-loading" : undefined}
         >
@@ -42,6 +44,8 @@ function IndividualSubscribe({ plan, preview }: { plan: PlanVM; preview: boolean
           {plan.offer ? <span dir="ltr">&nbsp;{plan.price}</span> : null}
         </Button>
       )}
+
+      {preview ? null : <PlanCoupon planId={plan.id} state={coupon} />}
 
       {checkout.error ? (
         <div className="ma-alert ma-alert--warning" role="alert">

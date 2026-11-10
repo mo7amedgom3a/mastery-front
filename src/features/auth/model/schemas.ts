@@ -10,8 +10,6 @@ export const loginSchema = z.object({
 
 export const referralSchema = z.object({
   ref: z.string().max(100).nullish(),
-  tolt_click_id: z.string().max(100).nullish(),
-  tolt_partner_id: z.string().max(100).nullish(),
 });
 
 export const verifySchema = z.object({

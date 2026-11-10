@@ -145,6 +145,19 @@ export function formatDateTime(iso: string): string {
   return dateTimeFormatter.format(new Date(iso));
 }
 
+const dayNumberFormatter = new Intl.DateTimeFormat(LOCALE, { day: "numeric" });
+const monthShortFormatter = new Intl.DateTimeFormat(LOCALE, { month: "short" });
+
+/** The day of the month for a date chip, e.g. "12". */
+export function formatDayNumber(iso: string): string {
+  return dayNumberFormatter.format(new Date(iso));
+}
+
+/** The short month name for a date chip, e.g. "نوفمبر". */
+export function formatMonthShort(iso: string): string {
+  return monthShortFormatter.format(new Date(iso));
+}
+
 const pluralRules = new Intl.PluralRules("ar");
 
 export type ArabicCountForms = {

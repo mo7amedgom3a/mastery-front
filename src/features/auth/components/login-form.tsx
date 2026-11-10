@@ -23,16 +23,18 @@ type LoginFormProps = {
   next: string;
   /** Signed in where the visitor already is (a dialog): called instead of leaving for `next`. */
   onSignedIn?: (customer: AuthCustomer) => void;
+  /** Pre-fills the email step (from a support ticket or an email link). */
+  initialLoginName?: string;
 };
 
 /**
  * Sign-in in two steps, as the API defines it: the email, then the code emailed to it. There is
  * no password step.
  */
-export function LoginForm({ next, onSignedIn }: LoginFormProps) {
+export function LoginForm({ next, onSignedIn, initialLoginName }: LoginFormProps) {
   const id = useId();
   const [pendingLogin, setPendingLogin] = useState<PendingLogin | null>(null);
-  const [loginName, setLoginName] = useState("");
+  const [loginName, setLoginName] = useState(initialLoginName ?? "");
   const [pending, setPending] = useState(false);
   const [fieldError, setFieldError] = useState<string>();
   const [formError, setFormError] = useState<string | null>(null);

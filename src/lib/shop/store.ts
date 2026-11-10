@@ -14,6 +14,9 @@ export type ShopItem = {
   kind: ShopItemKind;
   /** Legacy id; the catalog slug is `${kind}-${id}`. */
   id: number;
+  slug?: string;
+  productId?: string;
+  cohortId?: string | null;
   title: string;
   href: string;
   image: string | null;
@@ -22,6 +25,7 @@ export type ShopItem = {
 };
 
 export type WishlistEntry = ShopItem & {
+  previousCohortId?: string | null;
   /** Catalog product UUID, resolved lazily from the slug when syncing to the account. */
   productId?: string;
   /** True once the account wishlist (`/me/wishlist`) holds this item. */
@@ -31,6 +35,7 @@ export type WishlistEntry = ShopItem & {
 };
 
 export type CartLine = ShopItem & {
+  previousCohortId?: string | null;
   addedAt: number;
   /** Catalog product UUID, resolved from the slug when the line reaches the account cart. */
   productId?: string;
@@ -90,6 +95,9 @@ function toShopItem(item: ShopItem): ShopItem {
     key: item.key,
     kind: item.kind,
     id: item.id,
+    slug: item.slug,
+    productId: item.productId,
+    cohortId: item.cohortId,
     title: item.title,
     href: item.href,
     image: item.image,
@@ -167,7 +175,14 @@ export const useShopStore = create<ShopState>()(
       mergeWishlist: (entries) =>
         set((state) => {
           const added = entries.filter((entry) => !has(state.wishlist, entry.key));
-          return added.length === 0 ? state : { wishlist: [...state.wishlist, ...added] };
+          return { wishlist: [...state.wishlist.map((existing) => {
+            const incoming = entries.find((entry) => entry.key === existing.key);
+            if (!incoming) return existing;
+            return { ...existing, productId: incoming.productId, synced: true,
+              cohortId: incoming.cohortId ?? existing.cohortId,
+              previousCohortId: incoming.cohortId && existing.cohortId && incoming.cohortId !== existing.cohortId
+                ? existing.cohortId : existing.previousCohortId };
+          }), ...added] };
         }),
       markWishlistSynced: (key, productId) =>
         set((state) => ({

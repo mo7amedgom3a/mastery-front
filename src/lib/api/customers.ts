@@ -33,9 +33,9 @@ export type SavedOnboardingAnswers = SuccessResponse<OnboardingAnswersOperation>
 export type AvatarUploadUrlResponse = SuccessResponse<AvatarUploadUrlOperation>;
 export type RecommendationContextResponse = SuccessResponse<RecommendationContextOperation>;
 export type WishlistItemsParams = QueryParams<WishlistItemsOperation>;
-export type WishlistPageResponse = SuccessResponse<WishlistItemsOperation>;
-export type WishlistAddRequest = RequestBody<AddWishlistItemOperation>;
-export type WishlistItemResponse = SuccessResponse<AddWishlistItemOperation>;
+export type WishlistItemResponse = SuccessResponse<AddWishlistItemOperation> & { cohort_id?: string | null };
+export type WishlistPageResponse = Omit<SuccessResponse<WishlistItemsOperation>, "items"> & { items: WishlistItemResponse[] };
+export type WishlistAddRequest = RequestBody<AddWishlistItemOperation> & { cohort_id?: string | null };
 export type RemoveWishlistItemResponse = SuccessResponse<RemoveWishlistItemOperation>;
 
 export type AuthenticatedRequestOptions = Omit<ApiRequestOptions, "credentials">;

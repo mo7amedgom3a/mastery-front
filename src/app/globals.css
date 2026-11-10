@@ -10,6 +10,8 @@
 @import "../styles/expert-videos.css" layer(components);
 /* AI advisor: the animated agent and the floating widget. */
 @import "../styles/advisor.css" layer(components);
+/* Admin-controlled announcement bar above the header (features/announcements). */
+@import "../styles/announcement.css" layer(components);
 
 /* Kit breakpoints (docs/04-layout.md): mobile-first 600 · 900 · 1200. */
 @theme {

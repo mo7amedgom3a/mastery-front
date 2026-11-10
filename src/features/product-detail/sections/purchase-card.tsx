@@ -2,6 +2,7 @@ import { Award, BookOpen, CalendarCheck, Clock, Gift, MonitorSmartphone } from "
 import type { ReactNode } from "react";
 
 import { purchaseActionsFor } from "@/components/shop/card-actions-for";
+import { ActiveCouponChip } from "@/features/announcements/components/active-coupon-chip";
 import { formatCount } from "@/lib/format";
 
 import { kindLabel } from "../content/copy";
@@ -87,6 +88,7 @@ export function PurchaseCard({
           })
         )}
       </div>
+      {!preview && !price.free ? <ActiveCouponChip kind={product.kind} id={product.id} /> : null}
       {share ? <div className="mt-3">{share}</div> : null}
 
       <h2 className="m-0 mt-8 text-sm font-bold lg:short:mt-5">يشمل الاشتراك</h2>

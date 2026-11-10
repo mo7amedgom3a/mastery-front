@@ -1,21 +1,12 @@
 import type { ReactNode } from "react";
 
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
-import { StudentNav } from "@/features/student-dashboard/components/student-nav";
+import { StudentShell } from "@/features/student-dashboard/components/student-shell";
 
-/** Dashboard pages: the site chrome, the student navigation beside (or above) the page. */
+/**
+ * The signed-in student area gets the demo-style app shell — a full-height sidebar and a slim
+ * topbar — instead of the marketing header/footer, so the whole viewport is available to the
+ * dashboard and its pages.
+ */
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <SiteHeader />
-      <main id="main" tabIndex={-1} className="outline-none">
-        <div className="ma-container flex flex-col gap-8 py-8 md:py-10 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-10">
-          <StudentNav />
-          <div className="min-w-0">{children}</div>
-        </div>
-      </main>
-      <SiteFooter />
-    </>
-  );
+  return <StudentShell>{children}</StudentShell>;
 }

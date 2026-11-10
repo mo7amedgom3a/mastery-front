@@ -148,6 +148,7 @@ function mapMember(dto: MemberDto, source: MemberSource, position: number): Mapp
   const { kind, id } = parseMember(dto);
   const base: BundleMemberVM = {
     key: `${kind}:${id ?? dto.slug}`,
+    slug: dto.slug,
     kind,
     position,
     title: cleanText(dto.title) ?? dto.slug,

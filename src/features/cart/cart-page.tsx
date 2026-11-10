@@ -94,7 +94,7 @@ function useCartQuote(hydrated: boolean, signedIn: boolean, cart: CartLine[]): C
     }
   }, [signedIn, couponCode]);
   const accountKeys = useMemo(
-    () => (account.data?.lines ?? []).flatMap((line) => shopKeyFromSlug(line.slug) ?? []),
+    () => (account.data?.lines ?? []).flatMap((line) => shopKeyFromSlug(line.slug, line.product_type) ?? []),
     [account.data],
   );
   const items = useQuery({ ...shopQueries.items(accountKeys), enabled: signedIn && accountKeys.length > 0 });
@@ -107,7 +107,7 @@ function useCartQuote(hydrated: boolean, signedIn: boolean, cart: CartLine[]): C
   }, [account.data]);
 
   const request = useMemo<QuoteRequest>(
-    () => ({ lines: cart.map((line) => ({ key: line.key, addons: line.addons ?? [] })) }),
+    () => ({ lines: cart.map((line) => ({ key: line.key, addons: line.addons ?? [], cohortId: line.cohortId })) }),
     [cart],
   );
   const guest = useQuery({ ...shopQueries.quote(request), enabled: hydrated && !signedIn && cart.length > 0 });

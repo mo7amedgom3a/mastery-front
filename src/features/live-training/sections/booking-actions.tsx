@@ -9,7 +9,8 @@ import { buttonClass } from "@/components/ui/button";
 import { routes } from "@/config/routes";
 import { useStartCheckout } from "@/features/checkout/api/use-start-checkout";
 import { joinWaitlist, leaveWaitlist, liveDiplomaQueries, type Cohort } from "@/lib/api/live-diplomas";
-import { ensureAuthStatus } from "@/lib/shop/use-shop-actions";
+import { addToCart, ensureAuthStatus, saveToWishlist } from "@/lib/shop/use-shop-actions";
+import { useShopStore } from "@/lib/shop/store";
 import { cn } from "@/lib/cn";
 
 import { detailCopy } from "../content/copy";
@@ -80,6 +81,8 @@ function BookingActionsInner({ catalogSlug, priceLabel }: Props) {
   const [joinError, setJoinError] = useState<string | null>(null);
   const [busyWaitlist, setBusyWaitlist] = useState(false);
   const checkout = useStartCheckout();
+  const saved = useShopStore((state) => state.wishlist.some((item) => item.key === `live_diploma:${catalogSlug}`));
+  const carted = useShopStore((state) => state.cart.some((item) => item.key === `live_diploma:${catalogSlug}`));
 
   useEffect(() => {
     let active = true;
@@ -104,6 +107,16 @@ function BookingActionsInner({ catalogSlug, priceLabel }: Props) {
     if (!diploma.data) return;
     checkout.clearError();
     void checkout.start({ mode: "diploma", productId: diploma.data.product_id, cohortId: cohort.cohort_id });
+  };
+
+  const save = (cohort: Cohort | null, cart: boolean) => {
+    if (!diploma.data) return;
+    const item = { key: `live_diploma:${catalogSlug}`, kind: "live_diploma" as const, id: 1,
+      slug: catalogSlug, productId: diploma.data.product_id, cohortId: cohort?.cohort_id ?? null,
+      title: diploma.data.title, image: diploma.data.image_url ?? null,
+      href: routes.liveTraining(catalogSlug), priceAmount: Number(diploma.data.price_usd) };
+    if (cart) addToCart(item);
+    else saveToWishlist(item);
   };
 
   const signIn = () => {
@@ -180,7 +193,7 @@ function BookingActionsInner({ catalogSlug, priceLabel }: Props) {
                   </p>
                   <CohortSeats cohort={cohort} />
                   {cohort.can_enroll ? (
-                    <button
+                    <div className="flex flex-wrap gap-2"><button
                       type="button"
                       onClick={() => reserve(cohort)}
                       disabled={checkout.busy}
@@ -188,6 +201,14 @@ function BookingActionsInner({ catalogSlug, priceLabel }: Props) {
                     >
                       {checkout.busy ? "جارٍ تجهيز الدفع…" : `${detailCopy.cohort.reserve} — ${priceLabel}`}
                     </button>
+                    <button type="button" onClick={() => save(cohort, true)} disabled={carted}
+                      className={buttonClass({ variant: "soft", size: "sm" })}>
+                      {carted ? "في السلة" : "أضف للسلة"}
+                    </button>
+                    <button type="button" onClick={() => save(cohort, false)} disabled={saved}
+                      className={buttonClass({ variant: "soft", size: "sm" })}>
+                      {saved ? "في المفضلة" : "احفظ في المفضلة"}
+                    </button></div>
                   ) : null}
                 </li>
               );
@@ -202,9 +223,13 @@ function BookingActionsInner({ catalogSlug, priceLabel }: Props) {
       )}
 
       {!cohorts.some((cohort) => cohort.can_enroll) ? (
-        <button type="button" onClick={join} disabled={busyWaitlist} className={buttonClass({ variant: "primary", block: true })}>
-          {busyWaitlist ? detailCopy.cohort.joining : detailCopy.cohort.waitlist}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={join} disabled={busyWaitlist} className={buttonClass({ variant: "primary" })}>
+            {busyWaitlist ? detailCopy.cohort.joining : detailCopy.cohort.waitlist}
+          </button>
+          <button type="button" onClick={() => save(null, false)} disabled={saved}
+            className={buttonClass({ variant: "soft" })}>{saved ? "في المفضلة" : "احفظ في المفضلة"}</button>
+        </div>
       ) : null}
 
       {waiting ? (

@@ -17,6 +17,7 @@ const kindColor: Record<ShopItemKind, BrandColor> = {
   diploma: "yellow",
   package: "green",
   consultation: "lilac",
+  live_diploma: "sky",
 };
 
 const ACTION = "ma-btn ma-btn--sm min-h-10 gap-1.5 px-3 text-[13px]";
@@ -40,6 +41,12 @@ export function WishlistCard({ item, inCart, cartHref, onAddToCart, onRemove, si
   if (item.instructor) meta.push({ icon: UserRound, label: item.instructor });
   if (item.duration) meta.push({ icon: Clock, label: item.duration });
   if (item.courseCount) meta.push({ icon: Layers, label: formatCount(item.courseCount, COURSE_FORMS) });
+  if (item.kind === "live_diploma") {
+    if (item.cohortNumber) meta.push({ icon: Layers, label: `الدفعة ${item.cohortNumber}` });
+    if (item.seatsAvailable !== undefined && item.seatsAvailable !== null)
+      meta.push({ icon: UserRound, label: `${item.seatsAvailable} مقعد متاح` });
+    if (item.cohortStartsAt) meta.push({ icon: Clock, label: `${new Date(item.cohortStartsAt).toLocaleDateString("ar")} – ${new Date(item.cohortEndsAt ?? item.cohortStartsAt).toLocaleDateString("ar")}` });
+  }
 
   const href = item.href as Route;
   const price = item.available ? toPricing(item.free ? 0 : item.priceAmount, item.originalAmount) : noPricing;
@@ -53,6 +60,10 @@ export function WishlistCard({ item, inCart, cartHref, onAddToCart, onRemove, si
         احجز موعداً
       </AppLink>
     );
+  } else if (item.kind === "live_diploma" && !item.purchasable) {
+    primary = <AppLink href={href} className={cn(ACTION, "ma-btn--soft")}>
+      لا مقاعد متاحة · قائمة الانتظار
+    </AppLink>;
   } else if (item.free) {
     primary = (
       <AppLink href={href} aria-label={`سجّل مجاناً في «${item.title}»`} className={cn(ACTION, "ma-btn--soft")}>
@@ -103,6 +114,7 @@ export function WishlistCard({ item, inCart, cartHref, onAddToCart, onRemove, si
       actions={
         // Above the card's stretched title link, like every card's footer actions.
         <div className="relative z-10 flex items-center gap-2">
+          {item.cohortChanged && item.cohortNumber ? <span role="status" className="text-xs text-accent">تغيرت الدفعة إلى {item.cohortNumber}</span> : null}
           {primary}
           <button
             type="button"

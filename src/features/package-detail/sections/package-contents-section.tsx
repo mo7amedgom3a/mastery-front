@@ -1,5 +1,6 @@
 import { ArrowLeft, BookOpen, ChevronDown, Clock, UserRound } from "lucide-react";
 import Image from "next/image";
+import type { ReactNode } from "react";
 
 import { AppLink } from "@/components/ui/app-link";
 import { kindLabel } from "@/features/product-detail/content/copy";
@@ -40,7 +41,16 @@ function UnitOutline({ item }: { item: PackageItemVM }) {
   );
 }
 
-function ItemRow({ item }: { item: PackageItemVM }) {
+function ItemRow({
+  item,
+  showPrices = true,
+  action,
+}: {
+  item: PackageItemVM;
+  showPrices?: boolean;
+  /** Extra per-item control (the student's "continue learning"), when the caller has one. */
+  action?: ReactNode;
+}) {
   const meta = [
     item.trainers.length > 0 ? { icon: UserRound, label: item.trainers.map((trainer) => trainer.name).join("، ") } : null,
     item.duration ? { icon: Clock, label: item.duration } : null,
@@ -109,19 +119,22 @@ function ItemRow({ item }: { item: PackageItemVM }) {
           ) : null}
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            {item.href ? (
-              <AppLink
-                href={item.href}
-                className="inline-flex min-h-11 items-center gap-1 text-sm font-bold text-fg no-underline hover:text-accent"
-              >
-                عرض تفاصيل ال{kindLabel[item.kind]}
-                <span className="sr-only">: {item.title}</span>
-                <ArrowLeft aria-hidden="true" className="size-4" />
-              </AppLink>
-            ) : (
-              <span className="text-sm text-fg-muted">متاحة ضمن الباقة فقط</span>
-            )}
-            {item.price.current ? (
+            <div className="flex flex-wrap items-center gap-3">
+              {item.href ? (
+                <AppLink
+                  href={item.href}
+                  className="inline-flex min-h-11 items-center gap-1 text-sm font-bold text-fg no-underline hover:text-accent"
+                >
+                  عرض تفاصيل ال{kindLabel[item.kind]}
+                  <span className="sr-only">: {item.title}</span>
+                  <ArrowLeft aria-hidden="true" className="size-4" />
+                </AppLink>
+              ) : (
+                <span className="text-sm text-fg-muted">متاحة ضمن الباقة فقط</span>
+              )}
+              {action}
+            </div>
+            {showPrices && item.price.current ? (
               <span className="text-sm text-fg-muted">
                 بسعر منفصل{" "}
                 <del dir="ltr" className="font-medium tabular-nums">
@@ -147,10 +160,16 @@ export function PackageContentsSection({
   items,
   title,
   lead,
+  showPrices = true,
+  action,
 }: {
   items: readonly PackageItemVM[];
   title: string;
   lead: string | null;
+  /** False on the student's own page: the prices of the pieces are not an offer there. */
+  showPrices?: boolean;
+  /** Extra per-item control, rendered after the item's own page link. */
+  action?: (item: PackageItemVM) => ReactNode;
 }) {
   if (items.length === 0) {
     return null;
@@ -164,7 +183,7 @@ export function PackageContentsSection({
       <ol className="m-0 mt-8 grid list-none gap-7 p-0">
         {items.map((item) => (
           <li key={item.key}>
-            <ItemRow item={item} />
+            <ItemRow item={item} showPrices={showPrices} action={action?.(item)} />
           </li>
         ))}
       </ol>

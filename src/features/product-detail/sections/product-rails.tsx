@@ -14,6 +14,7 @@ const kindColor: Record<RailCardVM["kind"], BrandColor> = {
   diploma: "yellow",
   package: "green",
   consultation: "lilac",
+  live_diploma: "sky",
 };
 
 export function toCard(card: RailCardVM, tracking?: { surface: string; position: number }) {

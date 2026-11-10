@@ -9,6 +9,10 @@ import { ThemeScript } from "@/components/theme/theme-script";
 import { getSiteUrl, isIndexable } from "@/config/env";
 import { baseOpenGraph, siteConfig } from "@/config/site";
 import { AdvisorWidget } from "@/features/advisor/components/advisor-widget";
+import { getAnnouncements } from "@/features/announcements/api/get-announcements";
+import { AnnouncementsProvider } from "@/features/announcements/components/announcements-context";
+import { CouponLinkTracking } from "@/features/announcements/components/coupon-link-tracking";
+import { dismissScript } from "@/features/announcements/model/bar";
 import { getExploreMenu } from "@/features/navigation/api/get-menu-data";
 import { ExploreMenuProvider } from "@/features/navigation/components/menu-context";
 
@@ -87,7 +91,8 @@ type RootLayoutProps = Readonly<{
 export default async function RootLayout({ children }: RootLayoutProps) {
   // One cached read for the whole app: the header's explore menu uses it from a client context so
   // SiteHeader stays importable from client components (admin previews).
-  const menu = await getExploreMenu();
+  // The announcement bar (above the header) reads its bars the same way.
+  const [menu, announcements] = await Promise.all([getExploreMenu(), getAnnouncements()]);
   return (
     // Dark is the default look; ThemeScript swaps in a saved "light" choice before first paint,
     // hence suppressHydrationWarning on this one attribute.
@@ -100,6 +105,8 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     >
       <head>
         <ThemeScript />
+        {/* Hides announcement bars this visitor dismissed before first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: dismissScript }} />
       </head>
       <body className="ma-page">
         <a href="#main" className="skip-link">
@@ -107,10 +114,13 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         </a>
         <MotionProvider>
           <ExploreMenuProvider menu={menu}>
-            {children}
-            <ShopAuthBridge />
-            <AdvisorWidget />
-            <ReferralTracking />
+            <AnnouncementsProvider bars={announcements}>
+              {children}
+              <ShopAuthBridge />
+              <AdvisorWidget />
+              <ReferralTracking />
+              <CouponLinkTracking />
+            </AnnouncementsProvider>
           </ExploreMenuProvider>
         </MotionProvider>
       </body>

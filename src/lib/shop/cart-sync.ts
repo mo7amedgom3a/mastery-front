@@ -16,7 +16,7 @@ import { useShopStore, type CartLine } from "./store";
 export function mirrorAccountCart(cart: CartResponse, previous: readonly CartLine[]): CartLine[] {
   const known = new Map(previous.map((line) => [line.key, line]));
   return (cart.lines ?? []).flatMap((line, index) => {
-    const key = shopKeyFromSlug(line.slug);
+    const key = shopKeyFromSlug(line.slug, line.product_type);
     const parsed = key ? parseShopKey(key) : null;
     if (!key || !parsed) return [];
     const before = known.get(key);
@@ -26,7 +26,11 @@ export function mirrorAccountCart(cart: CartResponse, previous: readonly CartLin
         kind: parsed.kind,
         id: parsed.id,
         title: line.title ?? before?.title ?? line.slug,
-        href: before?.href ?? shopItemHref(parsed.kind, parsed.id),
+        href: before?.href ?? (parsed.kind === "live_diploma" ? `/live/${line.slug}` : shopItemHref(parsed.kind, parsed.id)),
+        slug: parsed.kind === "live_diploma" ? line.slug : undefined,
+        cohortId: line.cohort_id,
+        previousCohortId: before?.cohortId && line.cohort_id && before.cohortId !== line.cohort_id
+          ? before.cohortId : before?.previousCohortId,
         image: before?.image ?? null,
         priceAmount: fromMinor(line.unit_amount_minor),
         addedAt: before?.addedAt ?? index,
@@ -64,13 +68,13 @@ export function syncAccountCart(): Promise<void> {
     const shop = useShopStore.getState();
     try {
       let cart = await getCart();
-      const onAccount = new Set((cart.lines ?? []).map((line) => shopKeyFromSlug(line.slug)));
+      const onAccount = new Set((cart.lines ?? []).map((line) => shopKeyFromSlug(line.slug, line.product_type)));
       const guestLines = useShopStore.getState().cart.filter((line) => !line.cartItemId && !onAccount.has(line.key));
       const failed: CartLine[] = [];
       // One at a time: the backend replaces a line's quantity, so parallel writes gain nothing.
       for (const line of guestLines) {
         try {
-          cart = await addCartItem(await resolveCatalogProductId(line), 1, undefined, line.addons);
+          cart = await addCartItem(await resolveCatalogProductId(line), 1, undefined, line.addons, line.cohortId);
         } catch (error) {
           if (!expected(error)) console.error("[cart] merge failed", line.key, error);
           failed.push(line);
@@ -96,7 +100,7 @@ export async function pushCartLine(line: CartLine): Promise<void> {
   const shop = useShopStore.getState();
   try {
     const productId = await resolveCatalogProductId(line);
-    const cart = await addCartItem(productId, 1, undefined, line.addons);
+    const cart = await addCartItem(productId, 1, undefined, line.addons, line.cohortId);
     const added = cart.lines?.find((entry) => entry.product_id === productId);
     shop.setCartLineAccount(line.key, productId, added?.cart_item_id);
     shop.bumpAccountCart();
@@ -113,7 +117,7 @@ export async function dropCartLine(line: CartLine): Promise<void> {
     let cartItemId = line.cartItemId;
     if (!cartItemId) {
       const cart = await getCart();
-      cartItemId = cart.lines?.find((entry) => shopKeyFromSlug(entry.slug) === line.key)?.cart_item_id;
+      cartItemId = cart.lines?.find((entry) => shopKeyFromSlug(entry.slug, entry.product_type) === line.key)?.cart_item_id;
     }
     if (cartItemId) await removeCartItem(cartItemId);
   } catch (error) {

@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { ApiError } from "@/lib/api/client";
+import { ApiError, apiRequest } from "@/lib/api/client";
 import { customerRequest } from "@/lib/api/customers";
 import { refreshOnce } from "@/lib/auth/client";
 
@@ -46,9 +46,13 @@ export type SupportAttachment = {
 export type SupportTicketSummary = {
   ticket_id: string;
   ticket_number: string;
-  customer_id: string;
+  customer_id: string | null;
   customer_name: string | null;
   customer_email: string | null;
+  guest_name: string | null;
+  guest_email: string | null;
+  is_guest: boolean;
+  email_verified_at: string | null;
   category_id: string;
   category_code: string;
   category_name_ar: string;
@@ -144,6 +148,30 @@ export type CreateTicketPayload = {
   related_entity_label?: string;
   attachment_ids?: string[];
 };
+
+/** A ticket opened from the public widget, with nothing but an email. */
+export type GuestTicketPayload = {
+  name?: string;
+  email: string;
+  subject: string;
+  category_id: string;
+  description: string;
+};
+
+export type GuestTicketReceipt = {
+  ticket_number: string;
+  status: string;
+  email: string;
+  requires_login: boolean;
+  created_at: string;
+};
+
+export function createGuestSupportTicket(body: GuestTicketPayload): Promise<GuestTicketReceipt> {
+  return apiRequest<GuestTicketReceipt>("POST", "/api/v1/support/public/tickets", {
+    body,
+    sameOrigin: true,
+  });
+}
 
 export const supportKeys = {
   all: ["support"] as const,
