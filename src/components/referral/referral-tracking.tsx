@@ -1,15 +1,12 @@
 "use client";
 
 import { CheckCircle2, Sparkles, X } from "lucide-react";
-import Script from "next/script";
 import { useEffect, useState } from "react";
 
 import { useCheckoutIncentives } from "@/features/checkout/model/incentives-store";
 import { captureReferral, readStoredReferralInfo, resolveReferral, type ResolvedReferral } from "@/lib/referral";
 
-const TOLT_PUBLIC_KEY = process.env.NEXT_PUBLIC_TOLT_PUBLIC_KEY;
-
-/** Keeps the visitor's `?ref=` code, applies the discount coupon, and loads tolt.js. */
+/** Keeps the visitor's `?ref=` code and applies the referral discount coupon. */
 export function ReferralTracking() {
   const [banner, setBanner] = useState<ResolvedReferral | null>(null);
 
@@ -65,10 +62,6 @@ export function ReferralTracking() {
             </button>
           </div>
         </aside>
-      ) : null}
-
-      {TOLT_PUBLIC_KEY ? (
-        <Script src="https://cdn.tolt.io/tolt.js" data-tolt={TOLT_PUBLIC_KEY} strategy="afterInteractive" />
       ) : null}
     </>
   );

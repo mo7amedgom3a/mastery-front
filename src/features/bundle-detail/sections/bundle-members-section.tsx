@@ -1,5 +1,6 @@
 import { ArrowLeft, BookOpen, CalendarClock, ChevronDown, Clock, UserRound } from "lucide-react";
 import Image from "next/image";
+import type { ReactNode } from "react";
 
 import { AppLink } from "@/components/ui/app-link";
 import { formatCount } from "@/lib/format";
@@ -48,7 +49,16 @@ function UnitOutline({ member }: { member: BundleMemberVM }) {
   );
 }
 
-function MemberRow({ member }: { member: BundleMemberVM }) {
+function MemberRow({
+  member,
+  showPrices = true,
+  action,
+}: {
+  member: BundleMemberVM;
+  showPrices?: boolean;
+  /** Extra per-member control (the student's "continue learning"), when the caller has one. */
+  action?: ReactNode;
+}) {
   const meta = [
     member.people.length > 0 ? { icon: UserRound, label: member.people.join("، ") } : null,
     member.duration ? { icon: member.kind === "consultation" ? CalendarClock : Clock, label: member.duration } : null,
@@ -120,19 +130,22 @@ function MemberRow({ member }: { member: BundleMemberVM }) {
           ) : null}
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            {member.href ? (
-              <AppLink
-                href={member.href}
-                className="inline-flex min-h-11 items-center gap-1 text-sm font-bold text-fg no-underline hover:text-accent"
-              >
-                عرض تفاصيل ال{kind}
-                <span className="sr-only">: {member.title}</span>
-                <ArrowLeft aria-hidden="true" className="size-4" />
-              </AppLink>
-            ) : (
-              <span className="text-sm text-fg-muted">متاحة ضمن الحزمة فقط</span>
-            )}
-            {member.price.current ? (
+            <div className="flex flex-wrap items-center gap-3">
+              {member.href ? (
+                <AppLink
+                  href={member.href}
+                  className="inline-flex min-h-11 items-center gap-1 text-sm font-bold text-fg no-underline hover:text-accent"
+                >
+                  عرض تفاصيل ال{kind}
+                  <span className="sr-only">: {member.title}</span>
+                  <ArrowLeft aria-hidden="true" className="size-4" />
+                </AppLink>
+              ) : (
+                <span className="text-sm text-fg-muted">متاحة ضمن الحزمة فقط</span>
+              )}
+              {action}
+            </div>
+            {showPrices && member.price.current ? (
               <span className="text-sm text-fg-muted">
                 بسعر منفصل{" "}
                 <del dir="ltr" className="font-medium tabular-nums">
@@ -153,7 +166,19 @@ function MemberRow({ member }: { member: BundleMemberVM }) {
  * محتوى الحزمة: every member in the bundle's order, grouped by kind, each linking to its own page
  * when it has one, with a native disclosure for a course or diploma outline (no JS).
  */
-export function BundleMembersSection({ groups, lead }: { groups: readonly BundleMemberGroupVM[]; lead: string | null }) {
+export function BundleMembersSection({
+  groups,
+  lead,
+  showPrices = true,
+  action,
+}: {
+  groups: readonly BundleMemberGroupVM[];
+  lead: string | null;
+  /** False on the student's own page: the prices of the pieces are not an offer there. */
+  showPrices?: boolean;
+  /** Extra per-member control, rendered after the member's own page link. */
+  action?: (member: BundleMemberVM) => ReactNode;
+}) {
   if (groups.length === 0) {
     return null;
   }
@@ -172,7 +197,7 @@ export function BundleMembersSection({ groups, lead }: { groups: readonly Bundle
             <ol className="m-0 mt-6 grid list-none gap-7 p-0">
               {group.members.map((member) => (
                 <li key={member.key}>
-                  <MemberRow member={member} />
+                  <MemberRow member={member} showPrices={showPrices} action={action?.(member)} />
                 </li>
               ))}
             </ol>

@@ -13,13 +13,13 @@ import { COMMISSION_STATUS, LoadError, Pager, StatusTag } from "./components/sha
 
 const FILTERS = [
   { value: "", label: "الكل" },
-  { value: "pending", label: "بانتظار الاعتماد" },
+  { value: "pending", label: "في فترة الاسترداد" },
   { value: "approved", label: "معتمدة" },
-  { value: "paid", label: "صُرفت لك" },
-  { value: "refunded", label: "مستردة" },
+  { value: "paid", label: "حُوّلت لك" },
+  { value: "reversed", label: "ملغاة" },
 ] as const;
 
-/** Every commission Tolt calculated for the marketer and where it stands. */
+/** Every commission calculated for the marketer and where it stands. */
 export function MarketerCommissionsPage() {
   const [status, setStatus] = useState("");
   const [offset, setOffset] = useState(0);
@@ -29,7 +29,7 @@ export function MarketerCommissionsPage() {
     <div className="flex flex-col gap-4">
       <div className="ma-alert ma-alert--info m-0 text-sm" role="note">
         <p className="ma-alert__text m-0">
-          تُنشأ العمولة عند كل عملية شراء وتكون «بانتظار الاعتماد» خلال فترة الاسترداد، ثم يعتمدها Tolt تلقائيًا ويحوّلها لك حسب شروط الدفع. الطلب المسترد يلغي عمولته.
+          تُنشأ العمولة عند كل عملية شراء وتبقى في «فترة الاسترداد»، ثم تُعتمد تلقائيًا وتُضاف إلى رصيدك، ويُحوَّل رصيدك عبر Stripe في أول كل شهر. الطلب المسترد يلغي عمولته.
         </p>
       </div>
       <div role="group" aria-label="تصفية حسب الحالة" className="flex flex-wrap gap-2">
@@ -78,7 +78,11 @@ export function MarketerCommissionsPage() {
                   <td className="p-3 text-end font-semibold"><Money amount={fromMinor(commission.amount_minor)} /></td>
                   <td className="p-3 text-end">
                     <StatusTag map={COMMISSION_STATUS} status={commission.status} />
-                    {commission.settled_at ? <span className="block text-[11px] text-fg-muted">في {formatDate(commission.settled_at)}</span> : null}
+                    {commission.settled_at ? (
+                      <span className="block text-[11px] text-fg-muted">في {formatDate(commission.settled_at)}</span>
+                    ) : commission.status === "pending" && commission.payable_at ? (
+                      <span className="block text-[11px] text-fg-muted">تُعتمد في {formatDate(commission.payable_at)}</span>
+                    ) : null}
                   </td>
                 </tr>
               ))}

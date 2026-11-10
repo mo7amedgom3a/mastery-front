@@ -58,19 +58,20 @@ export function quoteVoucher(voucher: QuotedVoucherResponse): QuoteVoucher {
 export function accountQuote(quote: CheckoutQuoteResponse, items: ReadonlyMap<string, ResolvedItem>): Quote {
   const keysByProduct = new Map<string, string>();
   const lines: QuoteLine[] = (quote.lines ?? []).flatMap((line) => {
-    const key = shopKeyFromSlug(line.slug);
+    const key = shopKeyFromSlug(line.slug, line.product_type);
     const parsed = key ? parseShopKey(key) : null;
     if (!key || !parsed) return [];
     keysByProduct.set(line.product_id, key);
     const unitAmount = fromMinor(line.unit_amount_minor);
     const resolved = items.get(key);
-    const item: ResolvedItem = resolved ?? {
+    const cohort = resolved?.cohorts?.find((entry) => entry.cohortId === line.cohort_id);
+    const item: ResolvedItem = resolved ? { ...resolved } : {
       key,
       kind: parsed.kind,
       id: parsed.id,
       title: line.title ?? line.slug,
       image: null,
-      href: shopItemHref(parsed.kind, parsed.id),
+      href: parsed.kind === "live_diploma" ? `/live/${line.slug}` : shopItemHref(parsed.kind, parsed.id),
       tag: null,
       instructor: null,
       duration: null,
@@ -81,6 +82,14 @@ export function accountQuote(quote: CheckoutQuoteResponse, items: ReadonlyMap<st
       originalAmount: null,
       purchasable: true,
     };
+    if (resolved?.kind === "live_diploma") {
+      item.cohortId = line.cohort_id;
+      item.cohortNumber = cohort?.number ?? null;
+      item.cohortStartsAt = cohort?.startsAt ?? null;
+      item.cohortEndsAt = cohort?.endsAt ?? null;
+      item.seatsAvailable = cohort?.seatsAvailable ?? 0;
+      item.purchasable = Boolean(cohort?.canEnroll);
+    }
     return [
       {
         key,

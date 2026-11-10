@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "العمولات" };
 export default function Page() {
   return (
     <section aria-labelledby="marketer-commissions-title">
-      <StudentPageHeader id="marketer-commissions-title" title="العمولات" lead="كل عمولة احتسبها Tolt وحالتها." />
+      <StudentPageHeader id="marketer-commissions-title" title="العمولات" lead="كل عمولة احتُسبت لك وحالتها." />
       <MarketerCommissionsPage />
     </section>
   );

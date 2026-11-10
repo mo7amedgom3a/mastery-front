@@ -15,7 +15,7 @@ const SOURCE: Record<string, string> = {
   link: "رابط الإحالة",
   coupon: "كوبون",
   admin: "إسناد من الفريق",
-  tolt_lead: "Tolt",
+  tolt_lead: "رابطك",
 };
 
 /** Customers who signed up through the marketer, masked (first name and part of the email). */

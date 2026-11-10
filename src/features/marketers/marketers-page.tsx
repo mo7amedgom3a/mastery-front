@@ -6,7 +6,6 @@ import { AppLink } from "@/components/ui/app-link";
 import { buttonClass, ButtonLink } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
-import { getToltPortalUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/cn";
 
@@ -26,7 +25,6 @@ const pad = (index: number) => String(index + 1).padStart(2, "0");
 
 export function MarketersPage({ terms }: { terms: ProgramTerms }) {
   const commission = Math.round(Number(terms.commission_percent) || 20);
-  const portalUrl = getToltPortalUrl();
 
   return (
     <>
@@ -84,7 +82,7 @@ export function MarketersPage({ terms }: { terms: ProgramTerms }) {
                 </div>
                 <div>
                   <span className="text-xs text-fg-muted block">طريقة وشروط الدفع</span>
-                  <span className="text-sm font-bold text-fg">{terms.payout_terms || "PayPal · NET-15"}</span>
+                  <span className="text-sm font-bold text-fg">{terms.payout_terms || "Stripe · شهريًا"}</span>
                 </div>
               </div>
             </div>
@@ -99,15 +97,9 @@ export function MarketersPage({ terms }: { terms: ProgramTerms }) {
               <a href="#how-it-works" className={cn(buttonClass({ variant: "secondary", size: "lg" }))}>
                 كيف يعمل البرنامج؟
               </a>
-              {portalUrl ? (
-                <a href={portalUrl} className={cn(buttonClass({ variant: "soft", size: "lg" }))}>
-                  دخول المسوقين
-                </a>
-              ) : (
-                <AppLink href={routes.loginThen(routes.marketerDashboard)} className={cn(buttonClass({ variant: "soft", size: "lg" }))}>
-                  دخول المسوقين
-                </AppLink>
-              )}
+              <AppLink href={routes.loginThen(routes.marketerDashboard)} className={cn(buttonClass({ variant: "soft", size: "lg" }))}>
+                دخول المسوقين
+              </AppLink>
             </div>
           </div>
         </header>

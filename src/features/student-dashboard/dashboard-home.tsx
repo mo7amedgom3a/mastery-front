@@ -1,31 +1,43 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { BookOpenCheck, Sparkles, UserRoundPen } from "lucide-react";
-import type { Route } from "next";
+import { UserRoundPen } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ViewAllLink } from "@/components/ui/view-all-link";
 import { routes } from "@/config/routes";
 import { isOnboardingSkipped } from "@/features/onboarding/model/skip";
+import { certificateQueries } from "@/lib/api/certificates";
 import { commerceQueries } from "@/lib/api/commerce";
 import { customerQueries } from "@/lib/api/customers";
+import { lmsQueries } from "@/lib/api/lms";
 import { useAuthStore } from "@/lib/auth/store";
+import { formatCount } from "@/lib/format";
 
-import { DashboardSection } from "./components/dashboard-section";
+import { ExamsPanel } from "./components/exams-panel";
+import { InsightsSnapshotPanel } from "./components/insights-snapshot-panel";
 import { InviteFriendCard } from "./components/invite-friend-card";
-import { LearningCard } from "./components/learning-card";
+import { LearningListPanel } from "./components/learning-list-panel";
+import { LearningProgressPanel } from "./components/learning-progress-panel";
+import { LearningStatsPanel } from "./components/learning-stats-panel";
+import { NextConsultationPanel } from "./components/next-consultation-panel";
+import { NotificationsPanel } from "./components/notifications-panel";
 import { RecommendationGrid } from "./components/recommendation-grid";
-import { TypeFilter } from "./components/type-filter";
-import { countByType } from "./model/products";
+import { ResumeLearningHero } from "./components/resume-learning-hero";
+import { averageProgress, learningPrograms } from "./model/learning";
 import { useCatalogArtwork } from "./model/use-artwork";
 
 const noSubscription = () => () => undefined;
 
-/** Cards shown under «كمّل التعلّم»; the rest are on the تعلّمي page. */
-const CONTINUE_LIMIT = 6;
+const LEARNING_FORMS = {
+  one: "برنامج واحد",
+  two: "برنامجان",
+  few: "برامج",
+  many: "برنامجاً",
+};
 
 /**
  * Sends a customer who neither finished nor skipped onboarding to it. Undecided (still loading, or
@@ -80,20 +92,125 @@ function CompleteProfileCard() {
   );
 }
 
-export function DashboardHome() {
+function DashboardOverview({ onboardingCompleted }: { onboardingCompleted: boolean }) {
   const user = useAuthStore((state) => state.user);
-  const gate = useOnboardingGate();
-  const [type, setType] = useState<string | null>(null);
-  // All of them (the API caps at 100), so the type chips count everything, not just the first page.
+  // All of them (the API caps at 100), so the snapshot fallback covers every owned program.
   const owned = useQuery(commerceQueries.ownedProducts({ status: "active", limit: 100 }));
+  const lmsCourses = useQuery(lmsQueries.courses({ page: 1, page_size: 50 }));
+  const certificates = useQuery(certificateQueries.mine());
+
   const allProducts = owned.data?.items ?? [];
-  const counts = countByType(allProducts, (product) => product.product_type);
-  const selected = type && counts.some((count) => count.type === type) ? type : null;
-  const products = (selected ? allProducts.filter((product) => product.product_type === selected) : allProducts).slice(
-    0,
-    CONTINUE_LIMIT,
+  const lmsItems = lmsCourses.data?.items ?? [];
+  const artwork = useCatalogArtwork(allProducts.map((product) => product.slug));
+  const programsResult = learningPrograms(lmsItems, allProducts, artwork);
+  const programs = programsResult.items.toSorted((a, b) =>
+    (b.lastActivity ?? "").localeCompare(a.lastActivity ?? ""),
   );
-  const artwork = useCatalogArtwork(products.map((product) => product.slug));
+  const average = averageProgress(programs);
+
+  // Wait for the live call before showing anything; once it fails, the real /me/products snapshot is
+  // the fallback. No mock data is involved.
+  const learningPending =
+    lmsCourses.isPending ||
+    (owned.isPending && lmsItems.length === 0) ||
+    (lmsCourses.isError && owned.isPending);
+  const learningError = lmsCourses.isError && owned.isError;
+  const resume = learningPending ? null : (programs[0] ?? null);
+
+  const activePrograms = programs.filter((program) => program.status !== "expired").length;
+
+  const validCertificates = certificates.data
+    ? certificates.data.items.filter((certificate) => certificate.status !== "revoked")
+    : null;
+  const certificateCount = validCertificates ? validCertificates.length : null;
+  const cpdHours = validCertificates
+    ? validCertificates.reduce((sum, certificate) => sum + (certificate.cpd ? (certificate.cpd_hours ?? 0) : 0), 0)
+    : null;
+
+  const firstName = user?.full_name?.trim();
+  const displayName = firstName && !firstName.includes("@") ? firstName.split(/\s+/)[0] : null;
+  const hasLearning = programs.length > 0;
+  const ownsNothing = owned.isSuccess && allProducts.length === 0 && !hasLearning;
+  const subtitle = learningPending
+    ? "تابع من حيث توقفت، أو اكتشف شيئاً جديداً."
+    : hasLearning
+      ? `لديك ${formatCount(programs.length, LEARNING_FORMS)} قيد التعلّم، وكل جديد بانتظارك.`
+      : "ابدأ أول برنامج، وستجد تقدّمك هنا.";
+
+  return (
+    <div className="@container flex flex-col gap-6">
+      <header className="flex flex-col gap-1.5">
+        <h1 className="m-0 text-2xl leading-[1.4] font-bold md:text-3xl">
+          {displayName ? (
+            <>
+              أهلاً بعودتك، <bdi>{displayName}</bdi>
+            </>
+          ) : (
+            "أهلاً بعودتك"
+          )}
+        </h1>
+        <p className="m-0 max-w-[70ch] leading-7 text-fg-muted">{subtitle}</p>
+      </header>
+
+      {onboardingCompleted ? null : <CompleteProfileCard />}
+
+      <div className="grid gap-6 @4xl:grid-cols-[minmax(0,1fr)_minmax(280px,380px)]">
+        {learningPending ? (
+          <Skeleton className="h-80 rounded-panel" />
+        ) : (
+          <ResumeLearningHero program={resume} />
+        )}
+
+        <LearningStatsPanel
+          activePrograms={activePrograms}
+          averageProgress={learningPending ? null : average}
+          certificateCount={certificateCount}
+          cpdHours={cpdHours}
+          loading={learningPending || certificates.isPending}
+        />
+
+        <LearningListPanel
+          programs={programs}
+          source={programsResult.source}
+          pending={learningPending}
+          error={learningError}
+          onRetry={() => {
+            void lmsCourses.refetch();
+            void owned.refetch();
+          }}
+        />
+
+        <div className="flex min-w-0 flex-col gap-6">
+          <InsightsSnapshotPanel />
+          <NextConsultationPanel />
+          <NotificationsPanel />
+          <InviteFriendCard />
+        </div>
+
+        <div className="grid gap-6 @2xl:grid-cols-2 @4xl:col-span-2">
+          <ExamsPanel />
+          <LearningProgressPanel />
+        </div>
+
+        <section aria-labelledby="what-next-title" className="@4xl:col-span-2 flex flex-col gap-4">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <div className="flex flex-col gap-1">
+              <h2 id="what-next-title" className="m-0 text-xl leading-8 font-bold">
+                {ownsNothing ? "ابدأ رحلتك من هنا" : "ماذا تتعلّم بعد؟"}
+              </h2>
+              <p className="m-0 text-sm text-fg-muted">مقترحة لك بناءً على أهدافك ونشاطك.</p>
+            </div>
+            <ViewAllLink href={routes.search} label="تصفّح البرامج" />
+          </div>
+          <RecommendationGrid limit={6} compactLoader={!ownsNothing} />
+        </section>
+      </div>
+    </div>
+  );
+}
+
+export function DashboardHome() {
+  const gate = useOnboardingGate();
 
   if (!gate.ready) {
     return (
@@ -106,84 +223,5 @@ export function DashboardHome() {
     );
   }
 
-  const name = user?.full_name?.trim();
-  const named = Boolean(name);
-  const ownsNothing = owned.isSuccess && allProducts.length === 0;
-
-  const continueLearning = (
-    <DashboardSection
-      id="continue-learning-title"
-      icon={BookOpenCheck}
-      title="كمّل التعلّم"
-      subtitle="تابع من حيث توقفت."
-      viewAll={
-        allProducts.length > 0
-          ? {
-              href: selected ? (`${routes.studentAccess}?type=${encodeURIComponent(selected)}` as Route) : routes.studentAccess,
-            }
-          : undefined
-      }
-    >
-      <TypeFilter counts={counts} total={allProducts.length} value={selected} onChange={setType} />
-      {owned.isPending ? (
-        <div role="status" className="grid gap-5 @xl:grid-cols-2 @4xl:grid-cols-3">
-          <span className="sr-only">جارٍ التحميل…</span>
-          <Skeleton className="h-72" />
-          <Skeleton className="h-72" />
-        </div>
-      ) : products.length > 0 ? (
-        <ul className="m-0 grid list-none gap-5 p-0 @xl:grid-cols-2 @4xl:grid-cols-3">
-          {products.map((product, index) => (
-            <li key={product.product_id}>
-              <LearningCard
-                product={product}
-                index={index}
-                image={artwork.get(product.slug)?.image}
-                fallbackTitle={artwork.get(product.slug)?.title}
-                instructor={artwork.get(product.slug)?.instructor}
-              />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="m-0 rounded-panel border border-line p-5 text-fg-muted">تعذّر تحميل برامجك الآن.</p>
-      )}
-    </DashboardSection>
-  );
-
-  const whatNext = (
-    <DashboardSection
-      id="what-next-title"
-      icon={Sparkles}
-      title={ownsNothing ? "ابدأ رحلتك من هنا" : "ماذا تتعلّم بعد؟"}
-      subtitle="مقترحة لك بناءً على أهدافك ونشاطك."
-      viewAll={{ href: routes.search, label: "تصفّح البرامج" }}
-    >
-      <RecommendationGrid limit={ownsNothing ? 6 : 3} compactLoader={!ownsNothing} />
-    </DashboardSection>
-  );
-
-  return (
-    <div className="flex flex-col gap-12">
-      <header className="flex flex-col gap-2">
-        <h1 className="m-0 text-3xl leading-[1.4] font-bold md:text-4xl">
-          {named ? (
-            <>
-              أهلاً بعودتك، <bdi>{name}</bdi>
-            </>
-          ) : (
-            "أهلاً بك"
-          )}
-        </h1>
-        <p className="m-0 leading-7 text-fg-muted">تابع من حيث توقفت، أو اكتشف شيئاً جديداً.</p>
-      </header>
-
-      {gate.completed ? null : <CompleteProfileCard />}
-
-      {/* Nothing bought yet: the suggestions are the whole story. */}
-      {ownsNothing ? null : continueLearning}
-      <InviteFriendCard />
-      {whatNext}
-    </div>
-  );
+  return <DashboardOverview onboardingCompleted={gate.completed} />;
 }

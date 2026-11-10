@@ -20,7 +20,7 @@ const addonCode = z.custom<AddonCode>((value) => (ADDON_CODES as readonly unknow
 export const resolveSchema = z.object({ keys: z.array(shopKey).max(MAX_RESOLVE_KEYS) });
 
 export const quoteSchema = z.object({
-  lines: z.array(z.object({ key: shopKey, addons: z.array(addonCode).max(ADDON_CODES.length) })).max(MAX_CART_LINES),
+  lines: z.array(z.object({ key: shopKey, addons: z.array(addonCode).max(ADDON_CODES.length), cohortId: z.string().uuid().nullish() })).max(MAX_CART_LINES),
   coupon: z.string().max(60).nullish(),
 });
 
@@ -31,9 +31,21 @@ export const quoteSchema = z.object({
 export async function getQuote(request: QuoteRequest): Promise<Quote> {
   const keys = request.lines.map((line) => line.key);
   const [{ items }, offers] = await Promise.all([resolveItems(keys), addonOffers(keys)]);
+  const selected = new Map(items.map((item) => [item.key, item]));
+  for (const line of request.lines) {
+    const item = selected.get(line.key);
+    if (!item || item.kind !== "live_diploma") continue;
+    const saved = item.cohorts?.find((cohort) => cohort.cohortId === line.cohortId);
+    const cohort = saved?.canEnroll ? saved : item.cohorts?.filter((candidate) => candidate.canEnroll &&
+      candidate.number > (saved?.number ?? 0)).sort((a, b) => b.number - a.number)[0];
+    selected.set(line.key, { ...item, cohortId: cohort?.cohortId ?? null,
+      cohortNumber: cohort?.number ?? null, cohortStartsAt: cohort?.startsAt ?? null,
+      cohortEndsAt: cohort?.endsAt ?? null, seatsAvailable: cohort?.seatsAvailable ?? 0,
+      purchasable: Boolean(cohort) });
+  }
   return buildQuote({
     lines: request.lines,
-    items: new Map(items.map((item) => [item.key, item])),
+    items: selected,
     coupon: request.coupon,
     currency: siteConfig.currency,
     offers,

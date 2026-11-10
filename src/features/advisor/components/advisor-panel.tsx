@@ -1,32 +1,35 @@
 "use client";
 
 import { clsx as cn } from "clsx";
-import { Maximize2, Minimize2, RotateCcw, Send, X } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { Headset, Maximize2, Minimize2, RotateCcw, Send, Sparkles, X } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 
 import { BidiText, textDir } from "@/components/content/bidi";
 import { apiFetch } from "@/lib/api/client";
 
 import { advisorCopy } from "../content/copy";
+import { supportCopy } from "../content/support-copy";
 import { ADVISOR_LAUNCHER_ID, ADVISOR_PANEL_ID } from "../model/ids";
-import { useAdvisorStore } from "../model/store";
+import { useAdvisorStore, type AdvisorTab } from "../model/store";
 import type { AdvisorSuggestion } from "../model/types";
 import { AdvisorAgent } from "./advisor-agent";
 import { AdvisorLoginDialog } from "./advisor-login-dialog";
 import { AdvisorMessage } from "./advisor-message";
+import { AdvisorSupport } from "./advisor-support";
 
 const MAX_QUESTION_CHARS = 1000;
 
 /** The chat: greeting, suggested questions, the conversation and the composer. */
 export function AdvisorPanel() {
   const expanded = useAdvisorStore((state) => state.expanded);
+  const tab = useAdvisorStore((state) => state.tab);
   const messages = useAdvisorStore((state) => state.messages);
   const busy = useAdvisorStore((state) => state.busy);
   const mood = useAdvisorStore((state) => state.mood);
   const suggestions = useAdvisorStore((state) => state.suggestions);
   const pendingQuestion = useAdvisorStore((state) => state.pendingQuestion);
   const loginOpen = useAdvisorStore((state) => state.loginOpen);
-  const { setOpen, toggleExpanded, setSuggestions, ask, startNewChat, openLogin } = useAdvisorStore.getState();
+  const { setOpen, setTab, toggleExpanded, setSuggestions, ask, startNewChat, openLogin } = useAdvisorStore.getState();
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -91,15 +94,17 @@ export function AdvisorPanel() {
         <AdvisorAgent mood={mood} className="size-12 shrink-0" />
         <div className="min-w-0 flex-1">
           <h2 id="ma-advisor-title" className="m-0 truncate text-base leading-7 font-bold">
-            {advisorCopy.name}
+            {tab === "advisor" ? advisorCopy.name : supportCopy.title}
           </h2>
           <p className="m-0 truncate text-xs leading-5 text-fg-muted" aria-live="polite">
-            {busy ? advisorCopy.thinking : " "}
+            {tab === "support" ? supportCopy.subtitle : busy ? advisorCopy.thinking : " "}
           </p>
         </div>
-        <button type="button" onClick={startNewChat} aria-label={advisorCopy.newChat} title={advisorCopy.newChat} className="ma-btn ma-btn--bare ma-btn--icon size-11 shrink-0">
-          <RotateCcw aria-hidden="true" className="size-5 fill-none" />
-        </button>
+        {tab === "advisor" ? (
+          <button type="button" onClick={startNewChat} aria-label={advisorCopy.newChat} title={advisorCopy.newChat} className="ma-btn ma-btn--bare ma-btn--icon size-11 shrink-0">
+            <RotateCcw aria-hidden="true" className="size-5 fill-none" />
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={toggleExpanded}
@@ -114,6 +119,23 @@ export function AdvisorPanel() {
         </button>
       </header>
 
+      <div role="tablist" aria-label="أدوات المساعدة" className="flex gap-1 border-b border-line px-2 py-1.5">
+        <AdvisorTabButton tab="advisor" active={tab === "advisor"} onSelect={setTab} icon={<Sparkles aria-hidden="true" className="size-4" />}>
+          {supportCopy.tabAdvisor}
+        </AdvisorTabButton>
+        <AdvisorTabButton tab="support" active={tab === "support"} onSelect={setTab} icon={<Headset aria-hidden="true" className="size-4" />}>
+          {supportCopy.tabSupport}
+        </AdvisorTabButton>
+      </div>
+
+      <div
+        id="ma-advisor-tabpanel"
+        role="tabpanel"
+        aria-labelledby={`ma-advisor-tab-${tab}`}
+        className="flex min-h-0 flex-1 flex-col"
+      >
+      {tab === "advisor" ? (
+        <>
       <div ref={listRef} className="flex flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 py-4" aria-live="polite">
         <AdvisorMessage message={{ id: "greeting", role: "assistant", text: advisorCopy.greeting, status: "done", question: "" }} expanded={expanded} />
 
@@ -172,8 +194,45 @@ export function AdvisorPanel() {
           <Send aria-hidden="true" className="size-5 fill-none rtl:-scale-x-100" />
         </button>
       </form>
+        </>
+      ) : (
+        <AdvisorSupport />
+      )}
+      </div>
 
       <AdvisorLoginDialog />
     </section>
+  );
+}
+
+function AdvisorTabButton({
+  tab,
+  active,
+  onSelect,
+  icon,
+  children,
+}: {
+  tab: AdvisorTab;
+  active: boolean;
+  onSelect: (tab: AdvisorTab) => void;
+  icon: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      id={`ma-advisor-tab-${tab}`}
+      aria-selected={active}
+      aria-controls="ma-advisor-tabpanel"
+      onClick={() => onSelect(tab)}
+      className={cn(
+        "ma-btn ma-btn--bare ma-btn--sm min-h-9 flex-1 justify-center gap-1.5 text-xs",
+        active ? "bg-accent/10 text-accent" : "text-fg-muted",
+      )}
+    >
+      {icon}
+      {children}
+    </button>
   );
 }

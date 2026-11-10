@@ -84,6 +84,7 @@ const commercePaths = {
   orderInvoices: "/api/v1/orders/{order_id}/invoices",
   entitlements: "/api/v1/me/entitlements",
   ownedProducts: "/api/v1/me/products",
+  ownedProduct: "/api/v1/me/products/{slug}",
   extensionOptions: "/api/v1/me/entitlements/{entitlement_id}/extension-options",
   extensionCheckout: "/api/v1/access-extensions/checkout",
 } as const;
@@ -101,6 +102,7 @@ export const commerceKeys = {
   order: (id: string) => [...commerceKeys.all, "order", id] as const,
   entitlements: (params?: EntitlementsParams) => [...commerceKeys.all, "entitlements", params ?? {}] as const,
   ownedProducts: (params?: OwnedProductsParams) => [...commerceKeys.all, "owned-products", params ?? {}] as const,
+  ownedProduct: (slug: string) => [...commerceKeys.all, "owned-product", slug] as const,
   extensionOptions: (entitlementId: string) => [...commerceKeys.all, "extension-options", entitlementId] as const,
 };
 
@@ -117,12 +119,14 @@ export function addCartItem(
   quantity: number,
   options?: AuthenticatedRequestOptions,
   addons?: CartAddonCode[],
+  cohortId?: string | null,
 ): Promise<CartResponse> {
   const body: CartItemRequest = {
     product_id: productId,
     quantity,
     currency_code: CHECKOUT_CURRENCY,
     ...(addons?.length ? { addons } : {}),
+    ...(cohortId ? { cohort_id: cohortId } : {}),
   };
   return customerRequest<CartResponse>("POST", commercePaths.cartItems, {
     ...withAuthCookies(options),
@@ -300,6 +304,14 @@ export function listOwnedProducts(
   });
 }
 
+/** One owned product (the customer's best entitlement for that catalog slug); 404 when not owned. */
+export function getOwnedProduct(slug: string, options?: AuthenticatedRequestOptions): Promise<OwnedProductResponse> {
+  return customerRequest<OwnedProductResponse>("GET", commercePaths.ownedProduct, {
+    ...withAuthCookies(options),
+    path: { slug },
+  });
+}
+
 /** Ways to buy more access time for one entitlement; `eligible: false` options say why in `reason`. */
 export function listExtensionOptions(
   entitlementId: string,
@@ -377,6 +389,13 @@ export const commerceQueries = {
       queryKey: commerceKeys.ownedProducts(params),
       queryFn: ({ signal }) => listOwnedProducts(params, { signal, context }),
       staleTime: 30_000,
+    }),
+  ownedProduct: (slug: string) =>
+    queryOptions({
+      queryKey: commerceKeys.ownedProduct(slug),
+      queryFn: ({ signal }) => getOwnedProduct(slug, { signal }),
+      staleTime: 30_000,
+      retry: false,
     }),
   extensionOptions: (entitlementId: string) =>
     queryOptions({

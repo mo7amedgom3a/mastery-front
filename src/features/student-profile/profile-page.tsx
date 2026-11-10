@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Camera, GraduationCap, Sparkles, UserRound } from "lucide-react";
+import { CalendarDays, Camera, GraduationCap, Sparkles, UserRound } from "lucide-react";
 import { useId, useState, type ChangeEvent, type ReactNode } from "react";
 
 import { UserAvatar } from "@/components/layout/user-avatar";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/cn";
 
 import { LearningProfileCard } from "./components/learning-profile-card";
 import { PersonalInfoForm } from "./components/personal-info-form";
+import { UpcomingPlanPanel } from "./components/upcoming-plan-panel";
 
 function Panel({ id, icon: Icon, title, children }: { id: string; icon: typeof UserRound; title: string; children: ReactNode }) {
   return (
@@ -183,6 +184,9 @@ export function ProfilePage() {
       <ProfileHeader profile={profile} name={name} percent={completeness(profile, onboarded)} />
       <Panel id="personal-info-title" icon={UserRound} title="بياناتك الشخصية">
         <PersonalInfoForm key={profile.customer_id} profile={profile} />
+      </Panel>
+      <Panel id="upcoming-plan-title" icon={CalendarDays} title="خطتك هذا الأسبوع">
+        <UpcomingPlanPanel />
       </Panel>
       <Panel id="learning-profile-title" icon={GraduationCap} title="ملفك التعليمي">
         {answers.isPending || options.isPending ? (

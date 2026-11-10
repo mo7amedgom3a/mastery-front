@@ -44,6 +44,8 @@ export type CheckoutTarget =
       leadId?: string | null;
       /** Where "back" on the Stripe page returns (defaults to this page). */
       cancelUrl?: string;
+      /** A coupon the quote confirmed for this plan (first period, or longer per the coupon). */
+      couponCode?: string | null;
       payment?: undefined;
     };
 
@@ -274,7 +276,7 @@ export function useStartCheckout() {
       if (target.mode === "subscription") {
         const origin = window.location.origin;
         // Seats are part of what is bought: another seat count is another order, under its own key.
-        fingerprint = `subscription|stripe|${target.planId}|${target.seatCount ?? 1}`;
+        fingerprint = `subscription|stripe|${target.planId}|${target.seatCount ?? 1}|${target.couponCode ?? ""}`;
         const body = {
           plan_id: target.planId,
           seat_count: target.seatCount ?? null,
@@ -285,6 +287,7 @@ export function useStartCheckout() {
           cancel_url: target.cancelUrl ? `${origin}${target.cancelUrl}` : window.location.href,
           // Attributes a customer with no partner yet; not part of what is bought (no fingerprint).
           referral: currentReferral() ?? null,
+          coupon_code: target.couponCode ?? null,
         };
         session = await openSession((key) => createSubscriptionCheckout(body, key), fingerprint);
       } else {

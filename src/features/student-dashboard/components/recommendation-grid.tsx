@@ -75,7 +75,7 @@ export function RecommendationGrid({ limit = 6, compactLoader = false }: { limit
   return (
     // Columns follow the space the grid gets (dashboard column, profile, onboarding), not the window.
     <div className="@container">
-      <ul className="m-0 grid list-none gap-5 p-0 @xl:grid-cols-2 @4xl:grid-cols-3">
+      <ul className="m-0 grid list-none gap-5 p-0 @xl:grid-cols-2 @4xl:grid-cols-3 @5xl:grid-cols-4">
         {items.map((item, index) => (
           <motion.li
             key={item.product_id}

@@ -19,14 +19,13 @@ import {
 import { useState } from "react";
 
 import { Money } from "@/components/shop/money";
-import { ButtonLink, buttonClass } from "@/components/ui/button";
+import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getToltPortalUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { ApiError } from "@/lib/api/client";
 import { joinReferrals, referralKeys, referralQueries, type MyReferralsResponse } from "@/lib/api/referrals";
 import { cn } from "@/lib/cn";
-import { formatDate, fromMinor } from "@/lib/format";
+import { formatDate, formatMoney, fromMinor } from "@/lib/format";
 
 import { StudentCredit } from "./components/student-credit";
 
@@ -133,7 +132,6 @@ function PendingApplication() {
 function Joined({ data }: { data: MyReferralsResponse }) {
   const invites = useQuery(referralQueries.invites());
   const marketer = data.partner_type === "marketer";
-  const portalUrl = getToltPortalUrl();
 
   return (
     <div className="flex flex-col gap-6">
@@ -146,13 +144,12 @@ function Joined({ data }: { data: MyReferralsResponse }) {
             <code className="rounded bg-surface-alt px-2.5 py-1 font-mono text-xs sm:text-sm font-bold border border-line">
               <bdi dir="ltr">{data.referral_code}</bdi>
             </code>
-            <span className="ma-tag ma-tag--green text-xs">متزامن مع Tolt</span>
           </div>
         </div>
         <p className="m-0 text-fg-muted text-sm sm:text-base">
           {marketer
-            ? "شارك رابطك أو كودك مع جمهورك. تُحسب عمولتك عن كل عملية شراء، ويعتمدها Tolt بعد فترة الاسترداد ثم يحوّلها لك."
-            : `شارك رابطك مع أصدقائك. يحصل صديقك على خصم ${Number(data.friend_discount_percent)}% على أول شراء، وتحصل أنت على رصيد يُخصم من مشترياتك القادمة.`}
+            ? "شارك رابطك أو كودك مع جمهورك. تُحسب عمولتك عن كل عملية شراء، وتُعتمد بعد فترة الاسترداد ثم تُحوَّل لك عبر Stripe في أول كل شهر."
+            : `شارك رابطك مع أصدقائك. يحصل صديقك على خصم ${Number(data.friend_discount_percent)}% على أول شراء، وتحصل أنت على ${formatMoney(fromMinor(data.reward_minor))} رصيدًا يُخصم من مشترياتك القادمة فور إتمام صديقك للدفع.`}
         </p>
         {data.link ? <ShareLink link={data.link} /> : null}
       </section>
@@ -210,12 +207,7 @@ function Joined({ data }: { data: MyReferralsResponse }) {
           <p className="m-0 text-sm sm:text-base">
             <strong>لوحة المسوّق</strong> — إحصاءاتك وعملاؤك وعمولاتك وبيانات الدفع في مكان واحد.
           </p>
-          {portalUrl ? (
-            // A full navigation: the Tolt portal is another site.
-            <a href={portalUrl} className={cn(buttonClass({ variant: "primary" }), "text-sm")}>افتح لوحة المسوّق</a>
-          ) : (
-            <ButtonLink href={routes.marketerDashboard} variant="primary" className="text-sm">افتح لوحة المسوّق</ButtonLink>
-          )}
+          <ButtonLink href={routes.marketerDashboard} variant="primary" className="text-sm">افتح لوحة المسوّق</ButtonLink>
         </section>
       ) : (
         <StudentCredit data={data} />

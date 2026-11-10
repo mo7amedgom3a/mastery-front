@@ -8,7 +8,8 @@ import { catalogSlug } from "./product-links";
 const productIds = new Map<string, Promise<string>>();
 
 /** Catalog product UUID for a legacy item, read once per page load. Rejects with the API error (404: not in the catalog). */
-export function resolveCatalogProductId(item: { kind: ShopItemKind; id: number }): Promise<string> {
+export function resolveCatalogProductId(item: { kind: ShopItemKind; id: number; slug?: string; productId?: string }): Promise<string> {
+  if (item.productId) return Promise.resolve(item.productId);
   const slug = catalogSlug(item);
   let pending = productIds.get(slug);
   if (!pending) {

@@ -19,6 +19,7 @@ type ReplaceOperation = "replace_choose_x_course_api_v1_subscriptions_me__subscr
 type CancelOperation = "cancel_my_subscription_api_v1_subscriptions_me__subscription_id__cancel_post";
 type ResumeOperation = "resume_my_subscription_api_v1_subscriptions_me__subscription_id__resume_post";
 type TeamLeadOperation = "save_team_lead_api_v1_subscriptions_team_leads_post";
+type QuoteOperation = "quote_subscription_api_v1_subscriptions_quote_post";
 
 export type SubscriptionPlan = SuccessResponse<PlanOperation>;
 export type SubscriptionPlansParams = QueryParams<PlansOperation>;
@@ -33,6 +34,8 @@ export type ConsultationPerks = SuccessResponse<PerksOperation>;
 export type ChooseXState = SuccessResponse<SelectionsOperation>;
 export type TeamLeadRequest = RequestBody<TeamLeadOperation>;
 export type TeamLead = SuccessResponse<TeamLeadOperation>;
+export type SubscriptionQuoteRequest = RequestBody<QuoteOperation>;
+export type SubscriptionQuote = SuccessResponse<QuoteOperation>;
 type SubscriptionId = PathParams<MySubscriptionOperation>["subscription_id"];
 
 const subscriptionPaths = {
@@ -40,6 +43,7 @@ const subscriptionPaths = {
   plan: "/api/v1/subscriptions/plans/{slug_or_id}",
   features: "/api/v1/subscriptions/features",
   checkout: "/api/v1/subscriptions/checkout",
+  quote: "/api/v1/subscriptions/quote",
   teamLeads: "/api/v1/subscriptions/team-leads",
   mine: "/api/v1/subscriptions/me",
   one: "/api/v1/subscriptions/me/{subscription_id}",
@@ -84,6 +88,11 @@ export function createSubscriptionCheckout(
     headers: { "Idempotency-Key": idempotencyKey },
     body,
   });
+}
+
+/** Prices a plan with a coupon for the signed-in customer; an unusable coupon comes back in `coupon_status`. */
+export function quoteSubscription(body: SubscriptionQuoteRequest, options?: AuthenticatedRequestOptions): Promise<SubscriptionQuote> {
+  return customerRequest("POST", subscriptionPaths.quote, { ...withAuthCookies(options), body });
 }
 
 /** Saves a company's details from step 1 of the team checkout (kept for follow-up even if it never pays). */

@@ -39,6 +39,8 @@ const RULES: readonly Rule[] = [
   { methods: ["POST"], pattern: /^analytics\/events$/, session: false },
   // The public blog newsletter: subscribe, and one-click unsubscribe from an email link.
   { methods: ["POST"], pattern: /^blog\/(subscribe|unsubscribe)$/, session: false },
+  // One-click opt-out from learning-planner reminder emails (token in the link, no session).
+  { methods: ["POST"], pattern: /^planner\/unsubscribe$/, session: false },
   // The signed-in customer's cart, checkout and purchases.
   { methods: ["GET"], pattern: /^cart$/, session: true },
   { methods: ["POST"], pattern: /^cart\/items$/, session: true },
@@ -95,6 +97,8 @@ const RULES: readonly Rule[] = [
   { methods: ["POST"], pattern: /^experts\/me\/bookings\/[A-Za-z0-9-]+\/(approve|reject|cancel)$/, session: true },
   // Support ticket management: categories, related options, tickets, messages, reopen, feedback, download
   { methods: ["GET"], pattern: /^support\/categories$/, session: false },
+  // A guest ticket from the public support widget; no session needed.
+  { methods: ["POST"], pattern: /^support\/public\/tickets$/, session: false },
   { methods: ["GET"], pattern: /^support\/related-options$/, session: true },
   { methods: ["GET", "POST"], pattern: /^support\/tickets$/, session: true },
   { methods: ["GET"], pattern: /^support\/tickets\/[A-Za-z0-9-]+(\/messages)?$/, session: true },
@@ -104,9 +108,10 @@ const RULES: readonly Rule[] = [
 
 /**
  * Never through this door: the LMS hand-off answers with the legacy refresh token, which only
- * `/api/lms/launch` may see (it turns it into an httpOnly cookie).
+ * `/api/lms/launch` may see (it turns it into an httpOnly cookie). The read routes under
+ * `me/lms/summary|courses|quizzes` are token-free and stay allowed by the generic `me` rule.
  */
-const BLOCKED: readonly RegExp[] = [/^me\/lms(\/|$)/];
+const BLOCKED: readonly RegExp[] = [/^me\/lms\/launch$/];
 
 /** Same charset the backend accepts; anything else is dropped rather than forwarded. */
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{1,200}$/;

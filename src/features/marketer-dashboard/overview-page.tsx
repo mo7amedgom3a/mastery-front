@@ -26,6 +26,7 @@ import { cn } from "@/lib/cn";
 import { formatDate, formatMoney, formatNumber, fromMinor } from "@/lib/format";
 
 import { BarChart } from "./components/bar-chart";
+import { ConnectTag } from "./components/connect-status";
 import { COMMISSION_STATUS, dayLabel, LoadError, ReferralLinkCard, StatTile, StatusTag } from "./components/shared";
 
 const RANGES = [
@@ -36,11 +37,12 @@ const RANGES = [
 
 const money = (minor: number) => formatMoney(fromMinor(minor));
 
-/** Dashboard home: KPIs, daily charts, the referral link, Tolt tracking and recent sales. */
+/** Dashboard home: KPIs, daily charts, the referral link, payout status and recent sales. */
 export function MarketerOverviewPage() {
   const [days, setDays] = useState<number>(30);
   const overview = useQuery(marketerQueries.overview(days));
   const recent = useQuery(marketerQueries.sales({ offset: 0, limit: 5 }));
+  const balance = useQuery({ ...marketerQueries.balance(), enabled: overview.data?.stats != null });
 
   if (overview.isPending) {
     return (
@@ -53,7 +55,7 @@ export function MarketerOverviewPage() {
   }
   if (overview.isError) return <LoadError />;
 
-  const { partner, program, stats, tolt, series } = overview.data;
+  const { partner, program, stats, tracking, series } = overview.data;
   const totals = series.reduce(
     (sum, d) => ({
       revenue: sum.revenue + d.revenue_minor,
@@ -74,7 +76,12 @@ export function MarketerOverviewPage() {
         <section aria-labelledby="kpi-title" className="flex flex-col gap-3">
           <h2 id="kpi-title" className="m-0 text-lg font-bold">الأداء منذ انضمامك</h2>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatTile label="نقرات الرابط (Tolt)" value={tolt?.clicks != null ? formatNumber(tolt.clicks) : "—"} icon={MousePointerClick} />
+            <StatTile
+              label="زيارات الرابط"
+              value={tracking ? formatNumber(tracking.clicks) : "—"}
+              note={tracking ? `${formatNumber(tracking.clicks_in_range)} خلال الفترة المختارة` : undefined}
+              icon={MousePointerClick}
+            />
             <StatTile label="عملاء سجّلوا عبرك" value={formatNumber(stats.customers)} note={`${formatNumber(stats.paying_customers)} اشتروا`} icon={Users} />
             <StatTile label="معدل التحويل" value={stats.conversion_rate != null ? `${stats.conversion_rate}%` : "—"} note="من سجّل ثم اشترى" icon={Percent} />
             <StatTile label="الطلبات" value={formatNumber(stats.orders)} icon={ShoppingBag} />
@@ -84,7 +91,7 @@ export function MarketerOverviewPage() {
             <StatTile
               label="عمولات معتمدة"
               value={<Money amount={fromMinor(stats.commission_approved_minor)} />}
-              note="يحوّلها لك Tolt حسب شروط الدفع"
+              note="تُحوَّل لك تلقائيًا في أول كل شهر"
               icon={Wallet}
               tone="green"
             />
@@ -123,30 +130,32 @@ export function MarketerOverviewPage() {
       </section>
 
       <div className="grid gap-3 lg:grid-cols-2">
-        <section aria-labelledby="tolt-title" className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-5">
+        <section aria-labelledby="payout-title" className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-5">
           <div className="flex items-center justify-between gap-2">
-            <h2 id="tolt-title" className="m-0 text-lg font-bold">التتبّع عبر Tolt</h2>
-            <span className={cn("ma-tag text-xs", tolt?.connected ? "ma-tag--green" : "ma-tag--soft")}>
-              {tolt?.connected ? "متصل" : "قيد الربط"}
-            </span>
+            <h2 id="payout-title" className="m-0 text-lg font-bold">أرباحك</h2>
+            {balance.data ? <ConnectTag status={balance.data.connect_status} /> : null}
           </div>
           <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <dt className="text-fg-muted">نقرات مسجّلة</dt>
-            <dd className="m-0 font-bold tabular-nums">{tolt?.clicks != null ? formatNumber(tolt.clicks) : "—"}</dd>
-            <dt className="text-fg-muted">عملاء في Tolt</dt>
-            <dd className="m-0 font-bold tabular-nums">{tolt?.customers != null ? formatNumber(tolt.customers) : "—"}</dd>
-            <dt className="text-fg-muted">مدة التتبع (الكوكيز)</dt>
-            <dd className="m-0 font-bold">{program.cookie_days} يومًا</dd>
+            <dt className="text-fg-muted">رصيد جاهز للتحويل</dt>
+            <dd className="m-0 font-bold tabular-nums">{balance.data ? money(balance.data.available_minor) : "—"}</dd>
+            <dt className="text-fg-muted">في فترة الاسترداد</dt>
+            <dd className="m-0 font-bold tabular-nums">{balance.data ? money(balance.data.pending_minor) : "—"}</dd>
+            <dt className="text-fg-muted">التحويل القادم</dt>
+            <dd className="m-0 font-bold">{balance.data ? formatDate(balance.data.next_payout_date) : "—"}</dd>
             <dt className="text-fg-muted">نسبة العمولة</dt>
             <dd className="m-0 font-bold">{Number(program.commission_percent)}%</dd>
-            <dt className="text-fg-muted">شروط الدفع</dt>
-            <dd className="m-0 font-bold">{program.payout_terms}</dd>
-            <dt className="text-fg-muted">الحد الأدنى للصرف</dt>
+            <dt className="text-fg-muted">مدة التتبع (الكوكيز)</dt>
+            <dd className="m-0 font-bold">{program.cookie_days} يومًا</dd>
+            <dt className="text-fg-muted">الحد الأدنى للتحويل</dt>
             <dd className="m-0 font-bold">{program.minimum_payout_minor > 0 ? money(program.minimum_payout_minor) : "بدون حد أدنى"}</dd>
           </dl>
           <p className="m-0 text-xs text-fg-muted">
-            يحتسب Tolt العمولة لكل عملية شراء عبر رابطك أو كوبونك خلال مدة التتبع، ويعتمدها تلقائيًا بعد انتهاء فترة الاسترداد ثم يحوّلها لك. أضف بيانات الدفع من بوابة Tolt.
+            تُحتسب عمولتك عن كل عملية شراء عبر رابطك أو كوبونك، وتُعتمد تلقائيًا بعد {program.hold_days} يومًا (فترة الاسترداد)، ثم
+            تُحوَّل لك عبر Stripe في أول كل شهر متى بلغ رصيدك الحد الأدنى.
           </p>
+          <ButtonLink href={routes.marketerPayouts} variant={balance.data?.connect_status === "enabled" ? "soft" : "primary"} className="self-start text-sm">
+            {balance.data?.connect_status === "enabled" ? "تفاصيل الأرباح والتحويلات" : "اربط حساب التحويل"}
+          </ButtonLink>
         </section>
 
         <section aria-labelledby="actions-title" className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-5">

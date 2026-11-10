@@ -30,7 +30,7 @@ export type TwoFactorCheckRequest = {
   userId: string;
   code: string;
   /** How the visitor arrived (affiliate / friend link). */
-  referral?: { ref?: string | null; tolt_click_id?: string | null; tolt_partner_id?: string | null } | null;
+  referral?: { ref?: string | null } | null;
 };
 
 export type QALoginRequest = {

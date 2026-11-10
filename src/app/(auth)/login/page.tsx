@@ -13,7 +13,9 @@ export const metadata: Metadata = {
 };
 
 export default async function LoginRoute({ searchParams }: PageProps<"/login">) {
-  const next = safeNextPath((await searchParams).next);
+  const params = await searchParams;
+  const next = safeNextPath(params.next);
+  const email = typeof params.email === "string" ? params.email : undefined;
 
   return (
     <AuthPage
@@ -26,7 +28,7 @@ export default async function LoginRoute({ searchParams }: PageProps<"/login">) 
         href: next === "/" ? routes.register : routes.registerThen(next),
       }}
     >
-      <LoginForm next={next} />
+      <LoginForm next={next} initialLoginName={email} />
     </AuthPage>
   );
 }

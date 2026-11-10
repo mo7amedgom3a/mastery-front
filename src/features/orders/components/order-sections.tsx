@@ -30,7 +30,13 @@ import type {
   OrderTransactionResponse,
 } from "@/lib/api/commerce";
 import { formatCount, formatDate, formatDateTime, fromMinor } from "@/lib/format";
-import { shopItemHref, shopKeyFromSlug } from "@/lib/shop/product-links";
+import {
+  isCompositeProduct,
+  shopItemHref,
+  shopKeyFromSlug,
+  studentConsultationHref,
+  studentProgramHref,
+} from "@/lib/shop/product-links";
 import { parseShopKey, type ResolvedItem } from "@/lib/shop/contract";
 import { kindLabel } from "@/lib/shop/labels";
 import { cn } from "@/lib/cn";
@@ -286,6 +292,12 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
     entitlement.source_type !== "subscription" &&
     ((active && remaining !== null && remaining <= EXTEND_WINDOW_DAYS) || entitlement.status === "expired");
   const TypeIcon = (entitlement.product_type ? typeIcon[entitlement.product_type] : undefined) ?? PlayCircle;
+  // A bundle/package holds other programs: its contents page is more useful than the LMS.
+  const composite = isCompositeProduct(entitlement.product_type);
+  // Only published products have a details page; an unpublished one keeps its old action.
+  const detailsHref = composite && inCatalog ? studentProgramHref(entitlement.product_type, entitlement.product_slug) : null;
+  const consultationHref =
+    entitlement.product_type === "consultation" ? studentConsultationHref(entitlement.product_slug) : null;
 
   return (
     <article className="ma-card relative h-full">
@@ -364,7 +376,32 @@ export function AccessCard({ entitlement, now, title: knownTitle, image, instruc
           </div>
         ) : null}
       </div>
-      {active && LMS_PRODUCT_TYPES.has(entitlement.product_type ?? "") ? (
+      {composite && detailsHref ? (
+        <div className="ma-card__foot flex flex-col gap-2">
+          <AppLink
+            href={detailsHref}
+            aria-label={`عرض التفاصيل: ${title}`}
+            className={cn(buttonClass({ variant: active ? "primary" : "soft", block: true }), "gap-2")}
+          >
+            <Layers aria-hidden="true" className="size-5 fill-none" />
+            عرض التفاصيل
+          </AppLink>
+          {/* Delivery state belongs to each resource inside; the contents page shows it per row. */}
+          {extendable ? <ExtendAccessButton entitlementId={entitlement.entitlement_id} title={title} /> : null}
+        </div>
+      ) : consultationHref ? (
+        <div className="ma-card__foot flex flex-col gap-2">
+          <AppLink
+            href={consultationHref}
+            aria-label={`عرض تفاصيل الاستشارة: ${title}`}
+            className={cn(buttonClass({ variant: active ? "primary" : "soft", block: true }), "gap-2")}
+          >
+            <CalendarCheck aria-hidden="true" className="size-5 fill-none" />
+            عرض تفاصيل الاستشارة
+          </AppLink>
+          {extendable ? <ExtendAccessButton entitlementId={entitlement.entitlement_id} title={title} /> : null}
+        </div>
+      ) : active && LMS_PRODUCT_TYPES.has(entitlement.product_type ?? "") ? (
         <div className="ma-card__foot flex flex-col gap-2">
           <ContinueLearningButton
             entitlementId={entitlement.entitlement_id}

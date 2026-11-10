@@ -8,6 +8,7 @@ import {
   UserRound,
   UserRoundCog,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import type { Route } from "next";
@@ -28,6 +29,7 @@ const groups: readonly NavGroup[] = [
       { href: routes.marketerCustomers, label: "العملاء", icon: Users },
       { href: routes.marketerSales, label: "المبيعات", icon: ReceiptText },
       { href: routes.marketerCommissions, label: "العمولات", icon: Percent },
+      { href: routes.marketerPayouts, label: "الأرباح والتحويلات", icon: Wallet },
       { href: routes.marketerCoupons, label: "الكوبونات", icon: TicketPercent },
     ],
   },

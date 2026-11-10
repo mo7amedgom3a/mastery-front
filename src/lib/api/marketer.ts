@@ -10,6 +10,10 @@ type CommissionsOperation = "marketer_commissions_api_v1_me_affiliate_commission
 type CouponsOperation = "marketer_coupons_api_v1_me_affiliate_coupons_get";
 type ProfileOperation = "marketer_profile_api_v1_me_affiliate_profile_get";
 type SaveProfileOperation = "save_marketer_profile_api_v1_me_affiliate_profile_put";
+type BalanceOperation = "marketer_balance_api_v1_me_affiliate_balance_get";
+type PayoutsOperation = "marketer_payouts_api_v1_me_affiliate_payouts_get";
+type ConnectOperation = "marketer_connect_api_v1_me_affiliate_payouts_connect_post";
+type PayoutAccountOperation = "marketer_payout_account_api_v1_me_affiliate_payouts_account_get";
 
 export type MarketerOverview = SuccessResponse<OverviewOperation>;
 export type MarketerDay = MarketerOverview["series"][number];
@@ -22,6 +26,13 @@ export type MarketerCommission = MarketerCommissionPage["items"][number];
 export type MarketerCoupon = SuccessResponse<CouponsOperation>[number];
 export type MarketerProfile = SuccessResponse<ProfileOperation>;
 export type MarketerProfileInput = RequestBody<SaveProfileOperation>;
+export type MarketerBalance = SuccessResponse<BalanceOperation>;
+export type MarketerConnectStatus = MarketerBalance["connect_status"];
+export type MarketerPayoutPage = SuccessResponse<PayoutsOperation>;
+export type MarketerPayout = MarketerPayoutPage["items"][number];
+export type ConnectLink = SuccessResponse<ConnectOperation>;
+export type MarketerPayoutAccount = SuccessResponse<PayoutAccountOperation>;
+export type MarketerPayoutProvider = MarketerBalance["payout_provider"];
 
 const paths = {
   overview: "/api/v1/me/affiliate/overview",
@@ -30,6 +41,12 @@ const paths = {
   commissions: "/api/v1/me/affiliate/commissions",
   coupons: "/api/v1/me/affiliate/coupons",
   profile: "/api/v1/me/affiliate/profile",
+  balance: "/api/v1/me/affiliate/balance",
+  payouts: "/api/v1/me/affiliate/payouts",
+  connect: "/api/v1/me/affiliate/payouts/connect",
+  connectRefresh: "/api/v1/me/affiliate/payouts/connect/refresh",
+  payoutAccount: "/api/v1/me/affiliate/payouts/account",
+  connectDashboard: "/api/v1/me/affiliate/payouts/connect/dashboard",
 } as const;
 
 export const MARKETER_PAGE_SIZE = 20;
@@ -44,6 +61,8 @@ export const marketerKeys = {
   commissions: (page: Page & { status?: string }) => [...marketerKeys.all, "commissions", page] as const,
   coupons: () => [...marketerKeys.all, "coupons"] as const,
   profile: () => [...marketerKeys.all, "profile"] as const,
+  balance: () => [...marketerKeys.all, "balance"] as const,
+  payouts: (page: Page) => [...marketerKeys.all, "payouts", page] as const,
 };
 
 /** Dashboard home. 403 `marketers_only` for customers who are not marketers. */
@@ -86,6 +105,41 @@ export function saveMarketerProfile(body: MarketerProfileInput, options?: Authen
   return customerRequest<MarketerProfile>("PUT", paths.profile, { ...withAuthCookies(options), body });
 }
 
+/** Pending (refund hold), available (paid on the 1st) and paid totals, plus the Stripe payout state. */
+export function getMarketerBalance(options?: AuthenticatedRequestOptions): Promise<MarketerBalance> {
+  return customerRequest<MarketerBalance>("GET", paths.balance, withAuthCookies(options));
+}
+
+export function getMarketerPayouts(page: Page, options?: AuthenticatedRequestOptions): Promise<MarketerPayoutPage> {
+  return customerRequest<MarketerPayoutPage>("GET", paths.payouts, { ...withAuthCookies(options), query: pageQuery(page) });
+}
+
+/**
+ * A Stripe-hosted onboarding page. The country picks the route: a Connect account (UK) or a bank payout
+ * recipient (Egypt, UAE, ...). 422 `country_required` / `country_unsupported`.
+ */
+export function startMarketerConnect(countryCode?: string, options?: AuthenticatedRequestOptions): Promise<ConnectLink> {
+  return customerRequest<ConnectLink>("POST", paths.connect, {
+    ...withAuthCookies(options),
+    body: countryCode ? { country_code: countryCode } : {},
+  });
+}
+
+/** The payout account as Stripe sees it now: route, readiness, missing details and the masked bank. */
+export function getMarketerPayoutAccount(options?: AuthenticatedRequestOptions): Promise<MarketerPayoutAccount> {
+  return customerRequest<MarketerPayoutAccount>("GET", paths.payoutAccount, withAuthCookies(options));
+}
+
+/** Re-reads the Stripe account after onboarding; returns the fresh balance and status. */
+export function refreshMarketerConnect(options?: AuthenticatedRequestOptions): Promise<MarketerBalance> {
+  return customerRequest<MarketerBalance>("POST", paths.connectRefresh, withAuthCookies(options));
+}
+
+/** A one-time link to manage the payout account (Express dashboard, or the bank-details form). */
+export function openMarketerStripeDashboard(options?: AuthenticatedRequestOptions): Promise<ConnectLink> {
+  return customerRequest<ConnectLink>("POST", paths.connectDashboard, withAuthCookies(options));
+}
+
 export const marketerQueries = {
   overview: (days: number) =>
     queryOptions({
@@ -113,4 +167,11 @@ export const marketerQueries = {
     }),
   coupons: () => queryOptions({ queryKey: marketerKeys.coupons(), queryFn: ({ signal }) => getMarketerCoupons({ signal }) }),
   profile: () => queryOptions({ queryKey: marketerKeys.profile(), queryFn: ({ signal }) => getMarketerProfile({ signal }) }),
+  balance: () => queryOptions({ queryKey: marketerKeys.balance(), queryFn: ({ signal }) => getMarketerBalance({ signal }) }),
+  payouts: (page: Page) =>
+    queryOptions({
+      queryKey: marketerKeys.payouts(page),
+      queryFn: ({ signal }) => getMarketerPayouts(page, { signal }),
+      placeholderData: keepPreviousData,
+    }),
 };

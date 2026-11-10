@@ -7,6 +7,14 @@ export type WishlistItemVM = {
   key: string;
   kind: ShopItemKind;
   id: number;
+  slug?: string;
+  productId?: string;
+  cohortId?: string | null;
+  cohortNumber?: number | null;
+  cohortStartsAt?: string | null;
+  cohortEndsAt?: string | null;
+  seatsAvailable?: number | null;
+  cohortChanged?: boolean;
   title: string;
   image: string | null;
   href: string;
@@ -97,13 +105,28 @@ export function toWishlistItems(entries: readonly WishlistEntry[], resolved: Res
   return entries.map((entry) => {
     const item = live.get(entry.key);
     if (item) {
-      return { ...item, addedAt: entry.addedAt };
+      if (item.kind === "live_diploma") {
+        const chosen = item.cohorts?.find((cohort) => cohort.cohortId === entry.cohortId && cohort.canEnroll)
+          ?? item.cohorts?.filter((cohort) => cohort.canEnroll &&
+            cohort.number > (item.cohorts?.find((old) => old.cohortId === entry.cohortId)?.number ?? 0))
+            .sort((a, b) => b.number - a.number)[0];
+        return { ...item, productId: entry.productId, addedAt: entry.addedAt,
+          cohortChanged: Boolean(entry.previousCohortId || (entry.cohortId && chosen && entry.cohortId !== chosen.cohortId)),
+          cohortId: chosen?.cohortId ?? entry.cohortId,
+          cohortNumber: chosen?.number ?? null, cohortStartsAt: chosen?.startsAt ?? null,
+          cohortEndsAt: chosen?.endsAt ?? null, seatsAvailable: chosen?.seatsAvailable ?? 0,
+          purchasable: item.purchasable && Boolean(chosen) };
+      }
+      return { ...item, productId: entry.productId, addedAt: entry.addedAt };
     }
     const available = !gone.has(entry.key);
     return {
       key: entry.key,
       kind: entry.kind,
       id: entry.id,
+      slug: entry.slug,
+      productId: entry.productId,
+      cohortId: entry.cohortId,
       title: entry.title,
       image: entry.image,
       href: entry.href,

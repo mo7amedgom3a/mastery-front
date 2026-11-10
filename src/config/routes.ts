@@ -139,7 +139,16 @@ export const routes = {
   studentOnboarding: (step?: string) => route(step ? `/students/onboarding/${encodeURIComponent(step)}` : "/students/onboarding"),
   studentOnboardingStart: route("/students/onboarding/start"),
   studentLearning: route("/students/learning"),
+  /** A bundle or package the student can open: every resource inside it, with its details. */
+  studentBundle: (slug: string) => route(`/students/learning/bundle/${encodeURIComponent(slug)}`),
+  studentPackage: (id: number) => route(`/students/learning/package/${id}`),
+  /** Demo-data exams and detailed learning progress (no backend endpoints yet). */
+  studentExams: route("/students/exams"),
+  studentProgress: route("/students/progress"),
+  studentInsights: route("/students/insights"),
   studentProfile: route("/students/profile"),
+  /** The learning calendar; `date` (YYYY-MM-DD) opens on that day, as reminder emails do. */
+  studentPlanner: (date?: string) => route(date ? `/students/planner?date=${encodeURIComponent(date)}` : "/students/planner"),
   studentTransactions: route("/students/transactions"),
   studentInvoices: route("/students/invoices"),
   studentWishlist: route("/students/wishlist"),
@@ -177,6 +186,8 @@ export const routes = {
   marketerSales: route("/marketer/sales"),
   marketerCommissions: route("/marketer/commissions"),
   marketerCoupons: route("/marketer/coupons"),
+  /** Balance, the Stripe payout account and payout history. */
+  marketerPayouts: route("/marketer/payouts"),
   marketerProfile: route("/marketer/profile"),
   privacy: route("/privacy"),
   terms: route("/terms"),

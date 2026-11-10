@@ -1,7 +1,7 @@
 /**
  * Affiliate / invite-a-friend attribution in the browser. The first `?ref=` a visitor arrives with
- * is kept (first touch, 30 days) in first-party storage, so it survives ad-blockers that stop
- * tolt.js; tolt.js adds its click and partner ids when it loads. The backend decides what counts.
+ * is kept (first touch, 30 days) in first-party storage and sent with sign-in and checkout.
+ * The backend decides what counts.
  */
 
 const STORAGE_KEY = "ma_ref";
@@ -11,9 +11,8 @@ const MAX_AGE_DAYS = 30;
 const CODE = /^[a-z0-9][a-z0-9_-]{1,99}$/i;
 
 type StoredRef = { ref: string; at: number };
-type ToltData = { click_id?: string | null; partner_id?: string | null } | null | undefined;
 
-export type ReferralPayload = { ref?: string | null; tolt_click_id?: string | null; tolt_partner_id?: string | null };
+export type ReferralPayload = { ref?: string | null };
 
 export type ResolvedReferral = {
   valid: boolean;
@@ -81,11 +80,5 @@ export function captureReferral(): void {
 export function currentReferral(): ReferralPayload | undefined {
   if (typeof window === "undefined") return undefined;
   const stored = readStored();
-  const tolt = (window as unknown as { tolt_data?: ToltData }).tolt_data;
-  if (!stored && !tolt?.partner_id) return undefined;
-  return {
-    ref: stored?.ref ?? null,
-    tolt_click_id: tolt?.click_id ?? null,
-    tolt_partner_id: tolt?.partner_id ?? null,
-  };
+  return stored ? { ref: stored.ref } : undefined;
 }

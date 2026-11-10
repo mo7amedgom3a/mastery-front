@@ -17,7 +17,7 @@ async function resolveProductId(entry: WishlistEntry): Promise<string> {
 export async function pushWishlistEntry(entry: WishlistEntry): Promise<boolean> {
   try {
     const productId = await resolveProductId(entry);
-    await addWishlistItem({ product_id: productId });
+    await addWishlistItem({ product_id: productId, ...(entry.cohortId ? { cohort_id: entry.cohortId } : {}) });
     useShopStore.getState().markWishlistSynced(entry.key, productId);
     return true;
   } catch (error) {

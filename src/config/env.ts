@@ -101,19 +101,3 @@ export function getAuthCookieSecret(): string {
   }
   return value || DEV_AUTH_COOKIE_SECRET;
 }
-
-/**
- * Tolt's hosted partner portal (e.g. `https://affiliates.emasteryacademy.com`), where marketers see
- * their stats and commissions and get paid. When set, `/marketer` redirects there (see `proxy.ts`);
- * when empty or invalid, the built-in marketer dashboard is used instead.
- */
-export function getToltPortalUrl(): string | null {
-  const value = process.env.NEXT_PUBLIC_TOLT_PORTAL_URL?.trim();
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
-  } catch {
-    return null;
-  }
-}

@@ -18,6 +18,7 @@ const kindColor: Record<ShopItemKind, BrandColor> = {
   diploma: "yellow",
   package: "green",
   consultation: "lilac",
+  live_diploma: "sky",
 };
 
 type UnavailableReason = Quote["unavailable"][number]["reason"];
@@ -85,6 +86,12 @@ export function CartLineRow({
               </AppLink>
             </h3>
             {details ? <p className="m-0 text-sm text-fg-muted">{details}</p> : null}
+            {kind === "live_diploma" ? <div className="text-sm text-fg-muted">
+              {item?.cohortNumber ? <p className="m-0">الدفعة {item.cohortNumber} · {item.seatsAvailable ?? 0} مقعد متاح</p> :
+                <p className="m-0">لا توجد دفعة متاحة حالياً</p>}
+              {item?.cohortStartsAt ? <p className="m-0">{new Date(item.cohortStartsAt).toLocaleDateString("ar")} – {new Date(item.cohortEndsAt ?? item.cohortStartsAt).toLocaleDateString("ar")}</p> : null}
+              {(line.previousCohortId || (line.cohortId && item?.cohortId && line.cohortId !== item.cohortId)) && item?.cohortNumber ? <p role="status" className="m-0 font-medium text-accent">تغيرت الدفعة إلى {item.cohortNumber}. راجع التاريخ والمقاعد قبل الدفع.</p> : null}
+            </div> : null}
           </div>
 
           <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
@@ -120,7 +127,7 @@ export function CartLineRow({
 
       {unavailable ? (
         <p role="note" className="m-0 border-s-4 border-accent ps-3 text-sm leading-6">
-          {unavailableText[unavailable]}
+          {kind === "live_diploma" ? "لا توجد مقاعد متاحة لهذه الدفعة حالياً. لا يمكن الدفع؛ افتح صفحة الدبلوم للانضمام إلى قائمة الانتظار." : unavailableText[unavailable]}
         </p>
       ) : null}
 

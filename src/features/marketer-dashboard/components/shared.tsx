@@ -69,11 +69,22 @@ export function Pager({
 }
 
 export const COMMISSION_STATUS: Record<string, { label: string; tone: string }> = {
-  pending: { label: "بانتظار الاعتماد", tone: "ma-tag--sky" },
+  pending: { label: "بانتظار انتهاء فترة الاسترداد", tone: "ma-tag--sky" },
   approved: { label: "معتمدة — في رصيدك", tone: "ma-tag--green" },
-  paid: { label: "صُرفت لك", tone: "ma-tag--green" },
+  paid: { label: "حُوّلت لك", tone: "ma-tag--green" },
+  reversed: { label: "أُلغيت بسبب استرداد", tone: "ma-tag--soft" },
   rejected: { label: "مرفوضة", tone: "ma-tag--soft" },
   refunded: { label: "مستردة", tone: "ma-tag--soft" },
+};
+
+export const PAYOUT_STATUS: Record<string, { label: string; tone: string }> = {
+  processing: { label: "قيد التحويل", tone: "ma-tag--sky" },
+  sent: { label: "أُرسلت إلى بنكك", tone: "ma-tag--sky" },
+  pending_confirmation: { label: "قيد المراجعة", tone: "ma-tag--sky" },
+  paid: { label: "حُوّلت", tone: "ma-tag--green" },
+  failed: { label: "تعذّر التحويل — ستُعاد المحاولة", tone: "ma-tag--soft" },
+  returned: { label: "أعادها البنك — ستُعاد المحاولة", tone: "ma-tag--soft" },
+  cancelled: { label: "أُلغيت — ستُعاد المحاولة", tone: "ma-tag--soft" },
 };
 
 export const SALE_STATUS: Record<string, { label: string; tone: string }> = {

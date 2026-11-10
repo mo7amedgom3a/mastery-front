@@ -62,7 +62,9 @@ export function BlogShell({ children }: { children: ReactNode }) {
       paused: (value: boolean) => void;
     };
 
-    // Same-page anchor clicks animate instead of jumping.
+    // Same-page anchor clicks animate instead of jumping. Capture phase is deliberate: Next's
+    // <Link> handler (bubble, on the React root) skips navigation when the click is already
+    // default-prevented, so intercepting first is what stops the router from swallowing the hash.
     const onClick = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
         return;
@@ -86,9 +88,9 @@ export function BlogShell({ children }: { children: ReactNode }) {
       window.history.pushState(null, "", url.hash);
     };
 
-    document.addEventListener("click", onClick);
+    document.addEventListener("click", onClick, true);
     return () => {
-      document.removeEventListener("click", onClick);
+      document.removeEventListener("click", onClick, true);
       smoother.kill();
     };
   }, []);

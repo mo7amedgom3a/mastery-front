@@ -1,0 +1,214 @@
+/*
+ * Announcement bar above the site header (features/announcements). Colours come from the admin as
+ * custom properties (--ann-bg, --ann-fg, --ann-accent, --ann-badge-bg); spacing and type use kit tokens.
+ *
+ * DELIBERATE KIT EXCEPTION (product decision, Nov 2026): marketing picks solid or gradient backgrounds,
+ * optionally animated, for this bar. Like the subscriptions spotlight, it is a scoped exception to the
+ * kit's no-gradients rule; the animation stops under reduced motion (global rule in globals.css).
+ */
+
+.ma-announce {
+  --ann-bg: var(--accent);
+  --ann-fg: #fff;
+  --ann-accent: #ffe14d;
+  --ann-badge-bg: rgb(0 0 0 / 0.25);
+  --ann-h: 44px;
+  position: relative;
+  z-index: 51;
+  background: var(--ann-bg);
+  color: var(--ann-fg);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  transition: background 0.4s ease;
+}
+.ma-announce[data-height="compact"] {
+  --ann-h: 36px;
+  font-size: 0.8125rem;
+}
+.ma-announce--animated {
+  background-size: 220% 220%;
+  animation: ma-announce-shift 9s ease-in-out infinite alternate;
+}
+@keyframes ma-announce-shift {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+
+.ma-announce__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--ann-h);
+  padding-block: var(--space-1);
+}
+
+.ma-announce__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  row-gap: var(--space-1);
+  min-height: calc(var(--ann-h) - var(--space-2));
+  text-align: center;
+}
+.ma-announce__icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.18);
+  flex-shrink: 0;
+}
+.ma-announce__badge {
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  background: var(--ann-badge-bg);
+  color: var(--ann-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ma-announce__text {
+  margin: 0;
+  font-weight: 500;
+}
+.ma-announce__highlight {
+  color: var(--ann-accent);
+  font-weight: 700;
+}
+.ma-announce__countdown {
+  font-family: var(--nf-raleway), sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  padding: 2px var(--space-2);
+  border-radius: 6px;
+  background: rgb(0 0 0 / 0.22);
+  white-space: nowrap;
+}
+.ma-announce__countdown:empty {
+  display: none;
+}
+
+.ma-announce__coupon,
+.ma-announce__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 30px;
+  padding: 2px 4px 2px var(--space-3);
+  border-radius: 999px;
+  border: 1px dashed color-mix(in srgb, var(--ann-fg) 60%, transparent);
+  background: rgb(255 255 255 / 0.12);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.ma-announce__cta {
+  border-style: solid;
+  padding-inline: var(--space-3);
+  background: var(--ann-fg);
+  color: color-mix(in srgb, var(--ann-badge-bg) 85%, #000);
+}
+.ma-announce__coupon:hover,
+.ma-announce__cta:hover {
+  transform: translateY(-1px);
+}
+.ma-announce__coupon:hover {
+  background: rgb(255 255 255 / 0.22);
+}
+.ma-announce__coupon:focus-visible,
+.ma-announce__cta:focus-visible,
+.ma-announce__nav:focus-visible,
+.ma-announce__close:focus-visible {
+  outline: 2px solid var(--ann-fg);
+  outline-offset: 2px;
+}
+.ma-announce__code {
+  font-family: var(--nf-raleway), sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.ma-announce__coupon-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  background: var(--ann-fg);
+  color: color-mix(in srgb, var(--ann-badge-bg) 85%, #000);
+  font-size: 0.75rem;
+}
+.ma-announce__cta .ma-announce__code {
+  padding-inline-end: var(--space-2);
+  border-inline-end: 1px solid currentColor;
+}
+
+.ma-announce__rotator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  flex: 1;
+  justify-content: center;
+}
+.ma-announce__viewport {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.ma-announce__nav,
+.ma-announce__close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.85;
+}
+.ma-announce__nav:hover,
+.ma-announce__close:hover {
+  opacity: 1;
+  background: rgb(255 255 255 / 0.18);
+}
+.ma-announce__close {
+  margin-inline-start: auto;
+}
+
+.ma-announce__inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex: 1;
+}
+.ma-announce__inline > li + li {
+  padding-inline-start: var(--space-6);
+  border-inline-start: 1px solid color-mix(in srgb, var(--ann-fg) 35%, transparent);
+}
+
+.ma-announce__marquee {
+  flex: 1;
+  min-width: 0;
+  --marquee-gap: var(--space-12);
+}
+
+@media (max-width: 599px) {
+  .ma-announce { font-size: 0.8125rem; }
+  .ma-announce__icon, .ma-announce__badge { display: none; }
+  .ma-announce__inner { padding-inline: var(--space-2); }
+}
