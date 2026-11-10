@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { parseExpertSlug } from "@/config/routes";
-import { baseOpenGraph, siteConfig } from "@/config/site";
+import { baseOpenGraph, baseTwitter, siteConfig } from "@/config/site";
 
 import { expertFacts } from "../model/facts";
 import type { ExpertDetailData } from "../model/types";
@@ -72,8 +72,9 @@ export async function expertMetadata(slug: string): Promise<Metadata> {
       ...(expert.avatar ? { images: [{ url: expert.avatar, alt: expert.name }] } : {}),
     },
     twitter: {
+      ...baseTwitter,
       // Portraits are square or tall: the small card shows them whole.
-      card: "summary",
+      ...(expert.avatar ? { card: "summary" as const } : {}),
       title: expert.name,
       description,
       ...(expert.avatar ? { images: [expert.avatar] } : {}),

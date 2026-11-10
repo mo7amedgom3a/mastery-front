@@ -15,8 +15,8 @@ function ExpertCard({ expert }: { expert: Expert }) {
   return (
     <div className="flex w-40 flex-col overflow-hidden rounded-panel border border-line bg-surface md:w-48">
       <div className={cn("relative aspect-[600/811] overflow-hidden", brandBg[expert.color])}>
-        {/* Decorative and dimmed: low quality is invisible, lazy is fine below the fold. */}
-        <Image src={expert.image} alt="" fill sizes="192px" quality={60} className="object-cover" />
+        {/* Decorative and dimmed: the 256 px local file is already the right size, no optimizer round trip. */}
+        <Image src={expert.imageSmall} alt="" fill sizes="192px" unoptimized className="object-cover" />
       </div>
       <div className="flex flex-col gap-1 p-3">
         <span className="truncate text-sm font-bold">{expert.name}</span>

@@ -4,9 +4,11 @@ import Link from "next/link";
 import { RevealObserver } from "./components/reveal";
 import { SubscribeBox } from "./components/subscribe-box";
 import { TagPills } from "./components/tag-pills";
+import { routes } from "@/config/routes";
 import { blogListHref } from "./model/links";
 import { formatArabicNumber } from "./model/mappers";
 import type { BlogCardVM, BlogListData } from "./model/types";
+import { BlogIndexJsonLd } from "./seo/list-json-ld";
 
 function metaLine(post: BlogCardVM): string {
   const reading = `${formatArabicNumber(post.readingMinutes)} دقائق`;
@@ -46,7 +48,7 @@ function FeaturedPost({ post }: { post: BlogCardVM }) {
       <Link href={post.href} className="cover block" aria-label={post.title} tabIndex={-1}>
         {post.cover ? (
           // eslint-disable-next-line @next/next/no-img-element -- blog asset URLs are presigned redirects
-          <img src={post.cover} alt={post.coverAlt} loading="eager" decoding="async" />
+          <img src={post.cover} alt={post.coverAlt} loading="eager" decoding="async" {...{ fetchpriority: "high" }} />
         ) : null}
       </Link>
 
@@ -154,6 +156,17 @@ export function BlogListPage({ data }: { data: BlogListData }) {
             مقالات من خبراء ماستري في التسويق الرقمي والقيادة وريادة الأعمال — بلا ضجيج، وبعمق
             يليق بوقتك.
           </p>
+          <p className="type-body mt-4 max-w-[64ch]" style={{ color: "var(--muted)" }}>
+            يكتب هنا خبراء يمارسون ما يكتبون عنه. تعرّف على{" "}
+            <Link href={routes.blogAuthors} className="underline underline-offset-4">
+              كتّاب المدونة
+            </Link>{" "}
+            ومسيرتهم، أو تابع{" "}
+            <Link href={routes.live} className="underline underline-offset-4">
+              دورات البث المباشر
+            </Link>{" "}
+            للقاء الخبراء مباشرةً.
+          </p>
         </section>
 
         <section className="wrap" id="categories" aria-labelledby="blog-categories-title">
@@ -204,6 +217,7 @@ export function BlogListPage({ data }: { data: BlogListData }) {
           <SubscribeBox />
         </section>
       </main>
+      <BlogIndexJsonLd posts={data.posts} />
     </>
   );
 }

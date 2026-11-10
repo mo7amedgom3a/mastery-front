@@ -1,4 +1,4 @@
-import Image from "next/image";
+import type { CSSProperties } from "react";
 
 import { VerticalMarqueeGrid } from "@/components/motion/vertical-marquee-grid";
 import { brandBg } from "@/components/ui/brand-colors";
@@ -21,14 +21,14 @@ function buildColumns(items: readonly Expert[], count: number): Expert[][] {
 
 const columns = buildColumns(experts, COLUMN_COUNT);
 
-/** Phones show the first two columns; their top portraits are what first paint shows. */
-const PHONE_COLUMNS = 2;
-const isAboveTheFold = (column: number, index: number, duplicate: boolean) =>
-  !duplicate && index === 0 && column < PHONE_COLUMNS;
-
 /**
  * Cinematic hero: headline + CTA pair over an infinite vertical grid of expert portraits.
- * No client JS here — the H1 is the LCP element and paints with the HTML.
+ *
+ * The portraits are a decorative backdrop, not content. They use pre-sized local WebP files (under
+ * 100 KB for the whole line-up) painted by a pseudo-element, and on phones they are capped shorter
+ * than the headline block: the lead paragraph is the page's LCP, not a portrait behind it. The old
+ * implementation downloaded 54 eager 500–800 KB PNGs from the legacy host, which is what made
+ * mobile LCP 5.5 s.
  */
 export function HeroSection() {
   return (
@@ -38,26 +38,15 @@ export function HeroSection() {
           columns={columns}
           getKey={(expert) => expert.id}
           duration={70}
-          className="px-4 md:px-0"
-          renderItem={(expert, column, index, duplicate) => (
-            <div className={cn("relative aspect-[600/811] overflow-hidden rounded-panel", brandBg[expert.color])}>
-              {/* Decorative backdrop: sized to the column (2 on phones, 3 in 48% on desktop), low quality is invisible at this opacity. */}
-              {/* Loaded up front, not lazily: a portrait that first downloads and decodes as it
-                  slides into view pops in and makes the moving column hitch. The first portrait of
-                  each column is on screen at first paint and is the page's LCP element, so it
-                  loads at high priority; the rest wait behind it at low priority. */}
-              <Image
-                src={expert.image}
-                alt=""
-                width={256}
-                height={346}
-                sizes="(min-width: 900px) 16vw, 45vw"
-                quality={60}
-                loading="eager"
-                fetchPriority={isAboveTheFold(column, index, duplicate) ? "high" : "low"}
-                className="size-full object-cover"
-              />
-            </div>
+          className="px-8 md:px-0"
+          renderItem={(expert) => (
+            <div
+              className={cn(
+                "vmarquee__portrait relative aspect-[600/811] max-h-[11rem] overflow-hidden rounded-panel md:max-h-none",
+                brandBg[expert.color],
+              )}
+              style={{ "--portrait": `url("${expert.imageSmall}")` } as CSSProperties}
+            />
           )}
         />
       </div>

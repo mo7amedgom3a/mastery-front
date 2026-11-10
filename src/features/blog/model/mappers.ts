@@ -1,11 +1,13 @@
 import { routes } from "@/config/routes";
+import { sanitizeFaqs } from "@/lib/seo/faq";
 
 import { authorProfileByKey } from "../data/author-profiles";
-import { documentText } from "./blocks";
+import { documentText, plainText, propString } from "./blocks";
 import { blogCategoryHref } from "./links";
 import type {
   BlogAuthor,
   BlogAuthorVM,
+  BlogBlock,
   BlogCardVM,
   BlogCategory,
   BlogCategoryVM,
@@ -102,7 +104,26 @@ export function postVM(post: BlogPostDetail): BlogPostVM {
     document: post.document,
     bodyTags: bodyTags.length > 0 ? bodyTags : card.tags,
     related: (post.related ?? []).map(cardVM),
+    updatedAt: textOf(post.updated_at),
+    faqs: faqsOf(post.document),
   };
+}
+
+/** Q&A blocks (possibly nested) as sanitized FAQ entries for `FAQPage` markup. */
+export function faqsOf(document: BlogDocument): { question: string; answer: string }[] {
+  const found: { question: string; answer: string }[] = [];
+  const walk = (blocks: readonly BlogBlock[]) => {
+    for (const block of blocks) {
+      if (block.type === "faq") {
+        const question = propString(block.props, "question").trim();
+        const answer = plainText(block.content).trim();
+        if (question && answer) found.push({ question, answer });
+      }
+      if (block.children && block.children.length > 0) walk(block.children);
+    }
+  };
+  walk(document.blocks);
+  return sanitizeFaqs(found);
 }
 
 export function listData(list: BlogPostList | null, categories: BlogCategory[] | null, state: { page: number; category: string | null; pageSize: number }): BlogListData {
@@ -208,5 +229,7 @@ export function previewPostVM(base: unknown, document: BlogDocument): BlogPostVM
     document,
     bodyTags: document.meta.tags.filter((tag) => tag.trim() !== "").length > 0 ? document.meta.tags : card.tags,
     related,
+    updatedAt: null,
+    faqs: faqsOf(document),
   };
 }

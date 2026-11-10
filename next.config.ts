@@ -39,6 +39,12 @@ const assetBucketHostnames = (
 // Opt-in while in development: the Vercel image-optimization quota is used up, and past it Vercel
 // stops serving some images. Set NEXT_ENABLE_IMAGE_OPTIMIZATION=true on the production deployment.
 const enableImageOptimization = process.env.NEXT_ENABLE_IMAGE_OPTIMIZATION === "true";
+if (isIndexable() && !enableImageOptimization) {
+  console.warn(
+    "[images] NEXT_ENABLE_IMAGE_OPTIMIZATION is off: remote covers will be served unoptimized. " +
+      "Set it to true in the production build (see amplify.yml).",
+  );
+}
 // Bunny Stream thumbnails for promo-video posters (the library's CDN host, see .env.example).
 const bunnyCdnHostname = process.env.BUNNY_CDN_HOSTNAME?.trim();
 
@@ -123,6 +129,9 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     // 60 for decorative/background imagery (hero portrait grid), 75 is the default everywhere else.
     qualities: [60, 75],
+    // Remote product/cover art rarely changes: cache the optimized variants for a month instead of
+    // re-fetching (and re-encoding) them whenever the upstream `max-age=300` expires.
+    minimumCacheTTL: 2678400,
     // A short ladder keeps srcset attributes (and the optimizer cache) small; cards never exceed ~600px.
     deviceSizes: [640, 828, 1080, 1280, 1920],
     imageSizes: [160, 256, 384],

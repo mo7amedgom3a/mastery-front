@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 import { useAuthStore } from "@/lib/auth/store";
-import { syncFaroIdentity } from "@/lib/observability/faro";
+import { syncFaroIdentity } from "@/lib/observability/faro-bridge";
 import { identifyCustomer } from "@/lib/observability/posthog";
 import { syncAccountCart } from "@/lib/shop/cart-sync";
 import { rehydrateShop, useShopStore } from "@/lib/shop/store";

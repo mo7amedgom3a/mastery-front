@@ -18,6 +18,7 @@ import { FieldGrid } from "./components/field-grid";
 import { HeroStoryVideo } from "./components/hero-story-video";
 import { LogoMarquee } from "./components/logo-marquee";
 import { ServiceCards } from "./components/service-cards";
+import { BusinessJsonLd } from "./seo/business-json-ld";
 import { StatBand } from "./components/stat-band";
 import { StoriesSpotlight } from "./components/stories-spotlight";
 import { businessPageCopy as copy } from "./content/b2b";
@@ -237,6 +238,7 @@ export function BusinessPage({ data, plans }: { data: LandingVM; plans: PlanVM[]
         </B2bMotion>
       </main>
       <SiteFooter />
+      <BusinessJsonLd faqs={copy.faq.items} />
     </>
   );
 }

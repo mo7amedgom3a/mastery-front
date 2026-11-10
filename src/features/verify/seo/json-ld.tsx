@@ -1,6 +1,6 @@
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
-import { siteConfig } from "@/config/site";
+import { organizationRef } from "@/lib/seo/json-ld";
 import type { CertificateVerification } from "@/lib/api/certificates";
 
 /** Escapes `<` so user-controlled strings can never close the script tag. */
@@ -19,7 +19,7 @@ export function CertificateJsonLd({ result }: { result: CertificateVerification 
     credentialCategory: "certificate",
     url: `${siteUrl}${routes.verifyCertificate(result.public_code)}`,
     ...(result.issued_at ? { dateCreated: result.issued_at } : {}),
-    recognizedBy: { "@type": "EducationalOrganization", name: siteConfig.nameEn, url: siteUrl },
+    recognizedBy: organizationRef(),
     ...(result.recipient_name ? { about: { "@type": "Person", name: result.recipient_name } } : {}),
   };
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serialize(data) }} />;

@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { loadBlogAuthorPage } from "@/features/blog/api/get-blog-author-page";
 import { AuthorProfilePage } from "@/features/blog/author-profile-page";
 import { routes } from "@/config/routes";
-import { baseOpenGraph } from "@/config/site";
+import { baseOpenGraph, baseTwitter } from "@/config/site";
 
 // Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
 // background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: PageProps<"/blog/authors/[slu
       description: profile.tagline,
       images: [{ url: image, alt: profile.portrait.alt }],
     },
-    twitter: { card: "summary_large_image", title, description: profile.tagline },
+    twitter: { ...baseTwitter, title, description: profile.tagline, images: [{ url: image, alt: profile.portrait.alt }] },
   };
 }
 

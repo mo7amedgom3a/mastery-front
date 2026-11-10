@@ -7,5 +7,5 @@ export default defineConfig([
   ...nextTypeScript,
   // eslint-plugin-react's version auto-detection calls an API removed in ESLint 10; pin it instead.
   { settings: { react: { version: "19.2" } } },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "b2b_sales/**"]),
 ]);

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 
 import { routes } from "@/config/routes";
-import { baseOpenGraph, siteConfig } from "@/config/site";
+import { baseOpenGraph, baseTwitter, siteConfig } from "@/config/site";
 import { loadVerification } from "@/features/verify/api/load-verification";
 import { CertificateJsonLd } from "@/features/verify/seo/json-ld";
 import { VerifyPage } from "@/features/verify/verify-page";
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: PageProps<"/verify/[code]">):
     // Only valid certificates are worth indexing, and only if the holder shares them.
     robots: { index: false, follow: true },
     openGraph: { ...baseOpenGraph, url, title, description },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: { ...baseTwitter, title, description },
   };
 }
 

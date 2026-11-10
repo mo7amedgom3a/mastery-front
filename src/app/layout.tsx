@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
+import { IBM_Plex_Sans_Arabic, Raleway } from "next/font/google";
 import type { ReactNode } from "react";
 
+import { SiteJsonLd } from "@/components/seo/site-json-ld";
 import { MotionProvider } from "@/components/motion/motion-provider";
 import { ReferralTracking } from "@/components/referral/referral-tracking";
 import { ShopAuthBridge } from "@/components/shop/shop-auth-bridge";
 import { ThemeScript } from "@/components/theme/theme-script";
 import { getSiteUrl, isIndexable } from "@/config/env";
-import { baseOpenGraph, siteConfig } from "@/config/site";
+import { baseOpenGraph, baseTwitter, siteConfig } from "@/config/site";
 import { AdvisorWidget } from "@/features/advisor/components/advisor-widget";
 import { getAnnouncements } from "@/features/announcements/api/get-announcements";
 import { AnnouncementsProvider } from "@/features/announcements/components/announcements-context";
@@ -18,25 +19,21 @@ import { ExploreMenuProvider } from "@/features/navigation/components/menu-conte
 
 import "./globals.css";
 
-const plexArabic = localFont({
-  src: [
-    { path: "./fonts/IBMPlexSansArabic-Regular.woff2", weight: "400", style: "normal" },
-    { path: "./fonts/IBMPlexSansArabic-Medium.woff2", weight: "500", style: "normal" },
-    { path: "./fonts/IBMPlexSansArabic-SemiBold.woff2", weight: "600", style: "normal" },
-    { path: "./fonts/IBMPlexSansArabic-Bold.woff2", weight: "700", style: "normal" },
-  ],
+// Arabic body face. Google's `arabic` subset is ~34 KB per weight (v15) versus ~72 KB for the
+// self-hosted files, and only the Arabic range is preloaded: four weights used to cost ~288 KB
+// before first paint, which put the hero image behind a font queue on mobile.
+const plexArabic = IBM_Plex_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
   variable: "--nf-plex",
   display: "swap",
   fallback: ["Tahoma", "sans-serif"],
 });
 
 // Latin face is only used for numerals and English fragments; don't block first paint on it.
-const raleway = localFont({
-  src: [
-    { path: "./fonts/Raleway-400.woff2", weight: "400", style: "normal" },
-    { path: "./fonts/Raleway-500.woff2", weight: "500", style: "normal" },
-    { path: "./fonts/Raleway-700.woff2", weight: "700", style: "normal" },
-  ],
+const raleway = Raleway({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
   variable: "--nf-raleway",
   display: "swap",
   preload: false,
@@ -51,6 +48,16 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
+  category: "education",
+  authors: [{ name: siteConfig.name, url: getSiteUrl() }],
+  creator: siteConfig.name,
+  publisher: siteConfig.name,
+  alternates: {
+    types: {
+      "application/rss+xml": "/feed.xml",
+      "text/markdown": "/llms.txt",
+    },
+  },
   // Staging / previews are noindexed (see `isIndexable`); production allows full snippets and previews.
   robots: isIndexable()
     ? {
@@ -73,7 +80,7 @@ export const metadata: Metadata = {
     description: siteConfig.shareDescription,
   },
   twitter: {
-    card: "summary_large_image",
+    ...baseTwitter,
     title: `${siteConfig.name} | ${siteConfig.nameEn}`,
     description: siteConfig.shareDescription,
   },
@@ -115,6 +122,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <MotionProvider>
           <ExploreMenuProvider menu={menu}>
             <AnnouncementsProvider bars={announcements}>
+              <SiteJsonLd />
               {children}
               <ShopAuthBridge />
               <AdvisorWidget />

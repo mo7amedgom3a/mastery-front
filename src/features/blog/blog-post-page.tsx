@@ -10,7 +10,7 @@ import { SubscribeBox } from "./components/subscribe-box";
 import { TagPills } from "./components/tag-pills";
 import { Toc } from "./components/toc";
 import { collectToc } from "./model/blocks";
-import { formatArabicNumber } from "./model/mappers";
+import { formatBlogDate, formatArabicNumber } from "./model/mappers";
 import type { BlogPostVM } from "./model/types";
 import { BlogJsonLd } from "./seo/json-ld";
 
@@ -78,6 +78,12 @@ export function BlogPostPage({ post, preview = false }: { post: BlogPostVM; prev
                   <span className="meta-item">
                     <CalendarDays className="h-4 w-4" aria-hidden="true" />
                     <time dateTime={post.publishedAt ?? undefined}>{post.date}</time>
+                  </span>
+                ) : null}
+                {post.updatedAt && post.updatedAt !== post.publishedAt ? (
+                  <span className="meta-item">
+                    <CalendarDays className="h-4 w-4" aria-hidden="true" />
+                    حُدّث في <time dateTime={post.updatedAt}>{formatBlogDate(post.updatedAt)}</time>
                   </span>
                 ) : null}
                 <span className="meta-item">

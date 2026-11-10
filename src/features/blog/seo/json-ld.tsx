@@ -1,13 +1,9 @@
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
+import { JsonLd, breadcrumbList, faqPage, organizationRef } from "@/lib/seo/json-ld";
 
 import type { BlogPostVM } from "../model/types";
-
-/** Escapes `<` so user-controlled strings can never close the script tag. */
-function serialize(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
-}
 
 function absolute(url: string | null, siteUrl: string): string | null {
   if (!url) return null;
@@ -21,7 +17,7 @@ export function BlogJsonLd({ post }: { post: BlogPostVM }) {
   const url = `${siteUrl}${post.href}`;
   const image = absolute(post.cover, siteUrl);
   const authorUrl = post.author ? `${siteUrl}${post.author.href}` : null;
-  const logo = absolute(siteConfig.logo.url, siteUrl);
+  const dateModified = post.updatedAt ?? post.publishedAt;
 
   const graph: Record<string, unknown>[] = [
     {
@@ -30,7 +26,8 @@ export function BlogJsonLd({ post }: { post: BlogPostVM }) {
       headline: post.title,
       description: post.summary || siteConfig.description,
       ...(image ? { image: [image] } : {}),
-      ...(post.publishedAt ? { datePublished: post.publishedAt, dateModified: post.publishedAt } : {}),
+      ...(post.publishedAt ? { datePublished: post.publishedAt } : {}),
+      ...(dateModified ? { dateModified } : {}),
       inLanguage: "ar",
       ...(post.author
         ? {
@@ -41,31 +38,19 @@ export function BlogJsonLd({ post }: { post: BlogPostVM }) {
               ...(post.author.avatar ? { image: absolute(post.author.avatar, siteUrl) } : {}),
             },
           }
-        : { author: { "@type": "Organization", name: siteConfig.name, url: siteUrl } }),
-      publisher: {
-        "@type": "Organization",
-        name: siteConfig.name,
-        url: siteUrl,
-        ...(logo ? { logo: { "@type": "ImageObject", url: logo } } : {}),
-      },
+        : { author: organizationRef() }),
+      publisher: organizationRef(),
       mainEntityOfPage: { "@type": "WebPage", "@id": url },
       ...(post.bodyTags.length > 0 ? { keywords: post.bodyTags.join(", ") } : {}),
     },
-    {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "الرئيسية", item: `${siteUrl}/` },
-        { "@type": "ListItem", position: 2, name: "المدونة", item: `${siteUrl}${routes.blog}` },
-        { "@type": "ListItem", position: 3, name: post.title, item: url },
-      ],
-    },
+    breadcrumbList([
+      { name: "الرئيسية", item: `${siteUrl}/` },
+      { name: "المدونة", item: `${siteUrl}${routes.blog}` },
+      { name: post.title, item: url },
+    ]),
   ];
 
-  return (
-    <script
-      type="application/ld+json"
-      // Safe: static structure, JSON-serialised and `<`-escaped above.
-      dangerouslySetInnerHTML={{ __html: serialize({ "@context": "https://schema.org", "@graph": graph }) }}
-    />
-  );
+  if (post.faqs.length > 0) graph.push(faqPage(post.faqs));
+
+  return <JsonLd graph={graph} />;
 }

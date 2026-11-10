@@ -25,7 +25,9 @@ import { LandingJsonLd } from "./seo/json-ld";
  * their filter chips work without a round trip; everything else renders on the server.
  */
 export function LandingPage({ data, experts = [] }: { data: LandingData; experts?: readonly ExpertCardVM[] }) {
-  const faqs = data.faqs.length > 0 ? data.faqs : fallbackFaqs;
+  // One or two usable CMS answers make a thin FAQ block; the curated list is better for visitors
+  // and for the FAQPage markup that mirrors it.
+  const faqs = data.faqs.length >= 2 ? data.faqs : fallbackFaqs;
   const instructorCount = data.stats.find((stat) => stat.key === "instructors")?.value ?? null;
 
   return (

@@ -2,6 +2,7 @@ import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
 import type { FaqVM } from "@/features/landing/model/types";
+import { organizationRef } from "@/lib/seo/json-ld";
 
 import type { PackageDetailVM } from "../model/types";
 
@@ -14,7 +15,7 @@ function serialize(data: unknown): string {
 export function PackageJsonLd({ product, faqs }: { product: PackageDetailVM; faqs: readonly FaqVM[] }) {
   const siteUrl = getSiteUrl();
   const url = `${siteUrl}${product.href}`;
-  const provider = { "@type": "EducationalOrganization", name: siteConfig.name, url: siteUrl };
+  const provider = organizationRef();
 
   const graph: Record<string, unknown>[] = [
     {

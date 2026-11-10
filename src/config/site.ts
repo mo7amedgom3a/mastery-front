@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 export const siteConfig = {
   name: "ماستري أكاديمي",
   nameEn: "E-Mastery Academy",
@@ -26,6 +28,18 @@ export const siteConfig = {
     "https://www.linkedin.com/company/emasteryacademy",
     "https://www.youtube.com/c/eMasteryAcademy",
   ] as readonly string[],
+  /** Topics the academy is about; `knowsAbout` on the Organization entity (search + AI answers). */
+  knowsAbout: [
+    "التسويق الرقمي",
+    "التجارة الإلكترونية",
+    "ريادة الأعمال",
+    "الإدارة والقيادة",
+    "الذكاء الاصطناعي",
+    "المالية والمحاسبة",
+    "المبيعات وخدمة العملاء",
+    "الموارد البشرية والتدريب",
+    "إدارة المشاريع",
+  ] as readonly string[],
   /** The mobile app's store listings. */
   apps: {
     appStore: "https://apps.apple.com/tr/app/mastery-academy/id1661460868",
@@ -38,10 +52,34 @@ export const siteConfig = {
 
 /**
  * Open Graph fields every page shares. Pages that set their own `openGraph` replace the parent's
- * object entirely, so they spread this in to keep og:site_name and og:locale.
+ * object entirely, so they spread this in to keep og:site_name, og:locale and the default share
+ * image. Without the explicit image the file convention's `og:image` disappeared on every page
+ * that defined its own `openGraph` (the homepage, listings, legal pages, …).
  */
-export const baseOpenGraph = {
+export const defaultOgImage = {
+  url: "/opengraph-image.jpg",
+  width: 1200,
+  height: 630,
+  alt: "ماستري أكاديمي — نبني قادة العصر الرقمي: دورات ودبلومات بالعربية مع خبراء ماستري",
+};
+
+export const baseOpenGraph: NonNullable<Metadata["openGraph"]> = {
   type: "website",
   locale: siteConfig.ogLocale,
   siteName: siteConfig.name,
-} as const;
+  images: [defaultOgImage],
+};
+
+/** The same fallback for Twitter/X; page-level covers override it when they exist. */
+export const defaultTwitterImage = {
+  url: "/twitter-image.jpg",
+  width: 1200,
+  height: 630,
+  alt: defaultOgImage.alt,
+};
+
+export const baseTwitter: NonNullable<Metadata["twitter"]> = {
+  card: "summary_large_image",
+  images: [defaultTwitterImage],
+};
+

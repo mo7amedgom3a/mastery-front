@@ -6,7 +6,9 @@ import { AppLink } from "@/components/ui/app-link";
 import { buttonClass, ButtonLink } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
+import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
+import { JsonLd, breadcrumbList, organizationRef, webPage } from "@/lib/seo/json-ld";
 import { cn } from "@/lib/cn";
 
 import { APPLY_STEPS } from "@/features/marketer-application/model/steps";
@@ -197,6 +199,33 @@ export function MarketersPage({ terms }: { terms: ProgramTerms }) {
         </Section>
       </main>
       <SiteFooter />
+      <MarketersJsonLd />
     </>
+  );
+}
+
+/** `/marketers`: WebPage + the affiliate programme as a Service + breadcrumb trail. */
+function MarketersJsonLd() {
+  const siteUrl = getSiteUrl();
+  const url = `${siteUrl}${routes.marketers}`;
+  return (
+    <JsonLd
+      graph={[
+        {
+          ...webPage({ url, name: copy.metaTitle, description: copy.description }),
+          "@id": `${url}#service`,
+          "@type": "Service",
+          name: "برنامج التسويق بالعمولة",
+          serviceType: "Affiliate marketing programme",
+          provider: organizationRef(),
+          url,
+          description: copy.description,
+        },
+        breadcrumbList([
+          { name: "الرئيسية", item: `${siteUrl}/` },
+          { name: "التسويق بالعمولة", item: url },
+        ]),
+      ]}
+    />
   );
 }

@@ -17,6 +17,7 @@ import {
   type ExpertCardVM,
   type ExpertsDirectoryState,
 } from "./model";
+import { ExpertsListJsonLd } from "./seo/json-ld";
 
 const KIND_OPTIONS = [
   { value: "all", label: "الكل" },
@@ -135,6 +136,7 @@ export function ExpertsDirectoryPage({ experts, state }: { experts: readonly Exp
         <CtaBand />
       </main>
       <SiteFooter />
+      <ExpertsListJsonLd experts={experts} />
     </>
   );
 }

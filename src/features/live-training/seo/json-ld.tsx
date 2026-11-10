@@ -1,6 +1,7 @@
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
+import { organizationRef } from "@/lib/seo/json-ld";
 
 import { detailCopy } from "../content/copy";
 import type { LiveTrainingDetailVM } from "../model/types";
@@ -30,7 +31,7 @@ export function LiveTrainingJsonLd({ training }: { training: LiveTrainingDetailV
       description: training.summary ?? training.subtitle ?? training.title,
       ...(training.coverImage ? { image: training.coverImage } : {}),
       inLanguage: "ar",
-      provider: { "@type": "EducationalOrganization", name: siteConfig.name, url: siteUrl },
+      provider: organizationRef(),
       instructor,
       offers: {
         "@type": "Offer",

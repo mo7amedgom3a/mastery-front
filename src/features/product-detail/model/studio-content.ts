@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 /*
  * A product page written in the admin's Course Studio: `meta` (title, summary, cover, banner, intro video,
  * instructors) and BlockNote `blocks`. The backend validates the block whitelist and URLs; the page still
@@ -22,26 +20,27 @@ export type StudioBlock = {
   children?: StudioBlock[];
 };
 
-const image = z.object({ url: z.string(), alt: z.string().optional().default("") });
-
-export const studioDocumentSchema = z.object({
-  schema_version: z.literal(1),
-  meta: z
-    .object({
-      title: z.string().default(""),
-      summary: z.string().default(""),
-      cover: image.nullish(),
-      banner: image.extend({ headline: z.string().optional().default("") }).nullish(),
-      intro_video_id: z.string().nullish(),
-      instructors: z
-        .array(z.object({ ref: z.string(), display_name: z.string(), avatar_url: z.string().nullish() }))
-        .default([]),
-    })
-    .default({ title: "", summary: "", instructors: [] }),
-  blocks: z.array(z.custom<StudioBlock>((value) => typeof value === "object" && value !== null)).default([]),
-});
-
-export type StudioDocument = z.infer<typeof studioDocumentSchema>;
+/**
+ * The validated shape of a Course Studio page. This used to be a `zod` schema that was never
+ * parsed: it only produced the type below, while pulling ~91 KB of `zod` into every client bundle
+ * that imported this module (including the landing page's client sections). The API remains the
+ * gatekeeper; the renderers below still check every URL and skip unknown blocks.
+ */
+export type StudioImage = { url: string; alt?: string | null };
+export type StudioBannerImage = StudioImage & { headline?: string | null };
+export type StudioInstructor = { ref: string; display_name: string; avatar_url?: string | null };
+export type StudioDocument = {
+  schema_version: 1;
+  meta: {
+    title: string;
+    summary: string;
+    cover?: StudioImage | null;
+    banner?: StudioBannerImage | null;
+    intro_video_id?: string | null;
+    instructors?: StudioInstructor[];
+  };
+  blocks: StudioBlock[];
+};
 
 /** One page section: the blocks under a level-2 heading (`heading` is null for the blocks before the first). */
 export type StudioSectionVM = { id: string; heading: string | null; blocks: StudioBlock[] };

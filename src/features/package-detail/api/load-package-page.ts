@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { parseProductSlug } from "@/config/routes";
-import { baseOpenGraph, siteConfig } from "@/config/site";
+import { baseOpenGraph, baseTwitter, siteConfig } from "@/config/site";
 
 import type { PackageDetailData } from "../model/types";
 import { getB2CPackageDetail } from "./get-package-detail-b2c";
@@ -67,7 +67,7 @@ export async function packageMetadata(slug: string): Promise<Metadata> {
       ...(product.image ? { images: [{ url: product.image, alt: product.title }] } : {}),
     },
     twitter: {
-      card: product.image ? "summary_large_image" : "summary",
+      ...baseTwitter,
       title: product.title,
       description,
       ...(product.image ? { images: [product.image] } : {}),

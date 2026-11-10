@@ -14,6 +14,7 @@ pnpm-debug.log*
 *.seo*
 docs/
 .playwright-cli/
+lighthouse/
 mediadelivery.txt
 bunny_iframe.txt
 # Playwright

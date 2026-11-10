@@ -252,6 +252,18 @@ body {
     gap: var(--vmarquee-gap);
     min-height: 0;
   }
+  /* Decorative portraits are painted by a pseudo-element: they still animate with the column, but
+     the grid never becomes the page's LCP candidate (the headline is the content that should be
+     measured). The image itself is a pre-sized local WebP, so this is purely a priority/semantics
+     choice, not a byte saving. */
+  .vmarquee__portrait::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--portrait);
+    background-size: cover;
+    background-position: center top;
+  }
   .vmarquee__track {
     display: flex;
     flex-direction: column;

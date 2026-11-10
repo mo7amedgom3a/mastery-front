@@ -3,11 +3,13 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { buttonClass } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
+import { FaqSection } from "@/features/landing/sections/faq-section";
 import { cn } from "@/lib/cn";
 import type { CatalogCategoriesResponse, OnboardingSkill } from "@/lib/api/catalog";
 
 import { TrainerApplicationForm } from "./components/trainer-application-form";
 import { trainersPageCopy as copy } from "./content/copy";
+import { TrainersJsonLd } from "./seo/json-ld";
 
 const pad = (index: number) => String(index + 1).padStart(2, "0");
 
@@ -58,6 +60,8 @@ export function TrainersPage({ specialities, categories, skills }: { specialitie
           </ol>
         </Section>
 
+        <FaqSection faqs={copy.faq.items} id="trainer-faq" title={copy.faq.title} />
+
         <Section id="apply" aria-labelledby="apply-title" className="scroll-mt-20">
           <div className="mx-auto max-w-[56rem]">
             <SectionHeader id="apply-title" label={copy.form.label} title={copy.form.title} lead={copy.form.lead} />
@@ -68,6 +72,7 @@ export function TrainersPage({ specialities, categories, skills }: { specialitie
         </Section>
       </main>
       <SiteFooter />
+      <TrainersJsonLd />
     </>
   );
 }

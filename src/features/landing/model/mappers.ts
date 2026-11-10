@@ -17,6 +17,7 @@ import {
   toPlainText,
 } from "@/lib/format";
 import { resolvePriceRows, toPricing, type PriceRow } from "@/lib/pricing";
+import { sanitizeFaqs } from "@/lib/seo/faq";
 
 import type {
   CategoryVM,
@@ -41,8 +42,12 @@ type CategoryDto = LandingPageResponse["categories"][number];
 type FaqDto = LandingPageResponse["faqs"][number];
 type InsightsDto = LandingPageResponse["insights"];
 
-/** Cards per rail. */
-export const MAX_CARDS = 12;
+/**
+ * Cards per rail. The landing page is a curated shop window, not the catalog: six cards keep the
+ * server HTML + RSC payload small (the rails used to ship 12 each, ~600 KB of inline flight data),
+ * while the "view all" link still opens the full filtered listing.
+ */
+export const MAX_CARDS = 6;
 
 export function positiveOrNull(value: number | null | undefined): number | null {
   return value && value > 0 ? value : null;
@@ -180,7 +185,6 @@ function mapFaq(dto: FaqDto): FaqVM | null {
   const answer = toPlainText(dto.answer, 800);
   return question && answer ? { question, answer } : null;
 }
-
 /** Only real, non-zero counters are shown; a "0 شهادة" stat hurts more than it helps. */
 function mapStats(insights: InsightsDto | null | undefined): StatVM[] {
   if (!insights) {
@@ -376,7 +380,7 @@ export function mapLandingData({
     bundleFilters: bundles?.filters ?? [],
     consultations: consultationRail.consultations,
     consultationFilters: consultationRail.filters,
-    faqs: (landing?.faqs ?? []).map(mapFaq).filter((faq): faq is FaqVM => faq !== null),
+    faqs: sanitizeFaqs((landing?.faqs ?? []).map(mapFaq).filter((faq): faq is FaqVM => faq !== null)),
     stats: mapStats(landing?.insights),
     liveTrainings,
   };

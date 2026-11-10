@@ -2,14 +2,10 @@ import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
 import type { FaqVM } from "@/features/landing/model/types";
+import { JsonLd, breadcrumbList, faqPage, organizationRef } from "@/lib/seo/json-ld";
 
 import { kindListLabel } from "../content/copy";
 import type { ProductDetailVM } from "../model/types";
-
-/** Escapes `<` so user-controlled strings can never close the script tag. */
-function serialize(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
-}
 
 /** Course (with its instructors, offer and online instance), breadcrumb trail and FAQ. */
 export function ProductJsonLd({ product, faqs }: { product: ProductDetailVM; faqs: readonly FaqVM[] }) {
@@ -23,6 +19,7 @@ export function ProductJsonLd({ product, faqs }: { product: ProductDetailVM; faq
     ...(trainer.avatar ? { image: trainer.avatar } : {}),
     ...(trainer.summary ? { description: trainer.summary } : {}),
   }));
+  const teaches = (product.topics ?? []).map((topic) => topic.label).filter(Boolean).slice(0, 12);
 
   const graph: Record<string, unknown>[] = [
     {
@@ -33,8 +30,12 @@ export function ProductJsonLd({ product, faqs }: { product: ProductDetailVM; faq
       description: product.description ?? product.summary ?? product.title,
       ...(product.image ? { image: product.image } : {}),
       inLanguage: "ar",
-      ...(product.category ? { about: product.category } : {}),
-      provider: { "@type": "EducationalOrganization", name: siteConfig.name, url: siteUrl },
+      availableLanguage: "ar",
+      // The academy issues a completion certificate for every programme it sells.
+      educationalCredentialAwarded: "شهادة إتمام من ماستري أكاديمي",
+      ...(product.category ? { about: { "@type": "Thing", name: product.category } } : {}),
+      ...(teaches.length > 0 ? { teaches } : {}),
+      provider: organizationRef(),
       ...(instructors.length > 0 ? { instructor: instructors } : {}),
       ...(product.priceAmount || product.price.free
         ? {
@@ -54,32 +55,14 @@ export function ProductJsonLd({ product, faqs }: { product: ProductDetailVM; faq
         ...(instructors.length > 0 ? { instructor: instructors } : {}),
       },
     },
-    {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "الرئيسية", item: `${siteUrl}/` },
-        { "@type": "ListItem", position: 2, name: kindListLabel[product.kind], item: `${siteUrl}${listHref}` },
-        { "@type": "ListItem", position: 3, name: product.title, item: url },
-      ],
-    },
+    breadcrumbList([
+      { name: "الرئيسية", item: `${siteUrl}/` },
+      { name: kindListLabel[product.kind], item: `${siteUrl}${listHref}` },
+      { name: product.title, item: url },
+    ]),
   ];
 
-  if (faqs.length > 0) {
-    graph.push({
-      "@type": "FAQPage",
-      mainEntity: faqs.map((faq) => ({
-        "@type": "Question",
-        name: faq.question,
-        acceptedAnswer: { "@type": "Answer", text: faq.answer },
-      })),
-    });
-  }
+  if (faqs.length > 0) graph.push(faqPage(faqs));
 
-  return (
-    <script
-      type="application/ld+json"
-      // Safe: static structure, JSON-serialised and `<`-escaped above.
-      dangerouslySetInnerHTML={{ __html: serialize({ "@context": "https://schema.org", "@graph": graph }) }}
-    />
-  );
+  return <JsonLd graph={graph} />;
 }

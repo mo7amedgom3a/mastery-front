@@ -19,6 +19,10 @@
     "api:test:mutations": "tsx scripts/test-api-layer.ts --include-mutations",
     "test:cart": "tsx scripts/test-cart-pricing.ts",
     "seo:check": "tsx scripts/seo-check.ts",
+    "perf:mobile": "node scripts/lighthouse.mjs --preset=mobile --url=http://localhost:3001",
+    "perf:desktop": "node scripts/lighthouse.mjs --preset=desktop --url=http://localhost:3001",
+    "perf:all": "node scripts/lighthouse.mjs --preset=mobile --routes=/,/search,/live,/business,/blog && node scripts/lighthouse.mjs --preset=desktop --routes=/,/search,/live,/business,/blog",
+    "assets:experts": "node scripts/optimize-landing-experts.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

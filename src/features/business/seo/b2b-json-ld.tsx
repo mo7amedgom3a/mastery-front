@@ -1,5 +1,5 @@
 import { getSiteUrl } from "@/config/env";
-import { siteConfig } from "@/config/site";
+import { breadcrumbList, organizationRef } from "@/lib/seo/json-ld";
 
 /** Escapes `<` so user-controlled strings can never close the script tag. */
 function serialize(data: unknown): string {
@@ -26,12 +26,7 @@ export function B2bJsonLd({ faqs }: { faqs: readonly { question: string; answer:
       "@type": "Service",
       name: "تدريب الشركات وفرق العمل",
       serviceType: "Corporate training and workforce development",
-      provider: {
-        "@type": "EducationalOrganization",
-        name: siteConfig.name,
-        alternateName: siteConfig.nameEn,
-        url: siteUrl,
-      },
+      provider: organizationRef(),
       areaServed: "SA",
       audience: { "@type": "BusinessAudience" },
       description:
@@ -46,6 +41,11 @@ export function B2bJsonLd({ faqs }: { faqs: readonly { question: string; answer:
         acceptedAnswer: { "@type": "Answer", text: faq.answer },
       })),
     },
+    breadcrumbList([
+      { name: "الرئيسية", item: `${siteUrl}/` },
+      { name: "للشركات", item: `${siteUrl}/business` },
+      { name: "منصة ماستري للشركات", item: pageUrl },
+    ]),
   ];
 
   return (

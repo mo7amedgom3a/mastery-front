@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { routes } from "@/config/routes";
-import { baseOpenGraph, siteConfig } from "@/config/site";
+import { baseOpenGraph, baseTwitter, siteConfig } from "@/config/site";
 import { valueOf } from "@/lib/api/server-cache";
 
 import { getBlogCategories } from "./get-blog-categories";
@@ -70,7 +70,7 @@ export async function blogListMetadata(searchParams: SearchParams): Promise<Meta
     description: BLOG_DESCRIPTION,
     alternates: { canonical: routes.blog, languages: { ar: routes.blog, "x-default": routes.blog } },
     openGraph: { ...baseOpenGraph, type: "website", url: routes.blog, title, description: BLOG_DESCRIPTION },
-    twitter: { card: "summary_large_image", title, description: BLOG_DESCRIPTION },
+    twitter: { ...baseTwitter, title, description: BLOG_DESCRIPTION },
     ...(state.page > 1 ? { robots: { index: false, follow: true } } : {}),
   };
 }
@@ -107,7 +107,7 @@ function postMetadata(post: BlogPostDetail): Metadata {
       ...(image ? { images: [{ url: image, alt: imageAlt }] } : {}),
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
+      ...baseTwitter,
       title,
       description,
       ...(image ? { images: [image] } : {}),

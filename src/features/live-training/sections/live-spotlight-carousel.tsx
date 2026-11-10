@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/cn";
 
@@ -17,21 +17,32 @@ const ROTATE_MS = 6000;
 export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM[] }) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Below the fold on most screens: don't schedule a state update every 6 s until it is in view.
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold: 0.15 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
-    if (trainings.length < 2 || paused) return;
-    if (typeof window === "undefined") return;
+    if (trainings.length < 2 || paused || !visible) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const id = window.setInterval(() => setActive((current) => (current + 1) % trainings.length), ROTATE_MS);
     return () => window.clearInterval(id);
-  }, [trainings.length, paused]);
+  }, [trainings.length, paused, visible]);
 
   if (trainings.length === 0) return null;
   const activeIndex = active < trainings.length ? active : 0;
 
   return (
     <section
+      ref={sectionRef}
       id="live"
       aria-roledescription="carousel"
       aria-label="دورات البث المباشر"

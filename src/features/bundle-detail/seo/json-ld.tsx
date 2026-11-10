@@ -1,6 +1,7 @@
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
+import { organizationRef } from "@/lib/seo/json-ld";
 import type { FaqVM } from "@/features/landing/model/types";
 
 import type { BundleDetailVM } from "../model/types";
@@ -14,7 +15,7 @@ function serialize(data: unknown): string {
 export function BundleJsonLd({ bundle, faqs }: { bundle: BundleDetailVM; faqs: readonly FaqVM[] }) {
   const siteUrl = getSiteUrl();
   const url = `${siteUrl}${bundle.href}`;
-  const provider = { "@type": "EducationalOrganization", name: siteConfig.name, url: siteUrl };
+  const provider = organizationRef();
 
   const graph: Record<string, unknown>[] = [
     {

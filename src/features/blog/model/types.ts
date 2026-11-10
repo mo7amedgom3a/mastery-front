@@ -175,6 +175,10 @@ export type BlogPostVM = BlogCardVM & {
   document: BlogDocument;
   bodyTags: string[];
   related: BlogCardVM[];
+  /** Last edit, when the API reports one; drives `dateModified` and the visible freshness line. */
+  updatedAt: string | null;
+  /** Q&A blocks in the article, ready for `FAQPage` markup. */
+  faqs: { question: string; answer: string }[];
 };
 
 export type BlogCategoryVM = BlogCategory & { href: Route };

@@ -4,6 +4,7 @@ import { routes } from "@/config/routes";
 import { baseOpenGraph } from "@/config/site";
 import { privacy } from "@/features/legal/content/privacy";
 import { LegalPage } from "@/features/legal/legal-page";
+import { LegalJsonLd } from "@/features/legal/seo/json-ld";
 
 export const metadata: Metadata = {
   title: privacy.title,
@@ -21,5 +22,15 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyRoute() {
-  return <LegalPage document={privacy} related={{ label: "الشروط والأحكام", href: routes.terms }} />;
+  return (
+    <>
+      <LegalPage document={privacy} related={{ label: "الشروط والأحكام", href: routes.terms }} />
+      <LegalJsonLd
+        path={routes.privacy}
+        title={privacy.title}
+        description={privacy.description}
+        updated={privacy.updated}
+      />
+    </>
+  );
 }

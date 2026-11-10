@@ -54,8 +54,11 @@ export function HeroStoryVideo({ youtubeId, title, eyebrow, duration, steps }: H
           src={source}
           onError={() => setSource(thumbnail(youtubeId, "hqdefault"))}
           alt=""
+          width={1280}
+          height={720}
           loading="eager"
           decoding="async"
+          {...{ fetchpriority: "high" }}
           className="b2b-hero__video-img"
         />
         <span aria-hidden="true" className="b2b-hero__video-scrim" />

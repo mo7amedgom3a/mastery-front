@@ -1,6 +1,6 @@
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
-import { siteConfig } from "@/config/site";
+import { organizationRef, websiteRef } from "@/lib/seo/json-ld";
 
 import type { AuthorExpertFacts } from "../api/get-blog-author-page";
 import type { AuthorProfile } from "../data/author-profiles";
@@ -41,7 +41,7 @@ export function AuthorJsonLd({
       name: `${profile.name} — ${profile.title}`,
       description: profile.tagline,
       inLanguage: "ar",
-      isPartOf: { "@type": "WebSite", name: siteConfig.name, url: siteUrl },
+      isPartOf: websiteRef(),
       mainEntity: { "@id": `${url}#person` },
     },
     {
@@ -53,7 +53,7 @@ export function AuthorJsonLd({
       description: profile.tagline,
       ...(image ? { image } : {}),
       url,
-      worksFor: { "@type": "Organization", name: siteConfig.name, url: siteUrl },
+      worksFor: organizationRef(),
       ...(sameAs.length > 0 ? { sameAs } : {}),
       knowsAbout: profile.focus,
     },

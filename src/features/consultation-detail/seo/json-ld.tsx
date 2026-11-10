@@ -1,6 +1,7 @@
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
+import { organizationRef } from "@/lib/seo/json-ld";
 import type { FaqVM } from "@/features/landing/model/types";
 
 import type { ConsultationDetailVM } from "../model/types";
@@ -21,7 +22,7 @@ export function ConsultationJsonLd({
   const siteUrl = getSiteUrl();
   const url = `${siteUrl}${consultation.href}`;
   const { expert } = consultation;
-  const organization = { "@type": "EducationalOrganization", name: siteConfig.name, url: siteUrl };
+  const organization = organizationRef();
 
   const graph: Record<string, unknown>[] = [
     {

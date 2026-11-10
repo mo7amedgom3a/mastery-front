@@ -6,6 +6,7 @@ import { routes } from "@/config/routes";
 
 import type { AuthorProfile } from "./data/author-profiles";
 import { RevealObserver } from "./components/reveal";
+import { AuthorIndexJsonLd } from "./seo/list-json-ld";
 
 /** «الخبراء»: the blog's curated authors, each opening their cinematic profile. */
 export function AuthorIndexPage({ profiles }: { profiles: AuthorProfile[] }) {
@@ -80,6 +81,7 @@ export function AuthorIndexPage({ profiles }: { profiles: AuthorProfile[] }) {
           </div>
         </section>
       </main>
+      <AuthorIndexJsonLd profiles={profiles} />
     </>
   );
 }

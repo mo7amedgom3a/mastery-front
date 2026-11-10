@@ -1,12 +1,14 @@
 import { getWebInstrumentations, initializeFaro, type Faro } from "@grafana/faro-web-sdk";
 import { TracingInstrumentation } from "@grafana/faro-web-tracing";
 
-import { getClientFingerprint } from "@/lib/customer-tracking";
+import { bindFaro, syncFaroIdentity } from "@/lib/observability/faro-bridge";
 
 /**
- * Grafana Faro (Real User Monitoring) lives behind this module so client code and the
- * Next.js instrumentation entry point share one instance. Initialization is deliberately
- * best-effort: a monitoring failure must never break the application.
+ * Grafana Faro (Real User Monitoring). This module owns the heavy SDK; it is loaded on idle from
+ * `instrumentation-client.ts` (not statically imported by pages or error boundaries). All other
+ * modules talk to `faro-bridge.ts`, which queues calls until `bindFaro` runs here.
+ *
+ * Initialization is deliberately best-effort: a monitoring failure must never break the application.
  */
 let faro: Faro | undefined;
 
@@ -31,9 +33,9 @@ function readConfig(): FaroClientConfig | null {
 }
 
 /**
- * Starts Faro. Called from `instrumentation-client.ts` before hydration, so error tracking and web
- * vitals capture the first paint. No-ops when `NEXT_PUBLIC_FARO_URL` is unset (e.g. a clone with no
- * observability credentials).
+ * Starts Faro and binds it to the bridge. No-ops when `NEXT_PUBLIC_FARO_URL` is unset (e.g. a clone
+ * with no observability credentials). Web vitals use buffered PerformanceObserver entries, so a
+ * deferred start still reports FCP/LCP/CLS; the bridge replays errors captured before this ran.
  */
 export function initFaro(): Faro | undefined {
   if (faro) return faro;
@@ -58,30 +60,16 @@ export function initFaro(): Faro | undefined {
     console.warn("[faro] initialization failed", error);
   }
 
-  syncFaroIdentity();
+  if (faro) {
+    const client = faro;
+    bindFaro({
+      setUser: (id) => client.api.setUser({ id }),
+      resetUser: () => client.api.resetUser(),
+      pushError: (error, context) => client.api.pushError(error, context ? { context } : undefined),
+      sessionId: () => client.api.getSession()?.id,
+    });
+    syncFaroIdentity();
+  }
+
   return faro;
-}
-
-/**
- * Attaches the visitor to every subsequent signal. Signed-in visitors are keyed by their opaque
- * customer id; guests fall back to the random `clientFingerprint` already kept in localStorage, so
- * anonymous browsing can still be followed across pages without any PII.
- */
-export function syncFaroIdentity(customerId?: string | null): void {
-  if (!faro) return;
-  const id = customerId ?? getClientFingerprint();
-  if (id) faro.api.setUser({ id });
-  else faro.api.resetUser();
-}
-
-/** Reports a caught error (e.g. a React error boundary) to Faro. */
-export function pushFaroError(error: unknown, context?: Record<string, string>): void {
-  if (!faro) return;
-  const value = error instanceof Error ? error : new Error(String(error));
-  faro.api.pushError(value, context ? { context } : undefined);
-}
-
-/** The current Faro session id, so product analytics can link a replay to its RUM session. */
-export function getFaroSessionId(): string | undefined {
-  return faro?.api.getSession()?.id;
 }

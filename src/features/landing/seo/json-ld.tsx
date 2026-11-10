@@ -1,7 +1,7 @@
 import { getSiteUrl } from "@/config/env";
 import { siteConfig } from "@/config/site";
-
 import type { LiveTrainingVM } from "@/features/live-training/model/types";
+import { JsonLd, faqPage, organizationRef, webPage } from "@/lib/seo/json-ld";
 
 import type { CourseCardVM, FaqVM } from "../model/types";
 
@@ -12,53 +12,22 @@ type JsonLdProps = {
   liveTraining?: LiveTrainingVM | null;
 };
 
-/** Escapes `<` so user-controlled strings can never close the script tag. */
-function serialize(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
-}
-
+/**
+ * Homepage graph. The academy and site entities live in the root layout (`SiteJsonLd`); this page
+ * only adds what is specific to it: the WebPage, the featured-course list, the live course and the
+ * FAQ. Everything references the shared `@id`s.
+ */
 export function LandingJsonLd({ courses, faqs, liveTraining }: JsonLdProps) {
   const siteUrl = getSiteUrl();
-  const organizationId = `${siteUrl}/#organization`;
-  const websiteId = `${siteUrl}/#website`;
+  const home = `${siteUrl}/`;
 
   const graph: Record<string, unknown>[] = [
     {
-      "@type": "EducationalOrganization",
-      "@id": organizationId,
-      name: siteConfig.name,
-      alternateName: siteConfig.nameEn,
-      url: siteUrl,
-      logo: {
-        "@type": "ImageObject",
-        url: `${siteUrl}${siteConfig.logo.url}`,
-        width: siteConfig.logo.width,
-        height: siteConfig.logo.height,
-      },
-      description: siteConfig.description,
-      foundingDate: String(siteConfig.foundingYear),
-      founder: siteConfig.founders.map((name) => ({ "@type": "Person", name })),
-      inLanguage: "ar",
-      ...(siteConfig.social.length > 0 ? { sameAs: siteConfig.social } : {}),
-    },
-    {
-      "@type": "WebSite",
-      "@id": websiteId,
-      url: siteUrl,
-      name: siteConfig.name,
-      alternateName: siteConfig.nameEn,
-      inLanguage: "ar",
-      publisher: { "@id": organizationId },
-    },
-    {
-      "@type": "WebPage",
-      "@id": `${siteUrl}/#webpage`,
-      url: `${siteUrl}/`,
-      name: siteConfig.title,
-      description: siteConfig.description,
-      inLanguage: "ar",
-      isPartOf: { "@id": websiteId },
-      about: { "@id": organizationId },
+      ...webPage({
+        url: home,
+        name: siteConfig.title,
+        description: siteConfig.description,
+      }),
       primaryImageOfPage: { "@type": "ImageObject", url: `${siteUrl}/opengraph-image.jpg` },
     },
   ];
@@ -77,7 +46,7 @@ export function LandingJsonLd({ courses, faqs, liveTraining }: JsonLdProps) {
           ...(course.summary ? { description: course.summary } : {}),
           ...(course.image ? { image: course.image } : {}),
           inLanguage: "ar",
-          provider: { "@id": organizationId },
+          provider: organizationRef(),
           ...(course.priceAmount || course.price.free
             ? {
                 offers: {
@@ -104,7 +73,7 @@ export function LandingJsonLd({ courses, faqs, liveTraining }: JsonLdProps) {
       description: liveTraining.summary ?? liveTraining.subtitle ?? liveTraining.title,
       ...(liveTraining.coverImage ? { image: liveTraining.coverImage } : {}),
       inLanguage: "ar",
-      provider: { "@id": organizationId },
+      provider: organizationRef(),
       instructor,
       offers: {
         "@type": "Offer",
@@ -124,21 +93,8 @@ export function LandingJsonLd({ courses, faqs, liveTraining }: JsonLdProps) {
   }
 
   if (faqs.length > 0) {
-    graph.push({
-      "@type": "FAQPage",
-      mainEntity: faqs.map((faq) => ({
-        "@type": "Question",
-        name: faq.question,
-        acceptedAnswer: { "@type": "Answer", text: faq.answer },
-      })),
-    });
+    graph.push(faqPage(faqs));
   }
 
-  return (
-    <script
-      type="application/ld+json"
-      // Safe: static structure, JSON-serialised and `<`-escaped above.
-      dangerouslySetInnerHTML={{ __html: serialize({ "@context": "https://schema.org", "@graph": graph }) }}
-    />
-  );
+  return <JsonLd graph={graph} />;
 }

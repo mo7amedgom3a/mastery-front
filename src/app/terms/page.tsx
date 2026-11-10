@@ -4,6 +4,7 @@ import { routes } from "@/config/routes";
 import { baseOpenGraph } from "@/config/site";
 import { terms } from "@/features/legal/content/terms";
 import { LegalPage } from "@/features/legal/legal-page";
+import { LegalJsonLd } from "@/features/legal/seo/json-ld";
 
 export const metadata: Metadata = {
   title: terms.title,
@@ -21,5 +22,10 @@ export const metadata: Metadata = {
 };
 
 export default function TermsRoute() {
-  return <LegalPage document={terms} related={{ label: "سياسة الخصوصية", href: routes.privacy }} />;
+  return (
+    <>
+      <LegalPage document={terms} related={{ label: "سياسة الخصوصية", href: routes.privacy }} />
+      <LegalJsonLd path={routes.terms} title={terms.title} description={terms.description} updated={terms.updated} />
+    </>
+  );
 }

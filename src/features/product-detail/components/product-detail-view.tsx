@@ -1,7 +1,4 @@
-"use client";
-
 import Image from "next/image";
-import { useEffect } from "react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -10,6 +7,7 @@ import { FaqSection } from "@/features/landing/sections/faq-section";
 
 import { ContentBlocks } from "./content-blocks";
 import { IntroVideo } from "./intro-video";
+import { PreviewScrollBridge } from "./preview-scroll-bridge";
 import { SectionNav, type SectionNavItem } from "./section-nav";
 import { ShareButton } from "./share-dialog";
 import { StickySidebar } from "./sticky-sidebar";
@@ -50,29 +48,6 @@ export function ProductDetailView({
   const noun = kindLabel[product.kind];
   const faqs = productFaqs(product.kind);
 
-  // In preview mode inside an iframe, listen for scroll messages from the studio outline
-  useEffect(() => {
-    if (!preview) return;
-    const onMessage = (event: MessageEvent) => {
-      if (
-        event.data?.source === "mastery-studio" &&
-        event.data?.type === "scroll" &&
-        event.data?.blockId
-      ) {
-        const id = String(event.data.blockId);
-        const target =
-          document.querySelector(`[data-block-id="${id}"]`) ||
-          document.getElementById(`s-${id}`) ||
-          document.getElementById(id);
-        if (target) {
-          target.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      }
-    };
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, [preview]);
-
   const hasStudioContent = Boolean(product.content && product.content.length > 0);
 
   // Derive nav items: if studio content exists, map each H2 section
@@ -97,6 +72,7 @@ export function ProductDetailView({
 
   return (
     <>
+      {preview ? <PreviewScrollBridge /> : null}
       <SiteHeader />
       <main id="main" tabIndex={-1} className="outline-none">
         <DetailHero product={product} share={heroShare} />

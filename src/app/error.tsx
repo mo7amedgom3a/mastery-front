@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
-import { pushFaroError } from "@/lib/observability/faro";
+import { pushFaroError } from "@/lib/observability/faro-bridge";
 
 type ErrorProps = {
   error: Error & { digest?: string };

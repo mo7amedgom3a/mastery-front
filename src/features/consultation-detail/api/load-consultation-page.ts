@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { parseProductSlug } from "@/config/routes";
-import { baseOpenGraph, siteConfig } from "@/config/site";
+import { baseOpenGraph, baseTwitter, siteConfig } from "@/config/site";
 import { isPublishableConsultation } from "@/features/landing/model/mappers";
 
 import type { ConsultationDetailData } from "../model/types";
@@ -79,8 +79,9 @@ export async function consultationMetadata(slug: string): Promise<Metadata> {
       ...(consultation.image ? { images: [{ url: consultation.image, alt: consultation.title }] } : {}),
     },
     twitter: {
+      ...baseTwitter,
       // The artwork is square: the small card shows it whole, the large one would crop it.
-      card: "summary",
+      ...(consultation.image ? { card: "summary" as const } : {}),
       title: consultation.title,
       description,
       ...(consultation.image ? { images: [consultation.image] } : {}),

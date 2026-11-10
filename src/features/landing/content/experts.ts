@@ -4,9 +4,24 @@ export type Expert = {
   id: string;
   name: string;
   field: string;
+  /** 480 px portrait for the hero and the larger expert cards. */
   image: string;
+  /** 256 px portrait for small cards (192 px slots). */
+  imageSmall: string;
   color: BrandColor;
 };
+
+/**
+ * Local, pre-optimized WebP portraits (see `scripts/optimize-landing-experts.mjs`).
+ *
+ * The legacy uploads are 500–800 KB PNGs; the hero renders nine of them, twice per column, so
+ * loading them raw pushed mobile LCP past 5 s. Both sizes live under `public/landing/experts/`
+ * and are immutable: no third-party fetch, no cold `/_next/image` optimization on first visit.
+ */
+const portrait = (id: string) => ({
+  image: `/landing/experts/${id}-480.webp`,
+  imageSmall: `/landing/experts/${id}-256.webp`,
+});
 
 /** Curated line-up from landing_page_assessts.txt (the API has no "featured experts" list yet). */
 export const experts: readonly Expert[] = [
@@ -14,63 +29,63 @@ export const experts: readonly Expert[] = [
     id: "thabet-hegazy",
     name: "د. ثابت حجازي",
     field: "خبير التسويق وتنمية المبيعات",
-    image: "https://live.emasteryacademy.com/uploads/9dd4f2e5-a520-4adc-ac4b-66b6c008db07.png",
+    ...portrait("thabet-hegazy"),
     color: "coral",
   },
   {
     id: "sahl-mahdi",
     name: "د. سهل مهدي",
     field: "خبير التسويق الإلكتروني",
-    image: "https://live.emasteryacademy.com/uploads/8ea140f3-589b-40c4-a7b3-2360adbbe14c.png",
+    ...portrait("sahl-mahdi"),
     color: "yellow",
   },
   {
     id: "huthaifa-hegazy",
     name: "حذيفة حجازي",
     field: "فنان تشكيلي",
-    image: "https://live.emasteryacademy.com/uploads/bea43b9b-c67c-41a2-a60c-d8cef3375c19.jpeg",
+    ...portrait("huthaifa-hegazy"),
     color: "sky",
   },
   {
     id: "nashmi-alharbi",
     name: "نشمي الحربي",
     field: "خبير الإمداد والمشتريات",
-    image: "https://live.emasteryacademy.com/uploads/d9d66bac-3c0c-4086-b742-9b2c538148c0.png",
+    ...portrait("nashmi-alharbi"),
     color: "green",
   },
   {
     id: "fatima-belhaddad",
     name: "فاطمة بالحداد",
     field: "خبيرة تصميم الأزياء",
-    image: "https://live.emasteryacademy.com/uploads/13ee2ffa-f0e8-4f5b-9d9e-44aaf4279f04.png",
+    ...portrait("fatima-belhaddad"),
     color: "lilac",
   },
   {
     id: "marwa-alsharaa",
     name: "مروة الشرع",
     field: "خبيرة التصوير الفوتوغرافي",
-    image: "https://live.emasteryacademy.com/uploads/c706fa3d-21b0-4cbb-89fc-b3c4c77f72de.png",
+    ...portrait("marwa-alsharaa"),
     color: "teal",
   },
   {
     id: "mazhar-kantakji",
     name: "مظهر قنطقجي",
     field: "خبير المالية والمحاسبة",
-    image: "https://live.emasteryacademy.com/uploads/f76209e6-e5b1-45f3-91e5-096c414c082a.png",
+    ...portrait("mazhar-kantakji"),
     color: "purple",
   },
   {
     id: "ahmed-aljarhi",
     name: "أحمد الجارحي",
     field: "خبير التنمية والتطوير",
-    image: "https://live.emasteryacademy.com/uploads/141fceac-73be-44f9-9641-5ac151dd4ea5.png",
+    ...portrait("ahmed-aljarhi"),
     color: "pink",
   },
   {
     id: "mohammed-alzubaidi",
     name: "محمد الزبيدي",
     field: "متخصص تحسين الجودة",
-    image: "https://live.emasteryacademy.com/uploads/f0b31ae2-fc5e-4421-9635-48c9b12fec8c.png",
+    ...portrait("mohammed-alzubaidi"),
     color: "cream",
   },
 ];

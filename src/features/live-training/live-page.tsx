@@ -6,6 +6,7 @@ import { Section } from "@/components/ui/section";
 import { LiveTrainingCard } from "./components/live-training-card";
 import { livePageCopy } from "./content/copy";
 import type { LiveTrainingVM } from "./model/types";
+import { LiveListJsonLd } from "./seo/list-json-ld";
 
 /** `/live`: every open live training, soonest first. */
 export function LivePage({ trainings }: { trainings: LiveTrainingVM[] }) {
@@ -42,6 +43,7 @@ export function LivePage({ trainings }: { trainings: LiveTrainingVM[] }) {
         </Section>
       </main>
       <SiteFooter />
+      <LiveListJsonLd trainings={trainings} />
     </>
   );
 }

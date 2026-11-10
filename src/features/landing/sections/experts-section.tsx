@@ -66,6 +66,9 @@ export function ExpertsSection({
                   alt={`صورة ${expert.name}`}
                   fill
                   sizes="(min-width: 1200px) 390px, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw"
+                  // Curated portraits are already 480 px WebP files; directory avatars still go
+                  // through the optimizer.
+                  unoptimized={expert.image.startsWith("/landing/experts/")}
                   className="object-cover object-top"
                 />
               ) : null}

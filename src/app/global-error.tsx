@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { pushFaroError } from "@/lib/observability/faro";
+import { pushFaroError } from "@/lib/observability/faro-bridge";
 
 type GlobalErrorProps = {
   error: Error & { digest?: string };

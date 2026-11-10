@@ -36,7 +36,10 @@ frontend:
         # Verify the heap limit picked up from NODE_OPTIONS.
         - node -e "const v8 = require('v8'); console.log('Heap limit (MB):', Math.round(v8.getHeapStatistics().heap_size_limit / 1024 / 1024))"
 
-        # Build Next.js for Amplify WEB_COMPUTE (SSR).
+        # Build Next.js for Amplify WEB_COMPUTE (SSR). The image optimizer is part of the SSR
+        # runtime, so it must be on at build time; without it remote covers are served raw
+        # (500–800 KB PNGs) and LCP collapses on mobile.
+        - export NEXT_ENABLE_IMAGE_OPTIMIZATION=true
         - npm run build
 
   artifacts:

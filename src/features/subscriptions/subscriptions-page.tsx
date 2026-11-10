@@ -3,6 +3,9 @@ import { Suspense } from "react";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { getSiteUrl } from "@/config/env";
+import { routes } from "@/config/routes";
+import { JsonLd, breadcrumbList, itemList, webPage } from "@/lib/seo/json-ld";
 
 import type { PricingPageData } from "./api/load-plans";
 import { PlanCard } from "./components/plan-card";
@@ -53,6 +56,32 @@ export function SubscriptionsPage({ data }: { data: PricingPageData }) {
         </ul>
       </main>
       <SiteFooter />
+      <SubscriptionsJsonLd plans={data.plans} />
     </>
+  );
+}
+
+/** `/subscriptions`: WebPage + the published plans as an ItemList of Products + breadcrumb. */
+function SubscriptionsJsonLd({ plans }: { plans: PricingPageData["plans"] }) {
+  const siteUrl = getSiteUrl();
+  const url = `${siteUrl}${routes.subscriptions}`;
+  return (
+    <JsonLd
+      graph={[
+        webPage({
+          url,
+          name: "اشتراكات ماستري",
+          description: "باقات اشتراك شهرية وسنوية للأفراد والشركات: دورات ودبلومات واستشارات مع الخبراء ومخطط تعلّم ذكي.",
+        }),
+        itemList(
+          "خطط اشتراك ماستري",
+          plans.map((plan) => ({ name: plan.title, url: `${siteUrl}${plan.href}` })),
+        ),
+        breadcrumbList([
+          { name: "الرئيسية", item: `${siteUrl}/` },
+          { name: "اشتراكات ماستري", item: url },
+        ]),
+      ]}
+    />
   );
 }

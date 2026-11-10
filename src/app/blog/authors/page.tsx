@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { listAuthorProfiles } from "@/features/blog/api/get-blog-author-page";
 import { AuthorIndexPage } from "@/features/blog/author-index-page";
 import { routes } from "@/config/routes";
-import { baseOpenGraph } from "@/config/site";
+import { baseOpenGraph, baseTwitter } from "@/config/site";
 
 export const revalidate = 3600;
 
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: routes.blogAuthors, languages: { ar: routes.blogAuthors, "x-default": routes.blogAuthors } },
   openGraph: { ...baseOpenGraph, type: "website", url: routes.blogAuthors, title: TITLE, description: DESCRIPTION },
-  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
+  twitter: { ...baseTwitter, title: TITLE, description: DESCRIPTION },
 };
 
 export default function BlogAuthorsRoute() {

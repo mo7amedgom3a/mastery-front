@@ -3,7 +3,7 @@ import "server-only";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { baseOpenGraph, siteConfig } from "@/config/site";
+import { baseOpenGraph, baseTwitter, siteConfig } from "@/config/site";
 
 import type { BundleDetailVM } from "../model/types";
 import { getBundleDetail } from "./get-bundle-detail";
@@ -46,7 +46,7 @@ export async function bundleMetadata(slug: string): Promise<Metadata> {
       ...(bundle.image ? { images: [{ url: bundle.image, alt: bundle.title }] } : {}),
     },
     twitter: {
-      card: bundle.image ? "summary_large_image" : "summary",
+      ...baseTwitter,
       title: bundle.title,
       description,
       ...(bundle.image ? { images: [bundle.image] } : {}),

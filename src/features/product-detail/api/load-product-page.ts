@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { parseProductSlug } from "@/config/routes";
-import { baseOpenGraph, siteConfig } from "@/config/site";
+import { baseOpenGraph, baseTwitter, siteConfig } from "@/config/site";
 
 import { kindLabel } from "../content/copy";
 import type { ProductDetailData, ProductKind } from "../model/types";
@@ -67,7 +67,7 @@ export async function productMetadata(slug: string, routeKind: ProductKind): Pro
       ...(product.image ? { images: [{ url: product.image, alt: product.title }] } : {}),
     },
     twitter: {
-      card: product.image ? "summary_large_image" : "summary",
+      ...baseTwitter,
       title: product.title,
       description,
       ...(product.image ? { images: [product.image] } : {}),
