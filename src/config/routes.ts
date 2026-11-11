@@ -134,7 +134,7 @@ export const routes = {
   checkoutSuccess: route("/checkout/success"),
   checkoutCancelled: route("/checkout/cancelled"),
   checkoutFailed: route("/checkout/failed"),
-  /** The signed-in student's area (`/students/*`, guests are sent to sign in by `proxy.ts`). */
+  /** The signed-in student's area (`/students/*`, guests are sent to sign in by `middleware.ts`). */
   studentHome: route("/students"),
   studentOnboarding: (step?: string) => route(step ? `/students/onboarding/${encodeURIComponent(step)}` : "/students/onboarding"),
   studentOnboardingStart: route("/students/onboarding/start"),
@@ -173,7 +173,7 @@ export const routes = {
   studentSupport: route("/students/support"),
   studentSupportNew: route("/students/support/new"),
   studentSupportTicket: (ticketId: string) => route(`/students/support/${encodeURIComponent(ticketId)}`),
-  /** The expert dashboard (`/expert/*`, guests are sent to sign in by `proxy.ts`). */
+  /** The expert dashboard (`/expert/*`, guests are sent to sign in by `middleware.ts`). */
   expertDashboard: route("/expert"),
   expertServices: route("/expert/consultations"),
   expertBookings: route("/expert/bookings"),

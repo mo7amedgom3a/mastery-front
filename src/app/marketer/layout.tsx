@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * The marketer dashboard (`proxy.ts` sends guests to sign in first). Every page sits behind
+ * The marketer dashboard (`middleware.ts` sends guests to sign in first). Every page sits behind
  * `MarketerGate`, which shows a "not a marketer" or "under review" state to everyone else.
  */
 export default function MarketerLayout({ children }: { children: ReactNode }) {

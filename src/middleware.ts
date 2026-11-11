@@ -6,11 +6,15 @@ import { SESSION_COOKIE } from "@/lib/auth/cookie-names";
 const AUTH_PAGES = new Set(["/login", "/register"]);
 
 /**
+ * Kept as `middleware.ts` (Edge runtime) rather than Next 16's `proxy.ts` (Node runtime only): the
+ * Cloudflare Workers deployment (OpenNext) supports Edge middleware, while Node middleware there is
+ * experimental. The logic only reads a cookie, so it needs nothing from Node.
+ *
  * Routing by whether a session may exist: account pages send a guest to sign in, and the auth
  * pages send a signed-in visitor on. It only looks at a cookie's presence, which says nothing
  * about the session being valid: the backend checks the token on every call that needs one.
  */
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const hasSession = request.cookies.has(SESSION_COOKIE);
   const { pathname, search, searchParams } = request.nextUrl;
 

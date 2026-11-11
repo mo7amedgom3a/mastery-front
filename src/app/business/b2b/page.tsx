@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { connection } from "next/server";
 
 import { routes } from "@/config/routes";
 import { baseOpenGraph } from "@/config/site";
@@ -9,8 +8,9 @@ import { b2bFaq, b2bLandingMeta } from "@/features/business/content/b2b-landing"
 import { B2bJsonLd } from "@/features/business/seo/b2b-json-ld";
 import { loadPricingPage } from "@/features/subscriptions/api/load-plans";
 
-// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
-// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
+// Incremental static regeneration: prerendered at build, then served from the cache,
+// refreshed in the background every `revalidate` seconds and at once by POST /api/revalidate
+// (the admin's publish hook). On Cloudflare the cache lives in R2 (open-next.config.ts).
 export const revalidate = 600;
 
 export const metadata: Metadata = {
@@ -29,7 +29,6 @@ export const metadata: Metadata = {
 };
 
 export default async function BusinessB2bRoute() {
-  await connection();
   const [data, pricing] = await Promise.all([getB2bLanding(), loadPricingPage()]);
   const plans = pricing.plans.filter((plan) => plan.audience === "company");
   return (

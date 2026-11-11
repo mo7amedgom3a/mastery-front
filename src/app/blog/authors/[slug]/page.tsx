@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { loadBlogAuthorPage } from "@/features/blog/api/get-blog-author-page";
@@ -7,11 +6,15 @@ import { AuthorProfilePage } from "@/features/blog/author-profile-page";
 import { routes } from "@/config/routes";
 import { baseOpenGraph, baseTwitter } from "@/config/site";
 
-// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
-// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
-// `revalidate` still sets how long this page's backend reads stay in the data cache, and
-// POST /api/revalidate still refreshes them.
+// Incremental static regeneration: each slug is rendered on its first visit (no build-time
+// fetch, see generateStaticParams) and then served from the cache,
+// refreshed in the background every `revalidate` seconds and at once by POST /api/revalidate
+// (the admin's publish hook). On Cloudflare the cache lives in R2 (open-next.config.ts).
 export const revalidate = 300;
+
+export function generateStaticParams(): never[] {
+  return [];
+}
 
 export async function generateMetadata({ params }: PageProps<"/blog/authors/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -38,7 +41,6 @@ export async function generateMetadata({ params }: PageProps<"/blog/authors/[slu
 }
 
 export default async function BlogAuthorRoute({ params }: PageProps<"/blog/authors/[slug]">) {
-  await connection();
   const { slug } = await params;
   const data = await loadBlogAuthorPage(slug);
   if (!data) notFound();

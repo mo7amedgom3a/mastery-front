@@ -42,7 +42,7 @@ const enableImageOptimization = process.env.NEXT_ENABLE_IMAGE_OPTIMIZATION === "
 if (isIndexable() && !enableImageOptimization) {
   console.warn(
     "[images] NEXT_ENABLE_IMAGE_OPTIMIZATION is off: remote covers will be served unoptimized. " +
-      "Set it to true in the production build (see amplify.yml).",
+      "Set it to true in the production build (.env.production.local for the Cloudflare deploy).",
   );
 }
 // Bunny Stream thumbnails for promo-video posters (the library's CDN host, see .env.example).
