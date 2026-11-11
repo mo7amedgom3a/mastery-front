@@ -1,5 +1,4 @@
 import type { MetadataRoute } from "next";
-import { connection } from "next/server";
 
 import { getSiteUrl } from "@/config/env";
 import { routes } from "@/config/routes";
@@ -13,9 +12,9 @@ import { getAllCatalogCards, getCatalogExperts, parseCardSlug } from "@/lib/api/
 import { getSearchOptions } from "@/lib/api/search";
 import { cachedRead, valueOf } from "@/lib/api/server-cache";
 
-// Built per request (`connection()` below), never prerendered: Amplify does not finish ISR background
-// regeneration, so a build-time copy would never pick up new products. The catalog reads stay in the
-// data cache for an hour, or until POST /api/revalidate refreshes them.
+// Incremental static regeneration: prerendered at build, then served from the cache,
+// refreshed in the background every `revalidate` seconds and at once by POST /api/revalidate
+// (the admin's publish hook). On Cloudflare the cache lives in R2 (open-next.config.ts).
 export const revalidate = 3600;
 
 const read = cachedRead(revalidate, ["sitemap"]);
@@ -50,7 +49,6 @@ function absoluteImage(value: unknown): string | null {
 
 // Cards carry the product's `updated_at`, used as `lastModified`.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  await connection();
   const siteUrl = getSiteUrl();
   const home = `${siteUrl}/`;
 

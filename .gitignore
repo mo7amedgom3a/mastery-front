@@ -20,3 +20,9 @@ bunny_iframe.txt
 # Playwright
 test-results/
 playwright-report/
+
+# Cloudflare Workers (OpenNext) build output and local state
+.open-next/
+.wrangler/
+.dev.vars*
+secrets.*.json

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * The signed-in student's own pages (`proxy.ts` sends guests to sign in first). The dashboard pages
+ * The signed-in student's own pages (`middleware.ts` sends guests to sign in first). The dashboard pages
  * and the onboarding flow each bring their own chrome; both need the data client.
  */
 export default function StudentLayout({ children }: { children: ReactNode }) {

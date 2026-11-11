@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { baseOpenGraph } from "@/config/site";
@@ -7,11 +6,15 @@ import { getLiveTrainingDetail } from "@/features/live-training/api/get-live-tra
 import { LiveTrainingDetailPage } from "@/features/live-training/live-training-detail-page";
 import { toPlainText } from "@/lib/format";
 
-// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
-// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
-// `revalidate` still sets how long this page's backend reads stay in the data cache, and
-// POST /api/revalidate still refreshes them.
+// Incremental static regeneration: each slug is rendered on its first visit (no build-time
+// fetch, see generateStaticParams) and then served from the cache,
+// refreshed in the background every `revalidate` seconds and at once by POST /api/revalidate
+// (the admin's publish hook). On Cloudflare the cache lives in R2 (open-next.config.ts).
 export const revalidate = 300;
+
+export function generateStaticParams(): never[] {
+  return [];
+}
 
 export async function generateMetadata({ params }: PageProps<"/live/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -42,7 +45,6 @@ export async function generateMetadata({ params }: PageProps<"/live/[slug]">): P
 }
 
 export default async function LiveTrainingPage({ params }: PageProps<"/live/[slug]">) {
-  await connection();
   const { slug } = await params;
   const training = await getLiveTrainingDetail(slug);
   if (!training) {

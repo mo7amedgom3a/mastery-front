@@ -1,0 +1,111 @@
+# Production deployment of the storefront to Cloudflare Workers (OpenNext; see wrangler.jsonc).
+#
+#   push to main      -> checks, OpenNext build, deploy (populates the R2 page cache)
+#   pull request      -> checks and OpenNext build only (no deploy)
+#   workflow_dispatch -> same as a push to main (redeploy the current main)
+#
+# Repository settings:
+#   secret   CLOUDFLARE_API_TOKEN   API token: Account > Workers Scripts:Edit, Workers R2 Storage:Edit,
+#                                   Account Settings:Read (add Zone > Workers Routes:Edit once the
+#                                   landing.masteryacademy.site custom domain is enabled)
+#   variable CLOUDFLARE_ACCOUNT_ID
+#   variable NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN, NEXT_PUBLIC_TOLT_PUBLIC_KEY
+#                                   publishable keys (they ship in the browser bundle), kept out of
+#                                   the file so secret scanners don't flag them
+#   secret   FARO_API_KEY           optional: uploads browser source maps to Grafana Faro
+#
+# Runtime secrets (AUTH_COOKIE_SECRET, REVALIDATE_SECRET) live on the Worker (`wrangler secret`) and
+# persist across deploys; runtime vars are in wrangler.jsonc.
+name: Cloudflare
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # One deploy at a time, never cancelled half-way (it uploads assets and the cache); PR builds of
+  # the same branch replace each other.
+  group: cloudflare-${{ github.event_name == 'pull_request' && github.head_ref || 'production' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-deploy:
+    name: ${{ github.event_name == 'pull_request' && 'Build' || 'Build and deploy' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # Build-time values (NEXT_PUBLIC_* are inlined into the client bundle). Public, not secrets;
+      # the publishable keys come from repository variables.
+      NEXT_PUBLIC_DEPLOY_TARGET: cloudflare
+      NEXT_PUBLIC_SITE_URL: https://landing.masteryacademy.site
+      NEXT_PUBLIC_ENV: production
+      NEXT_ENABLE_IMAGE_OPTIMIZATION: "true"
+      API_BASE_URL: https://api.masteryacademy.site/api/v1
+      BUNNY_CDN_HOSTNAME: vz-be0e9539-e4b.b-cdn.net
+      NEXT_PUBLIC_FARO_URL: https://faro-collector-prod-us-west-0.grafana.net/collect/6951a101d516b3d305007cc3bdd2c580
+      NEXT_PUBLIC_FARO_APP_NAME: mastery-app
+      NEXT_PUBLIC_FARO_APP_NAMESPACE: production
+      NEXT_PUBLIC_FARO_APP_VERSION: "0.1.0"
+      NEXT_PUBLIC_POSTHOG_HOST: https://us.i.posthog.com
+      NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${{ vars.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN }}
+      NEXT_PUBLIC_TOLT_PORTAL_URL: https://affiliates.masteryacademy.site
+      NEXT_PUBLIC_TOLT_PUBLIC_KEY: ${{ vars.NEXT_PUBLIC_TOLT_PUBLIC_KEY }}
+      NEXT_TELEMETRY_DISABLED: "1"
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # PageProps / LayoutProps and the typed routes are generated into .next/types, which a fresh
+      # checkout doesn't have; `next build` makes them too, but the typecheck runs first.
+      - name: Generate route types
+        run: npx next typegen
+
+      - name: Typecheck and lint
+        run: npm run check
+
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+
+      - name: OpenNext build
+        run: npm run cf:build
+        env:
+          FARO_API_KEY: ${{ github.event_name != 'pull_request' && secrets.FARO_API_KEY || '' }}
+
+      - name: Deploy to Cloudflare Workers
+        if: github.event_name != 'pull_request'
+        run: npx opennextjs-cloudflare deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Smoke test
+        if: github.event_name != 'pull_request'
+        env:
+          WORKER_URL: https://mastery-front-prod.mohamed-gomaa-dev2003.workers.dev
+        run: |
+          set -euo pipefail
+          for path in / "/search?type=course" /experts /live /login /robots.txt; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --retry 3 --retry-all-errors --max-time 60 "$WORKER_URL$path")
+            echo "$code $path"
+            [ "$code" = "200" ] || { echo "::error::$path returned $code"; exit 1; }
+          done
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "$WORKER_URL/students")
+          echo "$code /students (expect 307 to login)"
+          [ "$code" = "307" ] || { echo "::error::/students returned $code"; exit 1; }

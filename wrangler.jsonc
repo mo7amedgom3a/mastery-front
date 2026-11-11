@@ -1,0 +1,68 @@
+// Production deployment of the storefront on Cloudflare Workers (OpenNext adapter).
+//   Build + deploy:  npm run cf:deploy   (reads .env.production.local for NEXT_PUBLIC_* at build time)
+//   Secrets:         npx wrangler secret bulk secrets.prod.json
+//                    (AUTH_COOKIE_SECRET, REVALIDATE_SECRET, OTEL_EXPORTER_OTLP_HEADERS)
+// See README.md "Deploy (Cloudflare)".
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mastery-front-prod",
+  "main": ".open-next/worker.js",
+  // nodejs_compat with a date >= 2025-04-01 populates process.env from vars and secrets.
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  // next/image is served by the Cloudflare Images binding.
+  "images": {
+    "binding": "IMAGES",
+  },
+  "services": [
+    // Self-reference used by the OpenNext cache; must match "name".
+    { "binding": "WORKER_SELF_REFERENCE", "service": "mastery-front-prod" },
+  ],
+  "r2_buckets": [
+    // Created once: npx wrangler r2 bucket create mastery-front-prod-cache-enam --location enam
+    // (North America, next to the Worker's placement; see "placement").
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "mastery-front-prod-cache-enam" },
+  ],
+  "durable_objects": {
+    "bindings": [
+      // Deduplicates background revalidation.
+      { "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" },
+      // Tag cache for revalidateTag (open-next.config.ts).
+      { "name": "NEXT_TAG_CACHE_DO_SHARDED", "class_name": "DOShardedTagCache" },
+    ],
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] },
+    { "tag": "v2", "new_sqlite_classes": ["DOShardedTagCache"] },
+  ],
+  // Serves the storefront hostname once the masteryacademy.site zone is active on Cloudflare.
+  // Disabled until the zone is added to this account (deploys fail on an unknown zone); the
+  // Worker is reachable on workers.dev meanwhile.
+  // "routes": [{ "pattern": "landing.masteryacademy.site", "custom_domain": true }],
+  "workers_dev": true,
+  // Pages render per request against the backend API (ALB + RDS in AWS us-east-1); running the
+  // Worker next to it avoids a cross-ocean round trip on every backend call. Static assets are
+  // still served from the nearest edge.
+  "placement": { "mode": "targeted", "region": "aws:us-east-1" },
+  "observability": {
+    "enabled": true,
+  },
+  // Non-secret server-side runtime configuration. NEXT_PUBLIC_* values are inlined into the
+  // client bundle at build time and come from .env.production.local, not from here.
+  "vars": {
+    "API_BASE_URL": "https://api.masteryacademy.site/api/v1",
+    "NEXT_PUBLIC_SITE_URL": "https://landing.masteryacademy.site",
+    "NEXT_PUBLIC_ENV": "production",
+    "NEXT_ENABLE_IMAGE_OPTIMIZATION": "true",
+    "AUTH_COOKIE_SECURE": "true",
+    "BUNNY_LIBRARY_ID": "362605",
+    "BUNNY_CDN_HOSTNAME": "vz-be0e9539-e4b.b-cdn.net",
+    "OTEL_SERVICE_NAME": "mastery-app",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "https://otlp-gateway-prod-us-central-0.grafana.net/otlp",
+  },
+}

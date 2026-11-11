@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { connection } from "next/server";
 
 import { routes } from "@/config/routes";
 import { baseOpenGraph } from "@/config/site";
@@ -21,14 +20,12 @@ export const metadata: Metadata = {
   },
 };
 
-// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
-// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
-// `revalidate` still sets how long this page's backend reads stay in the data cache, and
-// POST /api/revalidate still refreshes them.
+// Incremental static regeneration: prerendered at build, then served from the cache,
+// refreshed in the background every `revalidate` seconds and at once by POST /api/revalidate
+// (the admin's publish hook). On Cloudflare the cache lives in R2 (open-next.config.ts).
 export const revalidate = 600;
 
 export default async function BusinessSalesRoute() {
-  await connection();
   const catalog = await getBusinessCatalog();
   const salesCategory = catalog.categories.find((item) => item.code === "legacy-category-3");
   return <SalesLandingPage salesCategory={salesCategory} />;

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { connection } from "next/server";
 
 import { routes } from "@/config/routes";
 import { baseOpenGraph } from "@/config/site";
@@ -8,10 +7,9 @@ import { trainersPageCopy } from "@/features/trainers/content/copy";
 import { TrainersPage } from "@/features/trainers/trainers-page";
 import { getCatalogCategories, getOnboardingOptions } from "@/lib/api/catalog";
 
-// Rendered per request (`connection()` below), never prerendered: Amplify does not finish ISR
-// background regeneration, so a prerendered copy (empty if the API was down) would be served forever.
-// `revalidate` still sets how long this page's backend reads stay in the data cache, and
-// POST /api/revalidate still refreshes them.
+// Incremental static regeneration: prerendered at build, then served from the cache,
+// refreshed in the background every `revalidate` seconds and at once by POST /api/revalidate
+// (the admin's publish hook). On Cloudflare the cache lives in R2 (open-next.config.ts).
 export const revalidate = 600;
 
 export const metadata: Metadata = {
@@ -30,7 +28,6 @@ export const metadata: Metadata = {
 };
 
 export default async function TrainersRoute() {
-  await connection();
   const catalog = await getSearchCatalog();
   const [categories, onboarding] = await Promise.all([
     getCatalogCategories().catch(() => []),

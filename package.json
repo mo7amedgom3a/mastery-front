@@ -23,7 +23,11 @@
     "perf:desktop": "node scripts/lighthouse.mjs --preset=desktop --url=http://localhost:3001",
     "perf:all": "node scripts/lighthouse.mjs --preset=mobile --routes=/,/search,/live,/business,/blog && node scripts/lighthouse.mjs --preset=desktop --routes=/,/search,/live,/business,/blog",
     "assets:experts": "node scripts/optimize-landing-experts.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "cf:build": "node scripts/cf-build.mjs",
+    "cf:preview": "node scripts/cf-build.mjs && opennextjs-cloudflare preview",
+    "cf:deploy": "node scripts/cf-build.mjs && opennextjs-cloudflare deploy",
+    "cf:upload": "node scripts/cf-build.mjs && opennextjs-cloudflare upload"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -61,7 +65,7 @@
     "lucide-react": "^1.48.0",
     "marquee": "^0.2.1",
     "motion": "^13.4.4",
-    "next": "latest",
+    "next": "^16.4.6",
     "next-sitemap": "^4.2.3",
     "posthog-js": "^1.437.0",
     "qrcode": "^1.5.4",
@@ -82,6 +86,7 @@
   },
   "devDependencies": {
     "@grafana/faro-webpack-plugin": "^0.14.0",
+    "@opennextjs/cloudflare": "^1.20.16",
     "@playwright/test": "^1.64.0",
     "@tailwindcss/postcss": "latest",
     "@types/canvas-confetti": "^1.9.0",
@@ -90,11 +95,12 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "eslint": "latest",
-    "eslint-config-next": "latest",
+    "eslint-config-next": "^16.4.6",
     "openapi-typescript": "^7.13.0",
     "postcss": "latest",
     "tailwindcss": "latest",
     "tsx": "^4.23.15",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.160.0"
   }
 }

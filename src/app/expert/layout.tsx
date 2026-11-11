@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * The expert dashboard (`proxy.ts` sends guests to sign in first). Every page sits behind
+ * The expert dashboard (`middleware.ts` sends guests to sign in first). Every page sits behind
  * `ExpertGate`, which shows a "not linked" state to customers who are not experts.
  */
 export default function ExpertLayout({ children }: { children: ReactNode }) {
