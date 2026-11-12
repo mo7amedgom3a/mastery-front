@@ -1,5 +1,8 @@
-import { BookOpen, GraduationCap, MessagesSquare, Package, type LucideIcon } from "lucide-react";
+"use client";
+
+import { BookOpen, ChevronDown, GraduationCap, MessagesSquare, Package, type LucideIcon } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 
 import { AppLink } from "@/components/ui/app-link";
 import { brandBg, brandColorAt } from "@/components/ui/brand-colors";
@@ -13,6 +16,9 @@ import { startsWithLatin } from "../model/products";
 import { ContinueLearningButton } from "./continue-learning-button";
 import { DashboardPanel } from "./dashboard-panel";
 import { LearningProgress } from "./learning-progress";
+
+/** Rows shown before "show more": the panel sits beside the side column and shouldn't outgrow it. */
+const VISIBLE_ROWS = 3;
 
 const TYPE_ICONS: Record<string, LucideIcon> = {
   course: BookOpen,
@@ -31,6 +37,9 @@ type LearningListPanelProps = {
 
 /** The demo's compact «قيد التعلّم» rows, fed by live LMS courses. */
 export function LearningListPanel({ programs, source = "lms", pending, error, onRetry }: LearningListPanelProps) {
+  const [expanded, setExpanded] = useState(false);
+  const hidden = Math.max(0, programs.length - VISIBLE_ROWS);
+  const shown = expanded ? programs : programs.slice(0, VISIBLE_ROWS);
   return (
     <DashboardPanel
       id="learning-list-title"
@@ -68,7 +77,7 @@ export function LearningListPanel({ programs, source = "lms", pending, error, on
       ) : (
         <div className="@container">
           <ul className="m-0 flex list-none flex-col p-0">
-            {programs.map((program, index) => {
+            {shown.map((program, index) => {
               const latin = startsWithLatin(program.title);
               const Icon = TYPE_ICONS[program.typeLabel] ?? BookOpen;
 
@@ -137,6 +146,12 @@ export function LearningListPanel({ programs, source = "lms", pending, error, on
               );
             })}
           </ul>
+          {hidden > 0 ? (
+            <Button variant="ghost" size="sm" className="mt-3" aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>
+              <ChevronDown className={cn("size-4 fill-none transition-transform", expanded && "rotate-180")} aria-hidden="true" />
+              {expanded ? "عرض أقل" : `عرض ${hidden} برامج أخرى`}
+            </Button>
+          ) : null}
         </div>
       )}
     </DashboardPanel>

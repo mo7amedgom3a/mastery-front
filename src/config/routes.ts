@@ -142,7 +142,10 @@ export const routes = {
   /** A bundle or package the student can open: every resource inside it, with its details. */
   studentBundle: (slug: string) => route(`/students/learning/bundle/${encodeURIComponent(slug)}`),
   studentPackage: (id: number) => route(`/students/learning/package/${id}`),
-  /** Demo-data exams and detailed learning progress (no backend endpoints yet). */
+  /** Practice labs (scripted simulations, progress kept in the browser). Public, not indexed. */
+  labs: route("/labs"),
+  lab: (slug: string) => route(`/labs/${encodeURIComponent(slug)}`),
+  /** Quiz history (LMS) and detailed learning progress. */
   studentExams: route("/students/exams"),
   studentProgress: route("/students/progress"),
   studentInsights: route("/students/insights"),

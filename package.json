@@ -27,7 +27,8 @@
     "cf:build": "node scripts/cf-build.mjs",
     "cf:preview": "node scripts/cf-build.mjs && opennextjs-cloudflare preview",
     "cf:deploy": "node scripts/cf-build.mjs && opennextjs-cloudflare deploy",
-    "cf:upload": "node scripts/cf-build.mjs && opennextjs-cloudflare upload"
+    "cf:upload": "node scripts/cf-build.mjs && opennextjs-cloudflare upload",
+    "test:labs": "tsx scripts/test-labs.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

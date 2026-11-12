@@ -40,7 +40,7 @@ export function RhythmPanel({ activity }: { activity: InsightsActivity }) {
         <PanelEmpty>ستظهر خريطة أوقاتك بعد أول جلسات تعلّم لك.</PanelEmpty>
       ) : (
         <>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto [contain:paint]">
             <table className="w-full min-w-[560px] table-fixed border-separate border-spacing-[3px] text-[11px]">
               <caption className="sr-only">دقائق النشاط لكل يوم وساعة</caption>
               <colgroup>

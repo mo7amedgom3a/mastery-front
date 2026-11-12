@@ -17,6 +17,8 @@ import { lmsQueries } from "@/lib/api/lms";
 import { useAuthStore } from "@/lib/auth/store";
 import { formatCount } from "@/lib/format";
 
+import { LabsDashboardSection, LabsSkillPanel } from "@/features/labs/components/labs-dashboard";
+
 import { ExamsPanel } from "./components/exams-panel";
 import { InsightsSnapshotPanel } from "./components/insights-snapshot-panel";
 import { InviteFriendCard } from "./components/invite-friend-card";
@@ -169,16 +171,19 @@ function DashboardOverview({ onboardingCompleted }: { onboardingCompleted: boole
           loading={learningPending || certificates.isPending}
         />
 
-        <LearningListPanel
-          programs={programs}
-          source={programsResult.source}
-          pending={learningPending}
-          error={learningError}
-          onRetry={() => {
-            void lmsCourses.refetch();
-            void owned.refetch();
-          }}
-        />
+        <div className="flex min-w-0 flex-col gap-6">
+          <LearningListPanel
+            programs={programs}
+            source={programsResult.source}
+            pending={learningPending}
+            error={learningError}
+            onRetry={() => {
+              void lmsCourses.refetch();
+              void owned.refetch();
+            }}
+          />
+          <LabsSkillPanel className="flex-1" />
+        </div>
 
         <div className="flex min-w-0 flex-col gap-6">
           <InsightsSnapshotPanel />
@@ -190,6 +195,10 @@ function DashboardOverview({ onboardingCompleted }: { onboardingCompleted: boole
         <div className="grid gap-6 @2xl:grid-cols-2 @4xl:col-span-2">
           <ExamsPanel />
           <LearningProgressPanel />
+        </div>
+
+        <div className="@4xl:col-span-2">
+          <LabsDashboardSection />
         </div>
 
         <section aria-labelledby="what-next-title" className="@4xl:col-span-2 flex flex-col gap-4">

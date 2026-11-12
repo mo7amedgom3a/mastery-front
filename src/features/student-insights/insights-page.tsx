@@ -14,6 +14,7 @@ import { ActivityPanel } from "./components/activity-panel";
 import { CategoriesPanel } from "./components/categories-panel";
 import { CoursesPanel } from "./components/courses-panel";
 import { InterestsPanel } from "./components/interests-panel";
+import { LabsInsightsSection } from "./components/labs-insights";
 import { PanelEmpty } from "./components/panel-states";
 import { PlannerPanel } from "./components/planner-panel";
 import { ProfilePanel } from "./components/profile-panel";
@@ -100,6 +101,9 @@ export function InsightsPage() {
           <InterestsPanel interests={data.interests} />
           <CategoriesPanel categories={data.categories} />
           <SkillsPanel skills={data.skills} />
+          <div className="@4xl:col-span-2 min-w-0">
+            <LabsInsightsSection range={range} />
+          </div>
           <PlannerPanel weeks={data.planner} />
           <div className="@4xl:col-span-2">
             <QuizPanel />
