@@ -4,7 +4,7 @@ import { CalendarClock, Clock, Layers, UserRound } from "lucide-react";
 import { useState } from "react";
 
 import { actionsFor } from "@/components/shop/card-actions-for";
-import { buttonClass } from "@/components/ui/button";
+import { FilterChips } from "@/components/ui/filter-chips";
 import type { ProductCardMeta } from "@/components/ui/product-card";
 import { routes } from "@/config/routes";
 import { compositionLabel } from "@/features/bundle-detail/model/mappers";
@@ -21,50 +21,15 @@ const SESSION_FORMS = { one: "جلسة واحدة", two: "جلستان", few: "�
 /** Selected chip (null = all) and the cards it shows. */
 function useFilter<T extends { filterKeys: string[] }>(items: T[], filters: FilterVM[]) {
   const [active, setActive] = useState<string | null>(null);
-  const filter = filters.find((item) => item.key === active) ?? null;
+  // Only offer filters that can actually show a card. Otherwise a zero-match filter would hide the
+  // whole rail (chips included) and leave the visitor unable to switch back.
+  const available = filters.filter((item) => items.some((entry) => entry.filterKeys.includes(item.key)));
+  const filter = available.find((item) => item.key === active) ?? null;
   const visible = (filter ? items.filter((item) => item.filterKeys.includes(filter.key)) : items).slice(
     0,
     MAX_CARDS,
   );
-  return { filter, visible, select: setActive };
-}
-
-function FilterChips({
-  label,
-  filters,
-  active,
-  onSelect,
-}: {
-  label: string;
-  filters: FilterVM[];
-  active: FilterVM | null;
-  onSelect: (key: string | null) => void;
-}) {
-  if (filters.length < 2) {
-    return null;
-  }
-  const chips: { key: string | null; label: string }[] = [{ key: null, label: "الكل" }, ...filters];
-  return (
-    <div role="group" aria-label={label} className="mt-10 short:mt-6">
-      <ul className="-mx-4 m-0 flex list-none gap-2 overflow-x-auto p-0 px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0">
-        {chips.map((chip) => {
-          const selected = (active?.key ?? null) === chip.key;
-          return (
-            <li key={chip.key ?? "all"} className="shrink-0">
-              <button
-                type="button"
-                aria-pressed={selected}
-                onClick={() => onSelect(chip.key)}
-                className={buttonClass({ variant: selected ? "secondary" : "soft", size: "sm" })}
-              >
-                {chip.label}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
+  return { filter, visible, filters: available, select: setActive };
 }
 
 function courseMeta(course: CourseCardVM): ProductCardMeta[] {
@@ -83,7 +48,7 @@ export function CoursesSection({
   total: number;
   filters: FilterVM[];
 }) {
-  const { filter, visible, select } = useFilter(courses, filters);
+  const { filter, visible, filters: availableFilters, select } = useFilter(courses, filters);
   return (
     <ProductRailSection
       id="courses"
@@ -112,13 +77,18 @@ export function CoursesSection({
         tracking: { surface: "landing-courses", position },
       }))}
     >
-      <FilterChips label="تصفية الدورات حسب المجال" filters={filters} active={filter} onSelect={select} />
+      <FilterChips
+        label="تصفية الدورات حسب المجال"
+        filters={availableFilters}
+        activeKey={filter?.key ?? null}
+        onSelect={select}
+      />
     </ProductRailSection>
   );
 }
 
 export function DiplomasSection({ diplomas, filters }: { diplomas: CourseCardVM[]; filters: FilterVM[] }) {
-  const { filter, visible, select } = useFilter(diplomas, filters);
+  const { filter, visible, filters: availableFilters, select } = useFilter(diplomas, filters);
   return (
     <ProductRailSection
       id="diplomas"
@@ -142,13 +112,18 @@ export function DiplomasSection({ diplomas, filters }: { diplomas: CourseCardVM[
         tracking: { surface: "landing-diplomas", position },
       }))}
     >
-      <FilterChips label="تصفية الدبلومات حسب المجال" filters={filters} active={filter} onSelect={select} />
+      <FilterChips
+        label="تصفية الدبلومات حسب المجال"
+        filters={availableFilters}
+        activeKey={filter?.key ?? null}
+        onSelect={select}
+      />
     </ProductRailSection>
   );
 }
 
 export function PackagesSection({ packages, filters }: { packages: PackageCardVM[]; filters: FilterVM[] }) {
-  const { filter, visible, select } = useFilter(packages, filters);
+  const { filter, visible, filters: availableFilters, select } = useFilter(packages, filters);
   return (
     <ProductRailSection
       id="packages"
@@ -174,13 +149,18 @@ export function PackagesSection({ packages, filters }: { packages: PackageCardVM
         };
       })}
     >
-      <FilterChips label="تصفية الباقات حسب المجال" filters={filters} active={filter} onSelect={select} />
+      <FilterChips
+        label="تصفية الباقات حسب المجال"
+        filters={availableFilters}
+        activeKey={filter?.key ?? null}
+        onSelect={select}
+      />
     </ProductRailSection>
   );
 }
 
 export function BundlesSection({ bundles, filters }: { bundles: BundleCardVM[]; filters: FilterVM[] }) {
-  const { filter, visible, select } = useFilter(bundles, filters);
+  const { filter, visible, filters: availableFilters, select } = useFilter(bundles, filters);
   return (
     <ProductRailSection
       id="bundles"
@@ -205,7 +185,12 @@ export function BundlesSection({ bundles, filters }: { bundles: BundleCardVM[]; 
         };
       })}
     >
-      <FilterChips label="تصفية الحزم حسب المجال" filters={filters} active={filter} onSelect={select} />
+      <FilterChips
+        label="تصفية الحزم حسب المجال"
+        filters={availableFilters}
+        activeKey={filter?.key ?? null}
+        onSelect={select}
+      />
     </ProductRailSection>
   );
 }
@@ -217,7 +202,7 @@ export function ConsultationsSection({
   consultations: ConsultationCardVM[];
   filters: FilterVM[];
 }) {
-  const { filter, visible, select } = useFilter(consultations, filters);
+  const { filter, visible, filters: availableFilters, select } = useFilter(consultations, filters);
   return (
     <ProductRailSection
       id="consultations"
@@ -256,7 +241,12 @@ export function ConsultationsSection({
         };
       })}
     >
-      <FilterChips label="تصفية الاستشارات حسب المجال" filters={filters} active={filter} onSelect={select} />
+      <FilterChips
+        label="تصفية الاستشارات حسب المجال"
+        filters={availableFilters}
+        activeKey={filter?.key ?? null}
+        onSelect={select}
+      />
     </ProductRailSection>
   );
 }

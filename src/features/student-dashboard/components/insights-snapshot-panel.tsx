@@ -6,7 +6,7 @@ import { Bar, BarChart, Cell, ReferenceLine, XAxis } from "recharts";
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent, kitColor, seriesColor, type ChartConfig } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ViewAllLink } from "@/components/ui/view-all-link";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { formatDayLong, formatDuration } from "@/features/student-insights/model/format";
 import { insightsQueries } from "@/lib/api/insights";
@@ -21,7 +21,7 @@ const weekday = new Intl.DateTimeFormat("ar", { weekday: "narrow", timeZone: "UT
 export function InsightsSnapshotPanel() {
   // Same cache entry as the insights page's default range.
   const overview = useQuery(insightsQueries.overview("30d"));
-  const action = <ViewAllLink href={routes.studentInsights} label="التقرير الكامل" />;
+  const action = <DashboardActionLink href={routes.studentInsights} label="التقرير الكامل" />;
 
   if (overview.isPending) {
     return (

@@ -5,6 +5,7 @@ import { useEffect } from "react";
 
 import { AppLink } from "@/components/ui/app-link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -26,9 +27,7 @@ export function NotificationsPanel() {
       id="notifications-panel-title"
       title="آخر الإشعارات"
       action={
-        <AppLink href={routes.studentNotifications} className="ma-btn ma-btn--ghost ma-btn--sm">
-          الكل
-        </AppLink>
+        <DashboardActionLink href={routes.studentNotifications}>الكل</DashboardActionLink>
       }
     >
       {!items && status !== "error" ? (

@@ -49,6 +49,18 @@ import { salesFailureScenario } from "../src/features/labs/content/sales-failure
 import { requiredFunnel, scoreSalesFailure } from "../src/features/labs/content/sales-failure/score";
 import type { SalesFailureRun, WeekPlan } from "../src/features/labs/content/sales-failure/types";
 
+import { buildCloseReview, closeFacts, closeTasks, goodCalendar, jeTasks, recAnswer, recBalances, recLines, scoreClose, varianceLines, vatLines, materialIds, type CloseRun } from "../src/features/labs/content/close";
+import { calendarIssues, correctDeductions, reconcile, vatReturn } from "../src/features/labs/model/close-engine";
+import { buildInvestorQa, scoreForecast } from "../src/features/labs/content/forecast";
+import { defaultDrivers, runForecast, sanityFlags, type Drivers } from "../src/features/labs/model/forecast-sim";
+import { articlesScore, buildOfficerCall, scoreRegistration, services as portalServices } from "../src/features/labs/content/registration";
+import { idealOrder, startPortal, submit as portalSubmit, summarize as portalSummary, delay as portalDelay } from "../src/features/labs/model/portal-flow";
+import { buildBoardMeeting as buildGovMeeting, minutesScore, scoreGovernance, coiScore, boardScore } from "../src/features/labs/content/governance";
+import { deck as crisisDeck, initialMeters as crisisMeters, rounds as crisisRounds, scoreCrisis } from "../src/features/labs/content/crisis";
+import { feedSoFar, playRound, startCrisis } from "../src/features/labs/model/crisis-clock";
+import { locks as escapeLocks, scoreEscape } from "../src/features/labs/content/escape";
+import { roomSummary, skipLock, startRoom, takeHint, tryCode } from "../src/features/labs/model/escape-locks";
+
 let passed = 0;
 function test(name: string, fn: () => void) {
   fn();
@@ -670,6 +682,243 @@ test("catalog: the three new labs are registered with their source courses", () 
     assert.ok(lab.phases.length >= 3);
     assert.ok(lab.tagline.length > 0);
   }
+});
+
+// ---------- company journey labs ----------
+
+/** Plays a graph by always taking the first choice whose id is in `prefer`, else the first. */
+function play(graph: DialogueGraph, prefer: readonly string[]): DialogueState {
+  let state = startDialogue(graph);
+  for (let i = 0; i < 30 && !state.outcome; i++) {
+    const choices = availableChoices(graph, state);
+    const pick = choices.find((c) => prefer.includes(c.id)) ?? choices[0];
+    state = choose(graph, state, pick.id);
+  }
+  return state;
+}
+
+const journeyGraphs: DialogueGraph[] = [
+  buildCloseReview(closeFacts({ plan: goodCalendar, pairs: [...recAnswer.pairs], classes: recAnswer.classes, entries: {}, deducted: [], due: "", flags: [], reasons: {} })),
+  buildInvestorQa(defaultDrivers, "raise"),
+  buildOfficerCall({ tradeName: "nuqta-tech", contributionOk: true }),
+  buildGovMeeting({ coiHandled: true, auditIndependent: true }),
+  buildGovMeeting({ coiHandled: false, auditIndependent: false }),
+];
+
+test("journey dialogue graphs are sound and every path terminates", () => {
+  for (const graph of journeyGraphs) {
+    assert.deepEqual(validateGraph(graph), [], graph.id);
+    const outcomes = new Set(allEndings(graph).map((s) => s.outcome));
+    assert.ok(outcomes.has("success") || graph.id === "close-review", `${graph.id}: no success path`);
+    assert.ok(outcomes.size >= 2, `${graph.id}: only one outcome`);
+  }
+});
+
+test("close: the good calendar has no dependency issues; a rushed one does", () => {
+  assert.deepEqual(calendarIssues(closeTasks, goodCalendar), []);
+  const rushed = { ...goodCalendar, review: 2 as const, bankrec: -2 as const };
+  assert.ok(calendarIssues(closeTasks, rushed).length >= 2);
+});
+
+test("close: the right matches and classes reconcile to zero; a plug does not", () => {
+  const good = reconcile(recLines, recBalances, recAnswer.pairs, recAnswer.classes);
+  assert.equal(good.difference, 0);
+  assert.equal(good.adjustedBank, 1_252_120);
+  assert.equal(good.plugs, 0);
+  const plugged = reconcile(recLines, recBalances, recAnswer.pairs, { ...recAnswer.classes, l6b: "plug" });
+  assert.notEqual(plugged.difference, 0);
+  assert.equal(plugged.plugs, 1);
+});
+
+test("close: VAT return with reverse charge and blocked inputs", () => {
+  const right = vatReturn(vatLines, correctDeductions(vatLines));
+  assert.equal(right.outputVat, 177_000 + 8_208);
+  assert.equal(right.inputVat, Math.round((120_000 + 85_000 + 105_000 + 54_720) * 0.15));
+  const all = vatReturn(vatLines, vatLines.filter((l) => l.kind === "purchase").map((l) => l.id));
+  assert.ok(all.net < right.net, "deducting blocked inputs understates VAT due");
+  assert.deepEqual([...materialIds].sort(), ["host", "mkt", "rev"]);
+  assert.equal(varianceLines.length, 5);
+});
+
+const bestClose = (): CloseRun => {
+  const draft = {
+    plan: goodCalendar,
+    pairs: [...recAnswer.pairs],
+    classes: recAnswer.classes,
+    entries: Object.fromEntries(jeTasks.map((t) => [t.id, t.answer])),
+    deducted: correctDeductions(vatLines),
+    due: "oct31",
+    flags: [...materialIds],
+    reasons: { rev: "deferral", host: "accrual-region", mkt: "postpone" },
+  };
+  const review = play(buildCloseReview(closeFacts(draft)), ["rec-walk", "rev-ifrs15", "vat-reverse"]);
+  return { ...draft, review };
+};
+
+test("close: the best close scores high and earns clean-close; a sloppy one does not", () => {
+  const best = scoreClose(bestClose());
+  scorecardInBounds(best.scorecard, "close best");
+  assert.equal(best.cleanClose, true);
+  assert.ok(best.scorecard.overall >= 85, `best close ${best.scorecard.overall}`);
+  const sloppyDraft = { ...bestClose(), classes: { ...recAnswer.classes, l6b: "plug" as const }, deducted: vatLines.filter((l) => l.kind === "purchase").map((l) => l.id), entries: {} };
+  const sloppy = scoreClose({ ...sloppyDraft, review: play(buildCloseReview(closeFacts(sloppyDraft)), ["gap-hide", "rev-defend", "vat-risk"]) });
+  scorecardInBounds(sloppy.scorecard, "close sloppy");
+  assert.equal(sloppy.cleanClose, false);
+  assert.ok(sloppy.scorecard.overall < 50, `sloppy close ${sloppy.scorecard.overall}`);
+});
+
+const tunedDrivers: Drivers = { price: 790, newLogos: 14, cac: 6_500, churn: 2.5, hosting: 85, hires: 3 };
+
+test("forecast: deterministic; runway and margin react to the drivers", () => {
+  assert.deepEqual(runForecast(defaultDrivers, "base", "none"), runForecast(defaultDrivers, "base", "none"));
+  const base = runForecast(defaultDrivers, "base", "none");
+  assert.ok(base.runway < 12, `default runway ${base.runway}`);
+  assert.ok(base.grossMargin < 65, `default margin ${base.grossMargin}`);
+  const tuned = runForecast(tunedDrivers, "base", "raise");
+  assert.ok(tuned.runway >= 18 && tuned.grossMargin >= 65, `tuned ${tuned.runway} / ${tuned.grossMargin}`);
+  assert.ok(runForecast(tunedDrivers, "downside", "raise").endingCustomers < tuned.endingCustomers);
+  assert.deepEqual(sanityFlags(tunedDrivers), []);
+  assert.ok(sanityFlags({ ...defaultDrivers, churn: 0.5, cac: 3_000, newLogos: 35 }).length >= 3);
+});
+
+test("forecast: the tuned plan with a raise earns runway-keeper; the fantasy plan does not", () => {
+  const qa = play(buildInvestorQa(tunedDrivers, "raise"), ["sensitivity", "gm-plan", "fix-first", "fund-logic"]);
+  const best = scoreForecast({ causes: ["gm", "payback", "runway"], drivers: tunedDrivers, funding: "raise", qa });
+  scorecardInBounds(best.scorecard, "forecast best");
+  assert.equal(best.runwayKeeper, true);
+  assert.ok(best.scorecard.overall >= 85, `forecast best ${best.scorecard.overall}`);
+  const fantasy: Drivers = { price: 690, newLogos: 35, cac: 3_000, churn: 0.5, hosting: 70, hires: 6 };
+  const bad = scoreForecast({
+    causes: ["churn", "market"],
+    drivers: fantasy,
+    funding: "none",
+    qa: play(buildInvestorQa(fantasy, "none"), ["confident", "flag-defend", "grow-anyway", "fund-market"]),
+  });
+  scorecardInBounds(bad.scorecard, "forecast bad");
+  assert.equal(bad.runwayKeeper, false);
+  assert.ok(bad.scorecard.overall < 45, `forecast bad ${bad.scorecard.overall}`);
+});
+
+test("registration: the ideal order is never rejected; submitting CR first is", () => {
+  let state = startPortal();
+  for (const id of idealOrder(portalServices)) state = portalSubmit(portalServices, state, id);
+  const summary = portalSummary(portalServices, state);
+  assert.equal(summary.rejections, 0);
+  assert.deepEqual(summary.missingRequired, []);
+  const early = portalSubmit(portalServices, startPortal(), "cr");
+  assert.equal(early.log[0].status, "rejected");
+  assert.deepEqual(early.log[0].missing, ["misa"]);
+});
+
+test("registration: a clean founding earns founder; a careless one does not", () => {
+  const redlines = { contribution: "cash", transfer: "preempt", powers: "limits", profits: "reserve" };
+  assert.equal(articlesScore({ form: "sjsc", tradeName: "nuqta-tech", management: "board3" }, redlines), 100);
+  let portal = startPortal();
+  for (const id of idealOrder(portalServices)) portal = portalSubmit(portalServices, portal, id);
+  portal = portalDelay(portal, "cr", 2);
+  const officer = play(buildOfficerCall({ tradeName: "nuqta-tech", contributionOk: true }), ["clarify", "fix-same-day", "honest-eta"]);
+  assert.equal(officer.outcome, "success");
+  const best = scoreRegistration({ form: "sjsc", tradeName: "nuqta-tech", management: "board3", redlines, portal, officer });
+  scorecardInBounds(best.scorecard, "registration best");
+  assert.equal(best.founder, true);
+  assert.ok(best.scorecard.overall >= 90, `registration best ${best.scorecard.overall}`);
+
+  let rushed = startPortal();
+  for (const id of ["cr", "bank", "balady", "misa", "cr"]) rushed = portalSubmit(portalServices, rushed, id);
+  const bad = scoreRegistration({
+    form: "est",
+    tradeName: "nuqta-bank",
+    management: "none",
+    redlines: {},
+    portal: rushed,
+    officer: play(buildOfficerCall({ tradeName: "nuqta-bank", contributionOk: false }), ["shortcut", "apologize", "new-application", "blame-gov"]),
+  });
+  scorecardInBounds(bad.scorecard, "registration bad");
+  assert.equal(bad.founder, false);
+  assert.ok(bad.scorecard.overall < 40, `registration bad ${bad.scorecard.overall}`);
+});
+
+test("governance: the guardian path scores high; hiding the conflict scores low", () => {
+  const design = { size: "5", independents: "1", audit: "independent", chair: "separate" };
+  assert.equal(boardScore(design), 100);
+  const coi = { disclosure: "written", process: "recuse", register: "register" };
+  assert.equal(coiScore(coi), 100);
+  const minutes = { quorum: "full", budget: "interim", coi: "disclosed", dissent: "recorded", incident: "confidential" };
+  assert.equal(minutesScore(minutes), 100);
+  const doa = { payment: "cfo", hiring: "ceo", budget: "board", contract: "board", loan: "board", rpt: "board", capital: "assembly", auditor: "assembly" };
+  const meeting = play(buildGovMeeting({ coiHandled: true, auditIndependent: true }), ["quorum", "defer-detail", "record", "recuse", "record-dissent", "minute-it"]);
+  assert.equal(meeting.outcome, "success");
+  const best = scoreGovernance({ design, doa, coi, meeting, minutes });
+  scorecardInBounds(best.scorecard, "governance best");
+  assert.equal(best.governanceGuardian, true);
+  assert.ok(best.scorecard.overall >= 90, `governance best ${best.scorecard.overall}`);
+  const bad = scoreGovernance({
+    design: { size: "9", independents: "0", audit: "ceo", chair: "ceo" },
+    doa: {},
+    coi: { disclosure: "quiet", process: "approve", register: "minutes-only" },
+    meeting: play(buildGovMeeting({ coiHandled: false, auditIndependent: false }), ["jump", "rubber-stamp", "let-pass", "unanimous", "off"]),
+    minutes: {},
+  });
+  scorecardInBounds(bad.scorecard, "governance bad");
+  assert.ok(bad.scorecard.overall < 30, `governance bad ${bad.scorecard.overall}`);
+});
+
+const bestCrisisPicks = [["contain"], ["board-legal", "notify-sdaia"], ["holding"], ["support-script", "notify-customers"], ["account-call"], ["postmortem"]];
+
+test("crisis: deterministic feed; notifying early and containing earns crisis-commander", () => {
+  let state = startCrisis(crisisMeters);
+  for (const picks of bestCrisisPicks) state = playRound(crisisRounds, crisisDeck, state, picks);
+  assert.equal(state.done, true);
+  assert.deepEqual(feedSoFar(crisisRounds, state).map((e) => e.id), feedSoFar(crisisRounds, state).map((e) => e.id));
+  assert.ok(feedSoFar(crisisRounds, state).some((e) => e.id === "e9"), "regulator acknowledgment after early notice");
+  const statement = { what: "accurate", data: "precise", actions: "concrete", advice: "phishing", apology: "own" };
+  const best = scoreCrisis({ state, statement });
+  scorecardInBounds(best.scorecard, "crisis best");
+  assert.equal(best.crisisCommander, true);
+  assert.ok(best.scorecard.overall >= 85, `crisis best ${best.scorecard.overall}`);
+
+  let bad = startCrisis(crisisMeters);
+  for (const picks of [["observe"], ["delete-logs"], ["deny"], ["scapegoat"], ["discount-all"], ["scapegoat"]]) bad = playRound(crisisRounds, crisisDeck, bad, picks);
+  assert.ok(feedSoFar(crisisRounds, bad).some((e) => e.id === "e9b"), "regulator inquiry when not notified");
+  const worst = scoreCrisis({ state: bad, statement: {} });
+  scorecardInBounds(worst.scorecard, "crisis worst");
+  assert.equal(worst.crisisCommander, false);
+  assert.ok(worst.scorecard.overall < 30, `crisis worst ${worst.scorecard.overall}`);
+});
+
+test("escape: codes open locks in time; hints and wrong codes cost minutes", () => {
+  let room = startRoom();
+  for (const lock of escapeLocks) room = tryCode(escapeLocks, room, lock.code).state;
+  const summary = roomSummary(escapeLocks, room);
+  assert.equal(summary.solved, 5);
+  assert.ok(summary.left > 0);
+  assert.equal(room.over, true);
+  const best = scoreEscape({ state: room, recommendation: "conditions" });
+  scorecardInBounds(best.scorecard, "escape best");
+  assert.equal(best.escapeArtist, true);
+  assert.ok(best.scorecard.overall >= 85, `escape best ${best.scorecard.overall}`);
+  assert.equal(tryCode(escapeLocks, startRoom(), "١٦٠,٠٠٠").correct, true, "Arabic digits and separators are normalised");
+
+  let slow = startRoom();
+  for (let i = 0; i < 6; i++) slow = tryCode(escapeLocks, slow, "1").state;
+  slow = takeHint(escapeLocks, slow);
+  slow = takeHint(escapeLocks, slow);
+  slow = skipLock(escapeLocks, slow);
+  const s = roomSummary(escapeLocks, slow);
+  assert.equal(s.wrong, 6);
+  assert.equal(s.hints, 2);
+  const weak = scoreEscape({ state: slow, recommendation: "proceed" });
+  scorecardInBounds(weak.scorecard, "escape weak");
+  assert.equal(weak.escapeArtist, false);
+});
+
+test("catalog: the six journey labs are registered; finance and governance left coming-soon", () => {
+  for (const slug of ["startup-company-registration", "governance-first-board", "cfo-forecast-runway", "finance-quarter-close", "crisis-data-leak", "audit-escape-room"] as const) {
+    const lab = labs.find((entry) => entry.slug === slug);
+    assert.ok(lab, `${slug} missing`);
+    assert.ok(lab.phases.length >= 2);
+  }
+  assert.ok(labs.length >= 18, `${labs.length} labs`);
 });
 
 console.log(`\n${passed} labs checks passed`);

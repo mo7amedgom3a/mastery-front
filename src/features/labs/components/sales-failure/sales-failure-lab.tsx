@@ -6,6 +6,7 @@ import { salesFailureScenario } from "../../content/sales-failure/scenario";
 import { scoreSalesFailure } from "../../content/sales-failure/score";
 import type { CauseId, CauseStatus, FollowUpSlot, FunnelAnswer, WeekPlan } from "../../content/sales-failure/types";
 import { choose, learnerTalkShare, startDialogue, type DialogueState } from "../../model/dialogue";
+import { useLabSession } from "../../api";
 import { finishAttempt } from "../../model/progress-store";
 import { clock } from "../../model/scoring";
 import { usePracticeClock } from "../../model/use-practice-clock";
@@ -39,7 +40,8 @@ const emptyPlan: WeekPlan = { sun: [], mon: [], tue: [], wed: [], thu: [] };
 /** The sales-failure week: plan → funnel → questions → GPS cold call → follow-up → 10-cause debrief. */
 export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
   const scenario = salesFailureScenario;
-  const practice = usePracticeClock();
+  const practiceClock = usePracticeClock();
+  const practice = useLabSession(lab.slug);
   const [stage, setStage] = useState<Stage>("brief");
   const [attempt, setAttempt] = useState(0);
   const [pre, setPre] = useState<QuizResult | null>(null);
@@ -52,6 +54,7 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
   const [causes, setCauses] = useState<Record<CauseId, CauseStatus> | null>(null);
 
   const restart = () => {
+    void practice.reset();
     setStage("brief");
     setAttempt((n) => n + 1);
     setPre(null);
@@ -62,10 +65,10 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
     setFollowUp({ 1: null, 2: null, 3: null });
     setResult(null);
     setCauses(null);
-    practice.reset();
+    practiceClock.reset();
   };
 
-  const finish = (post: QuizResult) => {
+  const finish = async (post: QuizResult) => {
     const tags = Object.entries(call.tags).flatMap(([tag, count]) => Array.from({ length: count }, () => tag));
     const notes = call.transcript
       .filter((entry) => entry.note)
@@ -79,16 +82,27 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
       postPercent: post.percent,
     });
     setCauses(scored.causes);
-    setResult(
-      finishAttempt(
-        lab.slug,
-        scored.scorecard,
-        { rejectionProof: scored.rejectionProof, funnelMaster: scored.funnelMaster },
-        pre,
-        post,
-        practice.elapsedSeconds(),
-      ),
+    const run = {
+      plan,
+      funnel,
+      questions,
+      call: { outcome: call.outcome, tags, notes },
+      followUp,
+      postPercent: post.percent,
+    };
+    const result = await practice.complete(
+      { engine: "legacy", scorer: "sales-failure", run, pre, post, elapsed_seconds: practiceClock.elapsedSeconds() },
+      () =>
+        finishAttempt(
+          lab.slug,
+          scored.scorecard,
+          { rejectionProof: scored.rejectionProof, funnelMaster: scored.funnelMaster },
+          pre,
+          post,
+          practiceClock.elapsedSeconds(),
+        ),
     );
+    setResult(result);
     setStage("debrief");
   };
 
@@ -112,7 +126,7 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
         <BriefingCard
           lab={lab}
           onStart={() => {
-            practice.reset();
+            practiceClock.reset();
             setStage("pre");
           }}
         />
@@ -121,8 +135,10 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
         <SkillQuiz
           mode="pre"
           questions={scenario.preQuiz}
-          onDone={(value) => {
+          onDone={(value, answers) => {
+            void practice.submitQuiz("pre", answers);
             setPre(value);
+            void practice.enterPhase("plan");
             setStage("plan");
           }}
         />
@@ -132,6 +148,8 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
           scenario={scenario}
           onDone={(value) => {
             setPlan(value);
+            void practice.submitForm("plan", { plan: value });
+            void practice.enterPhase("funnel");
             setStage("funnel");
           }}
         />
@@ -141,6 +159,8 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
           scenario={scenario}
           onDone={(value) => {
             setFunnel(value);
+            void practice.submitForm("funnel", { ...value });
+            void practice.enterPhase("questions");
             setStage("questions");
           }}
         />
@@ -150,6 +170,8 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
           scenario={scenario}
           onDone={(value) => {
             setQuestions(value);
+            void practice.submitForm("questions", { questions: value });
+            void practice.enterPhase("call");
             setStage("call");
           }}
         />
@@ -158,8 +180,14 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
         <PersonaChat
           graph={scenario.graph}
           state={call}
-          onChoose={(id) => setCall((current) => choose(scenario.graph, current, id))}
-          onContinue={() => setStage("followup")}
+          onChoose={(id) => {
+            void practice.choose(scenario.graph.id, call.nodeId, id);
+            setCall((current) => choose(scenario.graph, current, id));
+          }}
+          onContinue={() => {
+            void practice.enterPhase("followup");
+            setStage("followup");
+          }}
           continueLabel="خطّط المتابعة"
           factLabels={scenario.facts}
           showTalkRatio
@@ -170,11 +198,22 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
           scenario={scenario}
           onDone={(value) => {
             setFollowUp(value);
+            void practice.submitForm("followup", { followUp: value });
+            void practice.enterPhase("post");
             setStage("post");
           }}
         />
       ) : null}
-      {stage === "post" ? <SkillQuiz mode="post" questions={scenario.postQuiz} onDone={finish} /> : null}
+      {stage === "post" ? (
+        <SkillQuiz
+          mode="post"
+          questions={scenario.postQuiz}
+          onDone={(r, answers) => {
+            void practice.submitQuiz("post", answers);
+            void finish(r);
+          }}
+        />
+      ) : null}
       {stage === "debrief" && result ? (
         <div className="flex flex-col gap-6">
           {causes ? <CausesChecklist causes={scenario.causes} statuses={causes} /> : null}

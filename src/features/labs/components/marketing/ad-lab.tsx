@@ -41,6 +41,7 @@ import {
   type Pacing,
   type Platform,
 } from "../../model/ad-market";
+import { useLabSession } from "../../api";
 import { finishAttempt } from "../../model/progress-store";
 import { usePracticeClock } from "../../model/use-practice-clock";
 import type { LabDefinition, LabResult, QuizResult } from "../../model/types";
@@ -51,6 +52,7 @@ import { LabScorecard } from "../scorecard";
 import { formatTip } from "./format-tips";
 import { PlatformPreview } from "./platform-previews";
 import { SkillQuiz } from "../skill-quiz";
+import { LabTable } from "../workspace/lab-table";
 
 type Stage = "brief" | "pre" | "audience" | "creative" | "budget" | "run" | "post" | "debrief";
 const stepOf: Record<Stage, number> = { brief: 0, pre: 0, audience: 1, creative: 2, budget: 3, run: 4, post: 5, debrief: 5 };
@@ -415,31 +417,32 @@ function RunStep({ campaign, onRunDay, onFinish }: { campaign: Campaign; onRunDa
             <span>الخطوط المتقطعة: الأهداف</span>
           </div>
           {campaign.days.length ? (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[480px] text-[13px]">
-                <thead className="text-fg-muted">
-                  <tr className="border-b border-line text-start">
-                    {["اليوم", "الإنفاق", "الظهور", "التفاعل", "CPM", "ملاحظة"].map((h) => (
-                      <th key={h} className="py-2 text-start font-semibold">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {campaign.days.map((d) => (
-                    <tr key={d.day} className="border-b border-line/60">
-                      <td className="py-1.5 tabular-nums">{d.day}</td>
-                      <td className="tabular-nums">{money(d.spend)}</td>
-                      <td className="tabular-nums">{formatNumber(d.impressions)}</td>
-                      <td className="tabular-nums">{formatNumber(d.likes)}</td>
-                      <td className={cn("tabular-nums", d.competitor && "text-pink")}>{money(d.cpm)}</td>
-                      <td className="text-fg-muted">
-                        {[d.competitor ? "عرض المنافس" : null, d.refreshed ? "إعلان جديد" : null].filter(Boolean).join(" · ") || "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <LabTable
+              dense
+              minWidth="min-w-[480px]"
+              caption="نتائج الحملة يوميًا"
+              columns={[
+                { key: "day", label: "اليوم", numeric: true },
+                { key: "spend", label: "الإنفاق", numeric: true },
+                { key: "impressions", label: "الظهور", numeric: true },
+                { key: "likes", label: "التفاعل", numeric: true },
+                { key: "cpm", label: "CPM", numeric: true },
+                { key: "note", label: "ملاحظة", className: "text-fg-muted" },
+              ]}
+              rows={campaign.days.map((d) => ({
+                key: String(d.day),
+                cells: [
+                  String(d.day),
+                  money(d.spend),
+                  formatNumber(d.impressions),
+                  formatNumber(d.likes),
+                  <bdi key="cpm" dir="ltr" className={cn("tabular-nums", d.competitor && "text-pink")}>
+                    {money(d.cpm)}
+                  </bdi>,
+                  [d.competitor ? "عرض المنافس" : null, d.refreshed ? "إعلان جديد" : null].filter(Boolean).join(" · ") || "—",
+                ],
+              }))}
+            />
           ) : null}
         </LabPanel>
 
@@ -522,8 +525,10 @@ export function MarketingLab({ lab }: { lab: LabDefinition }) {
   const [result, setResult] = useState<LabResult | null>(null);
 
   const clock = usePracticeClock();
+  const practice = useLabSession(lab.slug);
 
   const restart = () => {
+    void practice.reset();
     setStage("brief");
     setAttempt((n) => n + 1);
     clock.reset();
@@ -533,10 +538,14 @@ export function MarketingLab({ lab }: { lab: LabDefinition }) {
     setResult(null);
   };
 
-  const finish = (post: QuizResult) => {
+  const finish = async (post: QuizResult) => {
     if (!campaign) return;
     const { scorecard, targetMet } = scoreMarketing(campaign);
-    setResult(finishAttempt(lab.slug, scorecard, { marketingTargetMet: targetMet }, pre, post, clock.elapsedSeconds()));
+    const result = await practice.complete(
+      { engine: "legacy", scorer: "marketing", run: campaign, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      () => finishAttempt(lab.slug, scorecard, { marketingTargetMet: targetMet }, pre, post, clock.elapsedSeconds()),
+    );
+    setResult(result);
     setStage("debrief");
   };
 
@@ -555,19 +564,55 @@ export function MarketingLab({ lab }: { lab: LabDefinition }) {
 
   return (
     <LabShell key={attempt} lab={lab} step={stepOf[stage]} hud={hud}>
-      {stage === "brief" ? <BriefingCard lab={lab} onStart={() => setStage("pre")} /> : null}
+      {stage === "brief" ? (
+        <BriefingCard
+          lab={lab}
+          onStart={() => {
+            void practice.start();
+            void practice.enterPhase("pre");
+            setStage("pre");
+          }}
+        />
+      ) : null}
       {stage === "pre" ? (
         <SkillQuiz
           mode="pre"
           questions={marketingPreQuiz}
-          onDone={(r) => {
+          onDone={(r, answers) => {
+            void practice.submitQuiz("pre", answers);
             setPre(r);
+            void practice.enterPhase("audience");
             setStage("audience");
           }}
         />
       ) : null}
-      {stage === "audience" ? <AudienceStep plan={plan} setPlan={setPlan} onNext={() => setStage("creative")} /> : null}
-      {stage === "creative" ? <CreativeStep plan={plan} setPlan={setPlan} onNext={() => setStage("budget")} /> : null}
+      {stage === "audience" ? (
+        <AudienceStep
+          plan={plan}
+          setPlan={setPlan}
+          onNext={() => {
+            void practice.submitForm("audience", {
+              city: plan.city,
+              ages: plan.ages,
+              interests: plan.interests,
+              platforms: plan.platforms,
+            });
+            void practice.enterPhase("creative");
+            setStage("creative");
+          }}
+        />
+      ) : null}
+      {stage === "creative" ? (
+        <CreativeStep
+          plan={plan}
+          setPlan={setPlan}
+          onNext={() => {
+            void practice.submitForm("creative", { ...plan.creative });
+            void practice.enterPhase("budget");
+            setStage("budget");
+          }}
+        />
+      ) : null}
       {stage === "budget" ? (
         <BudgetStep
           plan={plan}
@@ -576,6 +621,12 @@ export function MarketingLab({ lab }: { lab: LabDefinition }) {
             const ready = { ...plan, split: normaliseSplit(plan.split, plan.platforms) };
             setPlan(ready);
             setCampaign(startCampaign(ready));
+            void practice.submitForm("budget", {
+              split: ready.split,
+              bid: ready.bid,
+              pacing: ready.pacing,
+            });
+            void practice.enterPhase("run");
             setStage("run");
           }}
         />
@@ -583,13 +634,23 @@ export function MarketingLab({ lab }: { lab: LabDefinition }) {
       {stage === "run" && campaign ? (
         <RunStep
           campaign={campaign}
-          onRunDay={(decision) =>
-            setCampaign((c) => (c ? simulateDay(c, { ...decision, creative: c.plan.creative }, attempt + 11) : c))
-          }
+          onRunDay={(decision) => {
+            void practice.simulateStep("run", { ...decision });
+            setCampaign((c) => (c ? simulateDay(c, { ...decision, creative: c.plan.creative }, attempt + 11) : c));
+          }}
           onFinish={() => setStage("post")}
         />
       ) : null}
-      {stage === "post" ? <SkillQuiz mode="post" questions={marketingPostQuiz} onDone={finish} /> : null}
+      {stage === "post" ? (
+        <SkillQuiz
+          mode="post"
+          questions={marketingPostQuiz}
+          onDone={(r, answers) => {
+            void practice.submitQuiz("post", answers);
+            void finish(r);
+          }}
+        />
+      ) : null}
       {stage === "debrief" && result ? <LabScorecard lab={lab} result={result} onRetry={restart} /> : null}
     </LabShell>
   );

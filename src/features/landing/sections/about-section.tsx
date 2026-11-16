@@ -9,7 +9,7 @@ import { aboutCopy } from "../content/copy";
 
 export function AboutSection() {
   return (
-    <Section id="about" aria-labelledby="about-title" deferRender>
+    <Section id="about" aria-labelledby="about-title" tone="alt" deferRender>
       <div className="grid items-center gap-10 md:grid-cols-2 md:gap-16">
         <div>
           <SectionHeader id="about-title" label={aboutCopy.label} title={aboutCopy.title} />

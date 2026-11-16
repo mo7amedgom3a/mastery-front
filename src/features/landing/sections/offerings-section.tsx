@@ -50,6 +50,7 @@ export function OfferingsSection() {
       <AutoplayTabs
         idPrefix="offerings"
         label="خدمات أكاديمية ماستري"
+        pauseable
         className="mt-14 short:mt-8"
         tabs={offerings.map(({ id, label }) => ({ id, label }))}
         panels={offerings.map((offering, index) => (

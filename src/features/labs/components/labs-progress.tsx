@@ -11,28 +11,22 @@ import { cn } from "@/lib/cn";
 import { formatNumber } from "@/lib/format";
 
 import { labs } from "../model/catalog";
-import { badgeInfo, bestScore, skillProfile, useLabsHydrated, useLabsProgress, type Attempt } from "../model/progress-store";
+import { badgeInfo, bestScore, skillProfile, type Attempt } from "../model/progress-store";
 import { skillLabels, skillShortLabels, type BadgeId, type LabDefinition, type Skill } from "../model/types";
 import { Pill } from "./bits";
 
 /**
  * Shared pieces of the learner's lab progress (XP, completed labs, badges, skill profile, lab
- * cards), used by the labs hub and the student dashboard. Progress lives in localStorage, so the
- * server render shows the empty state and the real numbers appear after hydration.
+ * cards), used by the labs hub and the student dashboard. Attempts come from the labs API (the
+ * mock server today); the local store is a fallback while it loads.
  */
 
+import { useLabsSnapshot, type LabsSnapshot } from "../api";
+
+export { useLabsSnapshot };
+export type { LabsSnapshot };
+
 export const allBadges = Object.keys(badgeInfo) as BadgeId[];
-
-export type LabsSnapshot = { attempts: Attempt[]; xp: number; badges: BadgeId[]; completed: number; hydrated: boolean };
-
-export function useLabsSnapshot(): LabsSnapshot {
-  const hydrated = useLabsHydrated();
-  const attempts = useLabsProgress((s) => s.attempts);
-  const xp = useLabsProgress((s) => s.xp);
-  const badges = useLabsProgress((s) => s.badges);
-  if (!hydrated) return { attempts: [], xp: 0, badges: [], completed: 0, hydrated };
-  return { attempts, xp, badges, completed: new Set(attempts.map((a) => a.slug)).size, hydrated };
-}
 
 function Tile({ icon: Icon, iconClass, label, value }: { icon?: typeof Sparkles; iconClass?: string; label: string; value: string }) {
   return (

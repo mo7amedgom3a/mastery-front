@@ -6,11 +6,12 @@ import { brandBg } from "@/components/ui/brand-colors";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 
+import { useResetLabs } from "../api";
 import { comingSoonLabs, labs } from "../model/catalog";
-import { useLabsProgress } from "../model/progress-store";
 import type { LabDefinition } from "../model/types";
 import { LabPanel, Pill } from "./bits";
 import { BadgeGrid, LabCard, LabStatTiles, SkillRadar, useLabsSnapshot } from "./labs-progress";
+import { JourneyStrip } from "./workspace/journey-strip";
 
 /** Live labs grouped by catalog category, in catalog order. */
 const groups = labs.reduce<{ name: string; labs: LabDefinition[] }[]>((acc, lab) => {
@@ -23,7 +24,7 @@ const groups = labs.reduce<{ name: string; labs: LabDefinition[] }[]>((acc, lab)
 /** The labs hub: live labs by catalog category, coming-soon categories, XP, badges and skill profile. */
 export function LabsHub() {
   const snapshot = useLabsSnapshot();
-  const reset = useLabsProgress((s) => s.reset);
+  const reset = useResetLabs();
 
   return (
     <div className="ma-container flex flex-col gap-8 py-8 md:py-12">
@@ -38,6 +39,8 @@ export function LabsHub() {
       </header>
 
       <LabStatTiles snapshot={snapshot} />
+
+      <JourneyStrip attempts={snapshot.attempts} />
 
       <section aria-labelledby="labs-live" className="flex flex-col gap-6">
         <h2 id="labs-live" className="m-0 text-xl font-bold">
@@ -66,7 +69,7 @@ export function LabsHub() {
           title="الشارات"
           action={
             snapshot.attempts.length ? (
-              <Button variant="ghost" size="sm" onClick={reset}>
+              <Button variant="ghost" size="sm" onClick={() => reset.mutate()}>
                 <RotateCcw className="size-4" aria-hidden /> إعادة الضبط
               </Button>
             ) : null

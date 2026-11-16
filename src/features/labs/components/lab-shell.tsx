@@ -9,6 +9,8 @@ import { cn } from "@/lib/cn";
 
 import { clock } from "../model/scoring";
 import type { LabDefinition } from "../model/types";
+
+type LabFrame = Pick<LabDefinition, "title" | "categoryName" | "phases">;
 import { valueDir } from "./bits";
 
 /** The lab frame: back link, title, phase stepper, elapsed timer and an objectives HUD. */
@@ -18,7 +20,7 @@ export function LabShell({
   hud,
   children,
 }: {
-  lab: LabDefinition;
+  lab: LabFrame;
   /** 0 = briefing, 1..n = lab phases, n+1 = debrief. */
   step: number;
   hud?: ReactNode;

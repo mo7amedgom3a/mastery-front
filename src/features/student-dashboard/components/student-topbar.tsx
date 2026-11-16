@@ -15,10 +15,11 @@ import { studentNavLabel } from "./student-nav";
 type StudentTopbarProps = {
   open: boolean;
   onOpenMenu: () => void;
+  onOpenSearch: () => void;
 };
 
 /** The demo's slim topbar: breadcrumbs on the start side, search/cart/theme/account on the end. */
-export function StudentTopbar({ open, onOpenMenu }: StudentTopbarProps) {
+export function StudentTopbar({ open, onOpenMenu, onOpenSearch }: StudentTopbarProps) {
   const pathname = usePathname();
   const home = pathname === routes.studentHome;
   const label = home ? "لوحتي" : studentNavLabel(pathname);
@@ -54,26 +55,30 @@ export function StudentTopbar({ open, onOpenMenu }: StudentTopbarProps) {
       </nav>
 
       <div className="ms-auto flex items-center gap-0.5">
-        <AppLink
-          href={routes.search}
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          aria-haspopup="dialog"
           className="hidden min-h-10 items-center gap-2 rounded-ctl border border-line px-3 text-sm text-fg-muted no-underline hover:border-line-strong hover:text-fg md:inline-flex"
         >
           <Search aria-hidden="true" className="size-4 shrink-0 fill-none" />
-          <span className="whitespace-nowrap">ابحث في برامجك</span>
+          <span className="whitespace-nowrap">ابحث في لوحتك</span>
           <kbd
             dir="ltr"
             className="ms-1 rounded border border-line px-1 font-mono text-[11px] leading-[18px] text-fg-muted"
           >
             Ctrl K
           </kbd>
-        </AppLink>
-        <AppLink
-          href={routes.search}
-          aria-label="البحث في البرامج"
+        </button>
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          aria-haspopup="dialog"
+          aria-label="البحث في لوحة الطالب"
           className="ma-btn ma-btn--bare ma-btn--icon size-11 md:hidden"
         >
           <Search aria-hidden="true" className="size-5 fill-none" />
-        </AppLink>
+        </button>
 
         <AppLink
           href={routes.studentCart}

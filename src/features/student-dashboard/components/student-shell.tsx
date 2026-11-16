@@ -2,7 +2,6 @@
 
 import { Search, X } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { HeaderAccount } from "@/components/layout/header-account";
@@ -14,6 +13,7 @@ import { cn } from "@/lib/cn";
 
 import { SidebarPlan } from "./sidebar-plan";
 import { StudentNav } from "./student-nav";
+import { StudentSearch } from "./student-search";
 import { StudentTopbar } from "./student-topbar";
 
 /**
@@ -23,7 +23,7 @@ import { StudentTopbar } from "./student-topbar";
  * an off-canvas drawer opened from the topbar.
  */
 export function StudentShell({ children }: { children: ReactNode }) {
-  const router = useRouter();
+  const [searchOpen, setSearchOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   useActivityHeartbeat();
@@ -50,13 +50,13 @@ export function StudentShell({ children }: { children: ReactNode }) {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         setOpen(false);
-        router.push(routes.search);
+        setSearchOpen(true);
       }
       if (event.key === "Escape") setOpen(false);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     if (open) closeRef.current?.focus();
@@ -106,9 +106,10 @@ export function StudentShell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <AppLink
-          href={routes.search}
-          onClick={() => setOpen(false)}
+        <button
+          type="button"
+          aria-haspopup="dialog"
+          onClick={() => { setOpen(false); setSearchOpen(true); }}
           className="mx-3 mb-2 flex min-h-[42px] items-center gap-2.5 rounded-ctl border border-line bg-surface px-3 text-sm text-fg-muted no-underline hover:border-line-strong hover:text-fg"
         >
           <Search aria-hidden="true" className="size-4 shrink-0 fill-none" />
@@ -119,7 +120,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
           >
             Ctrl K
           </kbd>
-        </AppLink>
+        </button>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-4">
           <StudentNav onNavigate={() => setOpen(false)} />
@@ -148,8 +149,10 @@ export function StudentShell({ children }: { children: ReactNode }) {
         />
       ) : null}
 
+      {searchOpen ? <StudentSearch onClose={() => setSearchOpen(false)} /> : null}
+
       <div className="flex min-w-0 flex-col">
-        <StudentTopbar open={open} onOpenMenu={() => setOpen(true)} />
+        <StudentTopbar open={open} onOpenMenu={() => setOpen(true)} onOpenSearch={() => setSearchOpen(true)} />
         <main
           id="main"
           tabIndex={-1}

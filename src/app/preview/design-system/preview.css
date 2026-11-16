@@ -1,0 +1,6 @@
+/* The extracted study.emasteryacademy.com specimen tokens, loaded only for this route. The app
+   itself always uses the Mastery kit; nothing here is applied unless an element sets
+   data-ds="study" (the specimen panels do). See src/styles/study-system/README.md. */
+@import "../../../styles/study-system/tokens.css" layer(base);
+@import "../../../styles/study-system/theme.css" layer(base);
+@import "../../../styles/study-system/type.css" layer(base);

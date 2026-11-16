@@ -22,7 +22,7 @@ export function SkillQuiz({
 }: {
   mode: "pre" | "post";
   questions: readonly QuizQuestion[];
-  onDone: (result: QuizResult) => void;
+  onDone: (result: QuizResult, answers: number[]) => void;
 }) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
@@ -42,7 +42,7 @@ export function SkillQuiz({
   };
 
   const advance = () => {
-    if (last) onDone(scoreQuiz(questions, answers));
+    if (last) onDone(scoreQuiz(questions, answers), answers);
     else setIndex(index + 1);
   };
 

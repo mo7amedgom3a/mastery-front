@@ -1,5 +1,6 @@
 import { Marquee } from "@/components/motion/marquee";
 import { brandBg } from "@/components/ui/brand-colors";
+import { SectionHeader } from "@/components/ui/section-header";
 import { cn } from "@/lib/cn";
 
 import { testimonials, type Testimonial } from "../content/testimonials";
@@ -18,14 +19,15 @@ function ReviewCard({ testimonial }: { testimonial: Testimonial }) {
         </span>
         <span className="text-sm font-bold">{testimonial.name}</span>
       </figcaption>
-      <blockquote className="m-0 text-sm leading-7 text-fg-muted">«{testimonial.quote}»</blockquote>
+      <blockquote className="m-0 text-base leading-7 text-fg-muted">«{testimonial.quote}»</blockquote>
     </figure>
   );
 }
 
 // Wide edge fade (like the reference) via the marquee's own mask — no overlay gradients.
+// Keep the fade narrow enough that the first and last cards stay readable.
 const EDGE_FADE =
-  "[mask-image:linear-gradient(to_right,transparent,#000_18%,#000_82%,transparent)] max-sm:[mask-image:linear-gradient(to_right,transparent,#000_8%,#000_92%,transparent)]";
+  "[mask-image:linear-gradient(to_right,transparent,#000_8%,#000_92%,transparent)] max-sm:[mask-image:linear-gradient(to_right,transparent,#000_4%,#000_96%,transparent)]";
 
 /** Learner reviews: two tight rows scrolling in opposite directions; each row pauses on hover. */
 export function TestimonialsSection() {
@@ -38,14 +40,7 @@ export function TestimonialsSection() {
   return (
     <section aria-labelledby="testimonials-title" className="ma-section ma-band cv-auto overflow-hidden">
       <div className="ma-container">
-        <header className="ma-sechead">
-          <div className="ma-sechead__run pt-3">
-            <span>آراء المتعلّمين</span>
-          </div>
-          <h2 id="testimonials-title" className="ma-sechead__title t-section mt-10 md:mt-12 short:mt-6">
-            ماذا يقول متعلّمو ماستري
-          </h2>
-        </header>
+        <SectionHeader id="testimonials-title" label="آراء المتعلّمين" title="ماذا يقول متعلّمو ماستري" />
       </div>
       <div className="mt-12 flex flex-col gap-4 short:mt-6">
         {rows.map((row, index) => (

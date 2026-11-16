@@ -4,6 +4,7 @@ import Image from "next/image";
 import { CardCarousel } from "@/components/motion/card-carousel";
 import { AppLink } from "@/components/ui/app-link";
 import { brandBg, brandColorAt, type BrandColor } from "@/components/ui/brand-colors";
+import { ButtonLink } from "@/components/ui/button";
 import { Section } from "@/components/ui/section";
 import { SectionHeader } from "@/components/ui/section-header";
 import { routes } from "@/config/routes";
@@ -44,7 +45,7 @@ export function ExpertsSection({
 }) {
   const experts = lineup(directory);
   return (
-    <Section id="experts" aria-labelledby="experts-title" tone="alt" deferRender>
+    <Section id="experts" aria-labelledby="experts-title" deferRender>
       <SectionHeader
         id="experts-title"
         label="الخبراء"
@@ -98,9 +99,9 @@ export function ExpertsSection({
         })}
       </CardCarousel>
       <div className="mt-8 flex justify-center">
-        <AppLink href={routes.experts} className="ma-btn ma-btn--secondary no-underline">
+        <ButtonLink href={routes.experts} variant="secondary">
           كل المدربين والخبراء
-        </AppLink>
+        </ButtonLink>
       </div>
     </Section>
   );

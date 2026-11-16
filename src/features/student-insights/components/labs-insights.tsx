@@ -7,8 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
 import { DashboardPanel } from "@/features/student-dashboard/components/dashboard-panel";
 import { LabCard } from "@/features/labs/components/labs-progress";
+import { useSeedDemo } from "@/features/labs/api";
 import { labs } from "@/features/labs/model/catalog";
-import { seedDemoProgress } from "@/features/labs/model/demo-progress";
 import type { InsightsRange } from "@/lib/api/insights";
 
 import { useLabInsights } from "../model/use-lab-insights";
@@ -34,6 +34,7 @@ function LabsInsightsSkeleton() {
 }
 
 function StarterPanel() {
+  const demo = useSeedDemo();
   return (
     <DashboardPanel
       id="insights-labs-starter-title"
@@ -55,7 +56,7 @@ function StarterPanel() {
         <ButtonLink href={routes.labs} size="sm">
           <FlaskConical className="size-4" aria-hidden /> كل المختبرات
         </ButtonLink>
-        <Button variant="secondary" size="sm" onClick={() => seedDemoProgress()}>
+        <Button variant="secondary" size="sm" onClick={() => demo.mutate()} disabled={demo.isPending}>
           اعرض تقريرًا تجريبيًا
         </Button>
         <span className="text-xs leading-5 text-fg-muted">

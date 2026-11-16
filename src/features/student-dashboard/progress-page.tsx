@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { BookOpenCheck, Trophy } from "lucide-react";
 import Image from "next/image";
 
-import { AppLink } from "@/components/ui/app-link";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { commerceQueries } from "@/lib/api/commerce";
 import { isLmsReauthError, lmsQueries, type LmsQuiz } from "@/lib/api/lms";
@@ -93,9 +93,7 @@ export function LearningProgressPage() {
         title="برامجك"
         subtitle={usingSnapshot ? "آخر تقدّم محفوظ من حسابك" : "تقدّمك الحقيقي من منصة التعلّم"}
         action={
-          <AppLink href={routes.studentAccess} className="ma-btn ma-btn--ghost ma-btn--sm">
-            كل البرامج
-          </AppLink>
+          <DashboardActionLink href={routes.studentAccess}>كل البرامج</DashboardActionLink>
         }
       >
         {pending ? (
@@ -147,9 +145,7 @@ export function LearningProgressPage() {
           title="آخر النتائج"
           subtitle="أحدث درجات الاختبارات"
           action={
-            <AppLink href={routes.studentExams} className="ma-btn ma-btn--ghost ma-btn--sm">
-              كل الاختبارات
-            </AppLink>
+            <DashboardActionLink href={routes.studentExams}>كل الاختبارات</DashboardActionLink>
           }
         >
           {quizzes.isPending ? (
@@ -157,7 +153,10 @@ export function LearningProgressPage() {
           ) : quizzes.isError ? (
             <p className="m-0 text-fg-muted">تعذّر تحميل النتائج.</p>
           ) : !quizzes.data?.items.length ? (
-            <p className="m-0 text-fg-muted">لا توجد اختبارات مسجّلة بعد.</p>
+            <div className="flex flex-col items-start gap-3">
+              <p className="m-0 text-sm text-fg-muted">لا توجد اختبارات مسجّلة بعد. أكمل اختبارات برامجك لتظهر نتائجك هنا.</p>
+              <ButtonLink href={routes.studentAccess} variant="soft" size="sm">انتقل إلى تعلّمي</ButtonLink>
+            </div>
           ) : (
             <ul className="m-0 flex list-none flex-col p-0">
               {quizzes.data.items.slice(0, 3).map((quiz, index) => (

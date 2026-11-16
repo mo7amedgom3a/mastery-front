@@ -23,7 +23,7 @@ export function DashboardPanel({ id, title, subtitle, action, className, childre
       <header className="mb-4 flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 id={id} className="m-0 text-[17px] leading-7 font-bold">
+            <h2 id={id} className="scroll-mt-24 m-0 text-[17px] leading-7 font-bold">
               {title}
             </h2>
           </div>

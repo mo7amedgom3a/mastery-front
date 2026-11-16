@@ -30,7 +30,7 @@ export function SiteHeader({ brand = "default" }: { brand?: "default" | "busines
             {brand === "business" ? (
               <Logo priority variant="business" height={15} />
             ) : (
-              <Logo priority className="w-40 sm:w-48" />
+              <Logo priority className="w-40 max-[359px]:w-32 sm:w-48" />
             )}
           </AppLink>
 

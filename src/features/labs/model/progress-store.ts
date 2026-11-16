@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import { earnedBadges } from "./badges";
 import { labs } from "./catalog";
 import { xpFor } from "./scoring";
 import {
@@ -32,6 +33,12 @@ export const badgeInfo: Record<BadgeId, { label: string; text: string }> = {
   "ruler-master": { label: "ميزان المسطرة", text: "طبّقت خطوات المسطرة الخمس دون مهاجمة المنافس" },
   "rejection-proof": { label: "ضد الرفض", text: "حوّلت رفضًا أوليًا إلى خطوة تالية" },
   "funnel-master": { label: "مهندس القمع", text: "خطة أسبوع متوازنة ومعادلة قمع صحيحة" },
+  founder: { label: "المؤسس", text: "أسست الشركة نظاميًا دون رفض أو غرامة" },
+  "governance-guardian": { label: "حارس الحوكمة", text: "أدرت تعارض المصالح ووثّقت محضرًا سليمًا" },
+  "runway-keeper": { label: "حارس المدرج", text: "خطة بنقد يكفي 18 شهرًا وهامش إجمالي 65٪+" },
+  "clean-close": { label: "إقفال نظيف", text: "أقفلت الربع بتسوية مطابقة وإقرار ضريبي صحيح" },
+  "crisis-commander": { label: "قائد الأزمة", text: "أبلغت الجهة المختصة في المهلة وحافظت على الثقة" },
+  "escape-artist": { label: "فنان الهروب", text: "فتحت الأقفال الخمسة قبل انتهاء الوقت" },
   excellence: { label: "متميّز", text: "حصلت على 85 أو أكثر في مختبر" },
   "all-rounder": { label: "متعدّد المهارات", text: "أكملت كل المختبرات المتاحة" },
 };
@@ -89,25 +96,6 @@ type LabsProgress = {
 
 const MAX_ATTEMPTS = 60;
 
-function earnedBadges(slug: LabSlug, scorecard: Scorecard, signals: BadgeSignals, attempts: Attempt[]): BadgeId[] {
-  const earned: BadgeId[] = ["first-lab"];
-  if (signals.marketingTargetMet) earned.push("budget-sniper");
-  if (signals.dealClosed) earned.push("deal-closer");
-  if (signals.peaceMade) earned.push("peacemaker");
-  if (signals.shareDefended) earned.push("share-defender");
-  if (signals.coolHead) earned.push("cool-head");
-  if (signals.dealSaved) earned.push("deal-saver");
-  if (signals.fairTerms) earned.push("fair-terms");
-  if (signals.objectionReader) earned.push("objection-reader");
-  if (signals.rulerMaster) earned.push("ruler-master");
-  if (signals.rejectionProof) earned.push("rejection-proof");
-  if (signals.funnelMaster) earned.push("funnel-master");
-  if (scorecard.overall >= 85) earned.push("excellence");
-  const done = new Set([...attempts.map((a) => a.slug), slug]);
-  if (labs.every((lab) => done.has(lab.slug))) earned.push("all-rounder");
-  return earned;
-}
-
 export const useLabsProgress = create<LabsProgress>()(
   persist(
     (set, get) => ({
@@ -117,7 +105,9 @@ export const useLabsProgress = create<LabsProgress>()(
       record: (slug, scorecard, signals, pre, post, elapsedSeconds) => {
         const state = get();
         const lab = labs.find((entry) => entry.slug === slug);
-        const newBadges = earnedBadges(slug, scorecard, signals, state.attempts).filter((b) => !state.badges.includes(b));
+        const newBadges = earnedBadges(slug, scorecard, signals, state.attempts.map((attempt) => attempt.slug)).filter(
+      (badge) => !state.badges.includes(badge),
+    );
         const xp = xpFor(scorecard.overall, newBadges.length);
         const attempt: Attempt = {
           id: `${slug}-${Date.now()}`,

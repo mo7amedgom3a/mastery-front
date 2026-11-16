@@ -5,7 +5,8 @@ import { experts } from "../content/experts";
 /** Logo-style ticker of expert names between two rules. */
 export function ExpertsTicker() {
   return (
-    <div className="border-y border-line bg-surface py-6 md:py-8">
+    // Bottom rule only: the stats band above already draws the shared hairline.
+    <div className="border-b border-line bg-surface py-6 md:py-8">
       <Marquee
         items={experts}
         getKey={(expert) => expert.id}

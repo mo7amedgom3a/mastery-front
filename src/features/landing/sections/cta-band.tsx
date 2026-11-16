@@ -6,7 +6,7 @@ import { ctaBandCopy } from "../content/copy";
 export function CtaBand() {
   return (
     <section aria-labelledby="cta-title" className="bg-coral text-ink">
-      <div className="ma-container flex flex-col items-start gap-6 py-16 md:flex-row md:items-end md:justify-between md:py-24">
+      <div className="ma-container ma-section flex flex-col items-start gap-6 md:flex-row md:items-end md:justify-between">
         <div className="flex flex-col gap-3">
           <h2 id="cta-title" className="t-section m-0">
             {ctaBandCopy.title}

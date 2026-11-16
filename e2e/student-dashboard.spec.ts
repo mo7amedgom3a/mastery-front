@@ -347,3 +347,72 @@ test("an expired LMS session shows a reauthentication notice", async ({ page, co
   await expect(page.getByText("انتهت جلسة منصة التعلّم").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "تسجيل الدخول" })).toBeVisible();
 });
+
+test("dashboard search finds programs, pages, sections and labs without leaving the page", async ({ page, context, baseURL }) => {
+  await mockLms(page);
+  await signInCustomer(context, baseURL!);
+  await page.goto("/students/progress");
+  const trigger = page.getByRole("button", { name: /ابحث في لوحتك/ });
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "ابحث في لوحة الطالب" });
+  const input = dialog.getByRole("searchbox");
+  await expect(input).toBeFocused();
+  await page.screenshot({ path: test.info().outputPath("student-search-desktop.png") });
+  await input.fill("قوانين التسويق");
+  await expect(dialog.getByText("قوانين التسويق", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/students\/progress$/);
+  await input.fill("المختبرات");
+  await expect(dialog.getByRole("link", { name: "المختبرات العملية التعلّم", exact: true })).toBeVisible();
+  await input.fill("الشارات");
+  await expect(dialog.getByRole("link", { name: /ملفك المهاري والشارات/ })).toHaveAttribute("href", "/students#labs-skills-title");
+  await input.fill("الاعتراضات الستة");
+  await expect(dialog.getByRole("link", { name: /مختبر الاعتراضات الستة/ })).toHaveAttribute("href", "/labs/objections-six-types");
+  await input.fill("zzzz-no-match");
+  await expect(dialog.getByText(/لا توجد نتائج/)).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press("Control+k");
+  await expect(dialog).toBeVisible();
+  await input.fill("اختباراتي");
+  await dialog.getByRole("link", { name: /اختباراتي/ }).click();
+  await expect(page).toHaveURL(/\/students\/exams$/);
+  await expect(dialog).toHaveCount(0);
+});
+
+test("empty dashboard panels provide discovery actions and visible section links", async ({ page, context, baseURL }) => {
+  await mockLms(page);
+  await page.route("**/api/b2c/me/lms/courses**", (route) => route.fulfill({ json: { ...COURSES, items: [] } }));
+  await page.route("**/api/b2c/me/lms/quizzes", (route) => route.fulfill({ json: { ...QUIZZES, items: [], total: 0 } }));
+  await page.route("**/api/b2c/me/products**", (route) => route.fulfill({ json: { items: [], total: 0, limit: 100, offset: 0 } }));
+  await skipOnboarding(context, baseURL!);
+  await page.goto("/students");
+  await expect(page.getByRole("link", { name: "اكتشف الدورات", exact: true })).toHaveAttribute("href", "/search?type=course");
+  await expect(page.getByRole("link", { name: "اكتشف المختبرات", exact: true })).toHaveAttribute("href", "/labs");
+  await expect(page.getByRole("link", { name: "انتقل إلى تعلّمي", exact: true })).toBeVisible();
+  const action = page.getByRole("link", { name: "كل البرامج", exact: true });
+  await expect(action).toHaveCSS("border-top-width", "1px");
+  await expect(action).toHaveAttribute("href", "/students/access");
+});
+
+test("mobile dashboard search fits the viewport and opens from both shell controls", async ({ page, context, baseURL }) => {
+  await mockLms(page);
+  await signInCustomer(context, baseURL!);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/students/progress");
+  await page.getByRole("button", { name: "البحث في لوحة الطالب", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "ابحث في لوحة الطالب" });
+  await expect(dialog).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("student-search-mobile.png") });
+  const bounds = await dialog.boundingBox();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+  await dialog.getByRole("button", { name: "إغلاق البحث" }).click();
+  await page.getByRole("button", { name: "فتح القائمة" }).click();
+  await page.getByRole("button", { name: /ابحث أو انتقل/ }).click();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("searchbox").fill("اختباراتي");
+  await dialog.getByRole("link", { name: /اختباراتي/ }).click();
+  await expect(page).toHaveURL(/\/students\/exams$/);
+  expect(await page.locator("body").evaluate((body) => body.style.overflow)).not.toBe("hidden");
+});

@@ -2,6 +2,7 @@
 
 // clsx, not cn(): no class conflicts to merge here, and it keeps tailwind-merge out of the client bundle.
 import { clsx as cn } from "clsx";
+import { Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 
 export type AutoplayTab = {
@@ -20,6 +21,8 @@ type AutoplayTabsProps = {
    */
   panels: readonly ReactNode[];
   intervalMs?: number;
+  /** Show an explicit pause/resume control for the auto-advance (WCAG 2.2.2). */
+  pauseable?: boolean;
   className?: string;
 };
 
@@ -32,16 +35,25 @@ function loadGsap(): Promise<Gsap> {
 }
 
 /**
- * Timed step tabs (ARIA tabs pattern) that always auto-advance, including after a manual pick and
- * while hovered. The progress bar is a CSS animation; when it ends, the next tab activates, so
- * there are no timers. Advancing pauses only while the section is off-screen or the browser tab is
- * hidden. Under reduced motion the kit disables animations, so nothing auto-advances and GSAP
- * entrances are skipped.
+ * Timed step tabs (ARIA tabs pattern) that auto-advance, including after a manual pick and while
+ * hovered, unless the visitor pauses them with the optional control. The progress bar is a CSS
+ * animation; when it ends, the next tab activates, so there are no timers. Advancing pauses while
+ * the section is off-screen, the browser tab is hidden, or the visitor paused it. Under reduced
+ * motion the kit disables animations, so nothing auto-advances and GSAP entrances are skipped.
  */
-export function AutoplayTabs({ idPrefix, label, tabs, panels, intervalMs = 7000, className }: AutoplayTabsProps) {
+export function AutoplayTabs({
+  idPrefix,
+  label,
+  tabs,
+  panels,
+  intervalMs = 7000,
+  pauseable = false,
+  className,
+}: AutoplayTabsProps) {
   const [active, setActive] = useState(0);
   const [inView, setInView] = useState(false);
   const [pageHidden, setPageHidden] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -101,7 +113,8 @@ export function AutoplayTabs({ idPrefix, label, tabs, panels, intervalMs = 7000,
     };
   }, [active]);
 
-  const running = inView && !pageHidden;
+  const running = inView && !pageHidden && !userPaused;
+  const PauseIcon = userPaused ? Play : Pause;
 
   const select = (index: number, focus = false) => {
     const next = (index + tabs.length) % tabs.length;
@@ -127,50 +140,64 @@ export function AutoplayTabs({ idPrefix, label, tabs, panels, intervalMs = 7000,
 
   return (
     <div ref={rootRef} className={cn("grid gap-10 md:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] md:gap-16", className)}>
-      <div
-        role="tablist"
-        aria-label={label}
-        aria-orientation="vertical"
-        onKeyDown={onKeyDown}
-        className="-mx-4 flex gap-6 self-start overflow-x-auto px-4 pb-1 md:mx-0 md:flex-col md:gap-0 md:overflow-visible md:px-0"
-      >
-        {tabs.map((tab, index) => {
-          const selected = index === active;
-          return (
-            <button
-              key={tab.id}
-              ref={(node) => {
-                tabRefs.current[index] = node;
-              }}
-              type="button"
-              role="tab"
-              id={`${idPrefix}-tab-${tab.id}`}
-              aria-controls={`${idPrefix}-panel-${tab.id}`}
-              aria-selected={selected}
-              tabIndex={selected ? 0 : -1}
-              onClick={() => select(index)}
-              className={cn(
-                "flex min-h-11 shrink-0 cursor-pointer flex-col gap-3 bg-transparent pt-3 text-start text-lg font-medium transition-colors md:py-4",
-                selected ? "text-fg" : "text-fg-muted hover:text-fg",
-              )}
-            >
-              <span className="whitespace-nowrap">{tab.label}</span>
-              <span className="tab-progress w-full" aria-hidden="true">
-                {selected ? (
-                  <span
-                    // Re-keyed on every change so the bar restarts from zero, even on a manual pick.
-                    key={active}
-                    className="tab-progress__bar block"
-                    style={progressStyle}
-                    data-running=""
-                    data-paused={running ? undefined : ""}
-                    onAnimationEnd={() => setActive((current) => (current + 1) % tabs.length)}
-                  />
-                ) : null}
-              </span>
-            </button>
-          );
-        })}
+      <div className="min-w-0">
+        <div
+          role="tablist"
+          aria-label={label}
+          aria-orientation="vertical"
+          onKeyDown={onKeyDown}
+          className="-mx-4 flex gap-6 self-start overflow-x-auto px-4 pb-1 md:mx-0 md:flex-col md:gap-0 md:overflow-visible md:px-0"
+        >
+          {tabs.map((tab, index) => {
+            const selected = index === active;
+            return (
+              <button
+                key={tab.id}
+                ref={(node) => {
+                  tabRefs.current[index] = node;
+                }}
+                type="button"
+                role="tab"
+                id={`${idPrefix}-tab-${tab.id}`}
+                aria-controls={`${idPrefix}-panel-${tab.id}`}
+                aria-selected={selected}
+                tabIndex={selected ? 0 : -1}
+                onClick={() => select(index)}
+                className={cn(
+                  "flex min-h-11 shrink-0 cursor-pointer flex-col gap-3 bg-transparent pt-3 text-start text-lg font-medium transition-colors md:py-4",
+                  selected ? "text-fg" : "text-fg-muted hover:text-fg",
+                )}
+              >
+                <span className="whitespace-nowrap">{tab.label}</span>
+                <span className="tab-progress w-full" aria-hidden="true">
+                  {selected ? (
+                    <span
+                      // Re-keyed on every change so the bar restarts from zero, even on a manual pick.
+                      key={active}
+                      className="tab-progress__bar block"
+                      style={progressStyle}
+                      data-running=""
+                      data-paused={running ? undefined : ""}
+                      onAnimationEnd={() => setActive((current) => (current + 1) % tabs.length)}
+                    />
+                  ) : null}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {pauseable && tabs.length > 1 ? (
+          <button
+            type="button"
+            onClick={() => setUserPaused((current) => !current)}
+            aria-label={userPaused ? "تشغيل التبديل التلقائي" : "إيقاف التبديل التلقائي"}
+            aria-pressed={userPaused}
+            className="ma-btn ma-btn--ghost ma-btn--sm mt-4 min-h-11 self-start"
+          >
+            <PauseIcon aria-hidden="true" className="size-4" />
+            {userPaused ? "تشغيل التبديل التلقائي" : "إيقاف التبديل التلقائي"}
+          </button>
+        ) : null}
       </div>
 
       <div className="min-w-0">

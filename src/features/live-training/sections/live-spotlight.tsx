@@ -118,12 +118,16 @@ export function SpotlightInner({ training, variant = "landing", actions, titleId
       </div>
 
       {training.heroImage ? (
-        <div aria-hidden="true" className="relative order-first h-[min(24rem,42svh)] sm:h-[min(30rem,50svh)] md:order-none md:h-[min(40rem,calc(100svh-var(--header-h)-3rem))]">
-          {/* Watermark: the programme name, set huge in the poster face behind the trainer. */}
+        <div
+          aria-hidden="true"
+          className="relative order-first h-[min(24rem,42svh)] overflow-hidden [container-type:inline-size] sm:h-[min(30rem,50svh)] md:order-none md:h-[min(40rem,calc(100svh-var(--header-h)-3rem))]"
+        >
+          {/* Watermark: the programme name, set huge in the poster face behind the trainer. Sized
+              in container units so it stays inside this column instead of running under the copy. */}
           {training.titleEn ? (
             <span
               dir="ltr"
-              className="t-poster absolute inset-x-0 top-0 text-center text-[clamp(4rem,11vw,9rem)] leading-[0.85] text-line select-none"
+              className="t-poster absolute inset-x-0 top-0 text-center text-[clamp(2.5rem,19cqw,8rem)] leading-[0.85] text-line select-none"
             >
               {training.titleEn}
             </span>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { ObjectionScenario, ObjectionCrmEntry, RoundResult } from "../../content/objections/types";
 import { isClassify } from "../../content/objections/types";
 import { scoreObjectionTypes, scoreRuler } from "../../content/objections/score";
+import { useLabSession } from "../../api";
 import { finishAttempt } from "../../model/progress-store";
 import { usePracticeClock } from "../../model/use-practice-clock";
 import type { LabDefinition, LabResult, QuizResult } from "../../model/types";
@@ -24,6 +25,7 @@ const stepOf: Record<Stage, number> = { brief: 0, pre: 0, dossier: 1, mechanic: 
 /** Shared runner for the six-type drill and the competitor-ruler case. */
 export function ObjectionLab({ lab, scenario }: { lab: LabDefinition; scenario: ObjectionScenario }) {
   const clock = usePracticeClock();
+  const practice = useLabSession(lab.slug);
   const [stage, setStage] = useState<Stage>("brief");
   const [attempt, setAttempt] = useState(0);
   const [pre, setPre] = useState<QuizResult | null>(null);
@@ -39,6 +41,7 @@ export function ObjectionLab({ lab, scenario }: { lab: LabDefinition; scenario: 
   const [result, setResult] = useState<LabResult | null>(null);
 
   const restart = () => {
+    void practice.reset();
     setStage("brief");
     setAttempt((n) => n + 1);
     setPre(null);
@@ -55,16 +58,26 @@ export function ObjectionLab({ lab, scenario }: { lab: LabDefinition; scenario: 
     clock.reset();
   };
 
-  const finish = (post: QuizResult) => {
+  const finish = async (post: QuizResult) => {
     if (!crm) return;
     const run = { rounds, rulerSteps, benefits, commitment, crm, trust, tension };
-    if (isClassify(scenario)) {
-      const { scorecard, objectionReader } = scoreObjectionTypes(scenario, run);
-      setResult(finishAttempt(lab.slug, scorecard, { objectionReader }, pre, post, clock.elapsedSeconds()));
-    } else {
-      const { scorecard, rulerMaster } = scoreRuler(scenario, run);
-      setResult(finishAttempt(lab.slug, scorecard, { rulerMaster }, pre, post, clock.elapsedSeconds()));
-    }
+    const classify = isClassify(scenario);
+    const { scorecard, objectionReader, rulerMaster } = classify
+      ? { ...scoreObjectionTypes(scenario, run), rulerMaster: false }
+      : { ...scoreRuler(scenario, run), objectionReader: false };
+    const signals = classify ? { objectionReader } : { rulerMaster };
+    const result = await practice.complete(
+      {
+        engine: "legacy",
+        scorer: classify ? "objections" : "ruler",
+        run: { run },
+        pre,
+        post,
+        elapsed_seconds: clock.elapsedSeconds(),
+      },
+      () => finishAttempt(lab.slug, scorecard, signals, pre, post, clock.elapsedSeconds()),
+    );
+    setResult(result);
     setStage("debrief");
   };
 
@@ -98,6 +111,8 @@ export function ObjectionLab({ lab, scenario }: { lab: LabDefinition; scenario: 
           lab={lab}
           onStart={() => {
             clock.reset();
+            void practice.start();
+            void practice.enterPhase("pre");
             setStage("pre");
           }}
         />
@@ -106,13 +121,23 @@ export function ObjectionLab({ lab, scenario }: { lab: LabDefinition; scenario: 
         <SkillQuiz
           mode="pre"
           questions={scenario.preQuiz}
-          onDone={(value) => {
+          onDone={(value, answers) => {
+            void practice.submitQuiz("pre", answers);
             setPre(value);
+            void practice.enterPhase("dossier");
             setStage("dossier");
           }}
         />
       ) : null}
-      {stage === "dossier" ? <DossierCard scenario={scenario} onStart={() => setStage("mechanic")} /> : null}
+      {stage === "dossier" ? (
+        <DossierCard
+          scenario={scenario}
+          onStart={() => {
+            void practice.enterPhase("mechanic");
+            setStage("mechanic");
+          }}
+        />
+      ) : null}
       {stage === "mechanic" && isClassify(scenario) && currentRound ? (
         <ObjectionArena
           key={currentRound.id}
@@ -129,8 +154,16 @@ export function ObjectionLab({ lab, scenario }: { lab: LabDefinition; scenario: 
             setHistory((current) => [...current, ...entries]);
             setTrust(roundResult.trust);
             setTension(roundResult.tension);
-            if (roundIndex + 1 >= scenario.rounds.length) setStage("commit");
-            else setRoundIndex(roundIndex + 1);
+            void practice.submitForm("mechanic", {
+              round_id: roundResult.roundId,
+              kind: roundResult.kind,
+              bridge: roundResult.bridgeId,
+              reply: roundResult.replyId,
+            });
+            if (roundIndex + 1 >= scenario.rounds.length) {
+              void practice.enterPhase("commit");
+              setStage("commit");
+            } else setRoundIndex(roundIndex + 1);
           }}
         />
       ) : null}
@@ -142,6 +175,8 @@ export function ObjectionLab({ lab, scenario }: { lab: LabDefinition; scenario: 
             setBenefits(done.benefits);
             setTrust(done.trust);
             setTension(done.tension);
+            void practice.submitForm("mechanic", { steps: done.steps, benefits: done.benefits });
+            void practice.enterPhase("commit");
             setStage("commit");
           }}
         />
@@ -151,6 +186,8 @@ export function ObjectionLab({ lab, scenario }: { lab: LabDefinition; scenario: 
           scenario={scenario}
           onDone={(value) => {
             setCommitment(value);
+            void practice.setCommitment("commit", value);
+            void practice.enterPhase("crm");
             setStage("crm");
           }}
         />
@@ -160,11 +197,22 @@ export function ObjectionLab({ lab, scenario }: { lab: LabDefinition; scenario: 
           scenario={scenario}
           onDone={(entry) => {
             setCrm(entry);
+            void practice.updateCrm("crm", { ...entry });
+            void practice.enterPhase("post");
             setStage("post");
           }}
         />
       ) : null}
-      {stage === "post" ? <SkillQuiz mode="post" questions={scenario.postQuiz} onDone={finish} /> : null}
+      {stage === "post" ? (
+        <SkillQuiz
+          mode="post"
+          questions={scenario.postQuiz}
+          onDone={(r, answers) => {
+            void practice.submitQuiz("post", answers);
+            void finish(r);
+          }}
+        />
+      ) : null}
       {stage === "debrief" && result ? <LabScorecard lab={lab} result={result} onRetry={restart} /> : null}
     </LabShell>
   );

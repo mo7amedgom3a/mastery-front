@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getAllCatalogCards, type CatalogCard } from "@/lib/api/browse";
 import { catalogQueries } from "@/lib/api/catalog";
 
+import { labQueries } from "../api";
 import { rankCards } from "./recommendations";
 import type { LabDefinition } from "./types";
 
@@ -21,35 +22,45 @@ export type LabRecommendations = {
 };
 
 /**
- * Courses and diplomas to recommend after (or before) a lab: the lab's catalog category, with the
- * lab's featured courses pinned first, then ranked by the lab's keywords. Degrades to empty lists
- * when the API is unreachable.
+ * Courses and diplomas to recommend after (or before) a lab. The labs API owns the recommendation
+ * set (and will return every product type later); the old catalog query remains the fallback when
+ * the labs API is unreachable or has no configured recommendations.
  */
 export function useLabRecommendations(lab: LabDefinition): LabRecommendations {
   const categorySlug = `legacy-category-${lab.categoryLegacyId}`;
-  const categories = useQuery(catalogQueries.categories());
+  const recommendations = useQuery(labQueries.recommendations(lab.slug));
+  const apiCourses = recommendations.data?.courses ?? [];
+  const apiDiplomas = recommendations.data?.diplomas ?? [];
+  const hasApiItems = apiCourses.length > 0 || apiDiplomas.length > 0;
+  const needsFallback = !recommendations.isPending && (recommendations.isError || !hasApiItems);
+
+  const categories = useQuery({ ...catalogQueries.categories(), enabled: needsFallback });
   const categoryId = categories.data?.find((category) => category.slug === categorySlug)?.category_id ?? null;
   const cards = useQuery({
-    queryKey: ["labs", "recommendations", categoryId],
+    queryKey: ["labs", "recommendations", "catalog", categoryId],
     queryFn: ({ signal }) => getAllCatalogCards({ category_id: categoryId, product_type: ["course", "diploma"] }, { signal }),
-    enabled: Boolean(categoryId),
+    enabled: needsFallback && Boolean(categoryId),
     staleTime: 10 * 60_000,
   });
+
   const items = cards.data ?? [];
+  const fallbackCourses = rankCards(
+    items.filter((card) => card.product_type === "course"),
+    lab.courseKeywords,
+    COURSES,
+    lab.featuredCourseSlugs,
+  );
+  const fallbackDiplomas = rankCards(
+    items.filter((card) => card.product_type === "diploma"),
+    lab.courseKeywords,
+    DIPLOMAS,
+  );
+
   return {
-    courses: rankCards(
-      items.filter((card) => card.product_type === "course"),
-      lab.courseKeywords,
-      COURSES,
-      lab.featuredCourseSlugs,
-    ),
-    diplomas: rankCards(
-      items.filter((card) => card.product_type === "diploma"),
-      lab.courseKeywords,
-      DIPLOMAS,
-    ),
+    courses: hasApiItems ? apiCourses.slice(0, COURSES) : fallbackCourses,
+    diplomas: hasApiItems ? apiDiplomas.slice(0, DIPLOMAS) : fallbackDiplomas,
     categorySlug,
-    pending: categories.isPending || (Boolean(categoryId) && cards.isPending),
-    error: categories.isError || cards.isError || (categories.isSuccess && !categoryId),
+    pending: recommendations.isPending || (needsFallback && (categories.isPending || (Boolean(categoryId) && cards.isPending))),
+    error: needsFallback && (categories.isError || cards.isError || (categories.isSuccess && !categoryId)),
   };
 }

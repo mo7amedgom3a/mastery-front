@@ -20,6 +20,11 @@ const RULES: readonly Rule[] = [
   { methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], pattern: /^me(\/[A-Za-z0-9_-]+)*$/, session: true },
   // Read by wishlist sync to turn a legacy id into a catalog product id.
   { methods: ["GET"], pattern: /^catalog\/products\/[A-Za-z0-9_-]+$/, session: false },
+  // Practice labs: the public catalogue, one runtime definition and its recommendations; a guest
+  // may start a session (anonymous progress), while `/me/labs/*` is covered by the session rule.
+  { methods: ["GET"], pattern: /^labs$/, session: false },
+  { methods: ["GET"], pattern: /^labs\/[A-Za-z0-9_-]+(\/recommendations)?$/, session: false },
+  { methods: ["POST"], pattern: /^labs\/[A-Za-z0-9_-]+\/sessions$/, session: false },
   // Onboarding choices (skills, topics, product types), read by the client onboarding steps.
   { methods: ["GET"], pattern: /^catalog\/onboarding-options$/, session: false },
   // Company and trainer requests: country list, phone codes, and cities.

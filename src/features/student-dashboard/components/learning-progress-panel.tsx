@@ -2,9 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { AppLink } from "@/components/ui/app-link";
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { isLmsReauthError, lmsQueries } from "@/lib/api/lms";
 import { formatNumber } from "@/lib/format";
@@ -31,9 +31,7 @@ export function LearningProgressPanel() {
       title="تقدّم التعلّم"
       subtitle="ملخّص من منصة التعلّم"
       action={
-        <AppLink href={routes.studentProgress} className="ma-btn ma-btn--ghost ma-btn--sm">
-          التفاصيل
-        </AppLink>
+        <DashboardActionLink href={routes.studentProgress}>التفاصيل</DashboardActionLink>
       }
     >
       {courses.isPending ? (
@@ -52,6 +50,11 @@ export function LearningProgressPanel() {
               تسجيل الدخول
             </ButtonLink>
           ) : null}
+        </div>
+      ) : programs.length === 0 ? (
+        <div className="flex flex-col items-start gap-3">
+          <p className="m-0 text-sm text-fg-muted">ابدأ أول برنامج لتتابع تقدّمك وإنجازاتك هنا.</p>
+          <ButtonLink href={routes.courses} variant="soft" size="sm">اكتشف الدورات</ButtonLink>
         </div>
       ) : (
         <div className="flex flex-col gap-3">

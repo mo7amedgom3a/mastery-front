@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import type { Route } from "next";
 import type { ReactNode } from "react";
 
-import { ViewAllLink } from "@/components/ui/view-all-link";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 
 type DashboardSectionProps = {
   id: string;
@@ -23,13 +23,13 @@ export function DashboardSection({ id, icon: Icon, title, subtitle, viewAll, chi
             <Icon className="size-5 fill-none text-accent" />
           </span>
           <div className="flex min-w-0 flex-col">
-            <h2 id={id} className="m-0 text-xl leading-8 font-bold">
+            <h2 id={id} className="scroll-mt-24 m-0 text-xl leading-8 font-bold">
               {title}
             </h2>
             {subtitle ? <p className="m-0 text-sm text-fg-muted">{subtitle}</p> : null}
           </div>
         </div>
-        {viewAll ? <ViewAllLink href={viewAll.href} label={viewAll.label ?? "عرض الكل"} /> : null}
+        {viewAll ? <DashboardActionLink href={viewAll.href} label={viewAll.label ?? "عرض الكل"} /> : null}
       </header>
       {children}
     </section>

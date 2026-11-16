@@ -6,6 +6,7 @@ import { useState } from "react";
 import { scoreDealRecovery } from "../../content/deals/score";
 import type { DealCrmEntry, DealScenario } from "../../content/deals/types";
 import { choose, learnerTalkShare, startDialogue, type DialogueState } from "../../model/dialogue";
+import { useLabSession } from "../../api";
 import { finishAttempt } from "../../model/progress-store";
 import { usePracticeClock } from "../../model/use-practice-clock";
 import type { LabDefinition, LabResult, QuizResult } from "../../model/types";
@@ -38,8 +39,10 @@ export function DealRecoveryLab({ lab, scenario }: { lab: LabDefinition; scenari
   const [result, setResult] = useState<LabResult | null>(null);
 
   const clock = usePracticeClock();
+  const practice = useLabSession(lab.slug);
 
   const restart = () => {
+    void practice.reset();
     setStage("brief");
     setAttempt((n) => n + 1);
     clock.reset();
@@ -52,10 +55,15 @@ export function DealRecoveryLab({ lab, scenario }: { lab: LabDefinition; scenari
     setResult(null);
   };
 
-  const finish = (post: QuizResult) => {
+  const finish = async (post: QuizResult) => {
     if (!crm) return;
-    const { scorecard, dealSaved, fairTerms } = scoreDealRecovery(scenario, { causes, call, redlines, crm });
-    setResult(finishAttempt(lab.slug, scorecard, { dealSaved, fairTerms }, pre, post, clock.elapsedSeconds()));
+    const run = { causes, call, redlines, crm };
+    const { scorecard, dealSaved, fairTerms } = scoreDealRecovery(scenario, run);
+    const result = await practice.complete(
+      { engine: "legacy", scorer: "deals", run, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      () => finishAttempt(lab.slug, scorecard, { dealSaved, fairTerms }, pre, post, clock.elapsedSeconds()),
+    );
+    setResult(result);
     setStage("debrief");
   };
 
@@ -76,13 +84,24 @@ export function DealRecoveryLab({ lab, scenario }: { lab: LabDefinition; scenari
 
   return (
     <LabShell key={attempt} lab={lab} step={stepOf[stage]} hud={hud}>
-      {stage === "brief" ? <BriefingCard lab={lab} onStart={() => setStage("pre")} /> : null}
+      {stage === "brief" ? (
+        <BriefingCard
+          lab={lab}
+          onStart={() => {
+            void practice.start();
+            void practice.enterPhase("pre");
+            setStage("pre");
+          }}
+        />
+      ) : null}
       {stage === "pre" ? (
         <SkillQuiz
           mode="pre"
           questions={scenario.preQuiz}
-          onDone={(r) => {
+          onDone={(r, answers) => {
+            void practice.submitQuiz("pre", answers);
             setPre(r);
+            void practice.enterPhase("diagnose");
             setStage("diagnose");
           }}
         />
@@ -99,6 +118,8 @@ export function DealRecoveryLab({ lab, scenario }: { lab: LabDefinition; scenari
                 causes={scenario.rootCauses}
                 onDone={(ids) => {
                   setCauses(ids);
+                  void practice.submitForm("diagnose", { causes: ids });
+                  void practice.enterPhase("call");
                   setStage("call");
                 }}
               />
@@ -110,8 +131,14 @@ export function DealRecoveryLab({ lab, scenario }: { lab: LabDefinition; scenari
         <PersonaChat
           graph={scenario.graph}
           state={call}
-          onChoose={(id) => setCall((s) => choose(scenario.graph, s, id))}
-          onContinue={() => setStage("redline")}
+          onChoose={(id) => {
+            void practice.choose(scenario.graph.id, call.nodeId, id);
+            setCall((s) => choose(scenario.graph, s, id));
+          }}
+          onContinue={() => {
+            void practice.enterPhase("redline");
+            setStage("redline");
+          }}
           continueLabel="عدّل العقد"
           factLabels={scenario.facts}
           showTalkRatio
@@ -137,6 +164,8 @@ export function DealRecoveryLab({ lab, scenario }: { lab: LabDefinition; scenari
           scenario={scenario}
           onDone={(r) => {
             setRedlines(r);
+            void practice.submitForm("redline", { redlines: r });
+            void practice.enterPhase("crm");
             setStage("crm");
           }}
         />
@@ -147,11 +176,22 @@ export function DealRecoveryLab({ lab, scenario }: { lab: LabDefinition; scenari
           summary={<DealGauge scenario={scenario} redlines={redlines} />}
           onDone={(entry) => {
             setCrm(entry);
+            void practice.updateCrm("crm", { ...entry });
+            void practice.enterPhase("post");
             setStage("post");
           }}
         />
       ) : null}
-      {stage === "post" ? <SkillQuiz mode="post" questions={scenario.postQuiz} onDone={finish} /> : null}
+      {stage === "post" ? (
+        <SkillQuiz
+          mode="post"
+          questions={scenario.postQuiz}
+          onDone={(r, answers) => {
+            void practice.submitQuiz("post", answers);
+            void finish(r);
+          }}
+        />
+      ) : null}
       {stage === "debrief" && result ? <LabScorecard lab={lab} result={result} onRetry={restart} /> : null}
     </LabShell>
   );

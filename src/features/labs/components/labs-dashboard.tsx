@@ -2,7 +2,8 @@
 
 import { FlaskConical } from "lucide-react";
 
-import { AppLink } from "@/components/ui/app-link";
+import { ButtonLink } from "@/components/ui/button";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { DashboardPanel } from "@/features/student-dashboard/components/dashboard-panel";
 import { DashboardSection } from "@/features/student-dashboard/components/dashboard-section";
@@ -25,9 +26,7 @@ export function LabsSkillPanel({ className }: { className?: string }) {
       title="ملفك المهاري"
       subtitle="أفضل أداء لك في المختبرات العملية، موزعًا على المهارات"
       action={
-        <AppLink href={routes.labs} className="ma-btn ma-btn--ghost ma-btn--sm">
-          المختبرات
-        </AppLink>
+        <DashboardActionLink href={routes.labs}>المختبرات</DashboardActionLink>
       }
       className={className}
     >
@@ -40,6 +39,7 @@ export function LabsSkillPanel({ className }: { className?: string }) {
               {started ? "شارات حصلت عليها في المختبرات" : "أكمل المختبرات لتحصل على شارات تظهر هنا"}
             </p>
             <BadgeTags badges={snapshot.badges} />
+            {!started ? <ButtonLink href={routes.labs} variant="soft" size="sm" className="self-start">اكتشف المختبرات</ButtonLink> : null}
           </div>
         </div>
       </div>

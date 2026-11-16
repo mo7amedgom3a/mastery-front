@@ -1,4 +1,4 @@
-import { AppLink } from "@/components/ui/app-link";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { formatNumber } from "@/lib/format";
 
@@ -28,9 +28,7 @@ export function LearningStatsPanel({
       id="learning-stats-title"
       title="تعلّمك حتى الآن"
       action={
-        <AppLink href={routes.studentCertificates} className="ma-btn ma-btn--ghost ma-btn--sm">
-          عرض شهاداتي
-        </AppLink>
+        <DashboardActionLink href={routes.studentCertificates}>عرض شهاداتي</DashboardActionLink>
       }
     >
       <StatGrid

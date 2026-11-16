@@ -33,7 +33,7 @@ function ExpertCard({ expert }: { expert: Expert }) {
 export function BusinessSection() {
   const { banner } = b2bCopy;
   return (
-    <section id="business" aria-labelledby="business-title" data-theme="dark" className="cv-auto bg-surface-alt text-fg">
+    <section id="business" aria-labelledby="business-title" data-theme="dark" className="cv-auto overflow-x-clip bg-surface-alt text-fg">
       <div className="relative isolate overflow-hidden">
         {/* Backdrop: decorative only, kept out of the accessibility tree and tab order. */}
         <div aria-hidden="true" inert className="absolute inset-0 -z-10 flex -rotate-6 scale-125 flex-col justify-center gap-6 opacity-50">
@@ -56,7 +56,7 @@ export function BusinessSection() {
           <div className="hidden h-full w-[62%] bg-surface-alt/85 md:block" />
         </div>
 
-        <div className="ma-container grid gap-10 py-[clamp(3rem,8svh,7rem)] md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <div className="ma-container ma-section grid gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
           <div className="flex max-w-[36rem] flex-col items-start gap-6 short:gap-4">
             <span className="ma-tag ma-tag--coral">{b2bCopy.label}</span>
             <h2 id="business-title" className="t-section m-0">

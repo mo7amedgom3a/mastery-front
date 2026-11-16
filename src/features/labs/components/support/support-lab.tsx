@@ -13,6 +13,7 @@ import {
   type Triage,
 } from "../../content/support";
 import { choose, startDialogue, type DialogueState } from "../../model/dialogue";
+import { useLabSession } from "../../api";
 import { finishAttempt } from "../../model/progress-store";
 import { usePracticeClock } from "../../model/use-practice-clock";
 import type { LabDefinition, LabResult, QuizResult } from "../../model/types";
@@ -40,8 +41,10 @@ export function SupportLab({ lab }: { lab: LabDefinition }) {
   const [result, setResult] = useState<LabResult | null>(null);
 
   const clock = usePracticeClock();
+  const practice = useLabSession(lab.slug);
 
   const restart = () => {
+    void practice.reset();
     setStage("brief");
     setAttempt((n) => n + 1);
     clock.reset();
@@ -54,10 +57,21 @@ export function SupportLab({ lab }: { lab: LabDefinition }) {
     setResult(null);
   };
 
-  const finish = (post: QuizResult) => {
+  const finish = async (post: QuizResult) => {
     if (!form) return;
     const { scorecard, coolHead } = scoreSupport({ triage, triageSeconds, chat, form, notes });
-    setResult(finishAttempt(lab.slug, scorecard, { coolHead }, pre, post, clock.elapsedSeconds()));
+    const result = await practice.complete(
+      {
+        engine: "legacy",
+        scorer: "support",
+        run: { triage, triageSeconds, chat, form, notes },
+        pre,
+        post,
+        elapsed_seconds: clock.elapsedSeconds(),
+      },
+      () => finishAttempt(lab.slug, scorecard, { coolHead }, pre, post, clock.elapsedSeconds()),
+    );
+    setResult(result);
     setStage("debrief");
   };
 
@@ -75,13 +89,24 @@ export function SupportLab({ lab }: { lab: LabDefinition }) {
 
   return (
     <LabShell key={attempt} lab={lab} step={stepOf[stage]} hud={hud}>
-      {stage === "brief" ? <BriefingCard lab={lab} onStart={() => setStage("pre")} /> : null}
+      {stage === "brief" ? (
+        <BriefingCard
+          lab={lab}
+          onStart={() => {
+            void practice.start();
+            void practice.enterPhase("pre");
+            setStage("pre");
+          }}
+        />
+      ) : null}
       {stage === "pre" ? (
         <SkillQuiz
           mode="pre"
           questions={supportPreQuiz}
-          onDone={(r) => {
+          onDone={(r, answers) => {
+            void practice.submitQuiz("pre", answers);
             setPre(r);
+            void practice.enterPhase("console");
             setStage("console");
           }}
         />
@@ -91,6 +116,8 @@ export function SupportLab({ lab }: { lab: LabDefinition }) {
           onDone={(t, seconds) => {
             setTriage(t);
             setTriageSeconds(seconds);
+            void practice.submitForm("console", { ...t, seconds });
+            void practice.enterPhase("chat");
             setStage("chat");
           }}
         />
@@ -99,8 +126,14 @@ export function SupportLab({ lab }: { lab: LabDefinition }) {
         <PersonaChat
           graph={supportChat}
           state={chat}
-          onChoose={(id) => setChat((s) => choose(supportChat, s, id))}
-          onContinue={() => setStage("resolve")}
+          onChoose={(id) => {
+            void practice.choose("support-chat", chat.nodeId, id);
+            setChat((s) => choose(supportChat, s, id));
+          }}
+          onContinue={() => {
+            void practice.enterPhase("resolve");
+            setStage("resolve");
+          }}
           continueLabel="املأ نموذج التعويض"
           factLabels={supportFacts}
           aside={
@@ -117,11 +150,22 @@ export function SupportLab({ lab }: { lab: LabDefinition }) {
           onDone={(f, n) => {
             setForm(f);
             setNotes(n);
+            void practice.submitForm("resolve", { ...f, notes: n });
+            void practice.enterPhase("post");
             setStage("post");
           }}
         />
       ) : null}
-      {stage === "post" ? <SkillQuiz mode="post" questions={supportPostQuiz} onDone={finish} /> : null}
+      {stage === "post" ? (
+        <SkillQuiz
+          mode="post"
+          questions={supportPostQuiz}
+          onDone={(r, answers) => {
+            void practice.submitQuiz("post", answers);
+            void finish(r);
+          }}
+        />
+      ) : null}
       {stage === "debrief" && result ? (
         <>
           <LabScorecard lab={lab} result={result} onRetry={restart} />

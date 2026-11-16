@@ -13,6 +13,18 @@
 Pages should compose features. UI components should not call the backend
 directly; keep HTTP requests inside `src/lib/api` and pass typed data as props.
 
+## Practice labs
+
+`/labs` is a public, `noindex` demo of scripted practice simulations (sales, marketing, HR and
+management) with scoring and catalog recommendations. It runs through an endpoint-shaped mock API
+(`src/features/labs/api`) that persists to the browser; `NEXT_PUBLIC_LABS_API_MODE=live` switches
+to the future backend. The feature lives in `src/features/labs`; its review — field coverage, gaps
+against the catalog and the Academy, the mock/service architecture and the roadmap — is in
+[`src/features/labs/README.md`](src/features/labs/README.md).
+
+`npm run test:labs` checks the simulation engines and `npm run test:labs:api` checks the mock API
+contract. The same README has the checklist for adding a lab and the proposed authoring model.
+
 ## Run locally
 
 Start the FastAPI backend on port `8000`, then run:

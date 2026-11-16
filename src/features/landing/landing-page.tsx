@@ -34,13 +34,12 @@ export function LandingPage({ data, experts = [] }: { data: LandingData; experts
     <>
       <SiteHeader />
       <main id="main" tabIndex={-1} className="outline-none">
-        {/* Opening run: page-colour gaps keep the hero, live banner, stats and ticker apart. */}
-        <div className="flex flex-col gap-[clamp(1.5rem,5svh,3.5rem)] pb-[clamp(1.5rem,5svh,3.5rem)]">
-          <HeroSection />
-          <LiveSpotlightCarousel trainings={data.liveTrainings} />
-          <StatsSection stats={data.stats} />
-          <ExpertsTicker />
-        </div>
+        {/* Opening run: one continuous stack — hero, live banner, stats and ticker. Backgrounds and
+            the stats/ticker rules carry the separation; no page-colour gutters between them. */}
+        <HeroSection />
+        <LiveSpotlightCarousel trainings={data.liveTrainings} />
+        <StatsSection stats={data.stats} />
+        <ExpertsTicker />
         <OfferingsSection />
         <ExpertVideosSection />
         <CoursesSection courses={data.courses} total={data.coursesTotal} filters={data.courseFilters} />

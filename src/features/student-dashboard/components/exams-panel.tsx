@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Trophy } from "lucide-react";
 import Image from "next/image";
 
-import { AppLink } from "@/components/ui/app-link";
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { lmsQueries, isLmsReauthError, type LmsQuiz } from "@/lib/api/lms";
 import { formatNumber } from "@/lib/format";
@@ -29,9 +29,7 @@ export function ExamsPanel() {
       title="اختباراتك"
       subtitle={`${formatNumber(total)} اختبارات مسجّلة`}
       action={
-        <AppLink href={routes.studentExams} className="ma-btn ma-btn--ghost ma-btn--sm">
-          كل الاختبارات
-        </AppLink>
+        <DashboardActionLink href={routes.studentExams}>كل الاختبارات</DashboardActionLink>
       }
     >
       {quizzes.isPending ? (
@@ -52,7 +50,12 @@ export function ExamsPanel() {
           ) : null}
         </div>
       ) : !latest ? (
-        <p className="m-0 text-sm text-fg-muted">لا توجد اختبارات مسجّلة بعد.</p>
+        <div className="flex flex-col items-start gap-3">
+          <p className="m-0 text-sm text-fg-muted">لا توجد اختبارات مسجّلة بعد. أكمل اختبارات برامجك لتظهر نتائجك هنا.</p>
+          <ButtonLink href={routes.studentAccess} variant="soft" size="sm">
+            انتقل إلى تعلّمي
+          </ButtonLink>
+        </div>
       ) : (
         <LatestResult quiz={latest} />
       )}

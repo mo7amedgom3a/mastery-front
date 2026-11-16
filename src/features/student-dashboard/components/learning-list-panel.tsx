@@ -4,10 +4,10 @@ import { BookOpen, ChevronDown, GraduationCap, MessagesSquare, Package, type Luc
 import Image from "next/image";
 import { useState } from "react";
 
-import { AppLink } from "@/components/ui/app-link";
 import { brandBg, brandColorAt } from "@/components/ui/brand-colors";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/cn";
 
@@ -46,9 +46,7 @@ export function LearningListPanel({ programs, source = "lms", pending, error, on
       title="قيد التعلّم"
       subtitle={source === "snapshot" ? "آخر تقدّم محفوظ من حسابك" : "مرتّبة حسب آخر نشاط"}
       action={
-        <AppLink href={routes.studentAccess} className="ma-btn ma-btn--ghost ma-btn--sm">
-          كل البرامج
-        </AppLink>
+        <DashboardActionLink href={routes.studentAccess}>كل البرامج</DashboardActionLink>
       }
     >
       {pending ? (

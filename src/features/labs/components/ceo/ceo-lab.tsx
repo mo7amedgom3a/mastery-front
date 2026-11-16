@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { boardReport, buildBoardMeeting, ceoCauses, ceoPostQuiz, ceoPreQuiz, marketBrief, scoreCeo } from "../../content/ceo";
 import { choose, startDialogue, type DialogueGraph, type DialogueState } from "../../model/dialogue";
 import { QUARTERS, emptyAllocation, simulateQuarter, startMarket, type Allocation, type MarketState } from "../../model/market-sim";
+import { useLabSession } from "../../api";
 import { finishAttempt } from "../../model/progress-store";
 import { usePracticeClock } from "../../model/use-practice-clock";
 import type { LabDefinition, LabResult, QuizResult } from "../../model/types";
 import { LabPanel } from "../bits";
 import { BriefingCard } from "../briefing-card";
 import { RootCausePicker } from "../deals/root-cause-picker";
-import { DocBlockView } from "../documents/doc-blocks";
+import { DataTable } from "../workspace/data-table";
 import { DocumentViewer } from "../documents/document-viewer";
 import { LabShell, ObjectivesHud } from "../lab-shell";
 import { PersonaChat } from "../persona-chat";
@@ -40,10 +41,10 @@ function MarketBrief() {
       }
       subtitle="حصتنا هبطت من 34٪ إلى 27٪ خلال ربعين. اقرأ البيانات قبل أن تقرر."
     >
-      <DocBlockView block={{ kind: "table", head: ["الشريحة", "التسرب الشهري", "الاتجاه"], rows: marketBrief.churn }} />
+      <DataTable head={["الشريحة", "التسرب الشهري", "الاتجاه"]} rows={marketBrief.churn} />
       <div className="grid gap-4 md:grid-cols-2">
-        <DocBlockView block={{ kind: "table", head: ["زمن التوصيل", "المتوسط"], rows: marketBrief.delivery }} />
-        <DocBlockView block={{ kind: "table", head: ["اقتصاديات فوري", "القيمة"], rows: marketBrief.rival }} />
+        <DataTable head={["زمن التوصيل", "المتوسط"]} rows={marketBrief.delivery} />
+        <DataTable head={["اقتصاديات فوري", "القيمة"]} rows={marketBrief.rival} />
       </div>
       <div className="flex flex-col gap-2">
         <h3 className="m-0 inline-flex items-center gap-2 text-sm font-bold">
@@ -72,8 +73,10 @@ export function CeoLab({ lab }: { lab: LabDefinition }) {
   const [result, setResult] = useState<LabResult | null>(null);
 
   const clock = usePracticeClock();
+  const practice = useLabSession(lab.slug);
 
   const restart = () => {
+    void practice.reset();
     setStage("brief");
     setAttempt((n) => n + 1);
     clock.reset();
@@ -92,10 +95,15 @@ export function CeoLab({ lab }: { lab: LabDefinition }) {
     setStage("board");
   };
 
-  const finish = (post: QuizResult) => {
+  const finish = async (post: QuizResult) => {
     if (!board) return;
-    const { scorecard, shareDefended } = scoreCeo({ market, causes, board });
-    setResult(finishAttempt(lab.slug, scorecard, { shareDefended }, pre, post, clock.elapsedSeconds()));
+    const run = { market, causes, board };
+    const { scorecard, shareDefended } = scoreCeo(run);
+    const result = await practice.complete(
+      { engine: "legacy", scorer: "ceo", run, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      () => finishAttempt(lab.slug, scorecard, { shareDefended }, pre, post, clock.elapsedSeconds()),
+    );
+    setResult(result);
     setStage("debrief");
   };
 
@@ -121,13 +129,24 @@ export function CeoLab({ lab }: { lab: LabDefinition }) {
 
   return (
     <LabShell key={attempt} lab={lab} step={stepOf[stage]} hud={hud}>
-      {stage === "brief" ? <BriefingCard lab={lab} onStart={() => setStage("pre")} /> : null}
+      {stage === "brief" ? (
+        <BriefingCard
+          lab={lab}
+          onStart={() => {
+            void practice.start();
+            void practice.enterPhase("pre");
+            setStage("pre");
+          }}
+        />
+      ) : null}
       {stage === "pre" ? (
         <SkillQuiz
           mode="pre"
           questions={ceoPreQuiz}
-          onDone={(r) => {
+          onDone={(r, answers) => {
+            void practice.submitQuiz("pre", answers);
             setPre(r);
+            void practice.enterPhase("diagnose");
             setStage("diagnose");
           }}
         />
@@ -142,6 +161,8 @@ export function CeoLab({ lab }: { lab: LabDefinition }) {
             cta="ابدأ الربع الأول"
             onDone={(ids) => {
               setCauses(ids);
+              void practice.submitForm("diagnose", { causes: ids });
+              void practice.enterPhase("quarters");
               setStage("quarters");
             }}
           />
@@ -164,7 +185,10 @@ export function CeoLab({ lab }: { lab: LabDefinition }) {
               key={market.quarter}
               quarter={market.quarter + 1}
               initial={market.history.at(-1)?.allocation ?? startingAllocation}
-              onRun={(allocation, choice) => setMarket((m) => simulateQuarter(m, allocation, choice, SEED))}
+              onRun={(allocation, choice) => {
+                void practice.simulateStep("quarters", { allocation, choice, quarter: market.quarter + 1 });
+                setMarket((m) => simulateQuarter(m, allocation, choice, SEED));
+              }}
             />
           )}
         </>
@@ -173,14 +197,29 @@ export function CeoLab({ lab }: { lab: LabDefinition }) {
         <PersonaChat
           graph={graph}
           state={board}
-          onChoose={(id) => setBoard((s) => (s ? choose(graph, s, id) : s))}
-          onContinue={() => setStage("post")}
+          onChoose={(id) => {
+            void practice.choose(graph.id, board.nodeId, id);
+            setBoard((s) => (s ? choose(graph, s, id) : s));
+          }}
+          onContinue={() => {
+            void practice.enterPhase("post");
+            setStage("post");
+          }}
           continueLabel="أنهِ الاجتماع"
           factLabels={boardFacts}
           aside={<KpiBoard market={market} />}
         />
       ) : null}
-      {stage === "post" ? <SkillQuiz mode="post" questions={ceoPostQuiz} onDone={finish} /> : null}
+      {stage === "post" ? (
+        <SkillQuiz
+          mode="post"
+          questions={ceoPostQuiz}
+          onDone={(r, answers) => {
+            void practice.submitQuiz("post", answers);
+            void finish(r);
+          }}
+        />
+      ) : null}
       {stage === "debrief" && result ? (
         <>
           <LabScorecard lab={lab} result={result} onRetry={restart} />

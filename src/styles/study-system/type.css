@@ -1,0 +1,351 @@
+/*
+ * Mastery Academy — "study" design-system test type styles.
+ *
+ * Derived from study.emasteryacademy.com-styles-2026-11-12.css. The export declares 39 type styles across 34 unique class names
+ * (5 duplicate names); only the last, effective declaration of each class is kept here.
+ * Each style is paired with the semantic HTML element it drives, so the scale applies globally
+ * to bare elements while every class/utility rule in the app still wins:
+ *   :where([data-ds="study"]) h1  -> specificity 0,0,1 (base layer, after preflight)
+ *   [data-ds="study"] .type-title -> specificity 0,2,0
+ * Scoped so nothing applies when the test mode is off.
+ */
+[data-ds="study"] .type-title,
+:where([data-ds="study"]) h1 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-30);
+  font-weight: 800;
+  line-height: 1.00;
+  letter-spacing: var(--ds-tracking-neg-0-64);
+}
+
+[data-ds="study"] .type-h3,
+:where([data-ds="study"]) h2 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-22);
+  font-weight: 700;
+  line-height: 1.40;
+  letter-spacing: var(--ds-tracking-neg-0-22);
+}
+
+[data-ds="study"] .type-large-body,
+:where([data-ds="study"]) blockquote {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-18);
+  font-weight: 700;
+  line-height: 1.00;
+  letter-spacing: var(--ds-tracking-neg-0-64);
+}
+
+[data-ds="study"] .type-h3-16,
+:where([data-ds="study"]) h3 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-16);
+  font-weight: 800;
+  line-height: 1.20;
+  letter-spacing: var(--ds-tracking-neg-0-16);
+}
+
+[data-ds="study"] .type-heading {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-16);
+  font-weight: 800;
+  line-height: 1.00;
+  letter-spacing: var(--ds-tracking-neg-0-64);
+}
+
+[data-ds="study"] .type-heading-16 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-16);
+  font-weight: 600;
+  line-height: 1.75;
+}
+
+[data-ds="study"] .type-body,
+:where([data-ds="study"]) p,
+:where([data-ds="study"]) dd,
+:where([data-ds="study"]) li {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-16);
+  font-weight: 500;
+  line-height: 1.75;
+}
+
+[data-ds="study"] .type-header {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-16);
+  font-weight: 500;
+  line-height: 1.75;
+}
+
+[data-ds="study"] .type-body-16 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-16);
+  font-weight: 500;
+  line-height: 1.75;
+}
+
+[data-ds="study"] .type-body-16-500 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-16);
+  font-weight: 500;
+  line-height: 1.75;
+}
+
+[data-ds="study"] .type-h4,
+:where([data-ds="study"]) h4 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-15);
+  font-weight: 800;
+  line-height: 1.30;
+  letter-spacing: var(--ds-tracking-neg-0-15);
+}
+
+[data-ds="study"] .type-button,
+:where([data-ds="study"]) button,
+:where([data-ds="study"]) [role="button"],
+:where([data-ds="study"]) input[type="submit"],
+:where([data-ds="study"]) input[type="button"],
+:where([data-ds="study"]) input[type="reset"] {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-15);
+  font-weight: 700;
+  line-height: 1.87;
+}
+
+[data-ds="study"] .type-button-15 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-15);
+  font-weight: 700;
+  line-height: 1.01;
+}
+
+[data-ds="study"] .type-button-15-700 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-15);
+  font-weight: 700;
+  line-height: 1.87;
+  letter-spacing: var(--ds-tracking-neg-0-075);
+}
+
+[data-ds="study"] .type-subheading,
+:where([data-ds="study"]) h5,
+:where([data-ds="study"]) summary {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-15);
+  font-weight: 700;
+  line-height: 1.40;
+  letter-spacing: var(--ds-tracking-neg-0-075);
+}
+
+[data-ds="study"] .type-subheading-15 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-15);
+  font-weight: 700;
+  line-height: 1.87;
+  letter-spacing: var(--ds-tracking-neg-0-15);
+}
+
+[data-ds="study"] .type-subheading-15-600 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-15);
+  font-weight: 600;
+  line-height: 1.20;
+  letter-spacing: var(--ds-tracking-neg-0-15);
+}
+
+[data-ds="study"] .type-subheading-14,
+:where([data-ds="study"]) label,
+:where([data-ds="study"]) legend,
+:where([data-ds="study"]) th {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-14);
+  font-weight: 700;
+  line-height: 1.30;
+}
+
+[data-ds="study"] .type-subheading-14-700 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-14);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+[data-ds="study"] .type-subheading-14-600,
+:where([data-ds="study"]) dt {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-14);
+  font-weight: 600;
+  line-height: 1.30;
+}
+
+[data-ds="study"] .type-small-body,
+:where([data-ds="study"]) input,
+:where([data-ds="study"]) select,
+:where([data-ds="study"]) textarea,
+:where([data-ds="study"]) td,
+:where([data-ds="study"]) code,
+:where([data-ds="study"]) kbd,
+:where([data-ds="study"]) samp,
+:where([data-ds="study"]) pre {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-14);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+[data-ds="study"] .type-small-body-14 {
+  font-family: var(--ds-font-roboto);
+  font-size: var(--ds-text-14);
+  font-weight: 500;
+  line-height: 2.57;
+  letter-spacing: var(--ds-tracking-1-25);
+}
+
+[data-ds="study"] .type-caption {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-13);
+  font-weight: 800;
+  line-height: 2.15;
+}
+
+[data-ds="study"] .type-button-13 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-13);
+  font-weight: 700;
+  line-height: 1.00;
+  letter-spacing: var(--ds-tracking-neg-0-065);
+}
+
+[data-ds="study"] .type-link,
+:where([data-ds="study"]) nav a,
+:where([data-ds="study"]) footer a {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-13);
+  font-weight: 700;
+  line-height: 2.15;
+}
+
+[data-ds="study"] .type-button-13-700 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-13);
+  font-weight: 700;
+  line-height: 2.15;
+}
+
+[data-ds="study"] .type-caption-13,
+:where([data-ds="study"]) h6,
+:where([data-ds="study"]) figcaption,
+:where([data-ds="study"]) caption {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-13);
+  font-weight: 700;
+  line-height: 2.15;
+}
+
+[data-ds="study"] .type-caption-12 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-12);
+  font-weight: 800;
+  line-height: 2.33;
+  letter-spacing: var(--ds-tracking-neg-0-075);
+}
+
+[data-ds="study"] .type-caption-12-600 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-12);
+  font-weight: 600;
+  line-height: 2.33;
+}
+
+[data-ds="study"] .type-caption-12-500,
+:where([data-ds="study"]) small {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-12);
+  font-weight: 500;
+  line-height: 2.33;
+  letter-spacing: var(--ds-tracking-0-24);
+}
+
+[data-ds="study"] .type-h4-11 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-11);
+  font-weight: 800;
+  line-height: 1.20;
+  letter-spacing: var(--ds-tracking-0-88);
+}
+
+[data-ds="study"] .type-small {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-11);
+  font-weight: 800;
+  line-height: 1.00;
+  letter-spacing: var(--ds-tracking-neg-0-15);
+}
+
+[data-ds="study"] .type-small-11 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-11);
+  font-weight: 800;
+  line-height: 2.55;
+  letter-spacing: var(--ds-tracking-0-66);
+}
+
+[data-ds="study"] .type-small-11-700 {
+  font-family: var(--ds-font-dinnextltarabic);
+  font-size: var(--ds-text-11);
+  font-weight: 700;
+  line-height: 1.30;
+  letter-spacing: var(--ds-tracking-neg-0-075);
+}
+
+/* ---------- Global element defaults that are not one of the exported type styles ---------- */
+:where([data-ds="study"]) a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+:where([data-ds="study"]) strong,
+:where([data-ds="study"]) b {
+  font-weight: 700;
+}
+:where([data-ds="study"]) em,
+:where([data-ds="study"]) i,
+:where([data-ds="study"]) cite,
+:where([data-ds="study"]) dfn,
+:where([data-ds="study"]) var {
+  font-style: italic;
+}
+:where([data-ds="study"]) hr {
+  border: 0;
+  border-block-start: 1px solid var(--line);
+}
+:where([data-ds="study"]) table {
+  border-collapse: collapse;
+}
+:where([data-ds="study"]) th,
+:where([data-ds="study"]) td {
+  border-block-end: 1px solid var(--line);
+  text-align: start;
+}
+:where([data-ds="study"]) mark {
+  background: var(--ds-color-pastel-orange-1);
+  color: var(--ds-color-dark-gray-1);
+}
+:where([data-ds="study"]) abbr[title] {
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+}
+:where([data-ds="study"]) input[type="checkbox"],
+:where([data-ds="study"]) input[type="radio"],
+:where([data-ds="study"]) progress,
+:where([data-ds="study"]) meter {
+  accent-color: var(--accent);
+}
+:where([data-ds="study"]) ::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+:where([data-ds="study"]) ::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}

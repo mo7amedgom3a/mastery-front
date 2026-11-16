@@ -99,7 +99,7 @@ export function ExamsPage() {
           <Skeleton className="h-64" />
           <Skeleton className="h-64" />
         </div>
-      ) : visible.length > 0 ? (
+      ) : quizzes.isError ? null : visible.length > 0 ? (
         <ul className="m-0 grid list-none gap-5 p-0 @xl:grid-cols-2">
           {visible.map((quiz, index) => (
             <li key={`${quiz.lms_course_id ?? "quiz"}-${quiz.quiz_title ?? index}`}>
@@ -116,6 +116,11 @@ export function ExamsPage() {
           <p className="m-0 text-sm leading-6 text-fg-muted">
             تظهر هنا الاختبارات التي أكملتها في منصة التعلّم، مع درجتك وحالتها.
           </p>
+          {items.length === 0 ? (
+            <ButtonLink href={routes.studentAccess} variant="soft" size="sm">انتقل إلى تعلّمي</ButtonLink>
+          ) : (
+            <Button variant="soft" size="sm" onClick={() => setFilter("all")}>عرض كل النتائج</Button>
+          )}
         </div>
       )}
     </div>

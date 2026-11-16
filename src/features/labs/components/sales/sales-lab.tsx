@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { salesCall, salesFacts, salesPostQuiz, salesPreQuiz, scoreSales, type CrmEntry } from "../../content/sales";
 import { choose, learnerTalkShare, startDialogue, type DialogueState } from "../../model/dialogue";
+import { useLabSession } from "../../api";
 import { finishAttempt } from "../../model/progress-store";
 import { usePracticeClock } from "../../model/use-practice-clock";
 import type { LabDefinition, LabResult, QuizResult } from "../../model/types";
@@ -28,8 +29,10 @@ export function SalesLab({ lab }: { lab: LabDefinition }) {
   const [result, setResult] = useState<LabResult | null>(null);
 
   const clock = usePracticeClock();
+  const practice = useLabSession(lab.slug);
 
   const restart = () => {
+    void practice.reset();
     setStage("brief");
     setAttempt((n) => n + 1);
     clock.reset();
@@ -41,10 +44,21 @@ export function SalesLab({ lab }: { lab: LabDefinition }) {
     setResult(null);
   };
 
-  const finish = (post: QuizResult) => {
+  const finish = async (post: QuizResult) => {
     if (!crm) return;
     const { scorecard, dealClosed } = scoreSales({ call, hypotheses: hyp, crm, email });
-    setResult(finishAttempt(lab.slug, scorecard, { dealClosed }, pre, post, clock.elapsedSeconds()));
+    const result = await practice.complete(
+      {
+        engine: "legacy",
+        scorer: "sales",
+        run: { call, hypotheses: hyp, crm, email },
+        pre,
+        post,
+        elapsed_seconds: clock.elapsedSeconds(),
+      },
+      () => finishAttempt(lab.slug, scorecard, { dealClosed }, pre, post, clock.elapsedSeconds()),
+    );
+    setResult(result);
     setStage("debrief");
   };
 
@@ -62,13 +76,24 @@ export function SalesLab({ lab }: { lab: LabDefinition }) {
 
   return (
     <LabShell key={attempt} lab={lab} step={stepOf[stage]} hud={hud}>
-      {stage === "brief" ? <BriefingCard lab={lab} onStart={() => setStage("pre")} /> : null}
+      {stage === "brief" ? (
+        <BriefingCard
+          lab={lab}
+          onStart={() => {
+            void practice.start();
+            void practice.enterPhase("pre");
+            setStage("pre");
+          }}
+        />
+      ) : null}
       {stage === "pre" ? (
         <SkillQuiz
           mode="pre"
           questions={salesPreQuiz}
-          onDone={(r) => {
+          onDone={(r, answers) => {
+            void practice.submitQuiz("pre", answers);
             setPre(r);
+            void practice.enterPhase("prep");
             setStage("prep");
           }}
         />
@@ -77,6 +102,8 @@ export function SalesLab({ lab }: { lab: LabDefinition }) {
         <PrepPanel
           onDone={(picked) => {
             setHyp(picked);
+            void practice.submitForm("prep", { hypotheses: picked });
+            void practice.enterPhase("call");
             setStage("call");
           }}
         />
@@ -85,8 +112,14 @@ export function SalesLab({ lab }: { lab: LabDefinition }) {
         <PersonaChat
           graph={salesCall}
           state={call}
-          onChoose={(id) => setCall((s) => choose(salesCall, s, id))}
-          onContinue={() => setStage("crm")}
+          onChoose={(id) => {
+            void practice.choose("sales-call", call.nodeId, id);
+            setCall((s) => choose(salesCall, s, id));
+          }}
+          onContinue={() => {
+            void practice.enterPhase("crm");
+            setStage("crm");
+          }}
           continueLabel="سجّل المكالمة في الـCRM"
           factLabels={salesFacts}
           showTalkRatio
@@ -96,6 +129,8 @@ export function SalesLab({ lab }: { lab: LabDefinition }) {
         <CrmLogForm
           onDone={(entry) => {
             setCrm(entry);
+            void practice.updateCrm("crm", { ...entry });
+            void practice.enterPhase("email");
             setStage("email");
           }}
         />
@@ -104,11 +139,22 @@ export function SalesLab({ lab }: { lab: LabDefinition }) {
         <EmailComposer
           onDone={(blocks) => {
             setEmail(blocks);
+            void practice.submitForm("email", { blocks });
+            void practice.enterPhase("post");
             setStage("post");
           }}
         />
       ) : null}
-      {stage === "post" ? <SkillQuiz mode="post" questions={salesPostQuiz} onDone={finish} /> : null}
+      {stage === "post" ? (
+        <SkillQuiz
+          mode="post"
+          questions={salesPostQuiz}
+          onDone={(r, answers) => {
+            void practice.submitQuiz("post", answers);
+            void finish(r);
+          }}
+        />
+      ) : null}
       {stage === "debrief" && result ? <LabScorecard lab={lab} result={result} onRetry={restart} /> : null}
     </LabShell>
   );

@@ -5,7 +5,17 @@ export type DealSlug = "deal-recovery-real-estate" | "deal-recovery-medical" | "
 /** Objection labs: the six-type drill and the competitor-satisfied "ruler" case. */
 export type ObjectionSlug = "objections-six-types" | "objections-competitor-ruler";
 
+/** The «نقطة» company-journey labs: registration → governance → forecast → close, plus crisis and audit. */
+export type JourneySlug =
+  | "startup-company-registration"
+  | "governance-first-board"
+  | "cfo-forecast-runway"
+  | "finance-quarter-close"
+  | "crisis-data-leak"
+  | "audit-escape-room";
+
 export type LabSlug =
+  | JourneySlug
   | "marketing-ads"
   | "sales-discovery-call"
   | "hr-conflict-mediation"
@@ -110,6 +120,12 @@ export type BadgeId =
   | "ruler-master"
   | "rejection-proof"
   | "funnel-master"
+  | "founder"
+  | "governance-guardian"
+  | "runway-keeper"
+  | "clean-close"
+  | "crisis-commander"
+  | "escape-artist"
   | "excellence"
   | "all-rounder";
 
@@ -137,6 +153,12 @@ export type BadgeSignals = {
   rulerMaster?: boolean;
   rejectionProof?: boolean;
   funnelMaster?: boolean;
+  founder?: boolean;
+  governanceGuardian?: boolean;
+  runwayKeeper?: boolean;
+  cleanClose?: boolean;
+  crisisCommander?: boolean;
+  escapeArtist?: boolean;
 };
 
 export type QuizOption = {

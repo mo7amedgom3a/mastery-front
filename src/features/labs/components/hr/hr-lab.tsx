@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { hrFacts, hrPostQuiz, hrPreQuiz, jointSession, khaledSession, saraSession, scoreHr } from "../../content/hr";
 import { choose, startDialogue, type DialogueGraph, type DialogueState } from "../../model/dialogue";
+import { useLabSession } from "../../api";
 import { finishAttempt } from "../../model/progress-store";
 import { usePracticeClock } from "../../model/use-practice-clock";
 import type { LabDefinition, LabResult, QuizResult } from "../../model/types";
@@ -31,8 +32,10 @@ export function HrLab({ lab }: { lab: LabDefinition }) {
   const [result, setResult] = useState<LabResult | null>(null);
 
   const clock = usePracticeClock();
+  const practice = useLabSession(lab.slug);
 
   const restart = () => {
+    void practice.reset();
     setStage("brief");
     setAttempt((n) => n + 1);
     clock.reset();
@@ -42,9 +45,13 @@ export function HrLab({ lab }: { lab: LabDefinition }) {
     setResult(null);
   };
 
-  const finish = (post: QuizResult) => {
+  const finish = async (post: QuizResult) => {
     const { scorecard, peaceMade } = scoreHr(sessions, plan);
-    setResult(finishAttempt(lab.slug, scorecard, { peaceMade }, pre, post, clock.elapsedSeconds()));
+    const result = await practice.complete(
+      { engine: "legacy", scorer: "hr", run: { sessions, plan }, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      () => finishAttempt(lab.slug, scorecard, { peaceMade }, pre, post, clock.elapsedSeconds()),
+    );
+    setResult(result);
     setStage("debrief");
   };
 
@@ -65,7 +72,15 @@ export function HrLab({ lab }: { lab: LabDefinition }) {
     <LabShell key={attempt} lab={lab} step={stepOf[stage]} hud={hud}>
       {stage === "brief" ? (
         <>
-          <BriefingCard lab={lab} onStart={() => setStage("pre")} extra={<CaseFile />} />
+          <BriefingCard
+            lab={lab}
+            onStart={() => {
+              void practice.start();
+              void practice.enterPhase("pre");
+              setStage("pre");
+            }}
+            extra={<CaseFile />}
+          />
           <PolicyCard />
         </>
       ) : null}
@@ -73,8 +88,10 @@ export function HrLab({ lab }: { lab: LabDefinition }) {
         <SkillQuiz
           mode="pre"
           questions={hrPreQuiz}
-          onDone={(r) => {
+          onDone={(r, answers) => {
+            void practice.submitQuiz("pre", answers);
             setPre(r);
+            void practice.enterPhase("khaled");
             setStage("khaled");
           }}
         />
@@ -84,8 +101,14 @@ export function HrLab({ lab }: { lab: LabDefinition }) {
           key={session}
           graph={graphs[session]}
           state={sessions[session]}
-          onChoose={(id) => setSessions((s) => ({ ...s, [session]: choose(graphs[session], s[session], id) }))}
-          onContinue={() => setStage(nextStage[session])}
+          onChoose={(id) => {
+            void practice.choose(graphs[session].id, sessions[session].nodeId, id);
+            setSessions((s) => ({ ...s, [session]: choose(graphs[session], s[session], id) }));
+          }}
+          onContinue={() => {
+            void practice.enterPhase(nextStage[session]);
+            setStage(nextStage[session]);
+          }}
           continueLabel={session === "joint" ? "اكتب خطة الحل" : "الجلسة التالية"}
           factLabels={hrFacts}
           aside={<PolicyCard compact />}
@@ -96,11 +119,22 @@ export function HrLab({ lab }: { lab: LabDefinition }) {
           facts={allFacts}
           onDone={(actions) => {
             setPlan(actions);
+            void practice.submitForm("plan", { actions });
+            void practice.enterPhase("post");
             setStage("post");
           }}
         />
       ) : null}
-      {stage === "post" ? <SkillQuiz mode="post" questions={hrPostQuiz} onDone={finish} /> : null}
+      {stage === "post" ? (
+        <SkillQuiz
+          mode="post"
+          questions={hrPostQuiz}
+          onDone={(r, answers) => {
+            void practice.submitQuiz("post", answers);
+            void finish(r);
+          }}
+        />
+      ) : null}
       {stage === "debrief" && result ? <LabScorecard lab={lab} result={result} onRetry={restart} /> : null}
     </LabShell>
   );

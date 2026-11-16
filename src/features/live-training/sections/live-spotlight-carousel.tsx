@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { CarouselDots } from "@/components/ui/carousel-dots";
+import { PauseButton } from "@/components/ui/pause-button";
 import { cn } from "@/lib/cn";
 
 import type { LiveTrainingVM } from "../model/types";
@@ -12,13 +14,17 @@ const ROTATE_MS = 6000;
 /**
  * The landing spotlight as a crossfading carousel over the featured live diplomas (CMTD + AI …).
  * Each diploma keeps its own storefront `style` (brand-colour field). Auto-advances unless the
- * visitor prefers reduced motion; pauses while hovered or focused; the dots skip straight to a slide.
+ * visitor prefers reduced motion, pauses while hovered or focused, and has an explicit pause/resume
+ * control; the dots skip straight to a slide. Inactive slides are inert, so hidden CTAs never enter
+ * the tab order.
  */
 export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM[] }) {
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
+  const [interacting, setInteracting] = useState(false);
   const [visible, setVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const paused = userPaused || interacting;
 
   // Below the fold on most screens: don't schedule a state update every 6 s until it is in view.
   useEffect(() => {
@@ -37,6 +43,14 @@ export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM
     return () => window.clearInterval(id);
   }, [trainings.length, paused, visible]);
 
+  const togglePaused = () => {
+    const next = !userPaused;
+    setUserPaused(next);
+    // Pressing play while the pointer/keyboard focus is still over the section must really resume:
+    // drop the incidental interaction pause until the visitor leaves and re-enters.
+    if (!next) setInteracting(false);
+  };
+
   if (trainings.length === 0) return null;
   const activeIndex = active < trainings.length ? active : 0;
 
@@ -48,10 +62,16 @@ export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM
       aria-label="دورات البث المباشر"
       data-theme="dark"
       className="relative isolate overflow-hidden bg-surface-alt text-fg cv-auto [contain-intrinsic-size:auto_1250px] md:[contain-intrinsic-size:auto_760px]"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
+      onMouseEnter={() => setInteracting(true)}
+      onMouseLeave={() => setInteracting(false)}
+      onFocus={(event) => {
+        // The play button (and any other carousel control) must not re-pause what it just resumed.
+        if ((event.target as HTMLElement).closest("[data-carousel-control]")) return;
+        setInteracting(true);
+      }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setInteracting(false);
+      }}
     >
       <div className="relative">
         {trainings.map((training, index) => (
@@ -61,6 +81,7 @@ export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM
             aria-roledescription="slide"
             aria-label={`${index + 1} من ${trainings.length}`}
             aria-hidden={index !== activeIndex}
+            inert={index !== activeIndex}
             className={cn(
               "transition-opacity duration-700 ease-out motion-reduce:transition-none",
               index === activeIndex ? "relative opacity-100" : "pointer-events-none absolute inset-0 opacity-0",
@@ -72,20 +93,14 @@ export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM
       </div>
 
       {trainings.length > 1 ? (
-        <div className="ma-container relative z-10 flex items-center gap-2 pb-6">
-          {trainings.map((training, index) => (
-            <button
-              key={training.catalogSlug}
-              type="button"
-              onClick={() => setActive(index)}
-              aria-label={`عرض: ${training.title}`}
-              aria-current={index === activeIndex}
-              className={cn(
-                "h-2 rounded-full transition-all motion-reduce:transition-none",
-                index === activeIndex ? "w-8 bg-coral" : "w-2 bg-line-strong hover:bg-fg-muted",
-              )}
-            />
-          ))}
+        <div className="ma-container relative z-10 flex items-center gap-2 pb-4">
+          <CarouselDots
+            items={trainings.map((training) => ({ key: training.catalogSlug, label: training.title }))}
+            activeIndex={activeIndex}
+            onChange={setActive}
+            label="شرائح دورات البث المباشر"
+          />
+          <PauseButton paused={userPaused} onToggle={togglePaused} />
         </div>
       ) : null}
     </section>

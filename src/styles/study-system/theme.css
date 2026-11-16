@@ -1,0 +1,90 @@
+/*
+ * Mastery Academy — "study" design-system test theme.
+ *
+ * Maps the exported study.emasteryacademy.com palette onto the app's role tokens
+ * (--surface, --text, --accent …) and brand tokens (--coral, --ink …), so every kit component
+ * and Tailwind colour utility retints when the test mode is on.
+ *
+ * Light values map straight onto export tokens. The export has no dark palette, so dark is
+ * synthesized from its dark-gray/charcoal tokens — see README.md for the rationale.
+ *
+ * Scoped to [data-ds="study"] (on <html>, or on a container for the specimen page). Nothing
+ * applies when the attribute is absent.
+ */
+
+/* ---------- Shared: brand roles, fonts, neutral soft fills ---------- */
+:root[data-ds="study"],
+[data-ds="study"] {
+  --accent: var(--ds-color-tomato-3);
+  --success: var(--ds-color-lime-green);
+  --warning: var(--ds-color-pastel-orange-1);
+  --danger: var(--ds-color-tomato);
+
+  --coral: var(--ds-color-tomato-3);
+  --ink: var(--ds-color-dark-gray);
+  --yellow: var(--ds-color-pastel-orange-1);
+  --purple: var(--ds-color-medium-purple);
+  --sky: var(--ds-color-royal-blue-1);
+  --pink: var(--ds-color-deep-pink-1);
+  --teal: var(--ds-color-light-sea-green-1);
+  --lilac: var(--ds-color-lavender-2);
+  --green: var(--ds-color-lime-green);
+  --cream: var(--ds-color-white-smoke-2);
+  --white: var(--ds-color-white);
+  --black: var(--ds-color-black);
+
+  --font-sans: var(--ds-font-dinnextltarabic);
+  --font-arabic: var(--ds-font-dinnextltarabic);
+
+  /* Re-declared here so a locally scoped test area mixes its own --text (see tokens.css). */
+  --fill-soft: color-mix(in srgb, var(--text) 7%, transparent);
+  --fill-soft-hover: color-mix(in srgb, var(--text) 14%, transparent);
+  --fill-soft-active: color-mix(in srgb, var(--text) 20%, transparent);
+}
+
+/* ---------- Light surfaces and text ---------- */
+:root[data-ds="study"],
+[data-ds="study"]:not([data-theme="dark"]) {
+  color-scheme: light;
+
+  --surface: var(--ds-color-white);
+  --surface-alt: var(--ds-color-ghost-white-1);
+  --text: var(--ds-color-dark-gray-1);
+  --text-muted: var(--ds-color-dim-gray);
+  --line: var(--ds-color-lavender-1);
+  --line-strong: var(--ds-color-light-gray);
+  --on-accent: var(--ds-color-dark-gray-1);
+  --focus: var(--ds-color-steel-blue-1);
+}
+
+/* ---------- Dark surfaces and text (synthesized) ---------- */
+:root[data-ds="study"][data-theme="dark"],
+[data-ds="study"][data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface: var(--ds-color-dark-gray);
+  --surface-alt: var(--ds-color-dark-gray-3);
+  --text: var(--ds-color-white);
+  --text-muted: var(--ds-color-dark-gray-10);
+  --line: color-mix(in srgb, var(--ds-color-white) 16%, transparent);
+  --line-strong: color-mix(in srgb, var(--ds-color-white) 32%, transparent);
+  --on-accent: var(--ds-color-dark-gray);
+  --focus: var(--ds-color-lavender-2);
+}
+
+/* OS dark preference when no explicit theme is set (mirrors tokens.css). Keep in sync with above. */
+@media (prefers-color-scheme: dark) {
+  :root[data-ds="study"]:not([data-theme="light"]),
+  [data-ds="study"]:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
+
+    --surface: var(--ds-color-dark-gray);
+    --surface-alt: var(--ds-color-dark-gray-3);
+    --text: var(--ds-color-white);
+    --text-muted: var(--ds-color-dark-gray-10);
+    --line: color-mix(in srgb, var(--ds-color-white) 16%, transparent);
+    --line-strong: color-mix(in srgb, var(--ds-color-white) 32%, transparent);
+    --on-accent: var(--ds-color-dark-gray);
+    --focus: var(--ds-color-lavender-2);
+  }
+}

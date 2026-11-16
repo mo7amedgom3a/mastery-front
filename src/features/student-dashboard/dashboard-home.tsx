@@ -7,7 +7,7 @@ import { useEffect, useSyncExternalStore } from "react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ViewAllLink } from "@/components/ui/view-all-link";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { isOnboardingSkipped } from "@/features/onboarding/model/skip";
 import { certificateQueries } from "@/lib/api/certificates";
@@ -209,7 +209,7 @@ function DashboardOverview({ onboardingCompleted }: { onboardingCompleted: boole
               </h2>
               <p className="m-0 text-sm text-fg-muted">مقترحة لك بناءً على أهدافك ونشاطك.</p>
             </div>
-            <ViewAllLink href={routes.search} label="تصفّح البرامج" />
+            <DashboardActionLink href={routes.search} label="تصفّح البرامج" />
           </div>
           <RecommendationGrid limit={6} compactLoader={!ownsNothing} />
         </section>

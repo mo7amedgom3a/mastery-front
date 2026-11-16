@@ -5,6 +5,12 @@ import { isObjectionSlug, objectionScenarios } from "../content/objections";
 import { findLab } from "../model/catalog";
 import type { LabSlug } from "../model/types";
 import { CeoLab } from "./ceo/ceo-lab";
+import { CloseLab } from "./close/close-lab";
+import { CrisisLab } from "./crisis/crisis-lab";
+import { EscapeLab } from "./escape/escape-lab";
+import { ForecastLab } from "./forecast/forecast-lab";
+import { GovernanceLab } from "./governance/governance-lab";
+import { RegistrationLab } from "./registration/registration-lab";
 import { DealRecoveryLab } from "./deals/deal-recovery-lab";
 import { HrLab } from "./hr/hr-lab";
 import { MarketingLab } from "./marketing/ad-lab";
@@ -32,5 +38,17 @@ export function LabPage({ slug }: { slug: LabSlug }) {
       return <CeoLab lab={lab} />;
     case "sales-failure-week":
       return <SalesFailureLab lab={lab} />;
+    case "startup-company-registration":
+      return <RegistrationLab lab={lab} />;
+    case "governance-first-board":
+      return <GovernanceLab lab={lab} />;
+    case "cfo-forecast-runway":
+      return <ForecastLab lab={lab} />;
+    case "finance-quarter-close":
+      return <CloseLab lab={lab} />;
+    case "crisis-data-leak":
+      return <CrisisLab lab={lab} />;
+    case "audit-escape-room":
+      return <EscapeLab lab={lab} />;
   }
 }

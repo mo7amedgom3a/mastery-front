@@ -6,6 +6,7 @@ import { CalendarClock } from "lucide-react";
 import { AppLink } from "@/components/ui/app-link";
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { JoinPanel } from "@/features/consultations/components/session-actions";
 import { bookingStatus, isUpcoming } from "@/features/consultations/model/status";
@@ -27,9 +28,7 @@ export function NextConsultationPanel() {
       id="next-consultation-title"
       title="موعدك القادم"
       action={
-        <AppLink href={routes.studentConsultations} className="ma-btn ma-btn--ghost ma-btn--sm">
-          كل الاستشارات
-        </AppLink>
+        <DashboardActionLink href={routes.studentConsultations}>كل الاستشارات</DashboardActionLink>
       }
     >
       {bookings.isPending ? (
@@ -42,7 +41,7 @@ export function NextConsultationPanel() {
       ) : !next ? (
         <div className="flex flex-col items-start gap-3">
           <p className="m-0 text-sm text-fg-muted">لا يوجد موعد استشارة قادم.</p>
-          <ButtonLink href={routes.search} variant="soft" size="sm">
+          <ButtonLink href={routes.consultations} variant="soft" size="sm">
             تصفّح الاستشارات
           </ButtonLink>
         </div>

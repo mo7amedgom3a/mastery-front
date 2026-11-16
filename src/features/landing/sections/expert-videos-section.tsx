@@ -5,7 +5,9 @@ import { ArrowUpLeft, ChevronLeft, ChevronRight, Clock, Eye, Mic, Play, ThumbsUp
 import { useEffect, useId, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 
 import { brandBg } from "@/components/ui/brand-colors";
-import { buttonClass } from "@/components/ui/button";
+import { CarouselDots } from "@/components/ui/carousel-dots";
+import { FilterChips } from "@/components/ui/filter-chips";
+import { PauseButton } from "@/components/ui/pause-button";
 import { SectionHeader } from "@/components/ui/section-header";
 
 import { expertVideoCategories, expertVideos, type ExpertVideo } from "../content/expert-videos";
@@ -48,6 +50,7 @@ export function ExpertVideosSection() {
   const [category, setCategory] = useState<string | null>(null);
   const [active, setActive] = useState(0);
   const [focused, setFocused] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
   const [inView, setInView] = useState(false);
   const [playing, setPlaying] = useState<ExpertVideo | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
@@ -64,16 +67,27 @@ export function ExpertVideosSection() {
   }, []);
 
   // Filtering happens before the stage renders, so the carousel keeps its motion and only the line-up changes.
+  // Only categories that have at least one episode become chips.
+  const categories = expertVideoCategories.filter((item) =>
+    expertVideos.some((video) => video.category === item),
+  );
   const listed = category ? expertVideos.filter((video) => video.category === category) : expertVideos;
   const total = listed.length;
 
   if (total === 0) return null;
 
-  const paused = focused || !inView || playing !== null;
+  const paused = userPaused || focused || !inView || playing !== null;
   const current = listed[active];
   const goTo = (index: number) => setActive(((index % total) + total) % total);
   const next = () => goTo(active + 1);
   const prev = () => goTo(active - 1);
+
+  const togglePaused = () => {
+    const nextPaused = !userPaused;
+    setUserPaused(nextPaused);
+    // A play click must resume even if a caption link still holds keyboard focus.
+    if (!nextPaused) setFocused(false);
+  };
 
   /** A new category starts at its first episode, and the progress bar restarts with it. */
   const selectCategory = (nextCategory: string | null) => {
@@ -106,7 +120,11 @@ export function ExpertVideosSection() {
       style={{ "--vs-duration": `${ROTATE_MS}ms` } as CSSProperties}
       className="ma-vs ma-section ma-band cv-auto"
       // Only keyboard focus pauses: a mouse click on an arrow or dot must not stop the rotation.
-      onFocus={(event) => setFocused(event.target.matches(":focus-visible"))}
+      // Carousel controls are excluded so the play button can resume the rotation it just started.
+      onFocus={(event) => {
+        const target = event.target as HTMLElement;
+        setFocused(target.matches(":focus-visible") && !target.closest("[data-carousel-control]"));
+      }}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
       }}
@@ -119,29 +137,14 @@ export function ExpertVideosSection() {
           lead="أكثر من ثلاثين حلقة من «كرسي ماستري» مع خبراء المبيعات والتسويق والمالية والإدارة والفنون. اختر المجال الذي يهمك، تنقّل بين الحلقات، ثم اضغط تشغيل لمشاهدة اللقاء كاملاً."
         />
 
-        {/* Category filter: the same kit buttons as the catalogue sections, scrollable on phones. */}
-        <div className="ma-vs-filters mt-10 short:mt-6">
-          <ul
-            aria-label="تصفية الحلقات حسب المجال"
-            className="-mx-4 m-0 flex list-none gap-2 overflow-x-auto p-0 px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0"
-          >
-            {[{ key: null, label: "الكل" }, ...expertVideoCategories.map((item) => ({ key: item, label: item }))].map((chip) => {
-              const selected = category === chip.key;
-              return (
-                <li key={chip.key ?? "all"} className="shrink-0">
-                  <button
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => selectCategory(chip.key)}
-                    className={buttonClass({ variant: selected ? "secondary" : "soft", size: "sm" })}
-                  >
-                    {chip.label}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        {/* Category filter: the same shared chip row as the catalogue sections. */}
+        <FilterChips
+          className="ma-vs-filters"
+          label="تصفية الحلقات حسب المجال"
+          filters={categories.map((item) => ({ key: item, label: item }))}
+          activeKey={category}
+          onSelect={selectCategory}
+        />
       </div>
 
       <div
@@ -183,7 +186,7 @@ export function ExpertVideosSection() {
                     <Mic aria-hidden="true" />
                     {video.show}
                   </span>
-                  <span className={cn("ma-tag px-3 py-1.5 text-[13px] font-bold tracking-normal", `ma-tag--${video.color}`)}>{video.category}</span>
+                  <span className={cn("ma-tag px-3 py-1.5 font-bold tracking-normal", `ma-tag--${video.color}`)}>{video.category}</span>
                 </span>
                 <span className="ma-vs-card__play" aria-hidden="true">
                   <Play />
@@ -209,8 +212,8 @@ export function ExpertVideosSection() {
               {initialOf(current.host || current.role)}
             </span>
             <div className="flex flex-col gap-1 max-sm:items-center">
-              <p className="m-0 text-[clamp(1rem,1.8vw,1.25rem)] leading-snug font-semibold">{current.title}</p>
-              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-fg-muted max-sm:justify-center">
+              <p className="m-0 text-lg font-semibold leading-snug md:text-xl">{current.title}</p>
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-fg-muted max-sm:justify-center">
                 {current.host ? (
                   <>
                     <span>{current.host}</span>
@@ -245,35 +248,31 @@ export function ExpertVideosSection() {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-4 md:gap-6">
-          <button type="button" onClick={prev} aria-label="الحلقة السابقة" className="ma-btn ma-btn--soft ma-btn--icon rounded-full">
-            <ChevronRight aria-hidden="true" />
-          </button>
-          <div className="flex max-w-90 flex-1 flex-col items-center gap-3">
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {listed.map((video, index) => (
-                <button
-                  key={video.youtubeId}
-                  type="button"
-                  onClick={() => goTo(index)}
-                  aria-label={`عرض: ${video.title}`}
-                  aria-current={index === active}
-                  className={cn(
-                    "h-2 rounded-full transition-all motion-reduce:transition-none",
-                    index === active ? "w-7 bg-coral" : "w-2 bg-line-strong opacity-40 hover:opacity-70",
-                  )}
+        {total > 1 ? (
+          <div className="mt-6 flex items-center justify-center gap-4 md:gap-6">
+            <button type="button" onClick={prev} aria-label="الحلقة السابقة" className="ma-btn ma-btn--soft ma-btn--icon rounded-full">
+              <ChevronRight aria-hidden="true" />
+            </button>
+            <div className="flex max-w-90 flex-1 flex-col items-center gap-3">
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <PauseButton paused={userPaused} onToggle={togglePaused} />
+                <CarouselDots
+                  items={listed.map((video) => ({ key: video.youtubeId, label: video.title }))}
+                  activeIndex={active}
+                  onChange={goTo}
+                  label="حلقات بودكاست كرسي ماستري"
                 />
-              ))}
+              </div>
+              <div className="ma-vs-progress" aria-hidden="true">
+                {/* Keyed by category + slide so the bar restarts on every change; its end turns to the next one. */}
+                <div key={`${category ?? "all"}:${active}`} className="ma-vs-progress__bar" onAnimationEnd={next} />
+              </div>
             </div>
-            <div className="ma-vs-progress" aria-hidden="true">
-              {/* Keyed by category + slide so the bar restarts on every change; its end turns to the next one. */}
-              <div key={`${category ?? "all"}:${active}`} className="ma-vs-progress__bar" onAnimationEnd={next} />
-            </div>
+            <button type="button" onClick={next} aria-label="الحلقة التالية" className="ma-btn ma-btn--soft ma-btn--icon rounded-full">
+              <ChevronLeft aria-hidden="true" />
+            </button>
           </div>
-          <button type="button" onClick={next} aria-label="الحلقة التالية" className="ma-btn ma-btn--soft ma-btn--icon rounded-full">
-            <ChevronLeft aria-hidden="true" />
-          </button>
-        </div>
+        ) : null}
       </div>
 
       <dialog
@@ -284,7 +283,7 @@ export function ExpertVideosSection() {
           if (event.target === event.currentTarget) close();
         }}
         aria-labelledby={dialogTitleId}
-        className="m-auto w-[min(60rem,calc(100vw-2rem))] max-w-none overflow-hidden rounded-panel border border-line bg-surface p-0 text-fg backdrop:bg-ink/85 backdrop:backdrop-blur-sm"
+        className="m-auto w-[min(60rem,calc(100vw-2rem))] max-w-none overflow-hidden rounded-panel border border-line bg-surface p-0 text-fg backdrop:bg-ink/85"
       >
         <div className="relative aspect-video bg-ink">
           {playing ? (
@@ -300,10 +299,10 @@ export function ExpertVideosSection() {
         </div>
         <div className="flex items-start justify-between gap-4 px-5 py-4">
           <div className="flex flex-col gap-1">
-            <h3 id={dialogTitleId} className="m-0 text-[clamp(0.95rem,1.6vw,1.125rem)] leading-snug font-semibold">
+            <h3 id={dialogTitleId} className="m-0 text-lg font-semibold leading-snug">
               {playing?.title}
             </h3>
-            <p className="m-0 text-[13px] text-fg-muted">
+            <p className="m-0 text-sm text-fg-muted">
               {playing?.show}
               {playing?.host ? ` · ${playing.host}` : null}
             </p>
