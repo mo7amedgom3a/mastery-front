@@ -46,6 +46,8 @@ jobs:
       NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: ${{ vars.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN }}
       NEXT_PUBLIC_TOLT_PORTAL_URL: https://affiliates.masteryacademy.site
       NEXT_PUBLIC_TOLT_PUBLIC_KEY: ${{ vars.NEXT_PUBLIC_TOLT_PUBLIC_KEY }}
+      # Practice labs read the published labs from the API (/api/b2c/labs proxy), not the bundled mocks.
+      NEXT_PUBLIC_LABS_API_MODE: live
       NEXT_TELEMETRY_DISABLED: "1"
       NODE_OPTIONS: --max-old-space-size=6144
     steps:
