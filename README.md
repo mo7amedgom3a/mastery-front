@@ -52,7 +52,10 @@ npm run validate        # check + production build: once, before shipping
 ## Deploy (Cloudflare)
 
 Production runs on Cloudflare Workers through the OpenNext adapter (`open-next.config.ts`,
-`wrangler.jsonc`) at `landing.masteryacademy.site`.
+`wrangler.jsonc`) on the company Cloudflare account, at
+`https://landing.emasteryacademy.com` (a CNAME to `service.emastery.dev`, managed outside this
+account; the Worker also answers on `https://mastery-front-prod.m-gomaa-55a.workers.dev`).
+The backend is `https://api.v3.emasteryacademy.com`.
 
 | Kind | Where | Examples |
 |---|---|---|
@@ -68,9 +71,16 @@ npm run cf:upload     # build and upload a new version without promoting it
 npx wrangler tail     # live logs
 ```
 
-**CI/CD** (`.github/workflows/cloudflare.yml`): a push to `main` runs the checks, builds and deploys;
-a pull request runs the checks and the build only. Build values are in the workflow; it needs the
-`CLOUDFLARE_API_TOKEN` secret and the `CLOUDFLARE_ACCOUNT_ID` variable (see the file header).
+**CD — Cloudflare Workers Builds** (Worker → Settings → Builds, connected to this GitHub repo):
+a push to `main` runs `npm run cf:build` then `npx opennextjs-cloudflare deploy`. Workers Builds
+has no `.env.production.local`, so the build-time values are **build variables** on that settings
+page: `NEXT_PUBLIC_DEPLOY_TARGET=cloudflare`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_ENV`,
+`NEXT_ENABLE_IMAGE_OPTIMIZATION`, `API_BASE_URL`, `BUNNY_CDN_HOSTNAME`, `NEXT_PUBLIC_ADMIN_ORIGIN`,
+`NEXT_PUBLIC_FARO_*`, `NEXT_PUBLIC_POSTHOG_*`, `NEXT_PUBLIC_TOLT_*`, `NODE_VERSION`, `NODE_OPTIONS`.
+Runtime vars stay in `wrangler.jsonc`; secrets stay on the Worker.
+
+**CI — GitHub Actions** (`.github/workflows/cloudflare.yml`): typecheck, lint and the OpenNext
+build on pushes and pull requests. It never deploys.
 
 `npm run cf:build` hides `.env.local` during the build, so local development values never reach
 the Worker bundle. Set `FARO_API_KEY` in the shell to upload browser source maps.
