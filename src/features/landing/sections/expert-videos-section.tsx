@@ -116,6 +116,7 @@ export function ExpertVideosSection() {
       ref={sectionRef}
       id="expert-videos"
       aria-labelledby={titleId}
+      data-landing-surface="alt"
       data-paused={paused}
       style={{ "--vs-duration": `${ROTATE_MS}ms` } as CSSProperties}
       className="ma-vs ma-section ma-band cv-auto"

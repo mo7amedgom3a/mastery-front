@@ -6,6 +6,7 @@ import type { LabAction, LabCompletionRequest, LabSession } from "../contract";
 import { labErrorMessage } from "../errors";
 import { abandonLabSession, completeLabSession, sendLabAction, startLabSession } from "../services/sessions";
 import type { LabResult } from "../../model/types";
+import { useLabRunTarget } from "./lab-run-context";
 
 type CompleteFallback = () => LabResult;
 
@@ -22,7 +23,12 @@ export type LabSessionOptions = {
  * actions in order, starts/resumes the server session, and completes it. Completion falls back to
  * the existing local scorer if the mock/API is unavailable, so a learner never loses a debrief.
  */
-export function useLabSession(slug: string, options: LabSessionOptions = {}) {
+export function useLabSession(runnerSlug: string, options: LabSessionOptions = {}) {
+  // In live mode a bespoke runner may play a scenario of another API lab (see LabRunProvider).
+  const target = useLabRunTarget();
+  const slug = target?.apiSlug ?? runnerSlug;
+  const scenarioKey = target?.scenarioKey;
+  const previewToken = target?.previewToken;
   const [session, setSession] = useState<LabSession | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,13 +42,15 @@ export function useLabSession(slug: string, options: LabSessionOptions = {}) {
       preview: options.preview,
       source: options.source,
       assignment_id: options.assignment_id,
+      scenario_key: scenarioKey,
+      preview_token: previewToken,
     }).then((started) => {
       sessionRef.current = started;
       setSession(started);
       return started;
     });
     return startRef.current;
-  }, [slug, options.preview, options.source, options.assignment_id]);
+  }, [slug, scenarioKey, previewToken, options.preview, options.source, options.assignment_id]);
 
   const start = useCallback(async (): Promise<LabSession> => {
     setError(null);
@@ -89,10 +97,10 @@ export function useLabSession(slug: string, options: LabSessionOptions = {}) {
         setSession(sessionRef.current);
         return {
           scorecard: result.scorecard,
-          xp: result.attempt.xp,
+          xp: result.attempt?.xp ?? result.xp ?? 0,
           newBadges: result.new_badges,
-          pre: result.attempt.pre,
-          post: result.attempt.post,
+          pre: result.attempt?.pre ?? payload.pre,
+          post: result.attempt?.post ?? payload.post,
         };
       } catch (cause) {
         // Degraded mode: the local scorer is the same rubric; the attempt will not reach the mock DB.

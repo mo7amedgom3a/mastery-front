@@ -11,7 +11,7 @@ export function StatsSection({ stats }: { stats: StatVM[] }) {
     return null;
   }
   return (
-    <section aria-labelledby="stats-title" className="border-y border-line bg-surface-alt">
+    <section aria-labelledby="stats-title" data-landing-surface="alt" className="border-y border-line bg-surface-alt">
       <div className="ma-container">
         <h2 id="stats-title" className="sr-only">
           ماستري بالأرقام

@@ -22,7 +22,7 @@ export function FaqSection({
   }
   const titleId = `${id}-title`;
   return (
-    <Section id={id} aria-labelledby={titleId} tone={tone} deferRender>
+    <Section id={id} aria-labelledby={titleId} tone={tone} data-landing-surface={tone === "alt" ? "alt" : "base"} deferRender>
       <div className="grid gap-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)] md:gap-16">
         <SectionHeader id={titleId} label="الأسئلة الشائعة" title={title} />
         <div className="border-t border-line-strong">

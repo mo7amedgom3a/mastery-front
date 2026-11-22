@@ -32,7 +32,7 @@ const columns = buildColumns(experts, COLUMN_COUNT);
  */
 export function HeroSection() {
   return (
-    <section aria-labelledby="hero-title" className="relative isolate overflow-hidden bg-surface-alt">
+    <section aria-labelledby="hero-title" data-landing-surface="alt" className="relative isolate overflow-hidden bg-surface-alt">
       {/* Phones: a faint texture behind the copy. Wide screens: the full-height collage beside it. */}
       <div className="absolute inset-0 -z-10 opacity-15 sm:opacity-20 md:inset-y-0 md:start-auto md:end-0 md:w-[48%] md:opacity-100">
         <VerticalMarqueeGrid

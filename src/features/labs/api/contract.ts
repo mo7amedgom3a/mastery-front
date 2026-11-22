@@ -20,13 +20,15 @@ import type {
   Difficulty,
   Dimension,
   Highlight,
+  QuizQuestion,
   QuizResult,
   Readiness,
   Scorecard,
   Skill,
 } from "../model/types";
+import type { ResolvedEngineDoc } from "../model/dialogue-runtime";
 
-export type LabEngine = "legacy" | "schema";
+export type LabEngine = "legacy" | "schema" | "blocks" | "dialogue";
 export type LabStatus = "draft" | "in_review" | "scheduled" | "published" | "paused" | "archived";
 export type LabSessionStatus = "created" | "in_progress" | "completed" | "abandoned" | "expired" | "failed";
 export type LabAttemptStatus = "scored" | "flagged" | "overridden" | "voided";
@@ -308,10 +310,42 @@ export type LabSession = {
   completed_at: string | null;
   /** Preview sessions never write attempts or analytics. */
   preview?: boolean;
+  /** Live API: the scenario this session pinned (labs can hold several scenarios). */
+  scenario_key?: string;
+};
+
+export type LiveBlock = {
+  id: string;
+  type: string;
+  props: Record<string, unknown>;
+  children?: LiveBlock[];
+  visible_when?: LabCondition[];
+  admin_only?: boolean;
+  version?: number;
+};
+
+export type LiveBlockPage = {
+  id: string;
+  title?: LocalizedText | null;
+  blocks: LiveBlock[];
+  next_page?: string | null;
+  show_in_trail?: boolean;
+};
+
+export type LiveBlockDocument = {
+  schema_version?: number;
+  title?: LocalizedText | null;
+  intro?: string | null;
+  pages: LiveBlockPage[];
+  fields?: LabField[];
+  personas?: LabPersona[];
 };
 
 export type LabAction =
   | { type: "phase.enter"; phase_id: string }
+  | { type: "page.enter"; page_id: string }
+  | { type: "form.submit"; phase_id: string; block_id?: string; values: Record<string, unknown>; next_page?: string }
+  | { type: "choice.select"; block_id: string; choice_id: string; next_page?: string }
   | { type: "quiz.submit"; phase: "pre" | "post"; answers: number[] }
   | { type: "dialogue.choose"; graph_id: string; node_id: string; choice_id: string }
   | { type: "form.submit"; phase_id: string; values: Record<string, unknown> }
@@ -361,6 +395,11 @@ export type LabCompletionRequest = {
   pre: QuizResult | null;
   post: QuizResult | null;
   elapsed_seconds: number;
+  /**
+   * Live API: the scorecard computed by the runner. Engines not yet ported to the server store it
+   * as an unverified attempt; server-scored engines only compare it (a mismatch flags the attempt).
+   */
+  client_result?: { scorecard: Scorecard; signals: BadgeSignals };
 };
 
 export type LabAttempt = {
@@ -384,13 +423,88 @@ export type LabAttempt = {
   lab_version: number;
   source: "lab" | "demo" | "imported";
   status: LabAttemptStatus;
+  /** Live API: the scenario the attempt ran. */
+  scenario_key?: string;
+  /** Live API: false when the score came from the client (engine not ported to the server yet). */
+  verified?: boolean;
 };
 
 export type LabCompletionResult = {
-  attempt: LabAttempt;
+  /** Null for live preview sessions (nothing is stored). */
+  attempt: LabAttempt | null;
   scorecard: Scorecard;
   new_badges: BadgeId[];
+  /** Live API extras. */
+  xp?: number;
+  verified?: boolean;
+  preview?: boolean;
 };
+
+// ---------- live API (backend `app/modules/labs`) ----------
+
+export type LiveScenarioSummary = { key: string; title: string; weight: number; sort_order: number };
+
+/** Runtime projection of one scenario document; `content` is shaped by the lab's engine. */
+export type LiveScenario = {
+  key: string;
+  title: string;
+  schema_version: number;
+  /** Engine content-catalog version this document was published against. */
+  catalog_version?: number;
+  content: Record<string, unknown> & { bundled_slug?: string };
+};
+
+export type LiveLabCard = {
+  slug: string;
+  engine_key: string;
+  title: string;
+  tagline: string;
+  field_category_id: number | null;
+  category_name: string | null;
+  difficulty: Difficulty;
+  minutes: number;
+  color: BrandColor;
+  skills: Skill[];
+};
+
+/** `GET /labs/{slug}`: published (or previewed) lab-level definition plus the selected scenario. */
+export type LiveLabRuntime = {
+  lab_id: string;
+  version: number;
+  engine: string;
+  scorer: "server" | "client";
+  card: LiveLabCard;
+  definition: {
+    role: string;
+    scenario: string;
+    targets: string[];
+    constraints: string[];
+    phases: LabPhaseView[];
+    requirements: LabRequirement[];
+    scoring: LabScoring;
+    recommendations: LabRecommendationsConfig;
+    scenario_selection: "choose" | "random" | "first";
+    locale: string;
+    pre_quiz?: QuizQuestion[];
+    post_quiz?: QuizQuestion[];
+  };
+  scenarios: LiveScenarioSummary[];
+  scenario: LiveScenario | null;
+  preview?: boolean;
+  /** The admin engine the lab is built on (public part), or null for labs without one. */
+  engine_profile?: ResolvedEngineDoc | null;
+};
+
+export type LiveLabSummary = LiveLabCard & {
+  lab_id: string;
+  version: number | null;
+  status: LabStatus;
+  scorer: "server" | "client";
+  attempt_count: number;
+  best_score: number | null;
+};
+
+export type LiveLabList = { items: LiveLabSummary[]; total: number };
 
 export type LabRecommendationCard = CatalogCard;
 

@@ -93,6 +93,14 @@ const nextConfig: NextConfig = {
       { source: "/diplomas", destination: "/search?type=diploma", permanent: true },
       { source: "/packages", destination: "/search?type=package", permanent: true },
       { source: "/consultations", destination: "/search?type=consultation", permanent: true },
+      // Live labs API: the four deal-recovery labs are one lab with four sector scenarios.
+      ...(process.env.NEXT_PUBLIC_LABS_API_MODE === "live"
+        ? (["real-estate", "medical", "food", "restaurants"] as const).map((sector) => ({
+            source: `/labs/deal-recovery-${sector}`,
+            destination: `/labs/deal-recovery?scenario=${sector}`,
+            permanent: false,
+          }))
+        : []),
     ];
   },
   async headers() {

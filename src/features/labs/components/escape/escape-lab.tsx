@@ -173,7 +173,7 @@ export function EscapeLab({ lab }: { lab: LabDefinition }) {
     const run = { state: room, recommendation };
     const { scorecard, escapeArtist } = scoreEscape(run);
     const outcome = await practice.complete(
-      { engine: "legacy", scorer: "escape", run, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      { engine: "legacy", scorer: "escape", run, pre, post, elapsed_seconds: clock.elapsedSeconds(), client_result: { scorecard, signals: { escapeArtist } } },
       () => finishAttempt(lab.slug, scorecard, { escapeArtist }, pre, post, clock.elapsedSeconds()),
     );
     setResult(outcome);

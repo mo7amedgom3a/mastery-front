@@ -1,0 +1,55 @@
+/* Landing practice-labs teaser (features/landing/components/labs-demo-console.tsx). Tokens only. */
+
+.ma-labs-typing {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.ma-labs-typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  opacity: 0.4;
+  animation: ma-labs-typing 1s ease-in-out infinite;
+}
+.ma-labs-typing span:nth-child(2) { animation-delay: 0.15s; }
+.ma-labs-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes ma-labs-typing {
+  0%, 100% { transform: translateY(0); opacity: 0.35; }
+  50% { transform: translateY(-3px); opacity: 1; }
+}
+
+/* New chat bubbles, observer notes and the scorecard rise in. */
+.ma-labs-enter {
+  animation: ma-labs-enter 0.35s ease-out both;
+}
+@keyframes ma-labs-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.ma-labs-meter__fill {
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s ease;
+}
+
+/* Meter that just moved: a short pulse so the visitor sees the consequence of the reply. */
+.ma-labs-bump {
+  animation: ma-labs-bump 0.6s ease-out;
+}
+@keyframes ma-labs-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ma-labs-typing span,
+  .ma-labs-enter,
+  .ma-labs-bump {
+    animation: none;
+  }
+  .ma-labs-meter__fill {
+    transition: none;
+  }
+}

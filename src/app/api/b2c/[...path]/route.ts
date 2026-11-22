@@ -17,6 +17,9 @@ type Rule = { methods: readonly string[]; pattern: RegExp; session: boolean };
  * about the signed-in customer, so it is refused outright without an access token.
  */
 const RULES: readonly Rule[] = [
+  // Practice labs allow guests (anonymous id header), so `/me/labs/*` is not session-gated here;
+  // the API itself still refuses claim/reset without a signed-in customer.
+  { methods: ["GET", "POST", "DELETE"], pattern: /^me\/labs(\/[A-Za-z0-9_-]+)*$/, session: false },
   { methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], pattern: /^me(\/[A-Za-z0-9_-]+)*$/, session: true },
   // Read by wishlist sync to turn a legacy id into a catalog product id.
   { methods: ["GET"], pattern: /^catalog\/products\/[A-Za-z0-9_-]+$/, session: false },

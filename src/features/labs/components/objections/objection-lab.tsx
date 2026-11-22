@@ -74,6 +74,7 @@ export function ObjectionLab({ lab, scenario }: { lab: LabDefinition; scenario: 
         pre,
         post,
         elapsed_seconds: clock.elapsedSeconds(),
+        client_result: { scorecard, signals },
       },
       () => finishAttempt(lab.slug, scorecard, signals, pre, post, clock.elapsedSeconds()),
     );

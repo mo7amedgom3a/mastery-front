@@ -1,0 +1,57 @@
+/* Blend only where two rendered landing sections use different neutral kit surfaces.
+   The adjacent-sibling selectors still work when a data-driven section renders nothing. */
+.landing-page {
+  --landing-surface-blend: clamp(48px, 6vw, 88px);
+  --landing-accent-blend: 48px;
+  /* Resolve before the business banner switches its local theme to dark. */
+  --landing-page-base: var(--surface);
+}
+
+.landing-page > [data-landing-surface="base"] + [data-landing-surface="alt"] {
+  background-image: linear-gradient(
+    to bottom,
+    var(--surface),
+    var(--surface-alt) var(--landing-surface-blend)
+  );
+}
+
+.landing-page > [data-landing-surface="alt"] + [data-landing-surface="base"] {
+  background-image: linear-gradient(
+    to bottom,
+    var(--surface-alt),
+    var(--surface) var(--landing-surface-blend)
+  );
+}
+
+/* The business backdrop has its own scrim. Fade above that backdrop, below its copy. */
+.landing-page > [data-landing-surface="base"] + [data-landing-surface="feature"] > div::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset-inline: 0;
+  top: 0;
+  height: var(--landing-accent-blend);
+  pointer-events: none;
+  background: linear-gradient(to bottom, var(--landing-page-base), transparent);
+}
+
+.landing-page > [data-landing-surface="feature"] .ma-container {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-page > [data-landing-surface="feature"] + [data-landing-surface="alt"] {
+  background-image: linear-gradient(to bottom, var(--black), var(--surface-alt) var(--landing-accent-blend));
+}
+
+.landing-page > [data-landing-surface="feature"] + [data-landing-surface="base"] {
+  background-image: linear-gradient(to bottom, var(--black), var(--surface) var(--landing-accent-blend));
+}
+
+.landing-page > [data-landing-surface="base"] + [data-landing-surface="accent"] {
+  background-image: linear-gradient(to bottom, var(--surface), var(--coral) var(--landing-accent-blend));
+}
+
+.landing-page > [data-landing-surface="alt"] + [data-landing-surface="accent"] {
+  background-image: linear-gradient(to bottom, var(--surface-alt), var(--coral) var(--landing-accent-blend));
+}

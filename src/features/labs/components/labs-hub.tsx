@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 
 import { useResetLabs } from "../api";
+import { useLiveCatalog } from "../engines/use-live-catalog";
 import { comingSoonLabs, labs } from "../model/catalog";
 import type { LabDefinition } from "../model/types";
 import { LabPanel, Pill } from "./bits";
@@ -14,17 +15,23 @@ import { BadgeGrid, LabCard, LabStatTiles, SkillRadar, useLabsSnapshot } from ".
 import { JourneyStrip } from "./workspace/journey-strip";
 
 /** Live labs grouped by catalog category, in catalog order. */
-const groups = labs.reduce<{ name: string; labs: LabDefinition[] }[]>((acc, lab) => {
-  const group = acc.find((g) => g.name === lab.categoryName);
-  if (group) group.labs.push(lab);
-  else acc.push({ name: lab.categoryName, labs: [lab] });
-  return acc;
-}, []);
+function groupByCategory(list: readonly LabDefinition[]): { name: string; labs: LabDefinition[] }[] {
+  return list.reduce<{ name: string; labs: LabDefinition[] }[]>((acc, lab) => {
+    const group = acc.find((g) => g.name === lab.categoryName);
+    if (group) group.labs.push(lab);
+    else acc.push({ name: lab.categoryName, labs: [lab] });
+    return acc;
+  }, []);
+}
+
+const bundledGroups = groupByCategory(labs);
 
 /** The labs hub: live labs by catalog category, coming-soon categories, XP, badges and skill profile. */
 export function LabsHub() {
   const snapshot = useLabsSnapshot();
   const reset = useResetLabs();
+  const liveCatalog = useLiveCatalog();
+  const groups = liveCatalog ? groupByCategory(liveCatalog) : bundledGroups;
 
   return (
     <div className="ma-container flex flex-col gap-8 py-8 md:py-12">

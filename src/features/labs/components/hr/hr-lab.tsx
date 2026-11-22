@@ -48,7 +48,7 @@ export function HrLab({ lab }: { lab: LabDefinition }) {
   const finish = async (post: QuizResult) => {
     const { scorecard, peaceMade } = scoreHr(sessions, plan);
     const result = await practice.complete(
-      { engine: "legacy", scorer: "hr", run: { sessions, plan }, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      { engine: "legacy", scorer: "hr", run: { sessions, plan }, pre, post, elapsed_seconds: clock.elapsedSeconds(), client_result: { scorecard, signals: { peaceMade } } },
       () => finishAttempt(lab.slug, scorecard, { peaceMade }, pre, post, clock.elapsedSeconds()),
     );
     setResult(result);

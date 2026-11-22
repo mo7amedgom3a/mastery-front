@@ -770,6 +770,70 @@ Notes:
 - Tests: `npm run test:labs` (46 checks, incl. best/worst paths for all six) and
   `npm run test:labs:api` (13 checks, incl. a journey completion and the DB top-up).
 
+---
+
+## 16. Live labs API (built 16 Nov 2026)
+
+Set `NEXT_PUBLIC_LABS_API_MODE=live` to run against `newwebsitebackend/app/modules/labs` instead of
+the mock. The backend module is documented in `newwebsitebackend/app/modules/labs/README.md`.
+
+- **Hub and catalogue:** `useLiveCatalog` (`src/features/labs/engines/use-live-catalog.ts`) reads
+  `GET /labs`; bundled labs appear only while published, admin-authored labs are appended.
+- **Runner:** `/labs/[slug]` resolves at request time (`dynamicParams = true`). `?scenario=` picks a
+  scenario; the legacy deal-recovery slugs redirect with that query. `engines/registry.tsx` maps
+  `engine_key` to a runner. The `schema` engine renders the admin-authored pathway; bespoke engines
+  use their bundled runner while their Python scorer is pending.
+- **Transport:** `api/client.ts` sends `X-Lab-Anonymous-Id` for signed-out learners.
+  `src/app/api/b2c/[...path]/route.ts` must forward that header (it does) for `/me/labs/*` to work
+  without a session.
+- **Preview:** `/labs/{slug}?preview=<token>` from the admin Studio runs the draft and never writes
+  attempts.
+- **Recommendations:** the live runtime carries `definition.recommendations`; product cards fall
+  back to the catalog until a dedicated endpoint exists.
+
+Tests: `npm run test:labs` (graphs and simulators) and `npm run test:labs:api` (mock API contract)
+still pass; the live path is covered by backend unit/integration tests plus a Playwright smoke walk.
+
+---
+
+## 17. Composable `blocks` runner (16 Nov 2026)
+
+The `blocks` engine is rendered by `src/features/labs/components/blocks/blocks-lab.tsx`; no lab gets
+its own component. The backend serves pages and typed blocks; the runner maps each block type to a
+small renderer (heading, rich text, callout, checklist, kpi, table, image, divider, form, choice,
+dialogue, scorecard, engine_widget).
+
+- `LiveLabRuntime.scenario.content` is a `LiveBlockDocument` (`contract.ts`).
+- Form blocks reuse `SchemaField` from the schema runner and send `form.submit` with
+  `block_id`, values and the next page.
+- Choice/dialogue blocks send `choice.select`; the server records the choice and page.
+- `chat` blocks render a message thread (persona/learner bubbles) with scored reply options; the
+  server records the reply with `choice.select`.
+- `table` blocks render admin-authored columns/rows; `form` blocks render the reusable field library;
+  `scorecard` blocks call `complete` and render the server scorecard (dimensions + verdict).
+- Step chips use the first page as the briefing and pages containing a scorecard as the debrief, so
+  the trail never repeats labels.
+- `engine_widget` is a migration placeholder for bespoke engines (records the engine key; the old runner is not mounted yet).
+
+## 18. Generic `dialogue` runner and admin engines (17 Nov 2026)
+
+Labs on admin engines (sales discovery, HR mediation, …) run on the generic runner. The backend's
+`dialogue` runtime is described in `newwebsitebackend/app/modules/labs/README.md` §19.
+
+- `model/dialogue-runtime.ts` is the data-driven engine: guards are `LabCondition`s, meters come from the
+  engine, and speakers resolve through engine slots or library personas. Timing, meter and redirect
+  rules match `model/dialogue.ts` step for step.
+- `components/dialogue/dialogue-lab.tsx` is the stage pipeline: briefing, pre-quiz, brief/select/dialogue/form
+  stages, post-quiz, then the debrief.
+  - `components/dialogue/dialogue-chat.tsx` is the chat surface.
+  - The run (`{stages: {<id>: {choices|selected|values}}}`) is replayed and scored by the server, so attempts are `verified`.
+  - Briefing constraints merge the lab's and the engine's learner-visible ones (`engine_profile`).
+- `engines/registry.tsx` dispatches `runtime.engine === "dialogue"` to `DialogueLab`. Mock mode keeps
+  using the bespoke components, so the storefront still works with the API down.
+- `scripts/labs-port.ts` and `scripts/labs-ports/*` port a bespoke lab to data. Each port lists its lambda
+  guards as conditions and its scorer as rubric terms. The script checks play parity on sampled paths
+  and writes golden runs for the backend parity test. Ported: sales discovery, HR mediation.
+
 ## Appendix A — Snapshot (13 Nov 2026)
 
 | Item | Count |

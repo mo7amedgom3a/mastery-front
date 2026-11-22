@@ -102,7 +102,7 @@ export function GovernanceLab({ lab }: { lab: LabDefinition }) {
     const run = { design: design as BoardDesign, doa, coi, meeting, minutes };
     const { scorecard, governanceGuardian } = scoreGovernance(run);
     const outcome = await practice.complete(
-      { engine: "legacy", scorer: "governance", run, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      { engine: "legacy", scorer: "governance", run, pre, post, elapsed_seconds: clock.elapsedSeconds(), client_result: { scorecard, signals: { governanceGuardian } } },
       () => finishAttempt(lab.slug, scorecard, { governanceGuardian }, pre, post, clock.elapsedSeconds()),
     );
     setResult(outcome);

@@ -60,7 +60,7 @@ export function DealRecoveryLab({ lab, scenario }: { lab: LabDefinition; scenari
     const run = { causes, call, redlines, crm };
     const { scorecard, dealSaved, fairTerms } = scoreDealRecovery(scenario, run);
     const result = await practice.complete(
-      { engine: "legacy", scorer: "deals", run, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      { engine: "legacy", scorer: "deals", run, pre, post, elapsed_seconds: clock.elapsedSeconds(), client_result: { scorecard, signals: { dealSaved, fairTerms } } },
       () => finishAttempt(lab.slug, scorecard, { dealSaved, fairTerms }, pre, post, clock.elapsedSeconds()),
     );
     setResult(result);

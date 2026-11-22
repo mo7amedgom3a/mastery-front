@@ -17,10 +17,19 @@ export type LabsSnapshot = {
   error: boolean;
 };
 
+/**
+ * Live attempts of a multi-scenario lab (`deal-recovery`, scenario `medical`) map back to the
+ * storefront runner slug (`deal-recovery-medical`) that progress, badges and the hub key on.
+ */
+export function runnerSlugFor(slug: string, scenarioKey?: string): string {
+  if (slug === "deal-recovery" && scenarioKey) return `deal-recovery-${scenarioKey}`;
+  return slug;
+}
+
 export function toAttempt(attempt: LabAttempt): Attempt {
   return {
     id: attempt.attempt_id,
-    slug: attempt.slug as Attempt["slug"],
+    slug: runnerSlugFor(attempt.slug, attempt.scenario_key) as Attempt["slug"],
     at: attempt.at,
     overall: attempt.overall,
     readiness: attempt.readiness,

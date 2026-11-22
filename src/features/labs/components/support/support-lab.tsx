@@ -68,6 +68,7 @@ export function SupportLab({ lab }: { lab: LabDefinition }) {
         pre,
         post,
         elapsed_seconds: clock.elapsedSeconds(),
+        client_result: { scorecard, signals: { coolHead } },
       },
       () => finishAttempt(lab.slug, scorecard, { coolHead }, pre, post, clock.elapsedSeconds()),
     );

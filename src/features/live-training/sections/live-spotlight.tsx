@@ -59,7 +59,7 @@ export function SpotlightInner({ training, variant = "landing", actions, titleId
           {training.title}
         </Heading>
         {training.titleEn ? (
-          <p dir="ltr" lang="en" className="m-0 mt-2 font-[family-name:var(--font-raleway)] text-sm font-bold tracking-[0.2em] text-coral uppercase">
+          <p dir="ltr" lang="en" className="m-0 mt-2 font-[family-name:var(--font-raleway)] text-sm font-bold tracking-[0.2em] text-coral uppercase [[data-theme=light]_&]:text-fg-muted">
             {training.titleEn}
           </p>
         ) : null}

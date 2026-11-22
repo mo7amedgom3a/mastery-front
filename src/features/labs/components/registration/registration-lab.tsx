@@ -84,7 +84,7 @@ export function RegistrationLab({ lab }: { lab: LabDefinition }) {
     const run = { form, ...articles, portal, officer };
     const { scorecard, founder } = scoreRegistration(run);
     const outcome = await practice.complete(
-      { engine: "legacy", scorer: "registration", run, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      { engine: "legacy", scorer: "registration", run, pre, post, elapsed_seconds: clock.elapsedSeconds(), client_result: { scorecard, signals: { founder } } },
       () => finishAttempt(lab.slug, scorecard, { founder }, pre, post, clock.elapsedSeconds()),
     );
     setResult(outcome);

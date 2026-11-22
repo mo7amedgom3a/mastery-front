@@ -30,7 +30,7 @@ export function LabPanel({
   children: ReactNode;
 }) {
   return (
-    <section className={cn("flex min-w-0 flex-col gap-4 rounded-panel border border-line bg-surface p-5 md:p-6", className)}>
+    <section className={cn("flex min-w-0 flex-col gap-4 rounded-panel border border-line bg-surface p-5 text-fg md:p-6", className)}>
       {title || action ? (
         <header className="flex flex-wrap items-start justify-between gap-2">
           <div className="flex min-w-0 flex-col gap-1">

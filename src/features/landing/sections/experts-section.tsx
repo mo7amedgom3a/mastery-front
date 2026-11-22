@@ -45,7 +45,7 @@ export function ExpertsSection({
 }) {
   const experts = lineup(directory);
   return (
-    <Section id="experts" aria-labelledby="experts-title" deferRender>
+    <Section id="experts" aria-labelledby="experts-title" data-landing-surface="base" deferRender>
       <SectionHeader
         id="experts-title"
         label="الخبراء"

@@ -95,7 +95,7 @@ export function ForecastLab({ lab }: { lab: LabDefinition }) {
     const run = { causes, drivers, funding, qa };
     const { scorecard, runwayKeeper } = scoreForecast(run);
     const outcome = await practice.complete(
-      { engine: "legacy", scorer: "forecast", run, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      { engine: "legacy", scorer: "forecast", run, pre, post, elapsed_seconds: clock.elapsedSeconds(), client_result: { scorecard, signals: { runwayKeeper } } },
       () => finishAttempt(lab.slug, scorecard, { runwayKeeper }, pre, post, clock.elapsedSeconds()),
     );
     setResult(outcome);

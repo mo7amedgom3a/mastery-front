@@ -33,7 +33,7 @@ function ExpertCard({ expert }: { expert: Expert }) {
 export function BusinessSection() {
   const { banner } = b2bCopy;
   return (
-    <section id="business" aria-labelledby="business-title" data-theme="dark" className="cv-auto overflow-x-clip bg-surface-alt text-fg">
+    <section id="business" aria-labelledby="business-title" data-theme="dark" data-landing-surface="feature" className="cv-auto overflow-x-clip bg-surface-alt text-fg">
       <div className="relative isolate overflow-hidden">
         {/* Backdrop: decorative only, kept out of the accessibility tree and tab order. */}
         <div aria-hidden="true" inert className="absolute inset-0 -z-10 flex -rotate-6 scale-125 flex-col justify-center gap-6 opacity-50">

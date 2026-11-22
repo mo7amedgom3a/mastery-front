@@ -40,7 +40,7 @@ function OfferingPanel({ offering, position }: { offering: Offering; position: n
 /** Every way to learn at Mastery, as timed step tabs. All panels are in the HTML for crawlers. */
 export function OfferingsSection() {
   return (
-    <Section id="offerings" aria-labelledby="offerings-title" deferRender>
+    <Section id="offerings" aria-labelledby="offerings-title" data-landing-surface="base" deferRender>
       <SectionHeader
         id="offerings-title"
         label="ماذا نقدّم"

@@ -72,7 +72,7 @@ export function CloseLab({ lab }: { lab: LabDefinition }) {
     const run: CloseRun = { ...draft, review };
     const { scorecard, cleanClose } = scoreClose(run);
     const outcome = await practice.complete(
-      { engine: "legacy", scorer: "close", run, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      { engine: "legacy", scorer: "close", run, pre, post, elapsed_seconds: clock.elapsedSeconds(), client_result: { scorecard, signals: { cleanClose } } },
       () => finishAttempt(lab.slug, scorecard, { cleanClose }, pre, post, clock.elapsedSeconds()),
     );
     setResult(outcome);

@@ -32,13 +32,29 @@ export function SchemaLab({ runtime, preview = false }: { runtime: LabRuntime; p
   const [submitting, setSubmitting] = useState(false);
   const session = useLabSession(runtime.slug, { preview, source: preview ? "admin-preview" : "schema-lab" });
 
+  // The shell's first chip is the briefing; drop the pathway's own brief phase so it is not shown
+  // twice and the highlighted step matches the content.
+  const briefPhaseId = useMemo(() => {
+    if (!pathway) return undefined;
+    const entry = pathway.entry ? pathway.nodes[pathway.entry] : undefined;
+    if (entry?.type === "brief") return pathway.entry;
+    return runtime.phases.find((phase) => phase.type === "brief")?.id;
+  }, [pathway, runtime.phases]);
+
+  const trail = useMemo(
+    () => runtime.phases.filter((phase) => phase.id !== briefPhaseId),
+    [runtime.phases, briefPhaseId],
+  );
+
   const phaseIndex = useMemo(() => {
-    const index = runtime.phases.findIndex((phase) => phase.id === phaseId);
+    const index = trail.findIndex((phase) => phase.id === phaseId);
     return index < 0 ? 0 : index;
-  }, [runtime.phases, phaseId]);
+  }, [trail, phaseId]);
 
   const node = phaseId && pathway ? pathway.nodes[phaseId] : null;
-  const frame = { title: runtime.title, categoryName: runtime.category_name, phases: runtime.phases.map((phase) => phase.label) };
+  const frame = { title: runtime.title, categoryName: runtime.category_name, phases: trail.map((phase) => phase.label) };
+  // 0 = the briefing chip; each trail phase is +1; the debrief is the last chip.
+  const step = result ? trail.length + 1 : phaseId === briefPhaseId ? 0 : phaseIndex + 1;
 
   const go = (next: string | undefined) => {
     if (!next) return;
@@ -84,7 +100,7 @@ export function SchemaLab({ runtime, preview = false }: { runtime: LabRuntime; p
   }
 
   return (
-    <LabShell lab={frame} step={phaseIndex + 1}>
+    <LabShell lab={frame} step={step}>
       {session.error ? (
         <div role="alert" className="rounded-panel border border-pink/50 bg-pink/10 p-4 text-sm leading-7 text-fg">
           {session.error}
@@ -235,7 +251,7 @@ function ChoiceNode({
   );
 }
 
-function SchemaField({ field, value, onChange }: { field: LabField; value: unknown; onChange: (value: unknown) => void }) {
+export function SchemaField({ field, value, onChange }: { field: LabField; value: unknown; onChange: (value: unknown) => void }) {
   const label = (
     <span className="flex items-center gap-2 text-sm font-semibold">
       {field.label.ar}

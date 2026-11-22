@@ -15,6 +15,7 @@ import { ExpertsSection } from "./sections/experts-section";
 import { ExpertsTicker } from "./sections/experts-ticker";
 import { FaqSection } from "./sections/faq-section";
 import { HeroSection } from "./sections/hero-section";
+import { LabsShowcaseSection } from "./sections/labs-showcase-section";
 import { OfferingsSection } from "./sections/offerings-section";
 import { StatsSection } from "./sections/stats-section";
 import { TestimonialsSection } from "./sections/testimonials-section";
@@ -33,7 +34,7 @@ export function LandingPage({ data, experts = [] }: { data: LandingData; experts
   return (
     <>
       <SiteHeader />
-      <main id="main" tabIndex={-1} className="outline-none">
+      <main id="main" tabIndex={-1} className="landing-page outline-none">
         {/* Opening run: one continuous stack — hero, live banner, stats and ticker. Backgrounds and
             the stats/ticker rules carry the separation; no page-colour gutters between them. */}
         <HeroSection />
@@ -41,6 +42,7 @@ export function LandingPage({ data, experts = [] }: { data: LandingData; experts
         <StatsSection stats={data.stats} />
         <ExpertsTicker />
         <OfferingsSection />
+        <LabsShowcaseSection />
         <ExpertVideosSection />
         <CoursesSection courses={data.courses} total={data.coursesTotal} filters={data.courseFilters} />
         <DiplomasSection diplomas={data.diplomas} filters={data.diplomaFilters} />

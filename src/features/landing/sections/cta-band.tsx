@@ -5,7 +5,7 @@ import { ctaBandCopy } from "../content/copy";
 /** Kit closing CTA band: a coral field with the on-colour button. */
 export function CtaBand() {
   return (
-    <section aria-labelledby="cta-title" className="bg-coral text-ink">
+    <section aria-labelledby="cta-title" data-landing-surface="accent" className="bg-coral text-ink">
       <div className="ma-container ma-section flex flex-col items-start gap-6 md:flex-row md:items-end md:justify-between">
         <div className="flex flex-col gap-3">
           <h2 id="cta-title" className="t-section m-0">

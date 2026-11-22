@@ -91,7 +91,18 @@ export function SalesFailureLab({ lab }: { lab: LabDefinition }) {
       postPercent: post.percent,
     };
     const result = await practice.complete(
-      { engine: "legacy", scorer: "sales-failure", run, pre, post, elapsed_seconds: practiceClock.elapsedSeconds() },
+      {
+        engine: "legacy",
+        scorer: "sales-failure",
+        run,
+        pre,
+        post,
+        elapsed_seconds: practiceClock.elapsedSeconds(),
+        client_result: {
+          scorecard: scored.scorecard,
+          signals: { rejectionProof: scored.rejectionProof, funnelMaster: scored.funnelMaster },
+        },
+      },
       () =>
         finishAttempt(
           lab.slug,

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { CarouselDots } from "@/components/ui/carousel-dots";
 import { PauseButton } from "@/components/ui/pause-button";
@@ -10,13 +11,16 @@ import type { LiveTrainingVM } from "../model/types";
 import { SpotlightInner } from "./live-spotlight";
 
 const ROTATE_MS = 6000;
+/** Horizontal travel (px) a touch must cover to count as a swipe rather than a tap or scroll. */
+const SWIPE_PX = 48;
 
 /**
  * The landing spotlight as a crossfading carousel over the featured live diplomas (CMTD + AI …).
  * Each diploma keeps its own storefront `style` (brand-colour field). Auto-advances unless the
  * visitor prefers reduced motion, pauses while hovered or focused, and has an explicit pause/resume
  * control; the dots skip straight to a slide. Inactive slides are inert, so hidden CTAs never enter
- * the tab order.
+ * the tab order. Prev/next arrows, the keyboard arrows and a touch swipe step through the slides.
+ * Follows the site theme (dark or light) rather than forcing dark.
  */
 export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM[] }) {
   const [active, setActive] = useState(0);
@@ -43,6 +47,26 @@ export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM
     return () => window.clearInterval(id);
   }, [trainings.length, paused, visible]);
 
+  const touchStartX = useRef<number | null>(null);
+  const count = trainings.length;
+  const step = (delta: number) => setActive((current) => ((current < count ? current : 0) + delta + count) % count);
+  const goPrev = () => step(-1);
+  const goNext = () => step(1);
+
+  // RTL page: the "next" slide sits to the left, so ArrowLeft advances and ArrowRight goes back.
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (count < 2 || event.defaultPrevented) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("input, textarea, select, [contenteditable='true'], [role='dialog']")) return;
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      goNext();
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      goPrev();
+    }
+  };
+
   const togglePaused = () => {
     const next = !userPaused;
     setUserPaused(next);
@@ -60,8 +84,8 @@ export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM
       id="live"
       aria-roledescription="carousel"
       aria-label="دورات البث المباشر"
-      data-theme="dark"
-      className="relative isolate overflow-hidden bg-surface-alt text-fg cv-auto [contain-intrinsic-size:auto_1250px] md:[contain-intrinsic-size:auto_760px]"
+      data-landing-surface="alt"
+      className="relative isolate overflow-hidden bg-surface-alt text-fg transition-colors cv-auto [contain-intrinsic-size:auto_1250px] md:[contain-intrinsic-size:auto_760px]"
       onMouseEnter={() => setInteracting(true)}
       onMouseLeave={() => setInteracting(false)}
       onFocus={(event) => {
@@ -72,8 +96,23 @@ export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setInteracting(false);
       }}
+      onKeyDown={onKeyDown}
+      onTouchStart={(event) => {
+        touchStartX.current = event.touches[0]?.clientX ?? null;
+      }}
+      onTouchEnd={(event) => {
+        const start = touchStartX.current;
+        touchStartX.current = null;
+        const end = event.changedTouches[0]?.clientX;
+        if (start == null || end == null || count < 2) return;
+        const dx = end - start;
+        if (Math.abs(dx) < SWIPE_PX) return;
+        // RTL: swiping right-to-left (dx < 0) pulls in the next slide from the left.
+        if (dx < 0) goNext();
+        else goPrev();
+      }}
     >
-      <div className="relative">
+      <div id="live-spotlight-slides" aria-live={paused ? "polite" : "off"} className="relative">
         {trainings.map((training, index) => (
           <div
             key={training.catalogSlug}
@@ -94,12 +133,30 @@ export function LiveSpotlightCarousel({ trainings }: { trainings: LiveTrainingVM
 
       {trainings.length > 1 ? (
         <div className="ma-container relative z-10 flex items-center gap-2 pb-4">
+          <button
+            type="button"
+            onClick={goPrev}
+            aria-label="الدورة السابقة"
+            aria-controls="live-spotlight-slides"
+            className="ma-btn ma-btn--soft ma-btn--icon size-11 min-h-11 shrink-0 rounded-full"
+          >
+            <ChevronRight aria-hidden="true" className="size-5" />
+          </button>
           <CarouselDots
             items={trainings.map((training) => ({ key: training.catalogSlug, label: training.title }))}
             activeIndex={activeIndex}
             onChange={setActive}
             label="شرائح دورات البث المباشر"
           />
+          <button
+            type="button"
+            onClick={goNext}
+            aria-label="الدورة التالية"
+            aria-controls="live-spotlight-slides"
+            className="ma-btn ma-btn--soft ma-btn--icon size-11 min-h-11 shrink-0 rounded-full"
+          >
+            <ChevronLeft aria-hidden="true" className="size-5" />
+          </button>
           <PauseButton paused={userPaused} onToggle={togglePaused} />
         </div>
       ) : null}

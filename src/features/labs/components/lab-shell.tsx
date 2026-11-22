@@ -63,7 +63,7 @@ export function LabShell({
         <ol className="m-0 flex list-none gap-1.5 overflow-x-auto p-0 pb-1" aria-label="مراحل المختبر">
           {steps.map((label, index) => (
             <li
-              key={label}
+              key={`${index}-${label}`}
               aria-current={index === step ? "step" : undefined}
               className={cn(
                 "flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-[13px] leading-5",

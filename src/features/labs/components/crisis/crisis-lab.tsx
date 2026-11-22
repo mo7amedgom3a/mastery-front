@@ -119,7 +119,7 @@ export function CrisisLab({ lab }: { lab: LabDefinition }) {
     const run = { state: crisis, statement };
     const { scorecard, crisisCommander } = scoreCrisis(run);
     const outcome = await practice.complete(
-      { engine: "legacy", scorer: "crisis", run, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      { engine: "legacy", scorer: "crisis", run, pre, post, elapsed_seconds: clock.elapsedSeconds(), client_result: { scorecard, signals: { crisisCommander } } },
       () => finishAttempt(lab.slug, scorecard, { crisisCommander }, pre, post, clock.elapsedSeconds()),
     );
     setResult(outcome);

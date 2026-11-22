@@ -542,7 +542,7 @@ export function MarketingLab({ lab }: { lab: LabDefinition }) {
     if (!campaign) return;
     const { scorecard, targetMet } = scoreMarketing(campaign);
     const result = await practice.complete(
-      { engine: "legacy", scorer: "marketing", run: campaign, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      { engine: "legacy", scorer: "marketing", run: campaign, pre, post, elapsed_seconds: clock.elapsedSeconds(), client_result: { scorecard, signals: { marketingTargetMet: targetMet } } },
       () => finishAttempt(lab.slug, scorecard, { marketingTargetMet: targetMet }, pre, post, clock.elapsedSeconds()),
     );
     setResult(result);

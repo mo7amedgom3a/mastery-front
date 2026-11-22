@@ -55,6 +55,7 @@ export function SalesLab({ lab }: { lab: LabDefinition }) {
         pre,
         post,
         elapsed_seconds: clock.elapsedSeconds(),
+        client_result: { scorecard, signals: { dealClosed } },
       },
       () => finishAttempt(lab.slug, scorecard, { dealClosed }, pre, post, clock.elapsedSeconds()),
     );

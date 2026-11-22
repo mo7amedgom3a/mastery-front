@@ -1,6 +1,7 @@
 import { Check, Minus } from "lucide-react";
 
 import type { CatalogFeatureVM, PlanVM } from "../model/plans";
+
 import { FeatureIcon } from "./feature-icon";
 
 /** Catalog features down the side, the visible plans across: ✓, the plan's value, or —. */

@@ -21,6 +21,9 @@ export function backendHeaders(request: NextRequest, accessToken?: string | null
   }
   const fingerprint = request.headers.get("x-client-fingerprint");
   if (fingerprint && FINGERPRINT_PATTERN.test(fingerprint)) headers.set("X-Client-Fingerprint", fingerprint);
+  // Practice labs identify a signed-out learner by this id (16–64 url-safe characters).
+  const anonymousLabId = request.headers.get("x-lab-anonymous-id");
+  if (anonymousLabId && /^[A-Za-z0-9_-]{16,64}$/.test(anonymousLabId)) headers.set("X-Lab-Anonymous-Id", anonymousLabId);
   if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
   return headers;
 }

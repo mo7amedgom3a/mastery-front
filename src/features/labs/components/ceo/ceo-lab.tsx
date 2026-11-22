@@ -100,7 +100,7 @@ export function CeoLab({ lab }: { lab: LabDefinition }) {
     const run = { market, causes, board };
     const { scorecard, shareDefended } = scoreCeo(run);
     const result = await practice.complete(
-      { engine: "legacy", scorer: "ceo", run, pre, post, elapsed_seconds: clock.elapsedSeconds() },
+      { engine: "legacy", scorer: "ceo", run, pre, post, elapsed_seconds: clock.elapsedSeconds(), client_result: { scorecard, signals: { shareDefended } } },
       () => finishAttempt(lab.slug, scorecard, { shareDefended }, pre, post, clock.elapsedSeconds()),
     );
     setResult(result);

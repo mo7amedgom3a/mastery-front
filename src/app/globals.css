@@ -8,6 +8,10 @@
 @import "../styles/subscriptions.css" layer(components);
 /* Landing expert-videos spotlight (stage, cards, glow). */
 @import "../styles/expert-videos.css" layer(components);
+/* Landing practice-labs teaser (typing dots, meters, observer notes). */
+@import "../styles/labs-showcase.css" layer(components);
+/* Landing-only fades between adjacent design-kit surfaces. */
+@import "../styles/landing-surfaces.css" layer(components);
 /* AI advisor: the animated agent and the floating widget. */
 @import "../styles/advisor.css" layer(components);
 /* Admin-controlled announcement bar above the header (features/announcements). */

@@ -2,11 +2,14 @@
  * Transport selection for the labs API.
  *
  * - `mock` (default): an in-browser server with localStorage persistence.
- * - `live`: the future FastAPI endpoints through the existing same-origin API client.
+ * - `live`: the FastAPI labs module (`/api/v1/labs`, `/api/v1/me/labs`) through the same-origin API
+ *   client, with the anonymous lab id header for signed-out learners.
  *
  * The mock module is imported dynamically so a live build does not ship it in the main chunk.
  */
 import { apiRequest } from "@/lib/api/client";
+
+import { ANONYMOUS_HEADER, getAnonymousLabId } from "./anonymous";
 
 import type { LabApiQuery } from "./contract";
 import type { LabHttpMethod } from "./endpoints";
@@ -37,13 +40,16 @@ async function createTransport(): Promise<LabTransport> {
   if (getLabsApiMode() === "live") {
     return {
       mode: "live",
-      request: <T,>(method: LabHttpMethod, path: string, options: LabTransportOptions = {}) =>
-        apiRequest<T>(method, `/api/v1${path}`, {
+      request: <T,>(method: LabHttpMethod, path: string, options: LabTransportOptions = {}) => {
+        const anonymousId = getAnonymousLabId();
+        return apiRequest<T>(method, `/api/v1${path}`, {
           sameOrigin: true,
           query: options.query,
           body: options.body,
           signal: options.signal,
-        }),
+          headers: anonymousId ? { [ANONYMOUS_HEADER]: anonymousId } : undefined,
+        });
+      },
     };
   }
 

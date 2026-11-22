@@ -6,7 +6,7 @@ import { experts } from "../content/experts";
 export function ExpertsTicker() {
   return (
     // Bottom rule only: the stats band above already draws the shared hairline.
-    <div className="border-b border-line bg-surface py-6 md:py-8">
+    <div data-landing-surface="base" className="border-b border-line bg-surface py-6 md:py-8">
       <Marquee
         items={experts}
         getKey={(expert) => expert.id}

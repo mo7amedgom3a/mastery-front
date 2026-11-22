@@ -39,7 +39,7 @@ export function ProductRailSection({
   }
   const titleId = `${id}-title`;
   return (
-    <Section id={id} aria-labelledby={titleId} tone={tone} deferRender>
+    <Section id={id} aria-labelledby={titleId} tone={tone} data-landing-surface={tone === "alt" ? "alt" : "base"} deferRender>
       <SectionHeader
         id={titleId}
         label={label}
