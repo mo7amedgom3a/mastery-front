@@ -146,6 +146,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       ...s3Buckets,
       ...assetBucketHostnames,
+      // Public R2 media bucket (Course Studio, blog and lab images) behind the mastery-media Worker.
+      { protocol: "https", hostname: "media.emasteryacademy.com", pathname: "/**" },
       { protocol: "https", hostname: "live.emasteryacademy.com", pathname: "/**" },
       { protocol: "https", hostname: "public.emasteryacademy.com", pathname: "/**" },
       // B2B success-story thumbnails (`img.youtube.com/vi/<id>/…`).
