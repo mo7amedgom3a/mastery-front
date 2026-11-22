@@ -111,6 +111,7 @@ const nextConfig: NextConfig = {
     const adminOrigin = process.env.NEXT_PUBLIC_ADMIN_ORIGIN?.trim();
     const previewAncestors = [
       "'self'",
+      "https://admin.emasteryacademy.com",
       "https://mastery-admin.pages.dev",
       ...(adminOrigin ? [adminOrigin] : []),
       "http://localhost:5173",
