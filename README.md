@@ -66,7 +66,7 @@ The backend is `https://api.v3.emasteryacademy.com`.
 ```bash
 npx wrangler login
 npm run cf:preview    # build, then serve the Worker locally on workerd (secrets from .dev.vars)
-npm run cf:deploy     # build and deploy to production
+npm run cf:deploy     # build, deploy to production, then prune old page-cache builds from R2
 npm run cf:upload     # build and upload a new version without promoting it
 npx wrangler tail     # live logs
 ```
@@ -78,6 +78,13 @@ page: `NEXT_PUBLIC_DEPLOY_TARGET=cloudflare`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBL
 `NEXT_ENABLE_IMAGE_OPTIMIZATION`, `API_BASE_URL`, `BUNNY_CDN_HOSTNAME`, `NEXT_PUBLIC_ADMIN_ORIGIN`,
 `NEXT_PUBLIC_FARO_*`, `NEXT_PUBLIC_POSTHOG_*`, `NEXT_PUBLIC_TOLT_*`, `NODE_VERSION`, `NODE_OPTIONS`.
 Runtime vars stay in `wrangler.jsonc`; secrets stay on the Worker.
+
+**Page-cache cleanup.** OpenNext writes each build's pages to R2 under `incremental-cache/<BUILD_ID>/`
+and never removes old builds (~80 MB per deploy). `cf:deploy` ends with `scripts/cf-cache-prune.mjs`,
+which keeps the current build plus the previous one (for `wrangler rollback`) and deletes the rest.
+It needs `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and `CLOUDFLARE_ACCOUNT_ID` in the shell
+environment (export them; never put them in a `.env*` file, which OpenNext bundles into the Worker).
+Without them it prints a warning and skips. Run it alone with `npm run cf:cache-prune -- --dry-run`.
 
 **CI — GitHub Actions** (`.github/workflows/cloudflare.yml`): typecheck, lint and the OpenNext
 build on pushes and pull requests. It never deploys.
