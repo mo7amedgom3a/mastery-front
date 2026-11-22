@@ -32,7 +32,7 @@ jobs:
       # Build-time values (NEXT_PUBLIC_* are inlined into the client bundle). Public, not secrets;
       # the publishable keys come from repository variables.
       NEXT_PUBLIC_DEPLOY_TARGET: cloudflare
-      NEXT_PUBLIC_SITE_URL: https://mastery-front-prod.m-gomaa-55a.workers.dev
+      NEXT_PUBLIC_SITE_URL: https://landing.emasteryacademy.com
       NEXT_PUBLIC_ENV: production
       NEXT_ENABLE_IMAGE_OPTIMIZATION: "true"
       API_BASE_URL: https://api.v3.emasteryacademy.com/api/v1

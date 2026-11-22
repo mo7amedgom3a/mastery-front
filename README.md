@@ -53,7 +53,8 @@ npm run validate        # check + production build: once, before shipping
 
 Production runs on Cloudflare Workers through the OpenNext adapter (`open-next.config.ts`,
 `wrangler.jsonc`) on the company Cloudflare account, at
-`https://mastery-front-prod.m-gomaa-55a.workers.dev` until the emasteryacademy.com zone is added.
+`https://landing.emasteryacademy.com` (a CNAME to `service.emastery.dev`, managed outside this
+account; the Worker also answers on `https://mastery-front-prod.m-gomaa-55a.workers.dev`).
 The backend is `https://api.v3.emasteryacademy.com`.
 
 | Kind | Where | Examples |
