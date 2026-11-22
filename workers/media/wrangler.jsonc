@@ -1,6 +1,6 @@
-// Public media Worker (R2 `mastery-public-bucket` → https://media.emasteryacademy.com, edge-cached).
+// Public media Worker (R2 `mastery-public-bucket` → https://static.emasteryacademy.com, edge-cached).
 //   Deploy: npx wrangler deploy -c workers/media/wrangler.jsonc
-// media.emasteryacademy.com is a custom hostname on the emastery.dev zone (Cloudflare for SaaS, like
+// static.emasteryacademy.com is a custom hostname on the emastery.dev zone (Cloudflare for SaaS, like
 // landing.emasteryacademy.com) whose DNS is a CNAME to service.emastery.dev in the emasteryacademy.com
 // zone. This route is more specific than the zone's `*/*` route to the storefront, so it wins.
 {
@@ -9,7 +9,7 @@
   "main": "index.mjs",
   "compatibility_date": "2026-11-01",
   "r2_buckets": [{ "binding": "MEDIA_BUCKET", "bucket_name": "mastery-public-bucket" }],
-  "routes": [{ "pattern": "media.emasteryacademy.com/*", "zone_name": "emastery.dev" }],
+  "routes": [{ "pattern": "static.emasteryacademy.com/*", "zone_name": "emastery.dev" }],
   // Kept on for smoke tests; the workers.dev host has no edge cache (Cache API is a no-op there).
   "workers_dev": true,
   "observability": { "enabled": true },

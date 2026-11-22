@@ -1,5 +1,5 @@
 // Public media Worker: serves the R2 bucket `mastery-public-bucket` (Course Studio, blog and lab
-// images) at https://media.emasteryacademy.com and keeps responses in the Cloudflare edge cache.
+// images) at https://static.emasteryacademy.com and keeps responses in the Cloudflare edge cache.
 //
 // Object keys are written once by the backend (`<prefix>/<owner>/<uuid>.<ext>`) and never
 // overwritten, so a found object is cached as immutable for a year. Misses are cached briefly so a
