@@ -125,9 +125,10 @@ export function LearningListPanel({ programs, source = "lms", pending, error, on
                       <ButtonLink href={program.detailsHref} variant="soft" size="sm">
                         عرض التفاصيل
                       </ButtonLink>
-                    ) : program.entitlementId ? (
+                    ) : (program.entitlementId || program.lmsCourseId) && program.status !== "expired" ? (
                       <ContinueLearningButton
                         entitlementId={program.entitlementId}
+                        lmsCourseId={program.lmsCourseId}
                         title={program.title}
                         variant="soft"
                         size="sm"

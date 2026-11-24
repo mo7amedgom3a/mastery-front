@@ -478,3 +478,71 @@ test("signing out also clears the LMS session", async ({ page, context, baseURL 
   await page.getByRole("button", { name: "تسجيل الخروج" }).click();
   await page.waitForURL(lmsLogout);
 });
+
+const LMS_ENROLLMENTS = {
+  items: [
+    {
+      lms_course_id: 258,
+      title: "أنماط الشخصية MBTI",
+      image_url: COURSE_IMAGE,
+      trainer: "أ. عماد أديب",
+      is_diploma: false,
+      enrolled_at: "2025-10-01T00:00:00",
+      expires_at: null,
+      entitlement_id: null,
+      product_slug: null,
+    },
+  ],
+  total: 1,
+};
+
+test("courses the LMS enrolled the student in are listed and open without a purchase", async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  await page.route("**/api/b2c/me/entitlements**", (route) =>
+    route.fulfill({ json: { items: [], total: 0, limit: 100, offset: 0 } }),
+  );
+  await page.route("**/api/b2c/me/lms/courses**", (route) => route.fulfill({ json: { ...COURSES, items: [] } }));
+  await page.route("**/api/b2c/me/lms/enrollments", (route) => route.fulfill({ json: LMS_ENROLLMENTS }));
+  let sent: unknown;
+  await page.route("**/api/lms/launch", async (route) => {
+    sent = route.request().postDataJSON();
+    await route.fulfill({ json: { mode: "cookie", redirectUrl: "https://lms.emasteryacademy.com/__launch?to=%2Fcourse%2F258" } });
+  });
+  await page.route("https://lms.emasteryacademy.com/**", (route) =>
+    route.fulfill({ contentType: "text/html", body: "<title>LMS</title>" }),
+  );
+  await signInCustomer(context, baseURL!);
+
+  await page.goto("/students/access");
+  const card = page.locator("article").filter({ hasText: "أنماط الشخصية MBTI" });
+  await expect(card).toBeVisible();
+  await expect(card.getByText("من منصة التعلّم")).toBeVisible();
+  await expect(card.getByText("وصول مدى الحياة")).toBeVisible();
+  await expect(page.getByText("لا يوجد لديك وصول فعّال حالياً.")).toHaveCount(0);
+
+  await card.getByRole("button", { name: /كمّل التعلّم/ }).click();
+  await page.waitForURL(/lms\.emasteryacademy\.com\/__launch/);
+  expect(sent).toEqual({ lmsCourseId: 258 });
+});
+
+test("an LMS course with no purchase continues from the dashboard", async ({ page, context, baseURL }) => {
+  await mockLms(page);
+  let sent: unknown;
+  await page.route("**/api/lms/launch", async (route) => {
+    sent = route.request().postDataJSON();
+    await route.fulfill({ json: { mode: "cookie", redirectUrl: "https://lms.emasteryacademy.com/__launch?to=%2Fcourse%2F169" } });
+  });
+  await page.route("https://lms.emasteryacademy.com/**", (route) =>
+    route.fulfill({ contentType: "text/html", body: "<title>LMS</title>" }),
+  );
+  await skipOnboarding(context, baseURL!);
+
+  await page.goto("/students");
+  await page.locator("#resume-learning-title").waitFor();
+  await page.getByRole("button", { name: /كمّل التعلّم/ }).first().click();
+  await page.waitForURL(/lms\.emasteryacademy\.com\/__launch/);
+  expect(sent).toEqual({ lmsCourseId: 169 });
+});

@@ -13,10 +13,11 @@ import { safeLmsImage } from "@/features/student-dashboard/model/learning";
 import { countByType, productTypePluralLabel } from "@/features/student-dashboard/model/products";
 import { useCatalogArtwork } from "@/features/student-dashboard/model/use-artwork";
 import { commerceQueries, type EntitlementResponse } from "@/lib/api/commerce";
-import { lmsQueries } from "@/lib/api/lms";
+import { lmsQueries, type LmsEnrollment } from "@/lib/api/lms";
 import { cn } from "@/lib/cn";
 
 import { ConsultationAccessCard } from "./components/consultation-card";
+import { LmsEnrollmentCard } from "./components/lms-enrollment-card";
 import { AccessCard } from "./components/order-sections";
 
 /** "Inactive" groups what support paused or ended (suspended and revoked access). */
@@ -162,10 +163,28 @@ export function AccessPage() {
       );
   });
 
-  const counts = countByType(scoped, (item) => item.product_type ?? "");
+  // Courses the LMS enrolled the student in with no purchase here (learners from before this site).
+  // They are active by definition and have no program or category, so only name and type narrow them.
+  const lmsEnrollments = useQuery(lmsQueries.enrollments());
+  const lmsTypeOf = (item: LmsEnrollment) => (item.is_diploma ? "diploma" : "course");
+  const entitledIds = new Set(items.map((item) => item.entitlement_id));
+  const lmsScoped =
+    filter === "active" && !programId && !categoryId
+      ? (lmsEnrollments.data?.items ?? []).filter(
+          (item) =>
+            !(item.entitlement_id && entitledIds.has(item.entitlement_id)) &&
+            (!needle || normalizeQuery(item.title ?? "").includes(needle)),
+        )
+      : [];
+
+  const counts = countByType(
+    [...scoped.map((item) => item.product_type ?? ""), ...lmsScoped.map(lmsTypeOf)],
+    (value) => value,
+  );
   // A type that isn't in this list (e.g. after switching status) filters nothing out of sight.
   const selected = type && counts.some((count) => count.type === type) ? type : null;
   const visible = selected ? scoped.filter((item) => item.product_type === selected) : scoped;
+  const visibleLms = selected ? lmsScoped.filter((item) => lmsTypeOf(item) === selected) : lmsScoped;
   const narrowed = Boolean(programId || categoryId || query.trim() || selected);
 
   const extended = searchParams.get("extended") === "1";
@@ -181,7 +200,7 @@ export function AccessPage() {
         </div>
       ) : null}
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-        <TypeFilter counts={counts} total={scoped.length} value={selected} onChange={setType} />
+        <TypeFilter counts={counts} total={scoped.length + lmsScoped.length} value={selected} onChange={setType} />
         <div role="group" aria-label="تصفية حسب الحالة" className="ma-cluster">
           {FILTERS.map((option) => (
             <button
@@ -246,7 +265,7 @@ export function AccessPage() {
         </div>
         {narrowed ? (
           <p className="m-0 text-sm text-fg-muted" role="status">
-            عرض {visible.length} من {items.length}
+            عرض {visible.length + visibleLms.length} من {items.length + (lmsEnrollments.data?.items.length ?? 0)}
           </p>
         ) : null}
       </div>
@@ -265,7 +284,7 @@ export function AccessPage() {
             <p className="ma-alert__text">تحقّق من اتصالك ثم حدّث الصفحة.</p>
           </div>
         </div>
-      ) : visible.length === 0 ? (
+      ) : visible.length === 0 && visibleLms.length === 0 ? (
         <div className="flex flex-col items-start gap-4 rounded-panel border border-line p-6 md:p-10">
           <KeyRound aria-hidden="true" className="size-8 fill-none text-accent" />
           <p className="m-0 text-fg-muted">
@@ -302,6 +321,11 @@ export function AccessPage() {
           aria-busy={access.isFetching}
           className={GRID}
         >
+          {visibleLms.map((enrollment, index) => (
+            <li key={`lms:${enrollment.lms_course_id}`} className="min-w-0">
+              <LmsEnrollmentCard enrollment={enrollment} index={index} />
+            </li>
+          ))}
           {visible.map((entitlement, index) => {
             const known = entitlement.product_slug ? artwork.get(entitlement.product_slug) : undefined;
             const lms = lmsByEntitlement.get(entitlement.entitlement_id);

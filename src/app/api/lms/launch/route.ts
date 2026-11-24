@@ -42,13 +42,20 @@ export async function POST(request: NextRequest) {
   const accessToken = request.cookies.get(ACCESS_COOKIE)?.value;
   if (!accessToken) return authError(401, "unauthenticated", "سجّل الدخول للمتابعة.");
 
-  let entitlementId: unknown;
+  // Either a B2C purchase or a course the LMS itself enrolled the student in (checked by the backend).
+  let body: { entitlementId?: unknown; lmsCourseId?: unknown } = {};
   try {
-    entitlementId = ((await request.json()) as { entitlementId?: unknown }).entitlementId;
+    body = (await request.json()) as typeof body;
   } catch {
-    entitlementId = undefined;
+    body = {};
   }
-  if (typeof entitlementId !== "string" || !UUID_PATTERN.test(entitlementId)) {
+  const entitlementId =
+    typeof body.entitlementId === "string" && UUID_PATTERN.test(body.entitlementId) ? body.entitlementId : null;
+  const lmsCourseId =
+    typeof body.lmsCourseId === "number" && Number.isSafeInteger(body.lmsCourseId) && body.lmsCourseId > 0
+      ? body.lmsCourseId
+      : null;
+  if (!entitlementId && !lmsCourseId) {
     return authError(400, "invalid_request", "بيانات الطلب غير صحيحة.");
   }
 
@@ -64,7 +71,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers,
       body: JSON.stringify({
-        entitlement_id: entitlementId,
+        ...(entitlementId ? { entitlement_id: entitlementId } : { lms_course_id: lmsCourseId }),
         browser_refresh_token: browserLmsRefreshToken(request),
       }),
       cache: "no-store",
