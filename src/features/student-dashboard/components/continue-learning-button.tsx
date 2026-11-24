@@ -28,7 +28,7 @@ type ContinueLearningButtonProps = {
 };
 
 /**
- * Opens the LMS (study.emasteryacademy.com) already signed in: `/api/lms/launch` sets the LMS
+ * Opens the LMS (lms.emasteryacademy.com) already signed in: `/api/lms/launch` sets the LMS
  * session cookie, then the browser goes there. Until the LMS enrollment is delivered the button
  * says so instead.
  */

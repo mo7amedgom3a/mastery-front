@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
 import { commerceQueries } from "@/lib/api/commerce";
-import { isLmsReauthError, lmsQueries, type LmsQuiz } from "@/lib/api/lms";
+import { isLmsReauthError, LMS_REAUTH_COPY, lmsQueries, type LmsQuiz } from "@/lib/api/lms";
 import { formatDate, formatNumber } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -51,18 +51,18 @@ export function LearningProgressPage() {
       {courses.isError || summary.isError || quizzes.isError ? (
         <div className="flex flex-col items-start gap-3 rounded-panel border border-line p-5">
           <p className="m-0 font-bold">
-            {reauth ? "انتهت جلسة منصة التعلّم" : "تعذّر تحديث بيانات منصة التعلّم"}
+            {reauth ? LMS_REAUTH_COPY.title : "تعذّر تحديث بيانات منصة التعلّم"}
           </p>
           <p className="m-0 text-sm text-fg-muted">
             {reauth
-              ? "سجّل الدخول من جديد لتحديث جلسة منصة التعلّم، ثم عد إلى هذه الصفحة."
+              ? LMS_REAUTH_COPY.body
               : usingSnapshot
                 ? "نعرض آخر تقدّم محفوظ من حسابك. حاول تحديث الصفحة لاحقاً."
                 : "تحقّق من اتصالك، ثم أعد المحاولة."}
           </p>
           {reauth ? (
-            <ButtonLink href={routes.loginThen(routes.studentProgress)} variant="primary" size="sm">
-              تسجيل الدخول
+            <ButtonLink href={routes.studentAccess} variant="primary" size="sm">
+              {LMS_REAUTH_COPY.action}
             </ButtonLink>
           ) : (
             <Button variant="soft" size="sm" onClick={() => void courses.refetch()}>

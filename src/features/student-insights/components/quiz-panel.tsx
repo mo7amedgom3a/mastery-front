@@ -16,7 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
 import { DashboardPanel } from "@/features/student-dashboard/components/dashboard-panel";
-import { isLmsReauthError, lmsQueries } from "@/lib/api/lms";
+import { isLmsReauthError, LMS_REAUTH_COPY, lmsQueries } from "@/lib/api/lms";
 import { formatNumber } from "@/lib/format";
 
 import { ChartSummary, PanelEmpty } from "./panel-states";
@@ -61,7 +61,7 @@ export function QuizPanel() {
       ) : quizzes.isError ? (
         <PanelEmpty>
           {isLmsReauthError(quizzes.error)
-            ? "سجّل الدخول مرة أخرى لعرض نتائج اختباراتك."
+            ? LMS_REAUTH_COPY.short
             : "تعذّر تحميل نتائج الاختبارات الآن."}
         </PanelEmpty>
       ) : rows.length === 0 ? (

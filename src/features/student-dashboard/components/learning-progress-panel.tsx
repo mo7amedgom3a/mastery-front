@@ -6,7 +6,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
-import { isLmsReauthError, lmsQueries } from "@/lib/api/lms";
+import { isLmsReauthError, LMS_REAUTH_COPY, lmsQueries } from "@/lib/api/lms";
 import { formatNumber } from "@/lib/format";
 
 import { averageProgress, lmsProgram, quizStats } from "../model/learning";
@@ -43,11 +43,11 @@ export function LearningProgressPanel() {
       ) : failed ? (
         <div className="flex flex-col items-start gap-2">
           <p className="m-0 text-sm text-fg-muted">
-            {reauth ? "انتهت جلسة منصة التعلّم. سجّل الدخول من جديد لعرض تقدّمك." : "تعذّر تحميل تقدّمك الآن."}
+            {reauth ? LMS_REAUTH_COPY.short : "تعذّر تحميل تقدّمك الآن."}
           </p>
           {reauth ? (
-            <ButtonLink href={routes.loginThen(routes.studentHome)} variant="soft" size="sm">
-              تسجيل الدخول
+            <ButtonLink href={routes.studentAccess} variant="soft" size="sm">
+              {LMS_REAUTH_COPY.action}
             </ButtonLink>
           ) : null}
         </div>

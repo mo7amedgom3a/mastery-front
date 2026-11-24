@@ -69,6 +69,8 @@ export type RefreshRequest = {
 
 export type LogoutRequest = {
   refresh_token?: string | null;
+  /** The browser's shared legacy `refreshToken` cookie (LMS session), so its chain is ended too. */
+  legacy_refresh_token?: string | null;
 };
 
 /**

@@ -82,12 +82,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    let lmsLogoutUrl: string | null = null;
     try {
-      await signOut();
+      ({ lmsLogoutUrl } = await signOut());
     } finally {
       get().setUnauthenticated();
       announce("signed-out");
     }
+    // The LMS keeps its own session in its storage (a JWT valid up to an hour): drop it too. It
+    // comes straight back to this site's home page.
+    if (lmsLogoutUrl && typeof window !== "undefined") window.location.assign(lmsLogoutUrl);
   },
 
   setAuthenticated: (user) => set({ status: "authenticated", user }),
