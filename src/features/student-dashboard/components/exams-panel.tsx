@@ -8,7 +8,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardActionLink } from "@/features/student-dashboard/components/dashboard-action-link";
 import { routes } from "@/config/routes";
-import { lmsQueries, isLmsReauthError, type LmsQuiz } from "@/lib/api/lms";
+import { lmsQueries, isLmsReauthError, LMS_REAUTH_COPY, type LmsQuiz } from "@/lib/api/lms";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -41,11 +41,11 @@ export function ExamsPanel() {
       ) : quizzes.isError ? (
         <div className="flex flex-col items-start gap-2">
           <p className="m-0 text-sm text-fg-muted">
-            {reauth ? "انتهت جلسة منصة التعلّم. سجّل الدخول من جديد لعرض نتائجك." : "تعذّر تحميل الاختبارات الآن."}
+            {reauth ? LMS_REAUTH_COPY.short : "تعذّر تحميل الاختبارات الآن."}
           </p>
           {reauth ? (
-            <ButtonLink href={routes.loginThen(routes.studentHome)} variant="soft" size="sm">
-              تسجيل الدخول
+            <ButtonLink href={routes.studentAccess} variant="soft" size="sm">
+              {LMS_REAUTH_COPY.action}
             </ButtonLink>
           ) : null}
         </div>

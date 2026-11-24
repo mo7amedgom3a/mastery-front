@@ -332,7 +332,11 @@ test("the learning-progress page shows live LMS courses and quick numbers", asyn
   await expect(page.locator('nav[aria-label="حسابي"] a[aria-current="page"]')).toContainText("تقدّم التعلّم");
 });
 
-test("an expired LMS session shows a reauthentication notice", async ({ page, context, baseURL }) => {
+test("an LMS session that needs renewing points to continue learning, not sign-in", async ({
+  page,
+  context,
+  baseURL,
+}) => {
   await page.route("**/api/b2c/me/lms/summary", (route) => route.fulfill({ json: SUMMARY }));
   await page.route("**/api/b2c/me/lms/courses**", (route) => route.fulfill({ json: COURSES }));
   await page.route("**/api/b2c/me/lms/quizzes", (route) =>
@@ -344,8 +348,10 @@ test("an expired LMS session shows a reauthentication notice", async ({ page, co
   await signInCustomer(context, baseURL!);
 
   await page.goto("/students/exams");
-  await expect(page.getByText("انتهت جلسة منصة التعلّم").first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "تسجيل الدخول" })).toBeVisible();
+  // After a launch the LMS owns the session; opening a program renews it, signing in again does not.
+  await expect(page.getByText("بيانات منصة التعلّم بحاجة إلى تحديث")).toBeVisible();
+  await expect(page.getByRole("link", { name: "انتقل إلى تعلّمي" })).toHaveAttribute("href", "/students/access");
+  await expect(page.getByRole("link", { name: "تسجيل الدخول" })).toHaveCount(0);
 });
 
 test("dashboard search finds programs, pages, sections and labs without leaving the page", async ({ page, context, baseURL }) => {
@@ -415,4 +421,60 @@ test("mobile dashboard search fits the viewport and opens from both shell contro
   await dialog.getByRole("link", { name: /اختباراتي/ }).click();
   await expect(page).toHaveURL(/\/students\/exams$/);
   expect(await page.locator("body").evaluate((body) => body.style.overflow)).not.toBe("hidden");
+});
+
+const LMS_LAUNCH_URL = "https://lms.emasteryacademy.com/__launch?to=%2Fcourse%2F169";
+const COURSE_ENTITLEMENT_ID = "90000000-0000-4000-8000-0000000000aa";
+const COURSE_ACCESS = accessItem({
+  entitlement_id: COURSE_ENTITLEMENT_ID,
+  product_id: "90000000-0000-4000-8000-0000000001aa",
+  product_slug: "marketing-laws",
+  product_title: "قوانين التسويق",
+  product_type: "course",
+});
+
+test("the LMS's return path opens the learning page", async ({ page, context, baseURL }) => {
+  await page.route("**/api/b2c/me/lms/courses**", (route) => route.fulfill({ json: { ...COURSES, items: [] } }));
+  await signInCustomer(context, baseURL!);
+
+  await page.goto("/students/learning");
+  await expect(page).toHaveURL(/\/students\/access$/);
+  await expect(page.getByRole("heading", { name: "تعلّمي", level: 1 })).toBeVisible();
+});
+
+test("continue learning follows the LMS hand-off", async ({ page, context, baseURL }) => {
+  await page.route("**/api/b2c/me/entitlements**", (route) =>
+    route.fulfill({ json: { items: [COURSE_ACCESS], total: 1, limit: 100, offset: 0 } }),
+  );
+  await page.route("**/api/b2c/me/lms/courses**", (route) => route.fulfill({ json: { ...COURSES, items: [] } }));
+  let sent: unknown;
+  await page.route("**/api/lms/launch", async (route) => {
+    sent = route.request().postDataJSON();
+    await route.fulfill({ json: { mode: "cookie", redirectUrl: LMS_LAUNCH_URL } });
+  });
+  await page.route("https://lms.emasteryacademy.com/**", (route) =>
+    route.fulfill({ contentType: "text/html", body: "<title>LMS</title>" }),
+  );
+  await signInCustomer(context, baseURL!);
+
+  await page.goto("/students/access");
+  await page.getByRole("button", { name: /كمّل التعلّم/ }).first().click();
+  await page.waitForURL(LMS_LAUNCH_URL);
+  expect(sent).toEqual({ entitlementId: COURSE_ENTITLEMENT_ID });
+});
+
+test("signing out also clears the LMS session", async ({ page, context, baseURL }) => {
+  const lmsLogout = "https://lms.emasteryacademy.com/__logout?to=https%3A%2F%2Flanding.emasteryacademy.com%2F";
+  await mockLms(page);
+  // Off the shared domain the route returns no LMS URL; this checks what the page does with one.
+  await page.route("**/api/auth/logout", (route) => route.fulfill({ json: { lmsLogoutUrl: lmsLogout } }));
+  await page.route("https://lms.emasteryacademy.com/**", (route) =>
+    route.fulfill({ contentType: "text/html", body: "<title>LMS</title>" }),
+  );
+  await skipOnboarding(context, baseURL!);
+
+  await page.goto("/students");
+  await page.getByRole("button", { name: /^حسابي:/ }).click();
+  await page.getByRole("button", { name: "تسجيل الخروج" }).click();
+  await page.waitForURL(lmsLogout);
 });

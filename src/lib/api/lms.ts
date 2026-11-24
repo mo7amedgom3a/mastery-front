@@ -104,6 +104,17 @@ export function lmsErrorCode(error: unknown): string | null {
   return null;
 }
 
+/**
+ * Shown when LMS data needs a fresh LMS session. After «كمّل التعلّم» the LMS owns the session and
+ * the site reads with the last token it saw (about an hour); opening any program renews it.
+ */
+export const LMS_REAUTH_COPY = {
+  title: "بيانات منصة التعلّم بحاجة إلى تحديث",
+  body: "افتح أي برنامج بزر «كمّل التعلّم» لتجديد جلسة منصة التعلّم، ثم عد إلى هذه الصفحة.",
+  short: "افتح أي برنامج بزر «كمّل التعلّم» لتحديث هذه البيانات.",
+  action: "انتقل إلى تعلّمي",
+} as const;
+
 export function isLmsReauthError(error: unknown): boolean {
   return lmsErrorCode(error) === "lms_reauth_required";
 }

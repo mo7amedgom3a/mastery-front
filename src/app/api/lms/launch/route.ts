@@ -1,33 +1,39 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { getApiBaseUrl } from "@/config/env";
-import { ACCESS_COOKIE } from "@/lib/auth/cookie-names";
-import { backendHeaders } from "@/lib/auth/server/forward";
-import { rejectCrossOrigin } from "@/lib/auth/server/guard";
+import { routes } from "@/config/routes";
+import { logout } from "@/lib/api/auth";
 import type { LmsLaunchResult } from "@/lib/api/lms";
+import { ACCESS_COOKIE, REFRESH_COOKIE } from "@/lib/auth/cookie-names";
+import { clearSessionCookies } from "@/lib/auth/server/cookies";
+import { backendHeaders, backendOptions } from "@/lib/auth/server/forward";
+import { rejectCrossOrigin } from "@/lib/auth/server/guard";
+import { browserLmsRefreshToken, clearLmsCookie, onSharedDomain, setLmsCookie } from "@/lib/auth/server/lms";
 import { authError } from "@/lib/auth/server/respond";
 
 const NO_STORE = { "Cache-Control": "private, no-store" };
 const BACKEND_TIMEOUT_MS = 20_000;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-/** The parent domain the LMS (study.emasteryacademy.com) shares with this site. */
-const LMS_COOKIE_DOMAIN = process.env.LMS_COOKIE_DOMAIN ?? ".emasteryacademy.com";
-/** Name and attributes the legacy API itself uses for the LMS session cookie. */
-const LMS_REFRESH_COOKIE = "refreshToken";
+/** Where the LMS sends people back to, and so where a fresh sign-in should land. */
+const AFTER_SIGN_IN = "/students/learning";
 
 type BackendLaunch = {
   mode: "cookie" | "login";
-  redirect_url: string;
+  redirect_url?: string | null;
   refresh_token?: string | null;
   refresh_expires_at?: string | null;
 };
 
 /**
- * "Continue learning". The LMS keeps its session in its own localStorage, which this site can't
- * write, and restores it from the legacy `refreshToken` cookie on the shared parent domain. So the
- * backend hands over the legacy refresh token stored at sign-in, and this handler sets it as that
- * cookie. Off the shared domain (localhost, previews) a cookie can't reach the LMS: the visitor
- * signs in there instead.
+ * "Continue learning". The LMS host serves the course player only and builds its session from the
+ * legacy `refreshToken` cookie on the parent domain it shares with this site. The browser's current
+ * cookie goes to the backend (server to server), which rotates one chain through the legacy API and
+ * returns the new token; this handler sets it as that cookie. From then on only the browser rotates
+ * that chain, so the backend and the LMS never spend the same single-use token.
+ *
+ * When there is no usable chain the B2C session is ended too: a fresh sign-in stores a new chain.
+ * Off the shared domain (localhost, previews) no cookie can reach the LMS: nothing is rotated and
+ * the visitor is told so, without being signed out.
  */
 export async function POST(request: NextRequest) {
   const denied = rejectCrossOrigin(request);
@@ -46,6 +52,10 @@ export async function POST(request: NextRequest) {
     return authError(400, "invalid_request", "بيانات الطلب غير صحيحة.");
   }
 
+  if (!onSharedDomain(request)) {
+    return authError(409, "unavailable", "منصة التعلّم تُفتح من الموقع الرسمي فقط (emasteryacademy.com).");
+  }
+
   const headers = backendHeaders(request, accessToken);
   headers.set("Content-Type", "application/json");
   let upstream: Response;
@@ -53,7 +63,10 @@ export async function POST(request: NextRequest) {
     upstream = await fetch(`${getApiBaseUrl()}/me/lms/launch`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ entitlement_id: entitlementId }),
+      body: JSON.stringify({
+        entitlement_id: entitlementId,
+        browser_refresh_token: browserLmsRefreshToken(request),
+      }),
       cache: "no-store",
       signal: AbortSignal.timeout(BACKEND_TIMEOUT_MS),
     });
@@ -65,36 +78,39 @@ export async function POST(request: NextRequest) {
   if (upstream.status === 404) return authError(404, "forbidden", "لا يوجد وصول فعّال لهذا البرنامج.");
   if (upstream.status === 403) return authError(403, "forbidden", "وصولك إلى هذا البرنامج موقوف. تواصل مع الدعم.");
   if (upstream.status === 409) return authError(409, "unavailable", "نجهّز وصولك إلى منصة التعلّم، حاول بعد دقائق.");
+  if (upstream.status === 503 || upstream.status === 504 || upstream.status === 429) {
+    return authError(503, "unavailable", "منصة التعلّم لا تستجيب حالياً. حاول مجدداً بعد قليل.");
+  }
   if (!upstream.ok) return authError(502, "unavailable", "تعذّر فتح منصة التعلّم حالياً. حاول مجدداً بعد قليل.");
 
   const launch = (await upstream.json()) as BackendLaunch;
-  const canShare = launch.mode === "cookie" && launch.refresh_token && onSharedDomain(request);
-  if (!canShare) {
-    return NextResponse.json({ mode: "login", redirectUrl: lmsLoginUrl(launch) } satisfies LmsLaunchResult, {
-      headers: NO_STORE,
-    });
+  if (launch.mode !== "cookie" || !launch.redirect_url) {
+    return signInAgain(request, accessToken);
   }
   const response = NextResponse.json({ mode: "cookie", redirectUrl: launch.redirect_url } satisfies LmsLaunchResult, {
     headers: NO_STORE,
   });
-  response.cookies.set(LMS_REFRESH_COOKIE, launch.refresh_token as string, {
-    domain: LMS_COOKIE_DOMAIN,
-    path: "/",
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    expires: launch.refresh_expires_at ? new Date(launch.refresh_expires_at) : undefined,
-  });
+  // No token: a launch a moment ago (double click, second tab) already set the current cookie.
+  if (launch.refresh_token) setLmsCookie(response, launch.refresh_token, launch.refresh_expires_at);
   return response;
 }
 
-function onSharedDomain(request: NextRequest): boolean {
-  const host = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "").split(":")[0];
-  const parent = LMS_COOKIE_DOMAIN.replace(/^\./, "");
-  return host === parent || host.endsWith(`.${parent}`);
-}
-
-function lmsLoginUrl(launch: BackendLaunch): string {
-  if (launch.mode === "login") return launch.redirect_url;
-  return `${new URL(launch.redirect_url).origin}/auth/login`;
+/** Ends this session (and the browser's legacy chain) and sends the visitor to sign in again. */
+async function signInAgain(request: NextRequest, accessToken: string): Promise<NextResponse> {
+  const legacyRefreshToken = browserLmsRefreshToken(request);
+  try {
+    await logout(
+      { refresh_token: request.cookies.get(REFRESH_COOKIE)?.value ?? null, legacy_refresh_token: legacyRefreshToken },
+      backendOptions(request, accessToken),
+    );
+  } catch (error) {
+    console.error("[lms] sign-out before re-login failed", error);
+  }
+  const response = NextResponse.json(
+    { mode: "login", redirectUrl: routes.loginThen(AFTER_SIGN_IN) } satisfies LmsLaunchResult,
+    { headers: NO_STORE },
+  );
+  clearSessionCookies(response);
+  clearLmsCookie(response);
+  return response;
 }

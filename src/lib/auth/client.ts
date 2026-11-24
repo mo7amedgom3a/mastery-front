@@ -67,8 +67,12 @@ export function getSession(): Promise<SessionResponse> {
   return request("GET", paths.session);
 }
 
-export function signOut(): Promise<void> {
-  return request("POST", paths.logout);
+/** `lmsLogoutUrl`: where to go next so the LMS also drops the session kept in its own storage. */
+export type SignOutResult = { lmsLogoutUrl: string | null };
+
+export async function signOut(): Promise<SignOutResult> {
+  const result = await request<SignOutResult | undefined>("POST", paths.logout);
+  return { lmsLogoutUrl: result?.lmsLogoutUrl ?? null };
 }
 
 const sessionLostListeners = new Set<() => void>();

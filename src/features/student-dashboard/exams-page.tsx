@@ -8,7 +8,7 @@ import { useState } from "react";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { routes } from "@/config/routes";
-import { isLmsReauthError, lmsQueries, type LmsQuiz } from "@/lib/api/lms";
+import { isLmsReauthError, LMS_REAUTH_COPY, lmsQueries, type LmsQuiz } from "@/lib/api/lms";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -47,16 +47,16 @@ export function ExamsPage() {
       {quizzes.isError ? (
         <div className="flex flex-col items-start gap-3 rounded-panel border border-line p-5">
           <p className="m-0 font-bold">
-            {reauth ? "انتهت جلسة منصة التعلّم" : "تعذّر تحميل الاختبارات الآن"}
+            {reauth ? LMS_REAUTH_COPY.title : "تعذّر تحميل الاختبارات الآن"}
           </p>
           <p className="m-0 text-sm text-fg-muted">
             {reauth
-              ? "سجّل الدخول من جديد لتحديث جلسة منصة التعلّم، ثم عد إلى هذه الصفحة."
+              ? LMS_REAUTH_COPY.body
               : "تحقّق من اتصالك، ثم أعد المحاولة."}
           </p>
           {reauth ? (
-            <ButtonLink href={routes.loginThen(routes.studentExams)} variant="primary" size="sm">
-              تسجيل الدخول
+            <ButtonLink href={routes.studentAccess} variant="primary" size="sm">
+              {LMS_REAUTH_COPY.action}
             </ButtonLink>
           ) : (
             <Button variant="soft" size="sm" onClick={() => void quizzes.refetch()}>
