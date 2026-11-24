@@ -99,6 +99,7 @@ const RULES: readonly Rule[] = [
   { methods: ["PATCH", "DELETE"], pattern: /^experts\/me\/services\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["GET"], pattern: /^experts\/me\/bookings\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^experts\/me\/slots$/, session: true },
+  { methods: ["PATCH", "DELETE"], pattern: /^experts\/me\/slots\/[A-Za-z0-9-]+$/, session: true },
   { methods: ["POST"], pattern: /^experts\/me\/bookings\/[A-Za-z0-9-]+\/(approve|reject|cancel)$/, session: true },
   // Support ticket management: categories, related options, tickets, messages, reopen, feedback, download
   { methods: ["GET"], pattern: /^support\/categories$/, session: false },
