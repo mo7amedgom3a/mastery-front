@@ -12,6 +12,25 @@ import { refreshOnce } from "@/lib/auth/client";
 /** Where to send the browser. The legacy token itself never reaches JavaScript. */
 export type LmsLaunchResult = { mode: "cookie" | "login"; redirectUrl: string };
 
+/** What to open: a B2C purchase, or a course the LMS itself enrolled the student in. */
+export type LmsLaunchTarget = { entitlementId: string } | { lmsCourseId: number };
+
+/** A course the LMS has enrolled the student in (read from the LMS database, no LMS session). */
+export type LmsEnrollment = {
+  lms_course_id: number;
+  title: string | null;
+  image_url: string | null;
+  trainer: string | null;
+  is_diploma: boolean;
+  enrolled_at: string | null;
+  /** null: lifetime access. */
+  expires_at: string | null;
+  /** The B2C purchase for the same course, when there is one. */
+  entitlement_id: string | null;
+  product_slug: string | null;
+};
+export type LmsEnrollmentList = { items: LmsEnrollment[]; total: number };
+
 type LmsSummaryOperation = "lms_summary_api_v1_me_lms_summary_get";
 type LmsCoursesOperation = "lms_courses_api_v1_me_lms_courses_get";
 type LmsQuizzesOperation = "lms_quizzes_api_v1_me_lms_quizzes_get";
@@ -28,6 +47,7 @@ const lmsPaths = {
   summary: "/api/v1/me/lms/summary",
   courses: "/api/v1/me/lms/courses",
   quizzes: "/api/v1/me/lms/quizzes",
+  enrollments: "/api/v1/me/lms/enrollments",
 } as const;
 
 export const lmsKeys = {
@@ -35,14 +55,15 @@ export const lmsKeys = {
   summary: () => [...lmsKeys.all, "summary"] as const,
   courses: (params?: LmsCoursesParams) => [...lmsKeys.all, "courses", params ?? {}] as const,
   quizzes: () => [...lmsKeys.all, "quizzes"] as const,
+  enrollments: () => [...lmsKeys.all, "enrollments"] as const,
 };
 
 /**
  * Asks this app for the LMS hand-off (`app/api/lms/launch`), which also sets the LMS session
  * cookie. An expired access token is renewed once and the call repeated.
  */
-export async function launchLms(entitlementId: string): Promise<LmsLaunchResult> {
-  const options = { body: { entitlementId }, sameOrigin: true, credentials: "same-origin" as const };
+export async function launchLms(target: LmsLaunchTarget): Promise<LmsLaunchResult> {
+  const options = { body: target, sameOrigin: true, credentials: "same-origin" as const };
   try {
     return await apiRequest<LmsLaunchResult>("POST", LAUNCH_PATH, options);
   } catch (error) {
@@ -70,7 +91,18 @@ export function listLmsQuizzes(options?: AuthenticatedRequestOptions): Promise<L
   return customerRequest<LmsQuizList>("GET", lmsPaths.quizzes, withAuthCookies(options));
 }
 
+export function listLmsEnrollments(options?: AuthenticatedRequestOptions): Promise<LmsEnrollmentList> {
+  return customerRequest<LmsEnrollmentList>("GET", lmsPaths.enrollments, withAuthCookies(options));
+}
+
 export const lmsQueries = {
+  enrollments: () =>
+    queryOptions({
+      queryKey: lmsKeys.enrollments(),
+      queryFn: ({ signal }) => listLmsEnrollments({ signal }),
+      staleTime: 60_000,
+      retry: 1,
+    }),
   summary: () =>
     queryOptions({
       queryKey: lmsKeys.summary(),

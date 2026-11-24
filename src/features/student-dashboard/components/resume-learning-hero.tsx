@@ -20,7 +20,9 @@ export function ResumeLearningHero({ program }: ResumeLearningHeroProps) {
   const percent = program.progress;
   const latin = startsWithLatin(program.title);
   // Bundles and packages open their contents, not the LMS.
-  const launchable = Boolean(program.entitlementId) && program.status !== "expired" && !program.detailsHref;
+  // A course from the LMS with no B2C purchase opens by its LMS id (the backend checks the enrollment).
+  const launchable =
+    Boolean(program.entitlementId || program.lmsCourseId) && program.status !== "expired" && !program.detailsHref;
 
   return (
     <section
@@ -69,7 +71,8 @@ export function ResumeLearningHero({ program }: ResumeLearningHeroProps) {
               </ButtonLink>
             ) : launchable ? (
               <ContinueLearningButton
-                entitlementId={program.entitlementId as string}
+                entitlementId={program.entitlementId}
+                lmsCourseId={program.lmsCourseId}
                 title={program.title}
                 variant="on-color"
                 size="lg"

@@ -13,7 +13,9 @@ import { launchLms } from "@/lib/api/lms";
 import { cn } from "@/lib/cn";
 
 type ContinueLearningButtonProps = {
-  entitlementId: string;
+  /** The B2C purchase to open. Without one, `lmsCourseId`: a course the LMS itself enrolled them in. */
+  entitlementId?: string | null;
+  lmsCourseId?: number | null;
   /** `fulfilled`, `in_progress`, `attention_required`, or null when nothing is delivered by the LMS. */
   fulfillmentStatus?: string | null;
   /** Read by screen readers after the visible label (the program's name). */
@@ -34,6 +36,7 @@ type ContinueLearningButtonProps = {
  */
 export function ContinueLearningButton({
   entitlementId,
+  lmsCourseId,
   fulfillmentStatus,
   title,
   variant = "primary",
@@ -71,7 +74,9 @@ export function ContinueLearningButton({
     setOpening(true);
     setError(null);
     try {
-      const { redirectUrl } = await launchLms(entitlementId);
+      const target = entitlementId ? { entitlementId } : lmsCourseId ? { lmsCourseId } : null;
+      if (!target) throw new ApiError(404, "لا يوجد برنامج لفتحه.", {});
+      const { redirectUrl } = await launchLms(target);
       window.location.assign(redirectUrl);
     } catch (caught) {
       setOpening(false);
