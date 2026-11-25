@@ -41,7 +41,7 @@ jobs:
       NEXT_ENABLE_IMAGE_OPTIMIZATION: "true"
       API_BASE_URL: https://api.v3.emasteryacademy.com/api/v1
       BUNNY_CDN_HOSTNAME: vz-be0e9539-e4b.b-cdn.net
-      NEXT_PUBLIC_FARO_URL: https://faro-collector-prod-us-east-0.grafana.net/collect/661a8c1432921527fd32412dd34110f7
+      NEXT_PUBLIC_FARO_URL: https://faro-collector-prod-us-east-2.grafana.net/collect/8e821bc2f2a4e9dc288419668fd107b2
       NEXT_PUBLIC_FARO_APP_NAME: mastery-app
       NEXT_PUBLIC_FARO_APP_NAMESPACE: production
       NEXT_PUBLIC_FARO_APP_VERSION: "0.1.0"

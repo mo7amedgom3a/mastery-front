@@ -6,8 +6,8 @@ import { isIndexable } from "./src/config/env";
 // key is a build-time secret, so uploads are skipped (not failed) when it is absent.
 const faroAppName = process.env.NEXT_PUBLIC_FARO_APP_NAME?.trim() || "mastery-app";
 const faroUploadEndpoint =
-  process.env.FARO_API_ENDPOINT?.trim() || "https://faro-api-prod-us-east-0.grafana.net/faro/api/v1";
-const faroAppId = process.env.FARO_APP_ID?.trim() || "4598";
+  process.env.FARO_API_ENDPOINT?.trim() || "https://faro-api-prod-us-east-2.grafana.net/faro/api/v1";
+const faroAppId = process.env.FARO_APP_ID?.trim() || "2376";
 const faroStackId = process.env.FARO_STACK_ID?.trim() || "1934797";
 const faroApiKey = process.env.FARO_API_KEY?.trim();
 
