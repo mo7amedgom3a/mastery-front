@@ -5,6 +5,7 @@ import { cn } from "@/lib/cn";
 
 import { searchCopy } from "../content/copy";
 import { searchHref, withFilters, type SearchState } from "../model/params";
+import { SearchAutocomplete } from "./search-autocomplete";
 import { FilterLink, SearchForm } from "./search-nav";
 import { StateInputs } from "./state-inputs";
 
@@ -18,21 +19,14 @@ export function SearchBox({ state }: { state: SearchState }) {
     <div className="flex flex-col gap-3">
       <SearchForm role="search" aria-label="البحث في البرامج" className="flex flex-col gap-3 sm:flex-row">
         <StateInputs state={state} omit={["q"]} />
-        <label htmlFor="search-q" className="sr-only">
-          كلمات البحث
-        </label>
-        <input
-          // Re-created when the query in the URL changes (back/forward, cleared search).
+        <SearchAutocomplete
+          // Re-created when the query in the URL changes (back/forward, a picked suggestion):
+          // it owns the draft text, so a filter-only navigation must keep what was typed.
           key={state.q}
-          id="search-q"
-          name="q"
-          type="search"
-          defaultValue={state.q}
+          defaultQuery={state.q}
           placeholder={searchCopy.placeholder}
+          label={searchCopy.queryLabel}
           maxLength={200}
-          enterKeyHint="search"
-          autoComplete="off"
-          className="ma-input min-h-14 min-w-0 flex-1 text-lg"
         />
         <button type="submit" className={cn(buttonClass({ variant: "primary", size: "lg" }), "max-sm:w-full")}>
           <Search aria-hidden="true" className="size-5 fill-none" />

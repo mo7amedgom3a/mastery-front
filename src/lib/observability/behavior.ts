@@ -47,7 +47,9 @@ export type ProductEvent =
   | "lesson_completed"
   | "advisor_mode_switched"
   | "ai_advisor_opened"
-  | "ai_recommendation_clicked";
+  | "ai_recommendation_clicked"
+  | "autocomplete_selected"
+  | "autocomplete_impression";
 
 /** Titles are capped so a stray long string cannot bloat an event. */
 const TITLE_LIMIT = 120;
@@ -252,6 +254,72 @@ export function trackAuth(eventType: AuthEvent, metadata?: Record<string, unknow
   const route = currentRoute();
   const payload = { route, ...metadata };
   send(eventType === "registered" ? "signed_up" : eventType, eventType, payload, { entityType: "auth", metadata: { ...payload, route: route ?? null } });
+}
+
+export type AutocompleteImpression = {
+  query: string;
+  suggestionCount: number;
+  resultCount: number;
+};
+
+/**
+ * The dropdown rendered for a query. Sent once per distinct query per mount (see the
+ * component): impressions answer "did the suggestions help?" when joined with selections.
+ */
+export function trackAutocompleteImpression(impression: AutocompleteImpression): void {
+  const route = currentRoute();
+  const attributes = {
+    route,
+    query: clip(impression.query),
+    suggestion_count: impression.suggestionCount,
+    result_count: impression.resultCount,
+  };
+  send("autocomplete_impression", "autocomplete.impression", attributes, {
+    entityType: "search",
+    metadata: {
+      route: route ?? null,
+      q: clip(impression.query) ?? null,
+      suggestion_count: impression.suggestionCount,
+      result_count: impression.resultCount,
+    },
+  });
+}
+
+export type AutocompleteSelection = AutocompleteImpression & {
+  /** The suggestion phrase, or the title of the program that was opened. */
+  text: string;
+  /** `keyword` / `popular_search` / `spelling` for a suggestion, the product type for a result. */
+  type: string;
+  kind: "suggestion" | "result";
+  /** 0-based position in the dropdown, for click-through-rate by rank. */
+  position: number;
+};
+
+export function trackAutocompleteSelection(selection: AutocompleteSelection): void {
+  const route = currentRoute();
+  const attributes = {
+    route,
+    query: clip(selection.query),
+    selected: clip(selection.text),
+    selected_type: selection.type,
+    kind: selection.kind,
+    position: selection.position,
+    suggestion_count: selection.suggestionCount,
+    result_count: selection.resultCount,
+  };
+  send("autocomplete_selected", "autocomplete.select", attributes, {
+    entityType: "search",
+    metadata: {
+      route: route ?? null,
+      q: clip(selection.query) ?? null,
+      selected: clip(selection.text) ?? null,
+      selected_type: selection.type,
+      kind: selection.kind,
+      position: selection.position,
+      suggestion_count: selection.suggestionCount,
+      result_count: selection.resultCount,
+    },
+  });
 }
 
 export type CheckoutEvent = "order_created" | "payment_settled" | "order_viewed";

@@ -32,6 +32,7 @@ export const searchCopy = {
   pageTitle: "تصفّح كل برامج ماستري",
   lead: "دورات ودبلومات وباقات واستشارات في مكان واحد. ابحث بكلماتك، ثم ضيّق النتائج بالمجال والمهارة والمدرّب والسعر.",
   placeholder: "ماذا تريد أن تتعلّم؟ مثال: التسويق عبر وسائل التواصل",
+  queryLabel: "كلمات البحث",
   submit: "ابحث",
   smart: "بحث ذكي",
   smartOff: "فعّله ليفهم البحث معنى ما تكتبه، لا الكلمات نفسها فقط.",
@@ -39,6 +40,36 @@ export const searchCopy = {
   description:
     "تصفّح دورات ودبلومات وباقات واستشارات ماستري أكاديمي في التسويق والإدارة والمبيعات والمالية والذكاء الاصطناعي، وابحث بالمجال والمهارة والمدرّب والسعر.",
 } as const;
+
+/** The search box's typeahead. Kept together so the panel and its announcement agree. */
+export const autocompleteCopy = {
+  listLabel: "اقتراحات البحث",
+  suggestions: "بحث مقترح",
+  results: "برامج مطابقة",
+  loading: "جارٍ البحث…",
+  empty: "لا توجد اقتراحات مطابقة.",
+  error: "تعذّر جلب الاقتراحات. اضغط Enter للبحث.",
+  spelling: "هل تقصد:",
+  popular: "بحث شائع",
+  close: "إغلاق الاقتراحات",
+  searchFor: (query: string) => `ابحث عن «${query}»`,
+  status: (suggestions: number, results: number) =>
+    suggestions + results > 0 ? `${suggestions} اقتراحاً و${results} برنامجاً` : "لا توجد اقتراحات",
+} as const;
+
+/** Singular labels for a typeahead program row; the catalog has more types than the chip map. */
+const autocompleteTypeLabels: Record<string, string> = {
+  course: "دورة",
+  diploma: "دبلوم",
+  package: "باقة",
+  consultation: "استشارة",
+  bundle: "حزمة",
+  live_diploma: "دبلوم مباشر",
+};
+
+export function autocompleteTypeLabel(type: string): string {
+  return autocompleteTypeLabels[type] ?? "برنامج";
+}
 
 /**
  * Arabic names for the catalog's tags and skills, which the API stores in English. Unknown codes

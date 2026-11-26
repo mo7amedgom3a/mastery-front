@@ -43,6 +43,9 @@ const RULES: readonly Rule[] = [
   // Live-diploma waitlist: join, read and leave the signed-in customer's entry.
   { methods: ["POST"], pattern: /^catalog\/live-diplomas\/[A-Za-z0-9-]+\/waitlist$/, session: true },
   { methods: ["GET", "DELETE"], pattern: /^catalog\/live-diplomas\/[A-Za-z0-9-]+\/waitlist\/me$/, session: true },
+  // Search-page typeahead: public suggestions and matching programs. Exact path only; the
+  // endpoint has its own rate-limit bucket and shared Redis cache.
+  { methods: ["GET"], pattern: /^search\/autocomplete$/, session: false },
   // Behavior events from the browser; open to guests too (identified by X-Client-Fingerprint).
   { methods: ["POST"], pattern: /^analytics\/events$/, session: false },
   // The public blog newsletter: subscribe, and one-click unsubscribe from an email link.

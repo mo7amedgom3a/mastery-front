@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { apiRequest, type ApiRequestOptions } from "@/lib/api/client";
 import type { PathParams, QueryParams, RequestBody, SuccessResponse } from "@/lib/api/operation-types";
+import { getClientFingerprint } from "@/lib/customer-tracking";
 
 type SearchOperation = "search_api_v1_search_get";
 type AdvancedSearchOperation = "advanced_search_api_v1_search_post";
@@ -20,8 +21,44 @@ export type SearchInstructorsResponse = SuccessResponse<SearchInstructorsOperati
 export type SearchProductDetailsResponse = SuccessResponse<SearchProductDetailsOperation>;
 export type SearchInstructorDetailsResponse = SuccessResponse<SearchInstructorDetailsOperation>;
 
+/**
+ * The typeahead contract. Hand-written because `src/types/openapi.ts` predates this endpoint
+ * (it also misses newer modules); regenerate both together in a separate change.
+ */
+export type AutocompleteSuggestionType = "keyword" | "popular_search" | "spelling";
+
+export type AutocompleteSuggestion = {
+  text: string;
+  type: AutocompleteSuggestionType;
+};
+
+export type AutocompleteResult = {
+  id: string;
+  slug: string | null;
+  title: string;
+  /** Catalog product type (`course`, `diploma`, `package`, `consultation`, `bundle`, `live_diploma`). */
+  type: string;
+  /** Storefront path; null when the slug is not addressable (the caller can fall back). */
+  url: string | null;
+  description: string | null;
+  image: string | null;
+  rating: number | null;
+};
+
+export type AutocompleteResponse = {
+  query: string;
+  suggestions: AutocompleteSuggestion[];
+  results: AutocompleteResult[];
+};
+
+export type AutocompleteParams = { q: string; limit?: number };
+
+export const AUTOCOMPLETE_LIMIT = 8;
+const AUTOCOMPLETE_TIMEOUT_MS = 4_000;
+
 const searchPaths = {
   search: "/api/v1/search",
+  autocomplete: "/api/v1/search/autocomplete",
   options: "/api/v1/search/options",
   instructors: "/api/v1/search/instructors",
   productDetails: "/api/v1/search/products/{slug}/details",
@@ -32,6 +69,8 @@ export const searchKeys = {
   all: ["search"] as const,
   results: (params?: SearchParams) => [...searchKeys.all, "results", params ?? {}] as const,
   advanced: (body: AdvancedSearchRequest) => [...searchKeys.all, "advanced", body] as const,
+  autocomplete: (params: AutocompleteParams) =>
+    [...searchKeys.all, "autocomplete", params] as const,
   options: (params?: SearchOptionsParams) => [...searchKeys.all, "options", params ?? {}] as const,
   instructors: (params?: SearchInstructorsParams) => [...searchKeys.all, "instructors", params ?? {}] as const,
   productDetails: (slug: string) => [...searchKeys.all, "products", slug] as const,
@@ -57,6 +96,32 @@ export function advancedSearch(
     ...options,
     credentials: "include",
     body,
+  });
+}
+
+/**
+ * Typeahead suggestions and matching programs. Browser-only in practice: the request goes
+ * through this app's same-origin `/api/b2c` door (cookies are not sent to the backend origin)
+ * and carries the visitor fingerprint so the endpoint's rate limit counts the visitor, not
+ * the server. A 4-second timeout keeps a stalled backend from leaving the dropdown loading.
+ */
+export function getSearchAutocomplete(
+  params: AutocompleteParams,
+  options?: ApiRequestOptions,
+): Promise<AutocompleteResponse> {
+  const browser = typeof window !== "undefined";
+  const timeout = AbortSignal.timeout(AUTOCOMPLETE_TIMEOUT_MS);
+  const signal =
+    options?.signal && typeof AbortSignal.any === "function"
+      ? AbortSignal.any([options.signal, timeout])
+      : (options?.signal ?? timeout);
+
+  return apiRequest<AutocompleteResponse>("GET", searchPaths.autocomplete, {
+    ...options,
+    signal,
+    query: params,
+    sameOrigin: browser,
+    context: browser ? { clientFingerprint: getClientFingerprint() } : undefined,
   });
 }
 
@@ -107,6 +172,16 @@ export const searchQueries = {
       queryKey: searchKeys.advanced(body),
       queryFn: ({ signal }) => advancedSearch(body, { signal }),
       staleTime: 60_000,
+    }),
+  autocomplete: (params: AutocompleteParams) =>
+    queryOptions({
+      queryKey: searchKeys.autocomplete(params),
+      queryFn: ({ signal }) => getSearchAutocomplete(params, { signal }),
+      // Recent queries are reused while the visitor retypes; typeahead failures are silent
+      // (Enter still searches), so never retry them.
+      staleTime: 60_000,
+      retry: false,
+      refetchOnWindowFocus: false,
     }),
   options: (params?: SearchOptionsParams) =>
     queryOptions({
