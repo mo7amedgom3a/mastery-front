@@ -73,7 +73,9 @@ export async function getSearchView(state: SearchState, catalog: SearchCatalog):
     facets: mapFacets(state, catalog, counts),
     countsKnown: counts !== null,
     activeFilters: mapActiveFilters(state, catalog),
-    semanticDegraded: state.mode !== "lexical" && response !== null && !semanticUsed,
+    // Without a query there is nothing to embed: the API browses the catalog by keyword and says
+    // semantic_used=false on purpose. Only a typed query that missed semantic search is degraded.
+    semanticDegraded: Boolean(state.q) && state.mode !== "lexical" && response !== null && !semanticUsed,
     results: response ? mapResults(response, catalog) : null,
   };
 }
